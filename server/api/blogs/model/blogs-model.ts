@@ -6,17 +6,32 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 var BlogsSchema = new mongoose.Schema({
-	cover: {type: String},
-	category: {type: String},
+	cover:
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+		},
+	category:
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'BlogCategories'
+		},
 	title: {type: String},
 	source: {type: String},
 	content: {type: String},
 	comments:
 	[
-		{type: String}
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Comments'
+		}
 	],
 	created_at: {type: Date},
-	created_by: {type: String}
+	created_by:
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Users'
+		}
 });
 
 export default BlogsSchema;

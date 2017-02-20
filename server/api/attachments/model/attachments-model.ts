@@ -10,7 +10,7 @@ var AttachmentsSchema = new mongoose.Schema({
 	key: {type: String},
 	size: {type: String},
 	type: {type: String},
-	metadata: {type: String},
+	metadata: {},
 	remarks: {type: String},
 	uploaded_at: {type: Date}
 });

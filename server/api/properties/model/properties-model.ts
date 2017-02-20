@@ -46,34 +46,60 @@ var PropertiesSchema = new mongoose.Schema({
 	},
 	amenities:
 	[
-	{type: String}
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Amenities'
+		}
 	],
 	pictures:{
 		living:
 		[
-		{type: String, unique: true}
+			{
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+			}
 		],
 		dining:
 		[
-		{type: String, unique: true}
+			{
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+			}
 		],
 		bed:
 		[
-		{type: String, unique: true}
+			{
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+			}
 		],
 		toilet:
 		[
-		{type: String, unique: true}
+			{
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+			}
 		],
 		kitchen:
 		[
-		{type: String, unique: true}
+			{
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+			}
 		]
 	},
 	owned_type: {type: String, enum:['individual', 'company']},
 	owner: {
-		user: {type: String, unique: true},
-		company: {type: String, unique: true},
+		user: 	
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'Users'
+			},
+		company: 
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'Companies'
+			},
 		shareholder: 
 		[
 			{
@@ -82,8 +108,16 @@ var PropertiesSchema = new mongoose.Schema({
 				identification_number: {type: String},
 				identification_proof: 
 				{
-					front: {type: String},
-					back: {type: String}
+					front: 
+						{
+							type: Schema.Types.ObjectId,
+							ref: 'Attachments'
+						},
+					back: 
+						{
+							type: Schema.Types.ObjectId,
+							ref: 'Attachments'
+						}
 				},
 			}
 		]
