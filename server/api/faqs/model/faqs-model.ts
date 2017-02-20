@@ -20,3 +20,5 @@ var FaqsSchema = new mongoose.Schema({
 		ref: 'Users'
 	}
 });
+
+export default FaqsSchema;

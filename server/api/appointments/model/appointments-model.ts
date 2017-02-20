@@ -33,3 +33,5 @@ var AppoinmentsSchema = new mongoose.Schema({
 		default: 'pending'
 	}
 });
+
+export default AppointmentsSchema;

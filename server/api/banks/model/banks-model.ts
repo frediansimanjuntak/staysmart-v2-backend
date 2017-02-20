@@ -13,3 +13,5 @@ var BanksSchema = new mongoose.Schema({
 	description: {type: String},
 	created_at: {type: Date, default: Date.now}
 });
+
+export default BanksSchema;

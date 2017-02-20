@@ -26,3 +26,5 @@ var CommentsSchema = new mongoose.Schema({
 		ref: 'Comments'
 	}]
 });
+
+export default CommentsSchema;
