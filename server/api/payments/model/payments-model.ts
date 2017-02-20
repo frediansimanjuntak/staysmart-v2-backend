@@ -20,3 +20,5 @@ var PaymentsSchema = new mongoose.Schema({
 	refund: {type: Boolean, required: true},
 	remarks: {type: String}
 });
+
+export default PaymentsSchema;
