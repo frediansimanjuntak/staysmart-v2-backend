@@ -10,10 +10,13 @@ var Schema = mongoose.Schema;
 var DevelopmmentSchema = new mongoose.Schema({
 	name: {type: String, unique: true, required: true },
 	slug: {type: String},
-	number of units: {type: Number},
+	number_of_units: {type: Number},
 	properties: 
 	[
-		{type: String, unique: true}
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Properties'
+		}
 	],
 	tenure: {type:  String},
 	age: {type: Number},

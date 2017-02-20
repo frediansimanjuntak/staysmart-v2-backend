@@ -10,9 +10,16 @@ var CompaniesSchema = new mongoose.Schema({
 	registeration_number: {type: String},
 	document: 
 	[
-	{type: String}
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+		}
 	],
-	created_by: {type: String},
+	created_by: 
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Users'
+		},
 	created_at: {type: Date}
 });
 
