@@ -1,3 +1,3 @@
 export default {
-  "localhost": "mongodb://localhost/staysmart"
+  "localhost": "mongodb://localhost/staysmart-revamp"
 }

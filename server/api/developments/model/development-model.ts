@@ -7,7 +7,7 @@ var crypto = require ('crypto');
 
 var Schema = mongoose.Schema;
 
-var DevelopmmentSchema = new mongoose.Schema({
+var DevelopmentsSchema = new mongoose.Schema({
 	name: {type: String, unique: true, required: true },
 	slug: {type: String},
 	number_of_units: {type: Number},

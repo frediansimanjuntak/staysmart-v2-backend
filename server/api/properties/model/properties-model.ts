@@ -28,7 +28,6 @@ var PropertiesSchema = new mongoose.Schema({
 		bathroom: {type: Number},
 		price: {type: Number},
 		psqft: {type: Number},
-		price: {type: Number},
 		price_psm: {type: Number},
 		price_psf: {type: Number},
 		available: {type: Date},
