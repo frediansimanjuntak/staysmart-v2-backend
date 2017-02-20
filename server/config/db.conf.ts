@@ -2,8 +2,7 @@
 
 import * as mongoose from "mongoose";
 import * as Promise from "bluebird";
-
-const dbConst = require("../constants/db");
+import dbConst from "../constants/db";
 
 export class DBConfig {
     static init():void {
