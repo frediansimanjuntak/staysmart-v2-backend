@@ -9,8 +9,10 @@ if (process.env.NODE_ENV === "production")
 
 import * as express from "express";
 import * as os from "os";
+import * as fs from 'fs';
 import * as http from "http";
 import * as https from "https";
+import config from './config/environment/index';
 import {RoutesConfig} from "./config/routes.conf";
 import {DBConfig} from "./config/db.conf";
 import {Routes} from "./routes/index";
@@ -20,7 +22,6 @@ const app = express();
 
 RoutesConfig.init(app);
 DBConfig.init();
-Routes.init(app, express.Router());
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
@@ -29,8 +30,17 @@ app.use((req, res, next) => {
   next()
 })
 
-https.createServer(app)
-    .listen(PORT, () => {
-      console.log(`up and running @: ${os.hostname()} on port: ${PORT}`);
-      console.log(`enviroment: ${process.env.NODE_ENV}`);
-    });
+Routes.init(app, express.Router());
+
+
+const opts = {
+  key: fs.readFileSync(__dirname + '/../server/cert/server.key'),
+  cert: fs.readFileSync(__dirname + '/../server/cert/server.crt')
+}
+
+// run using https
+https.createServer(opts, app)
+     .listen(PORT, () => {
+       console.log(`up and running @: ${os.hostname()} on port: ${PORT}`);
+       console.log(`enviroment: ${process.env.NODE_ENV}`);
+     });
