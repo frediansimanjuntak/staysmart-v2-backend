@@ -9,6 +9,7 @@ var Schema = mongoose.Schema;
 
 var DevelopmmentSchema = new mongoose.Schema({
 	name: {type: String, unique: true, required: true },
+	slug: {type: String},
 	number of units: {type: Number},
 	properties: 
 	[

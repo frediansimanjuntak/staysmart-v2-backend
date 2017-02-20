@@ -8,9 +8,9 @@ var Schema = mongoose.Schema;
 var PropertiesSchema = new mongoose.Schema({
 	development: {type:String, required: true, unique:true},
 	address: {
-		unit_no:{type: String},
-		unit_no_2: {type: String},
-		block_no: {type: Number},
+		floor:{type: String},
+		unit: {type: String},
+		block_number: {type: Number},
 		street_name: {type: String},
 		postal_code: {type: Number},
 		coordinates: 
@@ -73,9 +73,22 @@ var PropertiesSchema = new mongoose.Schema({
 	owned_type: {type: String, enum:['individual', 'company']},
 	owner: {
 		user: {type: String, unique: true},
-		company: {type: String, unique: true}
+		company: {type: String, unique: true},
+		shareholder: 
+		[
+			{
+				name: {type: String},
+				identification_type: {type: String},
+				identification_number: {type: String},
+				identification_proof: 
+				{
+					front: {type: String},
+					back: {type: String}
+				},
+			}
+		]
 	},
-	publish {type: Boolean},
+	publish: {type: Boolean},
 	confirmation: {
 		status: {type: String, enum:['approved','rejected','pending']},
 		proof: {type: String},
