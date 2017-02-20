@@ -3,71 +3,71 @@
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-var Schema = mongoose.schema;
+var Schema = mongoose.Schema;
 
-var PropertiesSchema = new mongoose.schema({
+var PropertiesSchema = new mongoose.Schema({
 	development: {type:String, required: true, unique:true},
 	address: {
-		unit_no:{type: Number, required: true},
-		unit_no_2: {type: Number, required: true},
-		block_no: {type: Number, required: true},
-		street_name: {type: String, required: true},
-		postal_code: {type: Number, required: true},
+		unit_no:{type: String},
+		unit_no_2: {type: String},
+		block_no: {type: Number},
+		street_name: {type: String},
+		postal_code: {type: Number},
 		coordinates: 
 		[
-		{type: Number, unique: true, required: true}
+		{type: String}
 		],
-		country: {type: String, required: true},
-		full_address: {type: String, require: true},
-		type: {type: String, required: true}
+		country: {type: String},
+		full_address: {type: String},
+		type: {type: String}
 	},
 	details: {
-		size_sqf: {type: Number, required: true},
-		size_sqm: {type: Number, required: true},
-		bedroom: {type: Number, required: true},
-		bathroom: {type: Number, required: true},
-		price: {type: Number, require: true},
-		psqft: {type: Number, required: true},
-		price: {type: Number, required: true},
-		price_psm: {type: Number, required: true},
-		price_psf: {type: Number, required: true},
-		available: {type: Date, required: true},
-		furnishing: {type: String, required: true},
+		size_sqf: {type: Number},
+		size_sqm: {type: Number},
+		bedroom: {type: Number},
+		bathroom: {type: Number},
+		price: {type: Number},
+		psqft: {type: Number},
+		price: {type: Number},
+		price_psm: {type: Number},
+		price_psf: {type: Number},
+		available: {type: Date},
+		furnishing: {type: String},
 		description: {type: String},
-		type: {type: String, required: true},
-		sale_date: {type: Date, required: true},
-		property_type: {type: String, required: true},
-		tenure: {type: String, required: true},
-		completion_date: {type: Date, required: true},
-		type_of_sale: {type: String, required: true},
-		purchaser_address_indicator: {type: String, required: true},
-		planning_region: {type: String, required: true},
-		planning_area: {type: String, required: true}
+		type: {type: String},
+		sale_date: {type: Date},
+		property_type: {type: String},
+		tenure: {type: String},
+		completion_date: {type: Date},
+		type_of_sale: {type: String},
+		purchaser_address_indicator: {type: String},
+		planning_region: {type: String},
+		planning_area: {type: String}
 	},
 	amenities:
 	[
-	{type: String, unique: true, required: true}
+	{type: String}
 	],
 	pictures:{
 		living:
 		[
-		{type: String, unique: true, required: true}
+		{type: String, unique: true}
 		],
 		dining:
 		[
-		{type: String, unique: true, required: true}
+		{type: String, unique: true}
 		],
 		bed:
 		[
-		{type: String, unique: true, required: true}
+		{type: String, unique: true}
 		],
 		toilet:
 		[
-		{type: String, unique: true, required: true}
+		{type: String, unique: true}
 		],
 		kitchen:
 		[
-		{type: String, unique: true, required: true}
+		{type: String, unique: true}
 		]
 	},
 	owned_type: {type: String, enum:['individual', 'company']},
@@ -78,16 +78,16 @@ var PropertiesSchema = new mongoose.schema({
 	publish {type: Boolean},
 	confirmation: {
 		status: {type: String, enum:['approved','rejected','pending']},
-		proof: {type: String, required: true},
-		by: {type: String, required: true},
-		date: {type: Date, required: true}
+		proof: {type: String},
+		by: {type: String},
+		date: {type: Date}
 	},
 	status: {type: String, enum:['initiated','published','rented']},
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},
-		date: {type: Date, required: true},
-		data: {type: String, required: true}
+		date: {type: Date},
+		data: {type: String}
 	}],
-	created_at: {type: Date, required: true}
+	created_at: {type: Date}
 });

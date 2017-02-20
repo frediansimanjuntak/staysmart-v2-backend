@@ -5,19 +5,19 @@ import * as mongoose from 'mongoose';
 
 var crypto = require ('crypto');
 
-var Schema = mongoose.schema;
+var Schema = mongoose.Schema;
 
-var DevelopmmentSchema = new mongoose.schema({
-	name: {type: String, uppercase: true, unique: true, required: true },
-	number of units: {type: Number, required: true},
+var DevelopmmentSchema = new mongoose.Schema({
+	name: {type: String, unique: true, required: true },
+	number of units: {type: Number},
 	properties: 
 	[
-		{type: String, unique: true, required: true}
+		{type: String, unique: true}
 	],
-	tenure: {type:  String, lowercase: true, required: true},
-	age: {type: Number, required: true},
-	planning_region: {type: String, required: true},
-	planning_area: {type: String, required: true},
-	type_of_area: {type: String, required: true},
+	tenure: {type:  String},
+	age: {type: Number},
+	planning_region: {type: String},
+	planning_area: {type: String},
+	type_of_area: {type: String},
 	postal_district: {type: Number, required: true}
 });
