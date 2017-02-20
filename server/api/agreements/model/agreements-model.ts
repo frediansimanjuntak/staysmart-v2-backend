@@ -181,3 +181,5 @@ var AgreementsSchema = new mongoose.Schema({
 		}]
 	}
 });
+
+export default AgreementsSchema;
