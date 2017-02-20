@@ -100,7 +100,7 @@ var PropertiesSchema = new mongoose.Schema({
 	[{
 		action: {type: String, enum:['remove','update']},
 		date: {type: Date},
-		data: {type: String}
+		data: {}
 	}],
 	created_at: {type: Date}
 });
