@@ -9,9 +9,18 @@ var Schema = mongoose.Schema;
 
 var AppoinmentSchema = new mongoose.Schema({
 	room_id: {type: String},
-	landlord: {type: String},
-	tenant: {type: String},
-	property: {type: String},
+	landlord: {
+		type: Schema.Types.ObjectId,
+		ref: 'User'
+	},
+	tenant: {
+		type: Schema.Types.ObjectId,
+		ref: 'User'
+	},
+	property: {
+		type: Schema.Types.ObjectId,
+		ref: 'Property'
+	},
 	schedule: {type: String},
 	choosen_time: {
 		date: {type: Date},
