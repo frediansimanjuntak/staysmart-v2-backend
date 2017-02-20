@@ -7,22 +7,22 @@ var crypto = require('crypto')
 
 var Schema = mongoose.Schema;
 
-var AppoinmentSchema = new mongoose.Schema({
+var AppoinmentsSchema = new mongoose.Schema({
 	room_id: {type: String},
 	landlord: {
 		type: Schema.Types.ObjectId,
-		ref: 'User'
+		ref: 'Users'
 	},
 	tenant: {
 		type: Schema.Types.ObjectId,
-		ref: 'User'
+		ref: 'Users'
 	},
 	property: {
 		type: Schema.Types.ObjectId,
-		ref: 'Property'
+		ref: 'Properties'
 	},
 	schedule: {type: String},
-	choosen_time: {
+	chosen_time: {
 		date: {type: Date},
 		from: {type: String},
 		to: {type: String}
