@@ -64,7 +64,10 @@ var UserSchema = new mongoose.Schema({
 	},
 	owned_properties: 
 	[
-		{type: String}
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Property'
+		}
 	],
 	rented_properties: 
 	[{
@@ -74,7 +77,10 @@ var UserSchema = new mongoose.Schema({
 	}],
 	agreements: 
 	[
-		{type: String}
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Agreement'
+		}
 	],
 	companies: 
 	[
