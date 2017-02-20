@@ -7,7 +7,7 @@ var crypto = require('crypto')
 
 var Schema = mongoose.Schema;
 
-var AppoinmentsSchema = new mongoose.Schema({
+var AppointmentsSchema = new mongoose.Schema({
 	room_id: {type: String},
 	landlord: {
 		type: Schema.Types.ObjectId,

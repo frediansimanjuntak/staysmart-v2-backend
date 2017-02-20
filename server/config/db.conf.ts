@@ -3,7 +3,7 @@
 import * as mongoose from "mongoose";
 import * as Promise from "bluebird";
 
-const dbConst = require("../constants/db.json");
+const dbConst = require("../constants/db");
 
 export class DBConfig {
     static init():void {
