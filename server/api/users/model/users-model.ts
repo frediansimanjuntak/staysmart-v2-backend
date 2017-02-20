@@ -7,7 +7,7 @@ var crypto = require('crypto')
 
 var Schema = mongoose.Schema;
 
-var UserSchema = new mongoose.Schema({
+var UsersSchema = new mongoose.Schema({
 	username: {type: String, lowercase: true, unique: true, required: true},
 	email: {type: String, lowercase: true, unique: true, required: true},
 	password: {type: String, required: true},  
@@ -25,13 +25,23 @@ var UserSchema = new mongoose.Schema({
 			identification_type: {type: String},
 			identification_number: {type: String},
 			identification_proof: {
-				front: {type: String},
-				back: {type: String}
+				front: {
+					type: Schema.Types.ObjectId,
+					ref: 'Attachments'
+				},
+				back: {
+					type: Schema.Types.ObjectId,
+					ref: 'Attachments'
+				}
 			},
 			bank_account: {
-				bank: {type: String},
+				bank: 
+				{
+					type: Schema.Types.ObjectId,
+					ref: 'Banks'
+				},
 				name: {type: String},
-				no: {type: String}
+				no: {type: Number}
 			}
 		},
 		histories: 
@@ -46,14 +56,28 @@ var UserSchema = new mongoose.Schema({
 			identification_type: {type: String},
 			identification_number: {type: String},
 			identification_proof: {
-				front: {type: String},
-				back: {type: String}
+				front: {
+					type: Schema.Types.ObjectId,
+					ref: 'Attachments'
+				},
+				back: {
+					type: Schema.Types.ObjectId,
+					ref: 'Attachments'
+				}
 			},
-			company: {type: String},
+			company: 
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'Companies'
+			},
 			bank_account: {
-				bank: {type: String},
+				bank: 
+				{
+					type: Schema.Types.ObjectId,
+					ref: 'Banks'
+				},
 				name: {type: String},
-				no: {type: String}
+				no: {type: Number}
 			}
 		},
 		histories: 
@@ -66,25 +90,41 @@ var UserSchema = new mongoose.Schema({
 	[
 		{
 			type: Schema.Types.ObjectId,
-			ref: 'Property'
+			ref: 'Properties'
 		}
 	],
 	rented_properties: 
 	[{
 		until: {type: Date},
-		property: {type: String},
-		agreement: {type: String},
+		property: 
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Properties'
+		},
+		agreement: 
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Agreements'
+		},
 	}],
 	agreements: 
 	[
 		{
 			type: Schema.Types.ObjectId,
-			ref: 'Agreement'
+			ref: 'Agreements'
 		}
 	],
+	dreamtalk:
+	[{
+		loginToken: {type: String},
+		loginTokenExpires: {type: Date}
+	}],
 	companies: 
 	[
-		{type: String}
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Companies'
+		}
 	],
 	created_at: {type: Date, default: Date.now}
 });
