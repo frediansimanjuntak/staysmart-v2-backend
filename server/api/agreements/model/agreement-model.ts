@@ -9,9 +9,18 @@ var Schema = mongoose.Schema;
 
 var AgreementSchema = new mongoose.Schema({
 	room_id: {type: String},
-	landlord: {type: String},
-	tenant: {type: String},
-	property: {type: String},
+	landlord: {
+		type: Schema.Types.ObjectId,
+		ref: 'User'
+	},
+	tenant: {
+		type: Schema.Types.ObjectId,
+		ref: 'User'
+	},
+	property: {
+		type: Schema.Types.ObjectId,
+		ref: 'Property'
+	},
 	appoinment: {
 		type: Schema.Types.ObjectId,
 		ref: 'Appoinment'
@@ -52,12 +61,11 @@ var AgreementSchema = new mongoose.Schema({
 				ref: 'Appoinment'
 			},
 			property: {
-				_id: {type: String},
 				development: {type: String, uppercase: true},
 				address: {
-					unit_no: {type: Number},
-					unit_no_2: {type: Number},
-					block_no: {type: Number},
+					unit_no: {type: String},
+					unit_no_2: {type: String},
+					block_no: {type: String},
 					street_name: {type: String},
 					postal_code: {type: Number},
 					country: {type: String}
@@ -85,7 +93,7 @@ var AgreementSchema = new mongoose.Schema({
 			},
 			payment: {type: String},
 			status: {type: String},
-			created_at: {type: Date}
+			created_at: {type: Date, default: Date.now}
 		},
 		histories: 
 		[{
