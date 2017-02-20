@@ -15,3 +15,5 @@ var CompaniesSchema = new mongoose.Schema({
 	created_by: {type: String},
 	created_at: {type: Date}
 });
+
+export default CompaniesSchema;

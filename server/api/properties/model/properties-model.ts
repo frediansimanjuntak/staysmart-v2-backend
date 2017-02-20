@@ -104,3 +104,5 @@ var PropertiesSchema = new mongoose.Schema({
 	}],
 	created_at: {type: Date}
 });
+
+export default PropertiesSchema;

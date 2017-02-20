@@ -14,3 +14,5 @@ var AttachmentsSchema = new mongoose.Schema({
 	remarks: {type: String},
 	uploaded_at: {type: Date}
 });
+
+export default AttachmentsSchema;

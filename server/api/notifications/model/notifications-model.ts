@@ -14,3 +14,5 @@ var NotificationsSchema = new mongoose.Schema({
 	clicked: {type: Boolean},
 	created_at: {type: Date}
 });
+
+export default NotificationsSchema;

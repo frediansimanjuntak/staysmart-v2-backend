@@ -18,3 +18,5 @@ var BlogsSchema = new mongoose.Schema({
 	created_at: {type: Date},
 	created_by: {type: String}
 });
+
+export default BlogsSchema;

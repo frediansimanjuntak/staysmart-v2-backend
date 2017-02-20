@@ -22,3 +22,5 @@ var DevelopmmentSchema = new mongoose.Schema({
 	type_of_area: {type: String},
 	postal_district: {type: Number, required: true}
 });
+
+export default DevelopmentsSchema;
