@@ -1,29 +1,3 @@
-# README #
-
-This README would normally document whatever steps are necessary to get your application up and running.
-
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+# staysmart
+[![Build Status](https://secure.travis-ci.org/felixprawira8/staysmart.png?branch=master)](https://travis-ci.org/felixprawira8/staysmart)
+[![Coverage Status](https://coveralls.io/repos/felixprawira8/staysmart/badge.svg?branch=master)](https://coveralls.io/r/felixprawira8/staysmart/?branch=master)

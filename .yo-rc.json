@@ -1,0 +1,16 @@
+{
+  "generator-ng-fullstack": {
+    "appName": "staysmart",
+    "username": "felixprawira8",
+    "userEmail": "felixprawira8@gmail.com",
+    "stack": "server",
+    "repoHostUrl": "bitbucket.org",
+    "userNameSpace": "felixprawira8",
+    "client": "",
+    "server": "node",
+    "nodeWebFrameworkServer": "express",
+    "transpilerServer": "typescript",
+    "secure": false,
+    "testsSeparated": true
+  }
+}
