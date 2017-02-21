@@ -5,6 +5,7 @@ import {BlogCategoriesRoutes} from "../api/blog_categories/routes/blog_categorie
 import {FaqsRoutes} from "../api/faqs/routes/faqs-routes";
 import {BanksRoutes} from "../api/banks/routes/banks-routes";
 import {PaymentsRoutes} from "../api/payments/routes/payments-routes";
+import {AmenitiesRoutes} from "../api/amenities/routes/amenities-routes";
 
 
 export class Routes {
@@ -15,6 +16,7 @@ export class Routes {
      FaqsRoutes.init(router);
      BanksRoutes.init(router);
      PaymentsRoutes.init(router);
+     AmenitiesRoutes.init(router);
      
 
      app.use("/", router);
