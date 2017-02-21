@@ -4,6 +4,7 @@ var users_routes_1 = require("../api/users/routes/users-routes");
 var blog_categories_routes_1 = require("../api/blog_categories/routes/blog_categories-routes");
 var faqs_routes_1 = require("../api/faqs/routes/faqs-routes");
 var banks_routes_1 = require("../api/banks/routes/banks-routes");
+var payments_routes_1 = require("../api/payments/routes/payments-routes");
 var Routes = (function () {
     function Routes() {
     }
@@ -13,6 +14,7 @@ var Routes = (function () {
         blog_categories_routes_1.BlogCategoriesRoutes.init(router);
         faqs_routes_1.FaqsRoutes.init(router);
         banks_routes_1.BanksRoutes.init(router);
+        payments_routes_1.PaymentRoutes.init(router);
         app.use("/", router);
     };
     return Routes;
