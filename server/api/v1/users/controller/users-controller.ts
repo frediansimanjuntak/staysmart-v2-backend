@@ -4,7 +4,7 @@ var passport = require('passport');
 
 export class UsersController {
 	static index(req: express.Request, res: express.Response):void {
-	  UsersDAO
+		UsersDAO
 		['index']()
 		.then(users => res.status(200).json(users))
 		.catch(error => res.status(400).json(error));
@@ -55,6 +55,25 @@ export class UsersController {
 
 		UsersDAO
 		['updateUser'](_id, _user)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static activationUser(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _code = req.params.code;
+
+		UsersDAO
+		  ['activationUser'](_id, _code)
+		  .then(users => res.status(201).json(users))
+		  .catch(error => res.status(400).json(error));
+	}
+
+	static unActiveUser(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		UsersDAO
+		['unActiveUser'](_id)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}

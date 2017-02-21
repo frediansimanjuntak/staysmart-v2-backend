@@ -44,7 +44,6 @@ users_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
         Users
             .findById(id, '-salt -password')
-            .populate("agreements attachments banks companies properties")
             .exec(function (err, users) {
             err ? reject(err)
                 : resolve(users);
@@ -88,6 +87,40 @@ users_model_1.default.static('updateUser', function (id, user) {
             .exec(function (err, updated) {
             err ? reject(err)
                 : resolve(updated);
+        });
+    });
+});
+users_model_1.default.static('activationUser', function (id, code) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        Users
+            .findByIdAndUpdate(id, {
+            $set: {
+                "verification.verified": true,
+                "verification.verified_date": Date.now(),
+                "verification.code": code
+            }
+        })
+            .exec(function (err, updated) {
+            err ? reject(err)
+                : resolve(updated);
+        });
+    });
+});
+users_model_1.default.static('unActiveUser', function (id) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        Users
+            .findByIdAndUpdate(id, {
+            $set: { "verification.verified": false }
+        })
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve();
         });
     });
 });

@@ -21,6 +21,12 @@ var UserRoutes = (function () {
         router
             .route('/me')
             .get(users_controller_1.UsersController.me);
+        router
+            .route('/users/active/:id/:code')
+            .post(users_controller_1.UsersController.activationUser);
+        router
+            .route('/users/unactive/:id')
+            .post(users_controller_1.UsersController.unActiveUser);
     };
     return UserRoutes;
 }());

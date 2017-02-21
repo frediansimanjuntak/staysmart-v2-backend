@@ -27,5 +27,13 @@ export class UserRoutes {
 			.route('/me')
 			.get(UsersController.me);
 
+		router
+			.route('/users/active/:id/:code')
+			.post(UsersController.activationUser);
+
+		router
+			.route('/users/unactive/:id')
+			.post(UsersController.unActiveUser);
+
 	}
 }

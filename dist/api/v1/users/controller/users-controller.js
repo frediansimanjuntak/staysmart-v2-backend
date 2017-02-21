@@ -45,6 +45,19 @@ var UsersController = (function () {
             .then(function (users) { return res.status(201).json(users); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    UsersController.activationUser = function (req, res) {
+        var _id = req.params.id;
+        var _code = req.params.code;
+        users_dao_1.default['activationUser'](_id, _code)
+            .then(function (users) { return res.status(201).json(users); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    UsersController.unActiveUser = function (req, res) {
+        var _id = req.params.id;
+        users_dao_1.default['unActiveUser'](_id)
+            .then(function (users) { return res.status(201).json(users); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     return UsersController;
 }());
 exports.UsersController = UsersController;
