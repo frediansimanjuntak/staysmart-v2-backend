@@ -24,6 +24,16 @@ faqs_model_1.default.static('getById', function (id) {
         });
     });
 });
+faqs_model_1.default.static('getByFilter', function (filter) {
+    return new Promise(function (resolve, reject) {
+        Faqs
+            .find({ 'for': filter })
+            .exec(function (err, faqs) {
+            err ? reject(err)
+                : resolve(faqs);
+        });
+    });
+});
 faqs_model_1.default.static('createFaqs', function (faqs) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(faqs)) {

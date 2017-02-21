@@ -18,6 +18,14 @@ export class FaqsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getByFilter(req: express.Request, res: express.Response):void {
+		let _filter = req.params.filter;
+		FaqsDAO
+		['getByFilter'](_filter)
+		.then(faqs => res.status(200).json(faqs))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createFaqs(req: express.Request, res: express.Response):void {
 		let _faqs = req.body;
 		FaqsDAO

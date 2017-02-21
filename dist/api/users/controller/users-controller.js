@@ -29,7 +29,7 @@ var UsersController = (function () {
     UsersController.createUser = function (req, res) {
         var _user = req.body;
         users_dao_1.default['createUser'](_user)
-            .then(function (user) { return res.status(201).json(user); })
+            .then(function (users) { return res.status(201).json(users); })
             .catch(function (error) { return res.status(400).json(error); });
     };
     UsersController.deleteUser = function (req, res) {
@@ -42,7 +42,7 @@ var UsersController = (function () {
         var _id = req.params.id;
         var _user = req.body;
         users_dao_1.default['updateUser'](_id, _user)
-            .then(function (user) { return res.status(201).json(user); })
+            .then(function (users) { return res.status(201).json(users); })
             .catch(function (error) { return res.status(400).json(error); });
     };
     return UsersController;
