@@ -7,6 +7,8 @@ import {PaymentsRoutes} from "../payments/routes/payments-routes";
 import {AmenitiesRoutes} from "../amenities/routes/amenities-routes";
 import {BlogsRoutes} from "../blogs/routes/blogs-routes";
 import {AttachmentsRoutes} from "../attachments/routes/attachments-routes";
+import {NotificationsRoutes} from "../notifications/routes/notifications-routes";
+import {CompaniesRoutes} from "../companies/routes/companies-routes";
 
 var router = express.Router();
 
@@ -18,5 +20,7 @@ PaymentsRoutes.init(router);
 AmenitiesRoutes.init(router);
 BlogsRoutes.init(router);
 AttachmentsRoutes.init(router);
+NotificationsRoutes.init(router);
+CompaniesRoutes.init(router);
 
 export default router;

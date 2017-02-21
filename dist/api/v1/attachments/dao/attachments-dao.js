@@ -27,7 +27,7 @@ attachments_model_1.default.static('getById', function (id) {
 attachments_model_1.default.static('createAttachments', function (attachments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(attachments)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Attachment is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = attachments;
@@ -54,7 +54,7 @@ attachments_model_1.default.static('deleteAttachments', function (id) {
 attachments_model_1.default.static('updateAttachments', function (id, attachments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(attachments)) {
-            return reject(new TypeError('Bank is not a valid object.'));
+            return reject(new TypeError('Attachment is not a valid object.'));
         }
         Attachments
             .findByIdAndUpdate(id, attachments)
