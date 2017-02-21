@@ -8,7 +8,7 @@ blogs_model_1.default.static('getAll', function () {
         var _query = {};
         Blogs
             .find(_query)
-            .populate("comments")
+            .populate("cover category comments created_by")
             .exec(function (err, blogs) {
             err ? reject(err)
                 : resolve(blogs);
@@ -19,7 +19,7 @@ blogs_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
         Blogs
             .findById(id)
-            .populate("comments")
+            .populate("cover category comments created_by")
             .exec(function (err, blogs) {
             err ? reject(err)
                 : resolve(blogs);
