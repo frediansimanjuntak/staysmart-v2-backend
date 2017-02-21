@@ -10,6 +10,10 @@ import {AttachmentsRoutes} from "../attachments/routes/attachments-routes";
 import {NotificationsRoutes} from "../notifications/routes/notifications-routes";
 import {CompaniesRoutes} from "../companies/routes/companies-routes";
 import {CommentsRoutes} from "../comments/routes/comments-routes";
+import {DevelopmentsRoutes} from "../developments/routes/developments-routes";
+import {PropertiesRoutes} from "../properties/routes/properties-routes";
+import {AppointmentsRoutes} from "../appointments/routes/appointments-routes";
+import {AgreementsRoutes} from "../agreements/routes/agreements-routes";
 
 var router = express.Router();
 
@@ -24,5 +28,9 @@ AttachmentsRoutes.init(router);
 NotificationsRoutes.init(router);
 CompaniesRoutes.init(router);
 CommentsRoutes.init(router);
+DevelopmentsRoutes.init(router);
+PropertiesRoutes.init(router);
+AppointmentsRoutes.init(router);
+AgreementsRoutes.init(router);
 
 export default router;

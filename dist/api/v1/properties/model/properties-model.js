@@ -2,7 +2,7 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 var PropertiesSchema = new mongoose.Schema({
-    development: { type: String, required: true, unique: true },
+    development: { type: String },
     address: {
         floor: { type: String },
         unit: { type: String },
