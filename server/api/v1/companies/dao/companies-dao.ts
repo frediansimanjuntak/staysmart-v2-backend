@@ -1,56 +1,56 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
-import attachmentsSchema from '../model/attachments-model';
+import companiesSchema from '../model/companies-model';
 
-attachmentsSchema.static('getAll', ():Promise<any> => {
+companiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
-        Attachments
+        Companies
           .find(_query)
-          .exec((err, attachments) => {
+          .exec((err, companies) => {
               err ? reject(err)
-                  : resolve(attachments);
+                  : resolve(companies);
           });
     });
 });
 
-attachmentsSchema.static('getById', (id:string):Promise<any> => {
+companiesSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
-        Attachments
+        Companies
           .findById(id)
-          .exec((err, attachments) => {
+          .exec((err, companies) => {
               err ? reject(err)
-                  : resolve(attachments);
+                  : resolve(companies);
           });
     });
 });
 
-attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> => {
+companiesSchema.static('createCompanies', (companies:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      if (!_.isObject(attachments)) {
-        return reject(new TypeError('Attachment is not a valid object.'));
+      if (!_.isObject(companies)) {
+        return reject(new TypeError('User is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
-      let body:any = attachments;
+      let body:any = companies;
       
-      var _attachments = new Attachments(attachments);
-          _attachments.save((err, saved)=>{
+      var _companies = new Companies(companies);
+          _companies.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
           });
     });
 });
 
-attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
+companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
 
-        Attachments
+        Companies
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
@@ -60,14 +60,14 @@ attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
     });
 });
 
-attachmentsSchema.static('updateAttachments', (id:string, attachments:Object):Promise<any> => {
+companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(attachments)) {
-          return reject(new TypeError('Attachment is not a valid object.'));
+        if (!_.isObject(companies)) {
+          return reject(new TypeError('Bank is not a valid object.'));
         }
 
-        Attachments
-        .findByIdAndUpdate(id, attachments)
+        Companies
+        .findByIdAndUpdate(id, companies)
         .exec((err, updated) => {
               err ? reject(err)
                   : resolve(updated);
@@ -75,6 +75,6 @@ attachmentsSchema.static('updateAttachments', (id:string, attachments:Object):Pr
     });
 });
 
-let Attachments = mongoose.model('Attachments', attachmentsSchema);
+let Companies = mongoose.model('Companies', companiesSchema);
 
-export default Attachments;
+export default Companies;
