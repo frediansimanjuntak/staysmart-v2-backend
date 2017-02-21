@@ -12,6 +12,8 @@ var db_conf_1 = require("./config/db.conf");
 var index_1 = require("./routes/index");
 var PORT = process.env.PORT || 3000;
 var app = express();
+// if(config.seedDB) { require('./config/seed'); }
+require('./config/express').default(app);
 routes_conf_1.RoutesConfig.init(app);
 db_conf_1.DBConfig.init();
 app.use(function (req, res, next) {

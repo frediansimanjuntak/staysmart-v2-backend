@@ -35,20 +35,16 @@ export class UsersController {
 
 	static createUser(req: express.Request, res: express.Response):void {
 		let _user = req.body;
-		let _developmentId = req["user"].default_development;
-
 		UsersDAO
-		['createUser'](_user, _developmentId)
+		['createUser'](_user)
 		.then(user => res.status(201).json(user))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static deleteUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _development = req.body;
-
 		UsersDAO
-		['deleteUser'](_id, _development)
+		['deleteUser'](_id)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}

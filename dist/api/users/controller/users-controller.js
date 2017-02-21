@@ -28,15 +28,13 @@ var UsersController = (function () {
     };
     UsersController.createUser = function (req, res) {
         var _user = req.body;
-        var _developmentId = req["user"].default_development;
-        users_dao_1.default['createUser'](_user, _developmentId)
+        users_dao_1.default['createUser'](_user)
             .then(function (user) { return res.status(201).json(user); })
             .catch(function (error) { return res.status(400).json(error); });
     };
     UsersController.deleteUser = function (req, res) {
         var _id = req.params.id;
-        var _development = req.body;
-        users_dao_1.default['deleteUser'](_id, _development)
+        users_dao_1.default['deleteUser'](_id)
             .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };
