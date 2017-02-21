@@ -24,12 +24,12 @@ payments_model_1.default.static('getById', function (id) {
         });
     });
 });
-payments_model_1.default.static('createPayment', function (payments) {
+payments_model_1.default.static('createPayments', function (payments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(payments)) {
-            return reject(new TypeError('Payment is not a valid object.'));
+            return reject(new TypeError('User is not a valid object.'));
         }
-        var ObjectID = mongoose.Type.ObjectId;
+        var ObjectID = mongoose.Types.ObjectId;
         var body = payments;
         var _payments = new Payments(payments);
         _payments.save(function (err, saved) {
@@ -38,7 +38,7 @@ payments_model_1.default.static('createPayment', function (payments) {
         });
     });
 });
-payments_model_1.default.static('deletePayment', function (id) {
+payments_model_1.default.static('deletePayments', function (id) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
@@ -54,7 +54,7 @@ payments_model_1.default.static('deletePayment', function (id) {
 payments_model_1.default.static('updatePayments', function (id, payments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(payments)) {
-            return reject(new TypeError('Payments is not a valid object.'));
+            return reject(new TypeError('Bank is not a valid object.'));
         }
         Payments
             .findByIdAndUpdate(id, payments)

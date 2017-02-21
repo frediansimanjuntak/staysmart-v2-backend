@@ -14,7 +14,7 @@ var Routes = (function () {
         blog_categories_routes_1.BlogCategoriesRoutes.init(router);
         faqs_routes_1.FaqsRoutes.init(router);
         banks_routes_1.BanksRoutes.init(router);
-        payments_routes_1.PaymentRoutes.init(router);
+        payments_routes_1.PaymentsRoutes.init(router);
         app.use("/", router);
     };
     return Routes;

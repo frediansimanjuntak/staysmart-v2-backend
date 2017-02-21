@@ -1,48 +1,45 @@
 import * as express from 'express';
 import PaymentsDAO from '../dao/payments-dao';
 
-export class PaymentsController{
-	static getAll(req: express.Request, res: express.Response):void {
-      PaymentsDAO
-        ['getAll']()
-        .then(payments => res.status(200).json(payments))
-        .catch(error => res.status(400).json(error));
-  	}
+export class PaymentsController {
+  static getAll(req: express.Request, res: express.Response):void {
+    PaymentsDAO
+    ['getAll']()
+    .then(payments => res.status(200).json(payments))
+    .catch(error => res.status(400).json(error));
+  }
 
-  	static getById(req: express.Request, res: express.Response):void {
-      let _id = req.params.id;
+  static getById(req: express.Request, res: express.Response):void {
+    let _id = req.params.id;
+    PaymentsDAO
+    ['getById'](_id)
+    .then(payments => res.status(200).json(payments))
+    .catch(error => res.status(400).json(error));
+  }
 
-      PaymentsDAO
-        ['getById'](_id)
-        .then(payments => res.status(200).json(payments))
-        .catch(error => res.status(400).json(error));
-  	}
+  static createPayments(req: express.Request, res: express.Response):void {
+    let _payments = req.body;
+    PaymentsDAO
+    ['createPayments'](_payments)
+    .then(payments => res.status(201).json(payments))
+    .catch(error => res.status(400).json(error));
+  }
 
-    static createPayment(req: express.Request, res: express.Response):void {
-      let _payment = req.body;
+  static deletePayments(req: express.Request, res: express.Response):void {
+    let _id = req.params.id;
+    PaymentsDAO
+    ['deletePayments'](_id)
+    .then(() => res.status(200).end())
+    .catch(error => res.status(400).json(error));
+  }
 
-      PaymentsDAO
-        ['createPayment'](_payment)
-        .then(payment => res.status(201).json(payment))
-        .catch(error => res.status(400).json(error));
-    }
+  static updatePayments(req: express.Request, res: express.Response):void {
+    let _id = req.params.id;
+    let _payments = req.body;
 
-    static deletePayment(req: express.Request, res: express.Response):void {
-      let _id = req.params.id;
-
-      PaymentsDAO
-        ['deletePayment'](_id)
-        .then(() => res.status(200).json())
-        .catch(error => res.status(400).json(error));
-    }
-
-    static updatePayment(req: express.Request, res: express.Response):void {
-      let _id = req.params.id;
-      let _payment = req.body;
-
-      PaymentsDAO
-        ['updatePayment'](_id, _payment)
-        .then(payment => res.status(201).json(payment))
-        .catch(error => res.status(400).json(error));
-    }
-} 
+    PaymentsDAO
+    ['updatePayments'](_id, _payments)
+    .then(payments => res.status(201).json(payments))
+    .catch(error => res.status(400).json(error));
+  }
+}
