@@ -15,6 +15,12 @@ var FaqsController = (function () {
             .then(function (faqs) { return res.status(200).json(faqs); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    FaqsController.getByFilter = function (req, res) {
+        var _filter = req.params.filter;
+        faqs_dao_1.default['getByFilter'](_filter)
+            .then(function (faqs) { return res.status(200).json(faqs); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     FaqsController.createFaqs = function (req, res) {
         var _faqs = req.body;
         faqs_dao_1.default['createFaqs'](_faqs)

@@ -28,6 +28,18 @@ faqsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
+faqsSchema.static('getByFilter', (filter:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        Faqs
+          .find({'for': filter})
+          .exec((err, faqs) => {
+              err ? reject(err)
+                  : resolve(faqs);
+          });
+    });
+});
+
 faqsSchema.static('createFaqs', (faqs:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(faqs)) {

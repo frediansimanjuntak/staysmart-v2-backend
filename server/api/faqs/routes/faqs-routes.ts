@@ -16,6 +16,10 @@ export class FaqsRoutes {
 			.put(FaqsController.deleteFaqs);
 
 		router
+			.route('/api/faqs/filter/:filter')
+			.get(FaqsController.getByFilter)
+
+		router
 			.route('/api/faqs/update/:id')
 			.post(FaqsController.updateFaqs);
 	}
