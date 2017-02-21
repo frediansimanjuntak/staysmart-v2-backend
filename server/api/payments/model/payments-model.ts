@@ -6,18 +6,18 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 var PaymentsSchema = new mongoose.Schema({
-	type: {type: String, required: true},
+	type: {type: String, enum:['loi',"ta"]},
 	fee: 
 	[
 		{
-			code: {type: String, unique: true},
-			name: {type: String, required: true},
-			amount: {type: Number, required: true},
+			code: {type: String},
+			name: {type: String},
+			amount: {type: Number},
 			status: {type: String, enum:['paid','unpaid']},
-			refunded: {type: Boolean, required: true}
+			refunded: {type: Boolean}
 		}
 	],
-	refund: {type: Boolean, required: true},
+	refund: {type: Boolean},
 	remarks: {type: String}
 });
 

@@ -1,0 +1,79 @@
+import * as mongoose from 'mongoose';
+import * as Promise from 'bluebird';
+import * as _ from 'lodash';
+import PaymentsSchema from '../model/payments-model';
+
+PaymentsSchema.static('getAll', ():Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query = {};
+
+        Payments
+          .find(_query)
+          .exec((err, payments) => {
+              err ? reject(err)
+                  : resolve(payments);
+          });
+    });
+});
+
+PaymentsSchema.static('getById', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+ 
+        Payments
+          .findById(id)
+          .exec((err, payments) => {
+              err ? reject(err)
+                  : resolve(payments);
+          });
+    });
+});
+
+PaymentsSchema.static('createPayment', (payments:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      if (!_.isObject(payments)) {
+        return reject(new TypeError('Payment is not a valid object.'));
+      }
+      var ObjectID = mongoose.Type.ObjectId;
+      let body:any = payments;
+
+      var _payments = new Payments(payments);
+          _payments.save((err, saved) => {
+            err ? reject(err)
+                : resolve(saved);
+          });
+    });
+});
+
+PaymentsSchema.static('deletePayment', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+
+        Payments
+          .findByIdAndRemove(id)
+          .exec((err, deleted) => {
+              err ? reject(err)
+                  : resolve();
+          });
+    });
+});
+
+PaymentsSchema.static('updatePayments', (id:string, payments:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isObject(payments)) {
+          return reject(new TypeError('Payments is not a valid object.'));
+        }        
+
+            Payments
+              .findByIdAndUpdate(id, payments)
+              .exec((err, updated) => {  
+                    err ? reject(err)
+                        : resolve(updated);
+              });
+    });
+});
+
+let Payments = mongoose.model('Payments', PaymentsSchema);
+
+export default Payments;
