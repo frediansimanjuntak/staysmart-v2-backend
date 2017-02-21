@@ -3,6 +3,9 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import blogsSchema from '../model/blogs-model';
 import Comments from '../../comments/dao/comments-dao';
+import Attachments from '../../attachments/dao/attachments-dao';
+import BlogCategories from '../../blog_categories/dao/blog_categories-dao';
+import Users from '../../users/dao/users-dao';
 
 blogsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -10,7 +13,7 @@ blogsSchema.static('getAll', ():Promise<any> => {
 
         Blogs
           .find(_query)
-          .populate("comments")
+          .populate("cover category comments created_by")
           .exec((err, blogs) => {
               err ? reject(err)
                   : resolve(blogs);
@@ -23,7 +26,7 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
 
         Blogs
           .findById(id)
-          .populate("comments")
+          .populate("cover category comments created_by")
           .exec((err, blogs) => {
               err ? reject(err)
                   : resolve(blogs);
