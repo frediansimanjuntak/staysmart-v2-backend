@@ -2,6 +2,7 @@ import * as express from "express";
 import {TodoRoutes} from "../api/todo/route/todo-route";
 import {UserRoutes} from "../api/users/routes/users-routes";
 import {BlogCategoriesRoutes} from "../api/blog_categories/routes/blog_categories-routes";
+import {FaqsRoutes} from "../api/faqs/routes/faqs-routes";
 
 
 export class Routes {
@@ -9,6 +10,7 @@ export class Routes {
      TodoRoutes.init(router);
      UserRoutes.init(router);
      BlogCategoriesRoutes.init(router);
+     FaqsRoutes.init(router);
      
 
      app.use("/", router);

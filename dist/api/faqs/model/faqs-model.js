@@ -3,8 +3,8 @@ var mongoose = require("mongoose");
 var crypto = require('crypto');
 var Schema = mongoose.Schema;
 var FaqsSchema = new mongoose.Schema({
-    question: { type: String },
-    answer: { type: String },
+    question: { type: String, required: true },
+    answer: { type: String, required: true },
     for: {
         type: String,
         enum: ['landlord', 'tenant']
