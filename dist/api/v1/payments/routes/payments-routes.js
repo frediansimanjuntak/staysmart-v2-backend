@@ -5,15 +5,15 @@ var PaymentsRoutes = (function () {
     }
     PaymentsRoutes.init = function (router) {
         router
-            .route('/api/v1/payments')
+            .route('/payments')
             .get(payments_controller_1.PaymentsController.getAll)
             .post(payments_controller_1.PaymentsController.createPayments);
         router
-            .route('/api/v1/payments/:id')
+            .route('/payments/:id')
             .get(payments_controller_1.PaymentsController.getById)
             .put(payments_controller_1.PaymentsController.deletePayments);
         router
-            .route('/api/v1/payments/update/:id')
+            .route('/payments/update/:id')
             .post(payments_controller_1.PaymentsController.updatePayments);
     };
     return PaymentsRoutes;

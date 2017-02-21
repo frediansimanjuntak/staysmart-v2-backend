@@ -6,6 +6,8 @@ var faqs_routes_1 = require("../faqs/routes/faqs-routes");
 var banks_routes_1 = require("../banks/routes/banks-routes");
 var payments_routes_1 = require("../payments/routes/payments-routes");
 var amenities_routes_1 = require("../amenities/routes/amenities-routes");
+var blogs_routes_1 = require("../blogs/routes/blogs-routes");
+var attachments_routes_1 = require("../attachments/routes/attachments-routes");
 var router = express.Router();
 users_routes_1.UserRoutes.init(router);
 blog_categories_routes_1.BlogCategoriesRoutes.init(router);
@@ -13,6 +15,8 @@ faqs_routes_1.FaqsRoutes.init(router);
 banks_routes_1.BanksRoutes.init(router);
 payments_routes_1.PaymentsRoutes.init(router);
 amenities_routes_1.AmenitiesRoutes.init(router);
+blogs_routes_1.BlogsRoutes.init(router);
+attachments_routes_1.AttachmentsRoutes.init(router);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = router;
 //# sourceMappingURL=index.js.map

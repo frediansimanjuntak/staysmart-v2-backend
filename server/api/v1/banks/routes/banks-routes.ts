@@ -19,4 +19,4 @@ export class BanksRoutes {
 			.route('/banks/update/:id')
 			.post(BanksController.updateBanks);
 	}
-}
+} 
