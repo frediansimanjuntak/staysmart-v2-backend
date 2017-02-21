@@ -9,6 +9,7 @@ comments_model_1.default.static('getAll', function () {
         var _query = {};
         Comments
             .find(_query)
+            .populate("replies")
             .exec(function (err, comments) {
             err ? reject(err)
                 : resolve(comments);
@@ -19,6 +20,7 @@ comments_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
         Comments
             .findById(id)
+            .populate("replies")
             .exec(function (err, comments) {
             err ? reject(err)
                 : resolve(comments);
@@ -38,16 +40,30 @@ comments_model_1.default.static('createComments', function (comments) {
                 : resolve(saved);
         });
         var commentId = _comments._id;
-        blogs_dao_1.default
-            .findByIdAndUpdate(body.blog, {
-            $push: {
-                "comments": commentId
-            }
-        })
-            .exec(function (err, update) {
-            err ? reject(err)
-                : resolve(update);
-        });
+        if (body.commentID) {
+            Comments
+                .findByIdAndUpdate(body.commentID, {
+                $push: {
+                    "replies": commentId
+                }
+            })
+                .exec(function (err, update) {
+                err ? reject(err)
+                    : resolve(update);
+            });
+        }
+        else {
+            blogs_dao_1.default
+                .findByIdAndUpdate(body.blog, {
+                $push: {
+                    "comments": commentId
+                }
+            })
+                .exec(function (err, update) {
+                err ? reject(err)
+                    : resolve(update);
+            });
+        }
     });
 });
 comments_model_1.default.static('deleteComments', function (id) {
