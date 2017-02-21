@@ -10,6 +10,7 @@ commentsSchema.static('getAll', ():Promise<any> => {
 
 				Comments
 					.find(_query)
+					.populate("replies")
 					.exec((err, comments) => {
 							err ? reject(err)
 									: resolve(comments);
@@ -22,6 +23,7 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 
 				Comments
 					.findById(id)
+					.populate("replies")
 					.exec((err, comments) => {
 							err ? reject(err)
 									: resolve(comments);
@@ -44,16 +46,31 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 					});
 
 			var commentId = _comments._id; 
-			Blogs
-				.findByIdAndUpdate(body.blog, {
-						$push: {
-							"comments": commentId
-						}
+
+			if(body.commentID) {
+				Comments
+					.findByIdAndUpdate(body.commentID, {
+							$push: {
+								"replies": commentId
+							}
 					})
 					.exec((err, update) => {
-							err ? reject(err)
-									: resolve(update);
-					});
+								err ? reject(err)
+										: resolve(update);
+						});						
+			}
+			else{
+				Blogs
+					.findByIdAndUpdate(body.blog, {
+							$push: {
+								"comments": commentId
+							}
+						})
+						.exec((err, update) => {
+								err ? reject(err)
+										: resolve(update);
+						});	
+			}
 		});
 });
 
