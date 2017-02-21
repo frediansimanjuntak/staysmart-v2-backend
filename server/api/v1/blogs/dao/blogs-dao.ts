@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import blogsSchema from '../model/blogs-model';
+import Comments from '../../comments/dao/comments-dao';
 
 blogsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -9,6 +10,7 @@ blogsSchema.static('getAll', ():Promise<any> => {
 
         Blogs
           .find(_query)
+          .populate("comments")
           .exec((err, blogs) => {
               err ? reject(err)
                   : resolve(blogs);
@@ -21,6 +23,7 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
 
         Blogs
           .findById(id)
+          .populate("comments")
           .exec((err, blogs) => {
               err ? reject(err)
                   : resolve(blogs);

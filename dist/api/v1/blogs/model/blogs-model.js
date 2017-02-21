@@ -19,7 +19,7 @@ var BlogsSchema = new mongoose.Schema({
             ref: 'Comments'
         }
     ],
-    created_at: { type: Date },
+    created_at: { type: Date, default: Date.now },
     created_by: {
         type: Schema.Types.ObjectId,
         ref: 'Users'

@@ -8,8 +8,8 @@ var crypto = require('crypto')
 var Schema = mongoose.Schema;
 
 var CommentsSchema = new mongoose.Schema({
-	name: {type: String, unique: true, required: true},
-	email: {type: String, lowercase: true, unique: true, required: true},
+	name: {type: String, required: true},
+	email: {type: String, lowercase: true, required: true},
 	user: {
 		type: Schema.Types.ObjectId,
 		ref: 'Users'

@@ -9,6 +9,7 @@ import {BlogsRoutes} from "../blogs/routes/blogs-routes";
 import {AttachmentsRoutes} from "../attachments/routes/attachments-routes";
 import {NotificationsRoutes} from "../notifications/routes/notifications-routes";
 import {CompaniesRoutes} from "../companies/routes/companies-routes";
+import {CommentsRoutes} from "../comments/routes/comments-routes";
 
 var router = express.Router();
 
@@ -22,5 +23,6 @@ BlogsRoutes.init(router);
 AttachmentsRoutes.init(router);
 NotificationsRoutes.init(router);
 CompaniesRoutes.init(router);
+CommentsRoutes.init(router);
 
 export default router;
