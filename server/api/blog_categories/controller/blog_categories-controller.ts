@@ -1,6 +1,5 @@
 import * as express from 'express';
 import BlogCategoriesDAO from '../dao/blog_categories-dao';
-var passport = require('passport');
 
 export class BlogCategoriesController {
 	static getAll(req: express.Request, res: express.Response):void {

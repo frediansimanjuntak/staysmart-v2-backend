@@ -1,68 +1,56 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
-import faqsSchema from '../model/faqs-model';
+import banksSchema from '../model/banks-model';
 
-faqsSchema.static('getAll', ():Promise<any> => {
+banksSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
-        Faqs
+        Banks
           .find(_query)
-          .exec((err, faqs) => {
+          .exec((err, banks) => {
               err ? reject(err)
-                  : resolve(faqs);
+                  : resolve(banks);
           });
     });
 });
 
-faqsSchema.static('getById', (id:string):Promise<any> => {
+banksSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
-        Faqs
+        Banks
           .findById(id)
-          .exec((err, faqs) => {
+          .exec((err, banks) => {
               err ? reject(err)
-                  : resolve(faqs);
+                  : resolve(banks);
           });
     });
 });
 
-faqsSchema.static('getByFilter', (filter:string):Promise<any> => {
+banksSchema.static('createBanks', (banks:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-
-        Faqs
-          .find({'for': filter})
-          .exec((err, faqs) => {
-              err ? reject(err)
-                  : resolve(faqs);
-          });
-    });
-});
-
-faqsSchema.static('createFaqs', (faqs:Object):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-      if (!_.isObject(faqs)) {
+      if (!_.isObject(banks)) {
         return reject(new TypeError('User is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
-      let body:any = faqs;
+      let body:any = banks;
       
-      var _faqs = new Faqs(faqs);
-          _faqs.save((err, saved)=>{
+      var _banks = new Banks(banks);
+          _banks.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
           });
     });
 });
 
-faqsSchema.static('deleteFaqs', (id:string):Promise<any> => {
+banksSchema.static('deleteBanks', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
 
-        Faqs
+        Banks
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
@@ -72,14 +60,14 @@ faqsSchema.static('deleteFaqs', (id:string):Promise<any> => {
     });
 });
 
-faqsSchema.static('updateFaqs', (id:string, faqs:Object):Promise<any> => {
+banksSchema.static('updateBanks', (id:string, banks:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(faqs)) {
-          return reject(new TypeError('FAQ is not a valid object.'));
+        if (!_.isObject(banks)) {
+          return reject(new TypeError('Bank is not a valid object.'));
         }
 
-        Faqs
-        .findByIdAndUpdate(id, faqs)
+        Banks
+        .findByIdAndUpdate(id, banks)
         .exec((err, updated) => {
               err ? reject(err)
                   : resolve(updated);
@@ -87,6 +75,6 @@ faqsSchema.static('updateFaqs', (id:string, faqs:Object):Promise<any> => {
     });
 });
 
-let Faqs = mongoose.model('Faqs', faqsSchema);
+let Banks = mongoose.model('Banks', banksSchema);
 
-export default Faqs;
+export default Banks;

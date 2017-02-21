@@ -2,58 +2,48 @@
 var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
-var faqs_model_1 = require("../model/faqs-model");
-faqs_model_1.default.static('getAll', function () {
+var banks_model_1 = require("../model/banks-model");
+banks_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
-        Faqs
+        Banks
             .find(_query)
-            .exec(function (err, faqs) {
+            .exec(function (err, banks) {
             err ? reject(err)
-                : resolve(faqs);
+                : resolve(banks);
         });
     });
 });
-faqs_model_1.default.static('getById', function (id) {
+banks_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
-        Faqs
+        Banks
             .findById(id)
-            .exec(function (err, faqs) {
+            .exec(function (err, banks) {
             err ? reject(err)
-                : resolve(faqs);
+                : resolve(banks);
         });
     });
 });
-faqs_model_1.default.static('getByFilter', function (filter) {
+banks_model_1.default.static('createBanks', function (banks) {
     return new Promise(function (resolve, reject) {
-        Faqs
-            .find({ 'for': filter })
-            .exec(function (err, faqs) {
-            err ? reject(err)
-                : resolve(faqs);
-        });
-    });
-});
-faqs_model_1.default.static('createFaqs', function (faqs) {
-    return new Promise(function (resolve, reject) {
-        if (!_.isObject(faqs)) {
+        if (!_.isObject(banks)) {
             return reject(new TypeError('User is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
-        var body = faqs;
-        var _faqs = new Faqs(faqs);
-        _faqs.save(function (err, saved) {
+        var body = banks;
+        var _banks = new Banks(banks);
+        _banks.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
         });
     });
 });
-faqs_model_1.default.static('deleteFaqs', function (id) {
+banks_model_1.default.static('deleteBanks', function (id) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-        Faqs
+        Banks
             .findByIdAndRemove(id)
             .exec(function (err, deleted) {
             err ? reject(err)
@@ -61,20 +51,20 @@ faqs_model_1.default.static('deleteFaqs', function (id) {
         });
     });
 });
-faqs_model_1.default.static('updateFaqs', function (id, faqs) {
+banks_model_1.default.static('updateBanks', function (id, banks) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(faqs)) {
-            return reject(new TypeError('FAQ is not a valid object.'));
+        if (!_.isObject(banks)) {
+            return reject(new TypeError('Bank is not a valid object.'));
         }
-        Faqs
-            .findByIdAndUpdate(id, faqs)
+        Banks
+            .findByIdAndUpdate(id, banks)
             .exec(function (err, updated) {
             err ? reject(err)
                 : resolve(updated);
         });
     });
 });
-var Faqs = mongoose.model('Faqs', faqs_model_1.default);
+var Banks = mongoose.model('Banks', banks_model_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Faqs;
-//# sourceMappingURL=faqs-dao.js.map
+exports.default = Banks;
+//# sourceMappingURL=banks-dao.js.map
