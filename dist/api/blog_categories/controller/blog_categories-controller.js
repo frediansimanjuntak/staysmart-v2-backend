@@ -1,6 +1,5 @@
 "use strict";
 var blog_categories_dao_1 = require("../dao/blog_categories-dao");
-var passport = require('passport');
 var BlogCategoriesController = (function () {
     function BlogCategoriesController() {
     }

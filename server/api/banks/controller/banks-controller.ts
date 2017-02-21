@@ -1,53 +1,53 @@
 import * as express from 'express';
-import FaqsDAO from '../dao/faqs-dao';
+import BanksDAO from '../dao/banks-dao';
 
-export class FaqsController {
+export class BanksController {
 	static getAll(req: express.Request, res: express.Response):void {
-		FaqsDAO
+		BanksDAO
 		['getAll']()
-		.then(faqs => res.status(200).json(faqs))
+		.then(banks => res.status(200).json(banks))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		FaqsDAO
+		BanksDAO
 		['getById'](_id)
-		.then(faqs => res.status(200).json(faqs))
+		.then(banks => res.status(200).json(banks))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getByFilter(req: express.Request, res: express.Response):void {
 		let _filter = req.params.filter;
-		FaqsDAO
+		BanksDAO
 		['getByFilter'](_filter)
-		.then(faqs => res.status(200).json(faqs))
+		.then(banks => res.status(200).json(banks))
 		.catch(error => res.status(400).json(error));
 	}
 
-	static createFaqs(req: express.Request, res: express.Response):void {
-		let _faqs = req.body;
-		FaqsDAO
-		['createFaqs'](_faqs)
-		.then(faqs => res.status(201).json(faqs))
+	static createBanks(req: express.Request, res: express.Response):void {
+		let _banks = req.body;
+		BanksDAO
+		['createBanks'](_banks)
+		.then(banks => res.status(201).json(banks))
 		.catch(error => res.status(400).json(error));
 	}
 
-	static deleteFaqs(req: express.Request, res: express.Response):void {
+	static deleteBanks(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		FaqsDAO
-		['deleteFaqs'](_id)
+		BanksDAO
+		['deleteBanks'](_id)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updateFaqs(req: express.Request, res: express.Response):void {
+	static updateBanks(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _faqs = req.body;
+		let _banks = req.body;
 
-		FaqsDAO
-		['updateFaqs'](_id, _faqs)
-		.then(faqs => res.status(201).json(faqs))
+		BanksDAO
+		['updateBanks'](_id, _banks)
+		.then(banks => res.status(201).json(banks))
 		.catch(error => res.status(400).json(error));
 	}
 }

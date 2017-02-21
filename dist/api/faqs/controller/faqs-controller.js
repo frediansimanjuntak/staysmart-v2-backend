@@ -1,6 +1,5 @@
 "use strict";
 var faqs_dao_1 = require("../dao/faqs-dao");
-var passport = require('passport');
 var FaqsController = (function () {
     function FaqsController() {
     }

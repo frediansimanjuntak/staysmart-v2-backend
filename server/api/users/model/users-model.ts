@@ -8,11 +8,11 @@ var crypto = require('crypto')
 var Schema = mongoose.Schema;
 
 var UsersSchema = new mongoose.Schema({
-	username: {type: String, lowercase: true, unique: true, required: true},
-	email: {type: String, lowercase: true, unique: true, required: true},
+	username: {type: String, lowercase: true, unique: true, required: true, trim: true},
+	email: {type: String, lowercase: true, unique: true, required: true, trim: true},
 	password: {type: String, required: true},  
 	salt: {type: String}, 
-	phone:{type: String},
+	phone:{type: String, trim: true},
 	role: {type: String, enum: ['user','admin'], default: 'user'},
 	verification: {
 		verified: {type: Boolean, default: false},
