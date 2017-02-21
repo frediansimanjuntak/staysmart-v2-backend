@@ -2,48 +2,48 @@
 var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
-var developments_model_1 = require("../model/developments-model");
-developments_model_1.default.static('getAll', function () {
+var properties_model_1 = require("../model/properties-model");
+properties_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
-        Developments
+        Properties
             .find(_query)
-            .exec(function (err, developments) {
+            .exec(function (err, properties) {
             err ? reject(err)
-                : resolve(developments);
+                : resolve(properties);
         });
     });
 });
-developments_model_1.default.static('getById', function (id) {
+properties_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
-        Developments
+        Properties
             .findById(id)
-            .exec(function (err, developments) {
+            .exec(function (err, properties) {
             err ? reject(err)
-                : resolve(developments);
+                : resolve(properties);
         });
     });
 });
-developments_model_1.default.static('createDevelopments', function (developments) {
+properties_model_1.default.static('createProperties', function (properties) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(developments)) {
+        if (!_.isObject(properties)) {
             return reject(new TypeError('User is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
-        var body = developments;
-        var _developments = new Developments(developments);
-        _developments.save(function (err, saved) {
+        var body = properties;
+        var _properties = new Properties(properties);
+        _properties.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
         });
     });
 });
-developments_model_1.default.static('deleteDevelopments', function (id) {
+properties_model_1.default.static('deleteProperties', function (id) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-        Developments
+        Properties
             .findByIdAndRemove(id)
             .exec(function (err, deleted) {
             err ? reject(err)
@@ -51,20 +51,20 @@ developments_model_1.default.static('deleteDevelopments', function (id) {
         });
     });
 });
-developments_model_1.default.static('updateDevelopments', function (id, developments) {
+properties_model_1.default.static('updateProperties', function (id, properties) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(developments)) {
+        if (!_.isObject(properties)) {
             return reject(new TypeError('Bank is not a valid object.'));
         }
-        Developments
-            .findByIdAndUpdate(id, developments)
+        Properties
+            .findByIdAndUpdate(id, properties)
             .exec(function (err, updated) {
             err ? reject(err)
                 : resolve(updated);
         });
     });
 });
-var Developments = mongoose.model('Developments', developments_model_1.default);
+var Properties = mongoose.model('Properties', properties_model_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Developments;
-//# sourceMappingURL=developments-dao.js.map
+exports.default = Properties;
+//# sourceMappingURL=properties-dao.js.map

@@ -1,56 +1,56 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
-import developmentsSchema from '../model/developments-model';
+import appointmentsSchema from '../model/appointments-model';
 
-developmentsSchema.static('getAll', ():Promise<any> => {
+appointmentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
-        Developments
+        Appointments
           .find(_query)
-          .exec((err, developments) => {
+          .exec((err, appointments) => {
               err ? reject(err)
-                  : resolve(developments);
+                  : resolve(appointments);
           });
     });
 });
 
-developmentsSchema.static('getById', (id:string):Promise<any> => {
+appointmentsSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
-        Developments
+        Appointments
           .findById(id)
-          .exec((err, developments) => {
+          .exec((err, appointments) => {
               err ? reject(err)
-                  : resolve(developments);
+                  : resolve(appointments);
           });
     });
 });
 
-developmentsSchema.static('createDevelopments', (developments:Object):Promise<any> => {
+appointmentsSchema.static('createAppointments', (appointments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      if (!_.isObject(developments)) {
+      if (!_.isObject(appointments)) {
         return reject(new TypeError('User is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
-      let body:any = developments;
+      let body:any = appointments;
       
-      var _developments = new Developments(developments);
-          _developments.save((err, saved)=>{
+      var _appointments = new Appointments(appointments);
+          _appointments.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
           });
     });
 });
 
-developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
+appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
 
-        Developments
+        Appointments
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
@@ -60,14 +60,14 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
     });
 });
 
-developmentsSchema.static('updateDevelopments', (id:string, developments:Object):Promise<any> => {
+appointmentsSchema.static('updateAppointments', (id:string, appointments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(developments)) {
+        if (!_.isObject(appointments)) {
           return reject(new TypeError('Bank is not a valid object.'));
         }
 
-        Developments
-        .findByIdAndUpdate(id, developments)
+        Appointments
+        .findByIdAndUpdate(id, appointments)
         .exec((err, updated) => {
               err ? reject(err)
                   : resolve(updated);
@@ -75,6 +75,6 @@ developmentsSchema.static('updateDevelopments', (id:string, developments:Object)
     });
 });
 
-let Developments = mongoose.model('Developments', developmentsSchema);
+let Appointments = mongoose.model('Appointments', appointmentsSchema);
 
-export default Developments;
+export default Appointments;

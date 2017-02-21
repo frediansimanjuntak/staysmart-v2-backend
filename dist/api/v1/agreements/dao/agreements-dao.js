@@ -2,48 +2,48 @@
 var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
-var developments_model_1 = require("../model/developments-model");
-developments_model_1.default.static('getAll', function () {
+var agreements_model_1 = require("../model/agreements-model");
+agreements_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
-        Developments
+        Agreements
             .find(_query)
-            .exec(function (err, developments) {
+            .exec(function (err, agreements) {
             err ? reject(err)
-                : resolve(developments);
+                : resolve(agreements);
         });
     });
 });
-developments_model_1.default.static('getById', function (id) {
+agreements_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
-        Developments
+        Agreements
             .findById(id)
-            .exec(function (err, developments) {
+            .exec(function (err, agreements) {
             err ? reject(err)
-                : resolve(developments);
+                : resolve(agreements);
         });
     });
 });
-developments_model_1.default.static('createDevelopments', function (developments) {
+agreements_model_1.default.static('createAgreements', function (agreements) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(developments)) {
+        if (!_.isObject(agreements)) {
             return reject(new TypeError('User is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
-        var body = developments;
-        var _developments = new Developments(developments);
-        _developments.save(function (err, saved) {
+        var body = agreements;
+        var _agreements = new Agreements(agreements);
+        _agreements.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
         });
     });
 });
-developments_model_1.default.static('deleteDevelopments', function (id) {
+agreements_model_1.default.static('deleteAgreements', function (id) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-        Developments
+        Agreements
             .findByIdAndRemove(id)
             .exec(function (err, deleted) {
             err ? reject(err)
@@ -51,20 +51,20 @@ developments_model_1.default.static('deleteDevelopments', function (id) {
         });
     });
 });
-developments_model_1.default.static('updateDevelopments', function (id, developments) {
+agreements_model_1.default.static('updateAgreements', function (id, agreements) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(developments)) {
+        if (!_.isObject(agreements)) {
             return reject(new TypeError('Bank is not a valid object.'));
         }
-        Developments
-            .findByIdAndUpdate(id, developments)
+        Agreements
+            .findByIdAndUpdate(id, agreements)
             .exec(function (err, updated) {
             err ? reject(err)
                 : resolve(updated);
         });
     });
 });
-var Developments = mongoose.model('Developments', developments_model_1.default);
+var Agreements = mongoose.model('Agreements', agreements_model_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Developments;
-//# sourceMappingURL=developments-dao.js.map
+exports.default = Agreements;
+//# sourceMappingURL=agreements-dao.js.map

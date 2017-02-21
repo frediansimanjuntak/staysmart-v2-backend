@@ -2,48 +2,48 @@
 var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
-var developments_model_1 = require("../model/developments-model");
-developments_model_1.default.static('getAll', function () {
+var appointments_model_1 = require("../model/appointments-model");
+appointments_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
-        Developments
+        Appointments
             .find(_query)
-            .exec(function (err, developments) {
+            .exec(function (err, appointments) {
             err ? reject(err)
-                : resolve(developments);
+                : resolve(appointments);
         });
     });
 });
-developments_model_1.default.static('getById', function (id) {
+appointments_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
-        Developments
+        Appointments
             .findById(id)
-            .exec(function (err, developments) {
+            .exec(function (err, appointments) {
             err ? reject(err)
-                : resolve(developments);
+                : resolve(appointments);
         });
     });
 });
-developments_model_1.default.static('createDevelopments', function (developments) {
+appointments_model_1.default.static('createAppointments', function (appointments) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(developments)) {
+        if (!_.isObject(appointments)) {
             return reject(new TypeError('User is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
-        var body = developments;
-        var _developments = new Developments(developments);
-        _developments.save(function (err, saved) {
+        var body = appointments;
+        var _appointments = new Appointments(appointments);
+        _appointments.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
         });
     });
 });
-developments_model_1.default.static('deleteDevelopments', function (id) {
+appointments_model_1.default.static('deleteAppointments', function (id) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-        Developments
+        Appointments
             .findByIdAndRemove(id)
             .exec(function (err, deleted) {
             err ? reject(err)
@@ -51,20 +51,20 @@ developments_model_1.default.static('deleteDevelopments', function (id) {
         });
     });
 });
-developments_model_1.default.static('updateDevelopments', function (id, developments) {
+appointments_model_1.default.static('updateAppointments', function (id, appointments) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(developments)) {
+        if (!_.isObject(appointments)) {
             return reject(new TypeError('Bank is not a valid object.'));
         }
-        Developments
-            .findByIdAndUpdate(id, developments)
+        Appointments
+            .findByIdAndUpdate(id, appointments)
             .exec(function (err, updated) {
             err ? reject(err)
                 : resolve(updated);
         });
     });
 });
-var Developments = mongoose.model('Developments', developments_model_1.default);
+var Appointments = mongoose.model('Appointments', appointments_model_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = Developments;
-//# sourceMappingURL=developments-dao.js.map
+exports.default = Appointments;
+//# sourceMappingURL=appointments-dao.js.map

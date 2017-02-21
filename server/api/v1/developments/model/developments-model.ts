@@ -8,7 +8,7 @@ var crypto = require ('crypto');
 var Schema = mongoose.Schema;
 
 var DevelopmentsSchema = new mongoose.Schema({
-	name: {type: String, unique: true, required: true },
+	name: {type: String},
 	slug: {type: String},
 	number_of_units: {type: Number},
 	properties: 
@@ -23,7 +23,7 @@ var DevelopmentsSchema = new mongoose.Schema({
 	planning_region: {type: String},
 	planning_area: {type: String},
 	type_of_area: {type: String},
-	postal_district: {type: Number, required: true}
+	postal_district: {type: Number}
 });
 
 export default DevelopmentsSchema;
