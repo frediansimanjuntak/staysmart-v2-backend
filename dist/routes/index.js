@@ -1,23 +1,10 @@
 "use strict";
-var todo_route_1 = require("../api/todo/route/todo-route");
-var users_routes_1 = require("../api/users/routes/users-routes");
-var blog_categories_routes_1 = require("../api/blog_categories/routes/blog_categories-routes");
-var faqs_routes_1 = require("../api/faqs/routes/faqs-routes");
-var banks_routes_1 = require("../api/banks/routes/banks-routes");
-var payments_routes_1 = require("../api/payments/routes/payments-routes");
-var amenities_routes_1 = require("../api/amenities/routes/amenities-routes");
 var Routes = (function () {
     function Routes() {
     }
     Routes.init = function (app, router) {
-        todo_route_1.TodoRoutes.init(router);
-        users_routes_1.UserRoutes.init(router);
-        blog_categories_routes_1.BlogCategoriesRoutes.init(router);
-        faqs_routes_1.FaqsRoutes.init(router);
-        banks_routes_1.BanksRoutes.init(router);
-        payments_routes_1.PaymentsRoutes.init(router);
-        amenities_routes_1.AmenitiesRoutes.init(router);
         app.use("/", router);
+        app.use('/api/v1', require('../api/v1/v1_route/index').default);
     };
     return Routes;
 }());
