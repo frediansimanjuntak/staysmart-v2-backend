@@ -14,23 +14,23 @@ var PaymentsController = (function () {
             .then(function (payments) { return res.status(200).json(payments); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    PaymentsController.createPayment = function (req, res) {
-        var _payment = req.body;
-        payments_dao_1.default['createPayment'](_payment)
-            .then(function (payment) { return res.status(201).json(payment); })
+    PaymentsController.createPayments = function (req, res) {
+        var _payments = req.body;
+        payments_dao_1.default['createPayments'](_payments)
+            .then(function (payments) { return res.status(201).json(payments); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    PaymentsController.deletePayment = function (req, res) {
+    PaymentsController.deletePayments = function (req, res) {
         var _id = req.params.id;
-        payments_dao_1.default['deletePayment'](_id)
-            .then(function () { return res.status(200).json(); })
+        payments_dao_1.default['deletePayments'](_id)
+            .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    PaymentsController.updatePayment = function (req, res) {
+    PaymentsController.updatePayments = function (req, res) {
         var _id = req.params.id;
-        var _payment = req.body;
-        payments_dao_1.default['updatePayment'](_id, _payment)
-            .then(function (payment) { return res.status(201).json(payment); })
+        var _payments = req.body;
+        payments_dao_1.default['updatePayments'](_id, _payments)
+            .then(function (payments) { return res.status(201).json(payments); })
             .catch(function (error) { return res.status(400).json(error); });
     };
     return PaymentsController;

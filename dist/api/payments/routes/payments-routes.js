@@ -1,22 +1,22 @@
 "use strict";
 var payments_controller_1 = require("../controller/payments-controller");
-var PaymentRoutes = (function () {
-    function PaymentRoutes() {
+var PaymentsRoutes = (function () {
+    function PaymentsRoutes() {
     }
-    PaymentRoutes.init = function (router) {
+    PaymentsRoutes.init = function (router) {
         router
             .route('/api/payments')
             .get(payments_controller_1.PaymentsController.getAll)
-            .post(payments_controller_1.PaymentsController.createPayment);
+            .post(payments_controller_1.PaymentsController.createPayments);
         router
             .route('/api/payments/:id')
             .get(payments_controller_1.PaymentsController.getById)
-            .post(payments_controller_1.PaymentsController.deletePayment);
+            .put(payments_controller_1.PaymentsController.deletePayments);
         router
             .route('/api/payments/update/:id')
-            .post(payments_controller_1.PaymentsController.updatePayment);
+            .post(payments_controller_1.PaymentsController.updatePayments);
     };
-    return PaymentRoutes;
+    return PaymentsRoutes;
 }());
-exports.PaymentRoutes = PaymentRoutes;
+exports.PaymentsRoutes = PaymentsRoutes;
 //# sourceMappingURL=payments-routes.js.map

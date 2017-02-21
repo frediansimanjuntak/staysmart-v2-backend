@@ -3,20 +3,20 @@
 import * as express from 'express';
 import {PaymentsController} from '../controller/payments-controller';
 
-export class PaymentRoutes{
-	static init (router: express.Router) {
+export class PaymentsRoutes {
+	static init(router: express.Router) {
 		router
 			.route('/api/payments')
 			.get(PaymentsController.getAll)
-			.post(PaymentsController.createPayment);
+			.post(PaymentsController.createPayments);
 
 		router
 			.route('/api/payments/:id')
 			.get(PaymentsController.getById)
-			.post(PaymentsController.deletePayment);
+			.put(PaymentsController.deletePayments);
 
 		router
 			.route('/api/payments/update/:id')
-			.post(PaymentsController.updatePayment);
+			.post(PaymentsController.updatePayments);
 	}
 }

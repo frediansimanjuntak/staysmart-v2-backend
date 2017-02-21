@@ -1,9 +1,9 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
-import PaymentsSchema from '../model/payments-model';
+import paymentsSchema from '../model/payments-model';
 
-PaymentsSchema.static('getAll', ():Promise<any> => {
+paymentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -16,9 +16,9 @@ PaymentsSchema.static('getAll', ():Promise<any> => {
     });
 });
 
-PaymentsSchema.static('getById', (id:string):Promise<any> => {
+paymentsSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
- 
+
         Payments
           .findById(id)
           .exec((err, payments) => {
@@ -28,23 +28,23 @@ PaymentsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-PaymentsSchema.static('createPayment', (payments:Object):Promise<any> => {
+paymentsSchema.static('createPayments', (payments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(payments)) {
-        return reject(new TypeError('Payment is not a valid object.'));
+        return reject(new TypeError('User is not a valid object.'));
       }
-      var ObjectID = mongoose.Type.ObjectId;
+      var ObjectID = mongoose.Types.ObjectId;  
       let body:any = payments;
-
+      
       var _payments = new Payments(payments);
-          _payments.save((err, saved) => {
+          _payments.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
           });
     });
 });
 
-PaymentsSchema.static('deletePayment', (id:string):Promise<any> => {
+paymentsSchema.static('deletePayments', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
@@ -56,24 +56,25 @@ PaymentsSchema.static('deletePayment', (id:string):Promise<any> => {
               err ? reject(err)
                   : resolve();
           });
+        
     });
 });
 
-PaymentsSchema.static('updatePayments', (id:string, payments:Object):Promise<any> => {
+paymentsSchema.static('updatePayments', (id:string, payments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(payments)) {
-          return reject(new TypeError('Payments is not a valid object.'));
-        }        
+          return reject(new TypeError('Bank is not a valid object.'));
+        }
 
-            Payments
-              .findByIdAndUpdate(id, payments)
-              .exec((err, updated) => {  
-                    err ? reject(err)
-                        : resolve(updated);
-              });
+        Payments
+        .findByIdAndUpdate(id, payments)
+        .exec((err, updated) => {
+              err ? reject(err)
+                  : resolve(updated);
+          });
     });
 });
 
-let Payments = mongoose.model('Payments', PaymentsSchema);
+let Payments = mongoose.model('Payments', paymentsSchema);
 
 export default Payments;

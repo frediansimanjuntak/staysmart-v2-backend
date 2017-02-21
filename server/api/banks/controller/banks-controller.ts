@@ -17,14 +17,6 @@ export class BanksController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static getByFilter(req: express.Request, res: express.Response):void {
-		let _filter = req.params.filter;
-		BanksDAO
-		['getByFilter'](_filter)
-		.then(banks => res.status(200).json(banks))
-		.catch(error => res.status(400).json(error));
-	}
-
 	static createBanks(req: express.Request, res: express.Response):void {
 		let _banks = req.body;
 		BanksDAO

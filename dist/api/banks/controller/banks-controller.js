@@ -14,12 +14,6 @@ var BanksController = (function () {
             .then(function (banks) { return res.status(200).json(banks); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    BanksController.getByFilter = function (req, res) {
-        var _filter = req.params.filter;
-        banks_dao_1.default['getByFilter'](_filter)
-            .then(function (banks) { return res.status(200).json(banks); })
-            .catch(function (error) { return res.status(400).json(error); });
-    };
     BanksController.createBanks = function (req, res) {
         var _banks = req.body;
         banks_dao_1.default['createBanks'](_banks)

@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 var PaymentsSchema = new mongoose.Schema({
-	type: {type: String, enum:['loi',"ta"]},
+	type: {type: String, enum:['loi','ta']},
 	fee: 
 	[
 		{
