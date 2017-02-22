@@ -20,6 +20,7 @@ appointments_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
         Appointments
             .findById(id)
+            .populate("landlord tenant property schedule")
             .exec(function (err, appointments) {
             err ? reject(err)
                 : resolve(appointments);

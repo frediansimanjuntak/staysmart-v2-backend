@@ -38,6 +38,24 @@ agreements_model_1.default.static('createAgreements', function (agreements) {
         });
     });
 });
+agreements_model_1.default.static('updateAgreementsLOIandTA', function (id, type, data) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(data)) {
+            return reject(new TypeError('LOI is not a valid object.'));
+        }
+        var ObjectID = mongoose.Types.ObjectId;
+        var agreementObj = { $set: {} };
+        for (var param in data) {
+            agreementObj.$set[type + '.data.' + param] = data[param];
+        }
+        Agreements
+            .findByIdAndUpdate(id, agreementObj)
+            .exec(function (err, updated) {
+            err ? reject(err)
+                : resolve();
+        });
+    });
+});
 agreements_model_1.default.static('deleteAgreements', function (id) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {

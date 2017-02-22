@@ -15,6 +15,9 @@ var AgreementsRoutes = (function () {
         router
             .route('/agreements/update/:id')
             .post(agreements_controller_1.AgreementsController.updateAgreements);
+        router
+            .route('/agreements/update/:id/:type')
+            .post(agreements_controller_1.AgreementsController.updateAgreementsLOIandTA);
     };
     return AgreementsRoutes;
 }());
