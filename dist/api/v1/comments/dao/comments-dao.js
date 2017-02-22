@@ -66,16 +66,60 @@ comments_model_1.default.static('createComments', function (comments) {
         }
     });
 });
-comments_model_1.default.static('deleteComments', function (id) {
+comments_model_1.default.static('deleteReplies', function (idComment, reply) {
     return new Promise(function (resolve, reject) {
-        if (!_.isString(id)) {
+        if (!_.isString(idComment) && !_.isObject(reply)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        var body = reply;
+        Comments
+            .update({ "_id": idComment }, {
+            $pull: {
+                "replies": body.idReply
+            }
+        })
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
+        });
+        Comments
+            .findByIdAndRemove(body.idReply)
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
+        });
+    });
+});
+comments_model_1.default.static('deleteComments', function (idComment) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(idComment)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
         Comments
-            .findByIdAndRemove(id)
+            .findById(idComment, function (err, commentt) {
+            if (commentt.replies != null) {
+                var ObjectID = mongoose.Types.ObjectId;
+                var commentt_reply = [].concat(commentt.replies);
+                for (var i = 0; i < commentt_reply.length; i++) {
+                    var reply = commentt_reply[i];
+                    Comments
+                        .findByIdAndRemove(reply)
+                        .exec(function (err, deleted) {
+                        err ? reject(err)
+                            : resolve(deleted);
+                    });
+                }
+            }
+        })
             .exec(function (err, deleted) {
             err ? reject(err)
-                : resolve();
+                : resolve(deleted);
+        });
+        Comments
+            .findByIdAndRemove(idComment)
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
         });
     });
 });
@@ -85,9 +129,7 @@ comments_model_1.default.static('updateComments', function (id, comments) {
             return reject(new TypeError('User is not a valid object.'));
         }
         Comments
-            .findByIdAndUpdate(id, comments, {
-            $set: { "comments.created_at": Date.now() }
-        })
+            .findByIdAndUpdate(id, comments)
             .exec(function (err, updated) {
             err ? reject(err)
                 : resolve(updated);

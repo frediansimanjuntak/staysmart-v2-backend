@@ -20,9 +20,16 @@ var CommentsController = (function () {
             .then(function (comments) { return res.status(201).json(comments); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    CommentsController.deleteReplies = function (req, res) {
+        var _idComment = req.params.id;
+        var reply = req.body;
+        comments_dao_1.default['deleteReplies'](_idComment, reply)
+            .then(function () { return res.status(200).end(); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     CommentsController.deleteComments = function (req, res) {
-        var _id = req.params.id;
-        comments_dao_1.default['deleteComments'](_id)
+        var _idComment = req.params.id;
+        comments_dao_1.default['deleteComments'](_idComment)
             .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };

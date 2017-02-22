@@ -34,19 +34,25 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-blogsSchema.static('createBlogs', (blogs:Object):Promise<any> => {
+blogsSchema.static('createBlogs', (blogs:Object, attachment:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(blogs)) {
         return reject(new TypeError('Blogs is not a valid object.'));
       }
-      var ObjectID = mongoose.Types.ObjectId;  
-      let body:any = blogs;
       
-      var _blogs = new Blogs(blogs);
-          _blogs.save((err, saved)=>{
-            err ? reject(err)
-                : resolve(saved);
-          });
+      Attachments.createAttachments(attachment).then(res => {
+        var idAttachment=res.idAtt;
+
+        var ObjectID = mongoose.Types.ObjectId;  
+        let body:any = blogs;
+        
+        var _blogs = new Blogs(blogs);
+            _blogs.cover = idAttachment;
+            _blogs.save((err, saved)=>{
+              err ? reject(err)
+                  : resolve(saved);
+            });
+      });
     });
 });
 

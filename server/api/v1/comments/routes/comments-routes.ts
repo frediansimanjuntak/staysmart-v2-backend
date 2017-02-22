@@ -13,7 +13,8 @@ export class CommentsRoutes {
 		router
 			.route('/comments/:id')
 			.get(CommentsController.getById)
-			.put(CommentsController.deleteComments);
+			.put(CommentsController.deleteComments)
+			.delete(CommentsController.deleteReplies);
 
 		router
 			.route('/comments/update/:id')

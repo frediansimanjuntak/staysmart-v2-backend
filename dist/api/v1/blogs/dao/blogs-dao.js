@@ -3,6 +3,7 @@ var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
 var blogs_model_1 = require("../model/blogs-model");
+var attachments_dao_1 = require("../../attachments/dao/attachments-dao");
 blogs_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
@@ -26,17 +27,21 @@ blogs_model_1.default.static('getById', function (id) {
         });
     });
 });
-blogs_model_1.default.static('createBlogs', function (blogs) {
+blogs_model_1.default.static('createBlogs', function (blogs, attachment) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(blogs)) {
             return reject(new TypeError('Blogs is not a valid object.'));
         }
-        var ObjectID = mongoose.Types.ObjectId;
-        var body = blogs;
-        var _blogs = new Blogs(blogs);
-        _blogs.save(function (err, saved) {
-            err ? reject(err)
-                : resolve(saved);
+        attachments_dao_1.default.createAttachments(attachment).then(function (res) {
+            var idAttachment = res.idAtt;
+            var ObjectID = mongoose.Types.ObjectId;
+            var body = blogs;
+            var _blogs = new Blogs(blogs);
+            _blogs.cover = idAttachment;
+            _blogs.save(function (err, saved) {
+                err ? reject(err)
+                    : resolve(saved);
+            });
         });
     });
 });
