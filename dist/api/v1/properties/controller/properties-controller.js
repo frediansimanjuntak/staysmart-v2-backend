@@ -16,7 +16,10 @@ var PropertiesController = (function () {
     };
     PropertiesController.createProperties = function (req, res) {
         var _properties = req.body;
-        properties_dao_1.default['createProperties'](_properties)
+        var _shareholder = req["shareholder"].body;
+        var _front = req["front"].attachment;
+        var _back = req["back"].attachment;
+        properties_dao_1.default['createProperties'](_properties, _shareholder, _front, _back)
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };

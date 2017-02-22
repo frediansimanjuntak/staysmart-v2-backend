@@ -3,11 +3,13 @@ var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
 var properties_model_1 = require("../model/properties-model");
+var attachments_dao_1 = require("../../attachments/dao/attachments-dao");
 properties_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
         Properties
             .find(_query)
+            .populate("amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company")
             .exec(function (err, properties) {
             err ? reject(err)
                 : resolve(properties);
@@ -18,13 +20,14 @@ properties_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
         Properties
             .findById(id)
+            .populate("amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company")
             .exec(function (err, properties) {
             err ? reject(err)
                 : resolve(properties);
         });
     });
 });
-properties_model_1.default.static('createProperties', function (properties) {
+properties_model_1.default.static('createProperties', function (properties, shareholder, front, back) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(properties)) {
             return reject(new TypeError('Property is not a valid object.'));
@@ -33,6 +36,30 @@ properties_model_1.default.static('createProperties', function (properties) {
         var body = properties;
         var _properties = new Properties(properties);
         _properties.save(function (err, saved) {
+            err ? reject(err)
+                : resolve(saved);
+        });
+        var propertyID = _properties._id;
+        var shareholder_data = shareholder;
+        var idFront = [];
+        var idBack = [];
+        attachments_dao_1.default.createAttachments(front).then(function (res) {
+            idFront.push(res.idAtt);
+        });
+        attachments_dao_1.default.createAttachments(back).then(function (res) {
+            idBack.push(res.idAtt);
+        });
+        Properties
+            .findByIdAndUpdate(propertyID, {
+            $push: {
+                "shareholder.name": shareholder_data.name,
+                "shareholder.identification_type": shareholder_data.identification_type,
+                "shareholder.identification_number": shareholder_data.identification_number,
+                "shareholder.identification_proof.front": idFront,
+                "shareholder.identification_proof.back": idBack,
+            }
+        })
+            .exec(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
         });

@@ -2,6 +2,10 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import propertiesSchema from '../model/properties-model';
+import Amenities from '../../amenities/dao/amenities-dao'
+import Attachments from '../../attachments/dao/attachments-dao'
+import Users from '../../users/dao/users-dao'
+import Companies from '../../companies/dao/companies-dao'
 
 propertiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -9,6 +13,7 @@ propertiesSchema.static('getAll', ():Promise<any> => {
 
         Properties
           .find(_query)
+          .populate("amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company")
           .exec((err, properties) => {
               err ? reject(err)
                   : resolve(properties);
@@ -21,6 +26,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
 
         Properties
           .findById(id)
+          .populate("amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company")
           .exec((err, properties) => {
               err ? reject(err)
                   : resolve(properties);
@@ -28,7 +34,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (properties:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (properties:Object, shareholder:Object, front:Object, back:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(properties)) {
         return reject(new TypeError('Property is not a valid object.'));
@@ -41,6 +47,31 @@ propertiesSchema.static('createProperties', (properties:Object):Promise<any> => 
             err ? reject(err)
                 : resolve(saved);
           });
+      var propertyID =_properties._id;
+      let shareholder_data:any = shareholder;
+      let idFront = [];
+      let idBack = [];
+      Attachments.createAttachments(front).then(res => {
+        idFront.push(res.idAtt);
+      });
+      Attachments.createAttachments(back).then(res => {
+        idBack.push(res.idAtt);
+      });
+      
+      Properties
+        .findByIdAndUpdate(propertyID, {
+          $push: {
+            "shareholder.name": shareholder_data.name,
+            "shareholder.identification_type": shareholder_data.identification_type,
+            "shareholder.identification_number": shareholder_data.identification_number,
+            "shareholder.identification_proof.front": idFront,
+            "shareholder.identification_proof.back": idBack,
+          }
+        })
+        .exec((err, saved) => {
+            err ? reject(err)
+                : resolve(saved);
+        });
     });
 });
 

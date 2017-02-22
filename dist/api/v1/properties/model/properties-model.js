@@ -108,7 +108,10 @@ var PropertiesSchema = new mongoose.Schema({
     confirmation: {
         status: { type: String, enum: ['approved', 'rejected', 'pending'] },
         proof: { type: String },
-        by: { type: String },
+        by: {
+            type: Schema.Types.ObjectId,
+            ref: 'Users'
+        },
         date: { type: Date }
     },
     status: { type: String, enum: ['initiated', 'published', 'rented'] },

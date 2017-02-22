@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import companiesSchema from '../model/companies-model';
+import Attachments from '../../attachments/dao/attachments-dao'
 
 companiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -74,10 +75,10 @@ companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
             .findById(id, (err,companies) => {
                 if(companies.document != null) {
                     var ObjectID = mongoose.Types.ObjectId;
-                    var companies_document = [].concat(company.document)
+                    var companies_document = [].concat(companies.document)
                         for (var i = 0; i < companies_document.length; i++) {
                             let document = companies_document[i];
-                            Companies
+                            Attachments
                                 .findByIdAndRemove(document)
                                 .exec((err, deleted) => {
                                     err ? reject(err)
