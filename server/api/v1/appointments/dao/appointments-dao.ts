@@ -2,6 +2,9 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import appointmentsSchema from '../model/appointments-model';
+import Users from '../../users/dao/users-dao'
+import Properties from '../../properties/dao/properties-dao'
+// import Schedules from '../../schedules/dao/schedules-dao'
 
 appointmentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -9,6 +12,7 @@ appointmentsSchema.static('getAll', ():Promise<any> => {
 
         Appointments
           .find(_query)
+          .populate("landlord tenant property schedule")
           .exec((err, appointments) => {
               err ? reject(err)
                   : resolve(appointments);
@@ -21,6 +25,7 @@ appointmentsSchema.static('getById', (id:string):Promise<any> => {
 
         Appointments
           .findById(id)
+          .populate("landlord tenant property schedule")
           .exec((err, appointments) => {
               err ? reject(err)
                   : resolve(appointments);
