@@ -1,20 +1,21 @@
 "use strict";
 var banks_controller_1 = require("../controller/banks-controller");
+var auth = require("../../../../auth/auth-service");
 var BanksRoutes = (function () {
     function BanksRoutes() {
     }
     BanksRoutes.init = function (router) {
         router
             .route('/banks')
-            .get(banks_controller_1.BanksController.getAll)
-            .post(banks_controller_1.BanksController.createBanks);
+            .get(auth.isAuthenticated(), banks_controller_1.BanksController.getAll)
+            .post(auth.isAuthenticated(), banks_controller_1.BanksController.createBanks);
         router
             .route('/banks/:id')
-            .get(banks_controller_1.BanksController.getById)
-            .put(banks_controller_1.BanksController.deleteBanks);
+            .get(auth.isAuthenticated(), banks_controller_1.BanksController.getById)
+            .put(auth.isAuthenticated(), banks_controller_1.BanksController.deleteBanks);
         router
             .route('/banks/update/:id')
-            .post(banks_controller_1.BanksController.updateBanks);
+            .post(auth.isAuthenticated(), banks_controller_1.BanksController.updateBanks);
     };
     return BanksRoutes;
 }());

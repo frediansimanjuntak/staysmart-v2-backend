@@ -1,20 +1,21 @@
 "use strict";
 var amenities_controller_1 = require("../controller/amenities-controller");
+var auth = require("../../../../auth/auth-service");
 var AmenitiesRoutes = (function () {
     function AmenitiesRoutes() {
     }
     AmenitiesRoutes.init = function (router) {
         router
             .route('/amenities')
-            .get(amenities_controller_1.AmenitiesController.getAll)
-            .post(amenities_controller_1.AmenitiesController.createAmenities);
+            .get(auth.isAuthenticated(), amenities_controller_1.AmenitiesController.getAll)
+            .post(auth.isAuthenticated(), amenities_controller_1.AmenitiesController.createAmenities);
         router
             .route('/amenities/:id')
-            .get(amenities_controller_1.AmenitiesController.getById)
-            .put(amenities_controller_1.AmenitiesController.deleteAmenities);
+            .get(auth.isAuthenticated(), amenities_controller_1.AmenitiesController.getById)
+            .put(auth.isAuthenticated(), amenities_controller_1.AmenitiesController.deleteAmenities);
         router
             .route('/amenities/update/:id')
-            .post(amenities_controller_1.AmenitiesController.updateAmenities);
+            .post(auth.isAuthenticated(), amenities_controller_1.AmenitiesController.updateAmenities);
     };
     return AmenitiesRoutes;
 }());

@@ -2,38 +2,39 @@
 
 import * as express from 'express';
 import {UsersController} from '../controller/users-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class UserRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/users')
-			.get(UsersController.getAll)
-			.post(UsersController.createUser);
+			.get(auth.isAuthenticated(),UsersController.getAll)
+			.post(auth.isAuthenticated(),UsersController.createUser);
 
 		router
 			.route('/users/:id')
-			.get(UsersController.getById)
-			.put(UsersController.deleteUser);
+			.get(auth.isAuthenticated(),UsersController.getById)
+			.put(auth.isAuthenticated(),UsersController.deleteUser);
 
 		router
 			.route('/users/update/:id')
-			.post(UsersController.updateUser);
+			.post(auth.isAuthenticated(),UsersController.updateUser);
 
 		router
 			.route('/')
-			.get(UsersController.index);
+			.get(auth.isAuthenticated(),UsersController.index);
 
 		router
 			.route('/me')
-			.get(UsersController.me);
+			.get(auth.isAuthenticated(),UsersController.me);
 
 		router
 			.route('/users/active/:id/:code')
-			.post(UsersController.activationUser);
+			.post(auth.isAuthenticated(),UsersController.activationUser);
 
 		router
 			.route('/users/unactive/:id')
-			.post(UsersController.unActiveUser);
+			.post(auth.isAuthenticated(),UsersController.unActiveUser);
 
 	}
 }

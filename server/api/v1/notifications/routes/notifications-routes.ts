@@ -2,21 +2,22 @@
 
 import * as express from 'express';
 import {NotificationsController} from '../controller/notifications-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class NotificationsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/notifications')
-			.get(NotificationsController.getAll)
-			.post(NotificationsController.createNotifications);
+			.get(auth.isAuthenticated(),NotificationsController.getAll)
+			.post(auth.isAuthenticated(),NotificationsController.createNotifications);
 
 		router
 			.route('/notifications/:id')
-			.get(NotificationsController.getById)
-			.put(NotificationsController.deleteNotifications);
+			.get(auth.isAuthenticated(),NotificationsController.getById)
+			.put(auth.isAuthenticated(),NotificationsController.deleteNotifications);
 
 		router
 			.route('/notifications/update/:id')
-			.post(NotificationsController.updateNotifications);
+			.post(auth.isAuthenticated(),NotificationsController.updateNotifications);
 	}
 } 
