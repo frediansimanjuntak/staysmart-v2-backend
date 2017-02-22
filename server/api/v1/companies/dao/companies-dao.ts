@@ -31,7 +31,7 @@ companiesSchema.static('getById', (id:string):Promise<any> => {
 companiesSchema.static('createCompanies', (companies:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(companies)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Company is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = companies;
@@ -63,7 +63,7 @@ companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
 companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(companies)) {
-          return reject(new TypeError('Bank is not a valid object.'));
+          return reject(new TypeError('Company is not a valid object.'));
         }
 
         Companies

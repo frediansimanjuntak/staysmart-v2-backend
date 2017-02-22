@@ -34,7 +34,7 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		return new Promise((resolve:Function, reject:Function) => {
 			if (!_.isObject(comments)) {
-				return reject(new TypeError('User is not a valid object.'));
+				return reject(new TypeError('Comment is not a valid object.'));
 			}
 			var ObjectID = mongoose.Types.ObjectId;  
 			let body:any = comments;
@@ -140,7 +140,7 @@ commentsSchema.static('deleteComments', (idComment:string):Promise<any> => {
 commentsSchema.static('updateComments', (id:string, comments:Object):Promise<any> => {
 		return new Promise((resolve:Function, reject:Function) => {
 				if (!_.isObject(comments)) {
-					return reject(new TypeError('User is not a valid object.'));
+					return reject(new TypeError('Comment is not a valid object.'));
 				}
 
 				Comments

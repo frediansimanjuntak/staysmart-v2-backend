@@ -43,7 +43,7 @@ faqsSchema.static('getByFilter', (filter:string):Promise<any> => {
 faqsSchema.static('createFaqs', (faqs:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(faqs)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('FAQ is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = faqs;

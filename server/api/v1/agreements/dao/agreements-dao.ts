@@ -31,7 +31,7 @@ agreementsSchema.static('getById', (id:string):Promise<any> => {
 agreementsSchema.static('createAgreements', (agreements:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(agreements)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Agreement is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = agreements;
@@ -63,7 +63,7 @@ agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
 agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(agreements)) {
-          return reject(new TypeError('Bank is not a valid object.'));
+          return reject(new TypeError('Agreement is not a valid object.'));
         }
 
         Agreements
