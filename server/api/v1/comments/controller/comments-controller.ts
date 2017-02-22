@@ -25,10 +25,19 @@ export class CommentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static deleteComments(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
+	static deleteReplies(req: express.Request, res: express.Response):void {
+		let _idComment = req.params.id;
+		let reply = req.body;
 		CommentsDAO
-		['deleteComments'](_id)
+		['deleteReplies'](_idComment, reply)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
+
+	static deleteComments(req: express.Request, res: express.Response):void {
+		let _idComment = req.params.id;
+		CommentsDAO
+		['deleteComments'](_idComment)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}

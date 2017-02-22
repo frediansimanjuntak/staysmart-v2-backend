@@ -74,19 +74,66 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		});
 });
 
-commentsSchema.static('deleteComments', (id:string):Promise<any> => {
+commentsSchema.static('deleteReplies', (idComment:string, reply: Object):Promise<any> => {
 		return new Promise((resolve:Function, reject:Function) => {
-				if (!_.isString(id)) {
+				if (!_.isString(idComment) && !_.isObject(reply)) {
 						return reject(new TypeError('Id is not a valid string.'));
 				}
-
+				let body:any = reply;
 				Comments
-					.findByIdAndRemove(id)
+					.update({"_id": idComment},
+						{
+							$pull: {
+								"replies": body.idReply
+							}	
+						}
+					)
 					.exec((err, deleted) => {
 							err ? reject(err)
-									: resolve();
+									: resolve(deleted);
 					});
-				
+
+				Comments
+					.findByIdAndRemove(body.idReply)
+					.exec((err, deleted) => {
+							err ? reject(err)
+									: resolve(deleted);
+					});
+		});
+});
+
+commentsSchema.static('deleteComments', (idComment:string):Promise<any> => {
+		return new Promise((resolve:Function, reject:Function) => {
+				if (!_.isString(idComment)) {
+						return reject(new TypeError('Id is not a valid string.'));
+				}
+				Comments
+					.findById(idComment, (err, commentt ) => {
+						if(commentt.replies != null) {
+							var ObjectID = mongoose.Types.ObjectId; 
+              var commentt_reply = [].concat(commentt.replies)
+              for (var i = 0; i < commentt_reply.length; i++) {
+              	let reply = commentt_reply[i];
+              	Comments
+              		.findByIdAndRemove(reply)
+              		.exec((err, deleted) => {
+											err ? reject(err)
+													: resolve(deleted);
+									});
+              }	
+						}
+					})
+					.exec((err, deleted) => {
+							err ? reject(err)
+									: resolve(deleted);
+					});
+					
+				Comments
+					.findByIdAndRemove(idComment)
+					.exec((err, deleted) => {
+							err ? reject(err)
+									: resolve(deleted);
+					});
 		});
 });
 
@@ -97,9 +144,7 @@ commentsSchema.static('updateComments', (id:string, comments:Object):Promise<any
 				}
 
 				Comments
-				.findByIdAndUpdate(id, comments, {
-						$set: {"comments.created_at": Date.now()}
-				})
+				.findByIdAndUpdate(id, comments)
 				.exec((err, updated) => {
 							err ? reject(err)
 									: resolve(updated);

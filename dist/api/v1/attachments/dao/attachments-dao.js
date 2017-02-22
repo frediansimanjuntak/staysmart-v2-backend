@@ -3,6 +3,7 @@ var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
 var attachments_model_1 = require("../model/attachments-model");
+var aws_service_1 = require("../../../../global/aws.service");
 attachments_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
@@ -29,13 +30,36 @@ attachments_model_1.default.static('createAttachments', function (attachments) {
         if (!_.isObject(attachments)) {
             return reject(new TypeError('Attachment is not a valid object.'));
         }
-        var ObjectID = mongoose.Types.ObjectId;
-        var body = attachments;
-        var _attachments = new Attachments(attachments);
-        _attachments.save(function (err, saved) {
-            err ? reject(err)
-                : resolve(saved);
-        });
+        var files = [].concat(attachments);
+        var idAtt = [];
+        if (files.length > 0) {
+            var i = 0;
+            var attachmentfile = function () {
+                var file = files[i];
+                var key = 'Staysmart-revamp/attachment/' + file.name;
+                aws_service_1.AWSService.upload(key, file).then(function (fileDetails) {
+                    var _attachment = new Attachments(attachments);
+                    _attachment.name = fileDetails.name;
+                    _attachment.type = fileDetails.type;
+                    _attachment.key = fileDetails.url;
+                    _attachment.size = fileDetails.size;
+                    _attachment.save();
+                    var idattach = _attachment.id;
+                    idAtt.push(idattach);
+                    if (i >= files.length - 1) {
+                        resolve({ idAtt: idAtt });
+                    }
+                    else {
+                        i++;
+                        attachmentfile();
+                    }
+                });
+            };
+            attachmentfile();
+        }
+        else {
+            resolve({ message: "success" });
+        }
     });
 });
 attachments_model_1.default.static('deleteAttachments', function (id) {

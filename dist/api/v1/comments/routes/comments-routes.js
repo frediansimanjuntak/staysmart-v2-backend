@@ -11,7 +11,8 @@ var CommentsRoutes = (function () {
         router
             .route('/comments/:id')
             .get(comments_controller_1.CommentsController.getById)
-            .put(comments_controller_1.CommentsController.deleteComments);
+            .put(comments_controller_1.CommentsController.deleteComments)
+            .delete(comments_controller_1.CommentsController.deleteReplies);
         router
             .route('/comments/update/:id')
             .post(comments_controller_1.CommentsController.updateComments);
