@@ -2,21 +2,22 @@
 
 import * as express from 'express';
 import {BlogsController} from '../controller/blogs-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class BlogsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/blogs')
-			.get(BlogsController.getAll)
-			.post(BlogsController.createBlogs);
+			.get(auth.isAuthenticated(),BlogsController.getAll)
+			.post(auth.isAuthenticated(),BlogsController.createBlogs);
 
 		router
 			.route('/blogs/:id')
-			.get(BlogsController.getById)
-			.put(BlogsController.deleteBlogs);
+			.get(auth.isAuthenticated(),BlogsController.getById)
+			.put(auth.isAuthenticated(),BlogsController.deleteBlogs);
 
 		router
 			.route('/blogs/update/:id')
-			.post(BlogsController.updateBlogs);
+			.post(auth.isAuthenticated(),BlogsController.updateBlogs);
 	}
 }

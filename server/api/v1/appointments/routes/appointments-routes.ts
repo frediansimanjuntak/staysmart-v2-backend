@@ -2,21 +2,22 @@
 
 import * as express from 'express';
 import {AppointmentsController} from '../controller/appointments-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class AppointmentsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/appointments')
-			.get(AppointmentsController.getAll)
-			.post(AppointmentsController.createAppointments);
+			.get(auth.isAuthenticated(),AppointmentsController.getAll)
+			.post(auth.isAuthenticated(),AppointmentsController.createAppointments);
 
 		router
 			.route('/appointments/:id')
-			.get(AppointmentsController.getById)
-			.put(AppointmentsController.deleteAppointments);
+			.get(auth.isAuthenticated(),AppointmentsController.getById)
+			.put(auth.isAuthenticated(),AppointmentsController.deleteAppointments);
 
 		router
 			.route('/appointments/update/:id')
-			.post(AppointmentsController.updateAppointments);
+			.post(auth.isAuthenticated(),AppointmentsController.updateAppointments);
 	}
 }

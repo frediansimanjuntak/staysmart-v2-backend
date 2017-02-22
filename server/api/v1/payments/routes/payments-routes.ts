@@ -2,21 +2,22 @@
 
 import * as express from 'express';
 import {PaymentsController} from '../controller/payments-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class PaymentsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/payments')
-			.get(PaymentsController.getAll)
-			.post(PaymentsController.createPayments);
+			.get(auth.isAuthenticated(),PaymentsController.getAll)
+			.post(auth.isAuthenticated(),PaymentsController.createPayments);
 
 		router
 			.route('/payments/:id')
-			.get(PaymentsController.getById)
-			.put(PaymentsController.deletePayments);
+			.get(auth.isAuthenticated(),PaymentsController.getById)
+			.put(auth.isAuthenticated(),PaymentsController.deletePayments);
 
 		router
 			.route('/payments/update/:id')
-			.post(PaymentsController.updatePayments);
+			.post(auth.isAuthenticated(),PaymentsController.updatePayments);
 	}
 }

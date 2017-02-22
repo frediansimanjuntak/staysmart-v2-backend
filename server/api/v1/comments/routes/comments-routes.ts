@@ -2,22 +2,23 @@
 
 import * as express from 'express';
 import {CommentsController} from '../controller/comments-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class CommentsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/comments')
-			.get(CommentsController.getAll)
-			.post(CommentsController.createComments);
+			.get(auth.isAuthenticated(),CommentsController.getAll)
+			.post(auth.isAuthenticated(),CommentsController.createComments);
 
 		router
 			.route('/comments/:id')
-			.get(CommentsController.getById)
-			.put(CommentsController.deleteComments)
-			.delete(CommentsController.deleteReplies);
+			.get(auth.isAuthenticated(),CommentsController.getById)
+			.put(auth.isAuthenticated(),CommentsController.deleteComments)
+			.delete(auth.isAuthenticated(),CommentsController.deleteReplies);
 
 		router
 			.route('/comments/update/:id')
-			.post(CommentsController.updateComments);
+			.post(auth.isAuthenticated(),CommentsController.updateComments);
 	}
 }

@@ -2,25 +2,26 @@
 
 import * as express from 'express';
 import {FaqsController} from '../controller/faqs-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class FaqsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/faqs')
-			.get(FaqsController.getAll)
-			.post(FaqsController.createFaqs);
+			.get(auth.isAuthenticated(),FaqsController.getAll)
+			.post(auth.isAuthenticated(),FaqsController.createFaqs);
 
 		router
 			.route('/faqs/:id')
-			.get(FaqsController.getById)
-			.put(FaqsController.deleteFaqs);
+			.get(auth.isAuthenticated(),FaqsController.getById)
+			.put(auth.isAuthenticated(),FaqsController.deleteFaqs);
 
 		router
 			.route('/faqs/filter/:filter')
-			.get(FaqsController.getByFilter)
+			.get(auth.isAuthenticated(),FaqsController.getByFilter)
 
 		router
 			.route('/faqs/update/:id')
-			.post(FaqsController.updateFaqs);
+			.post(auth.isAuthenticated(),FaqsController.updateFaqs);
 	}
 }

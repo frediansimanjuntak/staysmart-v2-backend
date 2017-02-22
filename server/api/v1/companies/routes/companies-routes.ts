@@ -2,21 +2,22 @@
 
 import * as express from 'express';
 import {CompaniesController} from '../controller/companies-controller';
+import * as auth from '../../../../auth/auth-service';
 
 export class CompaniesRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/companies')
-			.get(CompaniesController.getAll)
-			.post(CompaniesController.createCompanies);
+			.get(auth.isAuthenticated(),CompaniesController.getAll)
+			.post(auth.isAuthenticated(),CompaniesController.createCompanies);
 
 		router
 			.route('/companies/:id')
-			.get(CompaniesController.getById)
-			.put(CompaniesController.deleteCompanies);
+			.get(auth.isAuthenticated(),CompaniesController.getById)
+			.put(auth.isAuthenticated(),CompaniesController.deleteCompanies);
 
 		router
 			.route('/companies/update/:id')
-			.post(CompaniesController.updateCompanies);
+			.post(auth.isAuthenticated(),CompaniesController.updateCompanies);
 	}
 } 

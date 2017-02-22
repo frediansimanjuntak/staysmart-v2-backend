@@ -13,6 +13,7 @@ import * as fs from 'fs';
 import * as http from "http";
 import * as https from "https";
 import config from './config/environment/index';
+import {GlobalService} from './global/global.service';
 import {RoutesConfig} from "./config/routes.conf";
 import {DBConfig} from "./config/db.conf";
 import {Routes} from "./routes/index";
@@ -25,6 +26,8 @@ const app = express();
 require('./config/express').default(app);
 RoutesConfig.init(app);
 DBConfig.init();
+GlobalService.init();
+GlobalService.initGlobalFunction();
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
