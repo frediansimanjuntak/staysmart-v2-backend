@@ -31,7 +31,7 @@ blogCategoriesSchema.static('getById', (id:string):Promise<any> => {
 blogCategoriesSchema.static('createBlogCategories', (blog_categories:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(blog_categories)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Category is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = blog_categories;
@@ -63,7 +63,7 @@ blogCategoriesSchema.static('deleteBlogCategories', (id:string):Promise<any> => 
 blogCategoriesSchema.static('updateBlogCategories', (id:string, blog_categories:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(blog_categories)) {
-          return reject(new TypeError('User is not a valid object.'));
+          return reject(new TypeError('Category is not a valid object.'));
         }
 
         BlogCategories

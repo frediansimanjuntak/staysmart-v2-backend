@@ -31,7 +31,7 @@ paymentsSchema.static('getById', (id:string):Promise<any> => {
 paymentsSchema.static('createPayments', (payments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(payments)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Payment is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = payments;
@@ -63,7 +63,7 @@ paymentsSchema.static('deletePayments', (id:string):Promise<any> => {
 paymentsSchema.static('updatePayments', (id:string, payments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(payments)) {
-          return reject(new TypeError('Bank is not a valid object.'));
+          return reject(new TypeError('Payment is not a valid object.'));
         }
 
         Payments

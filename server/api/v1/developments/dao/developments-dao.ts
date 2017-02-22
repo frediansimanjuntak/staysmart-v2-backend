@@ -31,7 +31,7 @@ developmentsSchema.static('getById', (id:string):Promise<any> => {
 developmentsSchema.static('createDevelopments', (developments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(developments)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Development is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = developments;
@@ -63,7 +63,7 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
 developmentsSchema.static('updateDevelopments', (id:string, developments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(developments)) {
-          return reject(new TypeError('Bank is not a valid object.'));
+          return reject(new TypeError('Development is not a valid object.'));
         }
 
         Developments

@@ -31,7 +31,7 @@ appointmentsSchema.static('getById', (id:string):Promise<any> => {
 appointmentsSchema.static('createAppointments', (appointments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(appointments)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Appointment is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = appointments;
@@ -63,7 +63,7 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
 appointmentsSchema.static('updateAppointments', (id:string, appointments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(appointments)) {
-          return reject(new TypeError('Bank is not a valid object.'));
+          return reject(new TypeError('Appointment is not a valid object.'));
         }
 
         Appointments

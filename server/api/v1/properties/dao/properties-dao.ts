@@ -31,7 +31,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
 propertiesSchema.static('createProperties', (properties:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(properties)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Property is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = properties;
@@ -63,7 +63,7 @@ propertiesSchema.static('deleteProperties', (id:string):Promise<any> => {
 propertiesSchema.static('updateProperties', (id:string, properties:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(properties)) {
-          return reject(new TypeError('Bank is not a valid object.'));
+          return reject(new TypeError('Property is not a valid object.'));
         }
 
         Properties

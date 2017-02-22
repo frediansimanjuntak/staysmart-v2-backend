@@ -31,7 +31,7 @@ amenitiesSchema.static('getById', (id:string):Promise<any> => {
 amenitiesSchema.static('createAmenities', (amenities:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(amenities)) {
-        return reject(new TypeError('User is not a valid object.'));
+        return reject(new TypeError('Anmenity is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = amenities;
@@ -63,7 +63,7 @@ amenitiesSchema.static('deleteAmenities', (id:string):Promise<any> => {
 amenitiesSchema.static('updateAmenities', (id:string, amenities:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(amenities)) {
-          return reject(new TypeError('Bank is not a valid object.'));
+          return reject(new TypeError('Amenity is not a valid object.'));
         }
 
         Amenities
