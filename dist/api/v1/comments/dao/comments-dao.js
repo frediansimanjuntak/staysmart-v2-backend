@@ -30,7 +30,7 @@ comments_model_1.default.static('getById', function (id) {
 comments_model_1.default.static('createComments', function (comments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(comments)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Comment is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = comments;
@@ -126,7 +126,7 @@ comments_model_1.default.static('deleteComments', function (idComment) {
 comments_model_1.default.static('updateComments', function (id, comments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(comments)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Comment is not a valid object.'));
         }
         Comments
             .findByIdAndUpdate(id, comments)

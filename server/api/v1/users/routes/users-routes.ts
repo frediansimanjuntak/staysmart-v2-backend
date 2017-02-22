@@ -8,33 +8,37 @@ export class UserRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/users')
-			.get(auth.isAuthenticated(),UsersController.getAll)
-			.post(auth.isAuthenticated(),UsersController.createUser);
+			.get(auth.isAuthenticated(), UsersController.getAll)
+			.post(auth.isAuthenticated(), UsersController.createUser);
+
+		router
+			.route('/users/data/:id/:type')
+			.post(auth.isAuthenticated(), UsersController.updateUserData);
 
 		router
 			.route('/users/:id')
-			.get(auth.isAuthenticated(),UsersController.getById)
-			.put(auth.isAuthenticated(),UsersController.deleteUser);
+			.get(auth.isAuthenticated(), UsersController.getById)
+			.put(auth.isAuthenticated(), UsersController.deleteUser);
 
 		router
 			.route('/users/update/:id')
-			.post(auth.isAuthenticated(),UsersController.updateUser);
+			.post(auth.isAuthenticated(), UsersController.updateUser);
 
 		router
 			.route('/')
-			.get(auth.isAuthenticated(),UsersController.index);
+			.get(auth.isAuthenticated(), UsersController.index);
 
 		router
 			.route('/me')
-			.get(auth.isAuthenticated(),UsersController.me);
+			.get(auth.isAuthenticated(), UsersController.me);
 
 		router
 			.route('/users/active/:id/:code')
-			.post(auth.isAuthenticated(),UsersController.activationUser);
+			.post(auth.isAuthenticated(), UsersController.activationUser);
 
 		router
 			.route('/users/unactive/:id')
-			.post(auth.isAuthenticated(),UsersController.unActiveUser);
+			.post(auth.isAuthenticated(), UsersController.unActiveUser);
 
 	}
 }

@@ -37,7 +37,7 @@ faqs_model_1.default.static('getByFilter', function (filter) {
 faqs_model_1.default.static('createFaqs', function (faqs) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(faqs)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('FAQ is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = faqs;

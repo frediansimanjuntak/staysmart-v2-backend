@@ -10,6 +10,9 @@ var UserRoutes = (function () {
             .get(auth.isAuthenticated(), users_controller_1.UsersController.getAll)
             .post(auth.isAuthenticated(), users_controller_1.UsersController.createUser);
         router
+            .route('/users/data/:id/:type')
+            .post(auth.isAuthenticated(), users_controller_1.UsersController.updateUserData);
+        router
             .route('/users/:id')
             .get(auth.isAuthenticated(), users_controller_1.UsersController.getById)
             .put(auth.isAuthenticated(), users_controller_1.UsersController.deleteUser);

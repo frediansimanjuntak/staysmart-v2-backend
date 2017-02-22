@@ -27,7 +27,7 @@ agreements_model_1.default.static('getById', function (id) {
 agreements_model_1.default.static('createAgreements', function (agreements) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(agreements)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Agreement is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = agreements;
@@ -54,7 +54,7 @@ agreements_model_1.default.static('deleteAgreements', function (id) {
 agreements_model_1.default.static('updateAgreements', function (id, agreements) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(agreements)) {
-            return reject(new TypeError('Bank is not a valid object.'));
+            return reject(new TypeError('Agreement is not a valid object.'));
         }
         Agreements
             .findByIdAndUpdate(id, agreements)
