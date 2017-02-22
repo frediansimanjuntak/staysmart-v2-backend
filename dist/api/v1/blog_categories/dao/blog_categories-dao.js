@@ -27,7 +27,7 @@ blog_categories_model_1.default.static('getById', function (id) {
 blog_categories_model_1.default.static('createBlogCategories', function (blog_categories) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(blog_categories)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Category is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = blog_categories;
@@ -54,7 +54,7 @@ blog_categories_model_1.default.static('deleteBlogCategories', function (id) {
 blog_categories_model_1.default.static('updateBlogCategories', function (id, blog_categories) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(blog_categories)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Category is not a valid object.'));
         }
         BlogCategories
             .findByIdAndUpdate(id, blog_categories)

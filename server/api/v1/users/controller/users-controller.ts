@@ -41,6 +41,18 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updateUserData(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _type = req.params.type;
+		let _user = req.body;
+		let _front = req["front"].attachment;
+		let _back = req["back"].attachment;
+		UsersDAO
+		['updateUserData'](_id, _type, _user, _front, _back)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+	
 	static deleteUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		UsersDAO

@@ -27,7 +27,7 @@ amenities_model_1.default.static('getById', function (id) {
 amenities_model_1.default.static('createAmenities', function (amenities) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(amenities)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Anmenity is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = amenities;
@@ -54,7 +54,7 @@ amenities_model_1.default.static('deleteAmenities', function (id) {
 amenities_model_1.default.static('updateAmenities', function (id, amenities) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(amenities)) {
-            return reject(new TypeError('Bank is not a valid object.'));
+            return reject(new TypeError('Amenity is not a valid object.'));
         }
         Amenities
             .findByIdAndUpdate(id, amenities)

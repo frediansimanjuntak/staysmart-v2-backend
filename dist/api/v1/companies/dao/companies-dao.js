@@ -27,7 +27,7 @@ companies_model_1.default.static('getById', function (id) {
 companies_model_1.default.static('createCompanies', function (companies) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(companies)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Company is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = companies;
@@ -54,7 +54,7 @@ companies_model_1.default.static('deleteCompanies', function (id) {
 companies_model_1.default.static('updateCompanies', function (id, companies) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(companies)) {
-            return reject(new TypeError('Bank is not a valid object.'));
+            return reject(new TypeError('Company is not a valid object.'));
         }
         Companies
             .findByIdAndUpdate(id, companies)

@@ -3,11 +3,8 @@ var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
 var users_model_1 = require("../model/users-model");
-// import Agreements from '../../agreements/dao/agreements-dao'
-// import Attachments from '../../attachments/dao/attachments-dao'
-// import Banks from '../../banks/dao/banks-dao'
-// import Companies from '../../companies/dao/companies-dao'
-// import Properties from '../../properties/dao/properties-dao'
+var attachments_dao_1 = require("../../attachments/dao/attachments-dao");
+var banks_dao_1 = require("../../banks/dao/banks-dao");
 users_model_1.default.static('index', function () {
     return new Promise(function (resolve, reject) {
         Users
@@ -64,11 +61,69 @@ users_model_1.default.static('createUser', function (user) {
         });
     });
 });
+users_model_1.default.static('updateUserData', function (id, type, userData, front, back) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id) && !_.isObject(userData)) {
+            return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
+        }
+        if (!_.isObject(front) && !_.isObject(back)) {
+            return reject(new TypeError('Identification proof data is not a valid object.'));
+        }
+        var ObjectID = mongoose.Types.ObjectId;
+        var idFront = [];
+        var idBack = [];
+        var userObj = { $set: {} };
+        for (var param in userData) {
+            userObj.$set[type + '.data.' + param] = userData[param];
+        }
+        attachments_dao_1.default.createAttachments(front).then(function (res) {
+            idFront.push(res.idAtt);
+        });
+        attachments_dao_1.default.createAttachments(back).then(function (res) {
+            idBack.push(res.idAtt);
+        });
+        userObj.$set[type + '.data.identification_proof.front'] = idFront;
+        userObj.$set[type + '.data.identification_proof.back'] = idBack;
+        Users
+            .findByIdAndUpdate(id, userObj)
+            .exec(function (err, updated) {
+            err ? reject(err)
+                : resolve();
+        });
+    });
+});
 users_model_1.default.static('deleteUser', function (id) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        Users
+            .findById(id, function (err, userr) {
+            if (userr.tenant.data.bank_account.bank != null) {
+                var ObjectID = mongoose.Types.ObjectId;
+                var bank_account = userr.tenant.data.bank_account.bank;
+                banks_dao_1.default
+                    .findByIdAndRemove(bank_account)
+                    .exec(function (err, deleted) {
+                    err ? reject(err)
+                        : resolve();
+                });
+            }
+            if (userr.landlord.data.bank_account.bank != null) {
+                var ObjectID = mongoose.Types.ObjectId;
+                var bank_account = userr.landlord.data.bank_account.bank;
+                banks_dao_1.default
+                    .findByIdAndRemove(bank_account)
+                    .exec(function (err, deleted) {
+                    err ? reject(err)
+                        : resolve();
+                });
+            }
+        })
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve();
+        });
         Users
             .findByIdAndRemove(id)
             .exec(function (err, deleted) {

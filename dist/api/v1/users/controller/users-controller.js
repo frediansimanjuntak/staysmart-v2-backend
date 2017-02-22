@@ -32,6 +32,16 @@ var UsersController = (function () {
             .then(function (users) { return res.status(201).json(users); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    UsersController.updateUserData = function (req, res) {
+        var _id = req.params.id;
+        var _type = req.params.type;
+        var _user = req.body;
+        var _front = req["front"].attachment;
+        var _back = req["back"].attachment;
+        users_dao_1.default['updateUserData'](_id, _type, _user, _front, _back)
+            .then(function (users) { return res.status(201).json(users); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     UsersController.deleteUser = function (req, res) {
         var _id = req.params.id;
         users_dao_1.default['deleteUser'](_id)

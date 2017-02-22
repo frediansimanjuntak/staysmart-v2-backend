@@ -105,34 +105,34 @@ commentsSchema.static('deleteReplies', (idComment:string, reply: Object):Promise
 commentsSchema.static('deleteComments', (idComment:string):Promise<any> => {
 		return new Promise((resolve:Function, reject:Function) => {
 				if (!_.isString(idComment)) {
-						return reject(new TypeError('Id is not a valid string.'));
+					return reject(new TypeError('Id is not a valid string.'));
 				}
 				Comments
 					.findById(idComment, (err, commentt ) => {
 						if(commentt.replies != null) {
 							var ObjectID = mongoose.Types.ObjectId; 
-              var commentt_reply = [].concat(commentt.replies)
-              for (var i = 0; i < commentt_reply.length; i++) {
-              	let reply = commentt_reply[i];
-              	Comments
-              		.findByIdAndRemove(reply)
-              		.exec((err, deleted) => {
-											err ? reject(err)
-													: resolve(deleted);
+							var commentt_reply = [].concat(commentt.replies)
+							for (var i = 0; i < commentt_reply.length; i++) {
+								let reply = commentt_reply[i];
+								Comments
+									.findByIdAndRemove(reply)
+									.exec((err, deleted) => {
+										err ? reject(err)
+										: resolve(deleted);
 									});
-              }	
+							}	
 						}
 					})
 					.exec((err, deleted) => {
-							err ? reject(err)
-									: resolve(deleted);
+						err ? reject(err)
+								: resolve(deleted);
 					});
 					
 				Comments
 					.findByIdAndRemove(idComment)
 					.exec((err, deleted) => {
-							err ? reject(err)
-									: resolve(deleted);
+						err ? reject(err)
+								: resolve(deleted);
 					});
 		});
 });

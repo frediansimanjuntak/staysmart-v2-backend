@@ -27,7 +27,7 @@ developments_model_1.default.static('getById', function (id) {
 developments_model_1.default.static('createDevelopments', function (developments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(developments)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Development is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = developments;
@@ -54,7 +54,7 @@ developments_model_1.default.static('deleteDevelopments', function (id) {
 developments_model_1.default.static('updateDevelopments', function (id, developments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(developments)) {
-            return reject(new TypeError('Bank is not a valid object.'));
+            return reject(new TypeError('Development is not a valid object.'));
         }
         Developments
             .findByIdAndUpdate(id, developments)

@@ -27,7 +27,7 @@ appointments_model_1.default.static('getById', function (id) {
 appointments_model_1.default.static('createAppointments', function (appointments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(appointments)) {
-            return reject(new TypeError('User is not a valid object.'));
+            return reject(new TypeError('Appointment is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = appointments;
@@ -54,7 +54,7 @@ appointments_model_1.default.static('deleteAppointments', function (id) {
 appointments_model_1.default.static('updateAppointments', function (id, appointments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(appointments)) {
-            return reject(new TypeError('Bank is not a valid object.'));
+            return reject(new TypeError('Appointment is not a valid object.'));
         }
         Appointments
             .findByIdAndUpdate(id, appointments)
