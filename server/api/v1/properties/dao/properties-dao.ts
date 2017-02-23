@@ -6,6 +6,7 @@ import Amenities from '../../amenities/dao/amenities-dao'
 import Attachments from '../../attachments/dao/attachments-dao'
 import Users from '../../users/dao/users-dao'
 import Companies from '../../companies/dao/companies-dao'
+import Developments from '../../developments/dao/developments-dao'
 
 propertiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -66,6 +67,17 @@ propertiesSchema.static('createProperties', (properties:Object, shareholder:Obje
             "shareholder.identification_number": shareholder_data.identification_number,
             "shareholder.identification_proof.front": idFront,
             "shareholder.identification_proof.back": idBack,
+          }
+        })
+        .exec((err, saved) => {
+            err ? reject(err)
+                : resolve(saved);
+        });
+
+      Developments
+        .findByIdAndUpdate(body.development, {
+          $push: {
+            "properties": propertyID
           }
         })
         .exec((err, saved) => {

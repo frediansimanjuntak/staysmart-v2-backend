@@ -4,6 +4,7 @@ var Promise = require("bluebird");
 var _ = require("lodash");
 var properties_model_1 = require("../model/properties-model");
 var attachments_dao_1 = require("../../attachments/dao/attachments-dao");
+var developments_dao_1 = require("../../developments/dao/developments-dao");
 properties_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
@@ -57,6 +58,16 @@ properties_model_1.default.static('createProperties', function (properties, shar
                 "shareholder.identification_number": shareholder_data.identification_number,
                 "shareholder.identification_proof.front": idFront,
                 "shareholder.identification_proof.back": idBack,
+            }
+        })
+            .exec(function (err, saved) {
+            err ? reject(err)
+                : resolve(saved);
+        });
+        developments_dao_1.default
+            .findByIdAndUpdate(body.development, {
+            $push: {
+                "properties": propertyID
             }
         })
             .exec(function (err, saved) {

@@ -40,10 +40,10 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 			let body:any = comments;
 			
 			var _comments = new Comments(comments);
-					_comments.save((err, saved)=>{
-						err ? reject(err)
-								: resolve(saved);
-					});
+				_comments.save((err, saved)=>{
+					err ? reject(err)
+							: resolve(saved);
+				});
 
 			var commentId = _comments._id; 
 
