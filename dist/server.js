@@ -7,6 +7,7 @@ var express = require("express");
 var os = require("os");
 var fs = require("fs");
 var https = require("https");
+var aws_service_1 = require("./global/aws.service");
 var global_service_1 = require("./global/global.service");
 var routes_conf_1 = require("./config/routes.conf");
 var db_conf_1 = require("./config/db.conf");
@@ -19,6 +20,7 @@ routes_conf_1.RoutesConfig.init(app);
 db_conf_1.DBConfig.init();
 global_service_1.GlobalService.init();
 global_service_1.GlobalService.initGlobalFunction();
+aws_service_1.AWSConfig.init();
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");

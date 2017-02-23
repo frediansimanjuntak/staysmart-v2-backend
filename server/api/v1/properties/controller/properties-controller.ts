@@ -19,11 +19,10 @@ export class PropertiesController {
 
 	static createProperties(req: express.Request, res: express.Response):void {
 		let _properties = req.body;
-		let _shareholder = req["shareholder"].body;
-		let _front = req["front"].attachment;
-		let _back = req["back"].attachment;
+		let _front = req["files"].front;
+		let _back = req["files"].back;
 		PropertiesDAO
-		['createProperties'](_properties, _shareholder, _front, _back)
+		['createProperties'](_properties, _front, _back)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

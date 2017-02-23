@@ -13,6 +13,7 @@ import * as fs from 'fs';
 import * as http from "http";
 import * as https from "https";
 import config from './config/environment/index';
+import {AWSConfig} from './global/aws.service';
 import {GlobalService} from './global/global.service';
 import {RoutesConfig} from "./config/routes.conf";
 import {DBConfig} from "./config/db.conf";
@@ -28,6 +29,7 @@ RoutesConfig.init(app);
 DBConfig.init();
 GlobalService.init();
 GlobalService.initGlobalFunction();
+AWSConfig.init();
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")

@@ -28,7 +28,7 @@ properties_model_1.default.static('getById', function (id) {
         });
     });
 });
-properties_model_1.default.static('createProperties', function (properties, shareholder, front, back) {
+properties_model_1.default.static('createProperties', function (properties, front, back) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(properties)) {
             return reject(new TypeError('Property is not a valid object.'));
@@ -41,15 +41,21 @@ properties_model_1.default.static('createProperties', function (properties, shar
                 : resolve(saved);
         });
         var propertyID = _properties._id;
-        var shareholder_data = shareholder;
+        var shareholder_data = body.shareholder;
         var idFront = [];
         var idBack = [];
-        attachments_dao_1.default.createAttachments(front).then(function (res) {
-            idFront.push(res.idAtt);
-        });
-        attachments_dao_1.default.createAttachments(back).then(function (res) {
-            idBack.push(res.idAtt);
-        });
+        var front_image = front;
+        var back_image = back;
+        if (front_image != null) {
+            attachments_dao_1.default.createAttachments(front_image).then(function (res) {
+                idFront.push(res.idAtt);
+            });
+        }
+        if (back_image != null) {
+            attachments_dao_1.default.createAttachments(back_image).then(function (res) {
+                idBack.push(res.idAtt);
+            });
+        }
         Properties
             .findByIdAndUpdate(propertyID, {
             $push: {

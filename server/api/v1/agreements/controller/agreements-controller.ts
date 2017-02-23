@@ -25,12 +25,13 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updateAgreementsLOIandTA(req: express.Request, res: express.Response):void {
+	static updateAgreementsData(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;
 		let _type = req.params.type;
+		console.log(_data);
 		AgreementsDAO
-		['updateAgreementsLOIandTA'](_id, _type, _data)
+		['updateAgreementsData'](_id, _type, _data)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

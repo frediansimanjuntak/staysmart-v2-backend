@@ -20,11 +20,12 @@ var AgreementsController = (function () {
             .then(function (agreements) { return res.status(201).json(agreements); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    AgreementsController.updateAgreementsLOIandTA = function (req, res) {
+    AgreementsController.updateAgreementsData = function (req, res) {
         var _data = req.body;
         var _id = req.params.id;
         var _type = req.params.type;
-        agreements_dao_1.default['updateAgreementsLOIandTA'](_id, _type, _data)
+        console.log(_data);
+        agreements_dao_1.default['updateAgreementsData'](_id, _type, _data)
             .then(function (agreements) { return res.status(201).json(agreements); })
             .catch(function (error) { return res.status(400).json(error); });
     };
