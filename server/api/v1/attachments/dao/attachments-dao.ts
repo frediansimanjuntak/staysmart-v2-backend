@@ -51,7 +51,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
               _attachment.size = fileDetails.size;                 
               _attachment.save(); 
               let idattach = _attachment.id;  
-              idAtt.push(idattach)
+              idAtt.push(idattach);
                
               if (i >= files.length - 1){
                 resolve({idAtt});

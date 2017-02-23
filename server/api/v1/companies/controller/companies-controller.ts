@@ -19,8 +19,9 @@ export class CompaniesController {
 
 	static createCompanies(req: express.Request, res: express.Response):void {
 		let _companies = req.body;
+		let _attachments = req["files"].attachment;
 		CompaniesDAO
-		['createCompanies'](_companies)
+		['createCompanies'](_companies, _attachments)
 		.then(companies => res.status(201).json(companies))
 		.catch(error => res.status(400).json(error));
 	}

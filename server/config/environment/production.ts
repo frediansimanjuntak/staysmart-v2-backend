@@ -27,5 +27,5 @@ export default {
     domain: ""
   },
   // AWS bucket name
-  awsBucket: 'mcst-app',
+  awsBucket: 'staysmart-revamp',
 };

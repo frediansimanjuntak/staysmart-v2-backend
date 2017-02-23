@@ -34,13 +34,13 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-blogsSchema.static('createBlogs', (blogs:Object, attachment:Object):Promise<any> => {
+blogsSchema.static('createBlogs', (blogs:Object, covers:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(blogs)) {
         return reject(new TypeError('Blogs is not a valid object.'));
       }
       
-      Attachments.createAttachments(attachment).then(res => {
+      Attachments.createAttachments(covers).then(res => {
         var idAttachment=res.idAtt;
 
         var ObjectID = mongoose.Types.ObjectId;  
@@ -72,18 +72,38 @@ blogsSchema.static('deleteBlogs', (id:string):Promise<any> => {
     });
 });
 
-blogsSchema.static('updateBlogs', (id:string, blogs:Object):Promise<any> => {
+blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(blogs)) {
           return reject(new TypeError('Blogs is not a valid object.'));
         }
+        if(covers != null) {
+          Attachments.createAttachments(covers).then(res => {
+            var idAttachment=res.idAtt;
+            let blogObj = {$set: {}};
+            for(var param in blogs) {
+              blogObj.$set[param] = blogs[param];
+            }
+            blogObj.$set['cover'] = idAttachment;
 
-        Blogs
-        .findByIdAndUpdate(id, blogs)
-        .exec((err, updated) => {
-              err ? reject(err)
-                  : resolve(updated);
+            Blogs
+              .findByIdAndUpdate(id, blogObj)
+              .exec((err, updated) => {
+                    err ? reject(err)
+                        : resolve(updated);
+                });  
           });
+        }
+        else{
+          Blogs
+            .findByIdAndUpdate(id, blogs)
+            .exec((err, updated) => {
+                  err ? reject(err)
+                      : resolve(updated);
+              }); 
+        }
+           
+        
     });
 });
 

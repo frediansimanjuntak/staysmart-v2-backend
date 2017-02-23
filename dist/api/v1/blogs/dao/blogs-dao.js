@@ -27,12 +27,12 @@ blogs_model_1.default.static('getById', function (id) {
         });
     });
 });
-blogs_model_1.default.static('createBlogs', function (blogs, attachment) {
+blogs_model_1.default.static('createBlogs', function (blogs, covers) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(blogs)) {
             return reject(new TypeError('Blogs is not a valid object.'));
         }
-        attachments_dao_1.default.createAttachments(attachment).then(function (res) {
+        attachments_dao_1.default.createAttachments(covers).then(function (res) {
             var idAttachment = res.idAtt;
             var ObjectID = mongoose.Types.ObjectId;
             var body = blogs;
@@ -58,17 +58,35 @@ blogs_model_1.default.static('deleteBlogs', function (id) {
         });
     });
 });
-blogs_model_1.default.static('updateBlogs', function (id, blogs) {
+blogs_model_1.default.static('updateBlogs', function (id, blogs, covers) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(blogs)) {
             return reject(new TypeError('Blogs is not a valid object.'));
         }
-        Blogs
-            .findByIdAndUpdate(id, blogs)
-            .exec(function (err, updated) {
-            err ? reject(err)
-                : resolve(updated);
-        });
+        if (covers != null) {
+            attachments_dao_1.default.createAttachments(covers).then(function (res) {
+                var idAttachment = res.idAtt;
+                var blogObj = { $set: {} };
+                for (var param in blogs) {
+                    blogObj.$set[param] = blogs[param];
+                }
+                blogObj.$set['cover'] = idAttachment;
+                Blogs
+                    .findByIdAndUpdate(id, blogObj)
+                    .exec(function (err, updated) {
+                    err ? reject(err)
+                        : resolve(updated);
+                });
+            });
+        }
+        else {
+            Blogs
+                .findByIdAndUpdate(id, blogs)
+                .exec(function (err, updated) {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+        }
     });
 });
 var Blogs = mongoose.model('Blogs', blogs_model_1.default);

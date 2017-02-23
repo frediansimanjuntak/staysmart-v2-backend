@@ -29,7 +29,7 @@ companiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-companiesSchema.static('createCompanies', (companies:Object, attachment:Object):Promise<any> => {
+companiesSchema.static('createCompanies', (companies:Object, attachments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(companies)) {
         return reject(new TypeError('Company is not a valid object.'));
@@ -44,24 +44,24 @@ companiesSchema.static('createCompanies', (companies:Object, attachment:Object):
               });
 
         var companiesId=_companies._id;
-
-        Attachments.createAttachments(attachment).then(res => {
-          var idAttachment=res.idAtt;
-          Companies
-            .findByIdAndUpdate(companiesId, {
-              $push : {
-                "document": idAttachment
-              }
-            })
-            .exec((err, update) => {
-                err ? reject(err)
-                    : resolve(update);
-            });
         
-
-        });
-
-
+        var attachment_data = [].concat(attachments)
+        for (var i = 0; i < attachment_data.length; i++) {
+          let attachment = attachment_data[i];
+          Attachments.createAttachments(attachment).then(res => {
+            var idAttachment=res.idAtt;
+            Companies
+              .findByIdAndUpdate(companiesId, {
+                $push : {
+                  "document": idAttachment
+                }
+              })
+              .exec((err, update) => {
+                  err ? reject(err)
+                      : resolve(update);
+              });
+          });
+        }
     });
 });
 
