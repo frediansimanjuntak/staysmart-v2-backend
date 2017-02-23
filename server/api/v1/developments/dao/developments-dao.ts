@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import developmentsSchema from '../model/developments-model';
+import Properties from "../../properties/dao/properties-dao";
 
 developmentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -49,6 +50,26 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        Developments
+          .findById(id, (err,developments) => {
+              if(developments.properties != null){
+                  var ObjectID = mongoose.Types.ObjectId;
+                  var developments_properties =  [].concat(developments.properties)
+                      for  (var i=0; i < developments_properties.length; i++) {
+                            let properties = developments_properties[i];
+                            Properties
+                                .findByIdAndRemove(properties)
+                                .exec((err, deleted) => {
+                                    err ? reject(err)
+                                        : resolve(deleted);
+                                });
+                      }
+              }
+          })
+          .exec((err, deleted) => {
+              err ? reject(err)
+                  : resolve(deleted);  
+          });
 
         Developments
           .findByIdAndRemove(id)
