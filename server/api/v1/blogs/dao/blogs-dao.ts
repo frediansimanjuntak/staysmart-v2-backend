@@ -61,6 +61,18 @@ blogsSchema.static('deleteBlogs', (id:string):Promise<any> => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        Blogs
+          .findById(id,(err,blogs) => {
+            if(blogs.cover != null){
+              var ObjectID = mongoose.Types.ObjectId;
+                  Attachments
+                      .findByIdAndRemove(blogs.cover)
+                      .exec((err, deleted) => {
+                        err ? reject(err)
+                            : resolve(deleted);
+                      });
+                }
+          });
 
         Blogs
           .findByIdAndRemove(id)

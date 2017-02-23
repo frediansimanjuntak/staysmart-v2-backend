@@ -86,20 +86,6 @@ attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
     });
 });
 
-attachmentsSchema.static('updateAttachments', (id:string, attachments:Object):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(attachments)) {
-          return reject(new TypeError('Attachment is not a valid object.'));
-        }
-
-        Attachments
-        .findByIdAndUpdate(id, attachments)
-        .exec((err, updated) => {
-              err ? reject(err)
-                  : resolve(updated);
-          });
-    });
-});
 
 let Attachments = mongoose.model('Attachments', attachmentsSchema);
 

@@ -38,6 +38,14 @@ var PropertiesSchema = new mongoose.Schema({
         planning_region: { type: String },
         planning_area: { type: String }
     },
+    schedules: [
+        {
+            day: { type: String },
+            start_date: { type: Date },
+            time_from: { type: String },
+            time_to: { type: String }
+        }
+    ],
     amenities: [
         {
             type: Schema.Types.ObjectId,
