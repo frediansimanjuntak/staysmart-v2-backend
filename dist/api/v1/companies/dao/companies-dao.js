@@ -25,7 +25,7 @@ companies_model_1.default.static('getById', function (id) {
         });
     });
 });
-companies_model_1.default.static('createCompanies', function (companies, attachment) {
+companies_model_1.default.static('createCompanies', function (companies, attachments) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(companies)) {
             return reject(new TypeError('Company is not a valid object.'));
@@ -38,19 +38,23 @@ companies_model_1.default.static('createCompanies', function (companies, attachm
                 : resolve(saved);
         });
         var companiesId = _companies._id;
-        attachments_dao_1.default.createAttachments(attachment).then(function (res) {
-            var idAttachment = res.idAtt;
-            Companies
-                .findByIdAndUpdate(companiesId, {
-                $push: {
-                    "document": idAttachment
-                }
-            })
-                .exec(function (err, update) {
-                err ? reject(err)
-                    : resolve(update);
+        var attachment_data = [].concat(attachments);
+        for (var i = 0; i < attachment_data.length; i++) {
+            var attachment = attachment_data[i];
+            attachments_dao_1.default.createAttachments(attachment).then(function (res) {
+                var idAttachment = res.idAtt;
+                Companies
+                    .findByIdAndUpdate(companiesId, {
+                    $push: {
+                        "document": idAttachment
+                    }
+                })
+                    .exec(function (err, update) {
+                    err ? reject(err)
+                        : resolve(update);
+                });
             });
-        });
+        }
     });
 });
 companies_model_1.default.static('deleteCompanies', function (id) {

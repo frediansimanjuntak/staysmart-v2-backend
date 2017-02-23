@@ -19,8 +19,9 @@ export class BlogsController {
 
 	static createBlogs(req: express.Request, res: express.Response):void {
 		let _blogs = req.body;
+		let _covers = req["files"].cover;
 		BlogsDAO
-		['createBlogs'](_blogs)
+		['createBlogs'](_blogs, _covers)
 		.then(blogs => res.status(201).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}
@@ -36,9 +37,9 @@ export class BlogsController {
 	static updateBlogs(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _blogs = req.body;
-
+		let _covers = req["files"].cover;
 		BlogsDAO
-		['updateBlogs'](_id, _blogs)
+		['updateBlogs'](_id, _blogs, _covers)
 		.then(blogs => res.status(201).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}

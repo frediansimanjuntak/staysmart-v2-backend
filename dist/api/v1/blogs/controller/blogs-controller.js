@@ -16,7 +16,8 @@ var BlogsController = (function () {
     };
     BlogsController.createBlogs = function (req, res) {
         var _blogs = req.body;
-        blogs_dao_1.default['createBlogs'](_blogs)
+        var _covers = req["files"].cover;
+        blogs_dao_1.default['createBlogs'](_blogs, _covers)
             .then(function (blogs) { return res.status(201).json(blogs); })
             .catch(function (error) { return res.status(400).json(error); });
     };
@@ -29,7 +30,8 @@ var BlogsController = (function () {
     BlogsController.updateBlogs = function (req, res) {
         var _id = req.params.id;
         var _blogs = req.body;
-        blogs_dao_1.default['updateBlogs'](_id, _blogs)
+        var _covers = req["files"].cover;
+        blogs_dao_1.default['updateBlogs'](_id, _blogs, _covers)
             .then(function (blogs) { return res.status(201).json(blogs); })
             .catch(function (error) { return res.status(400).json(error); });
     };

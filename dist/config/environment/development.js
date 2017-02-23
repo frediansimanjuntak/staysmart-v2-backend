@@ -8,6 +8,7 @@ exports.default = {
     mongo: {
         uri: 'mongodb://localhost/staysmart-revamp'
     },
+    awsBucket: 'staysmart-revamp',
     // Seed database on startup
     seedDB: true
 };

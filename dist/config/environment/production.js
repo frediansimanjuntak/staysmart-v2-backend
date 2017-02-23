@@ -25,6 +25,6 @@ exports.default = {
         domain: ""
     },
     // AWS bucket name
-    awsBucket: 'mcst-app',
+    awsBucket: 'staysmart-revamp',
 };
 //# sourceMappingURL=production.js.map
