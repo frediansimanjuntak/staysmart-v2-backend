@@ -44,23 +44,29 @@ agreementsSchema.static('createAgreements', (agreements:Object):Promise<any> => 
 	});
 });
 
-agreementsSchema.static('updateAgreementsLOIandTA', (id:string, type:string, data:Object):Promise<any> => {
+agreementsSchema.static('updateAgreementsData', (id:string, type:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
 			return reject(new TypeError('LOI is not a valid object.'));
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
 
-		let agreementObj = {$set: {}};
-		for(var param in data) {
-			agreementObj.$set[type+'.data.'+param] = data[param];
+		if(type != 'inventory') {
+			let agreementObj = {$set: {}};
+			for(var param in data) {
+				agreementObj.$set[type+'.data.'+param] = data[param];
+			}
+			Agreements
+				.findByIdAndUpdate(id,agreementObj)
+				.exec((err, updated) => {
+					err ? reject(err)
+					: resolve();
+				});	
 		}
-		Agreements
-			.findByIdAndUpdate(id,agreementObj)
-			.exec((err, updated) => {
-				err ? reject(err)
-				: resolve();
-			});
+		else{
+			
+		}
+		
 	});
 });
 

@@ -35,7 +35,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (properties:Object, shareholder:Object, front:Object, back:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (properties:Object, front:Object, back:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(properties)) {
         return reject(new TypeError('Property is not a valid object.'));
@@ -49,16 +49,22 @@ propertiesSchema.static('createProperties', (properties:Object, shareholder:Obje
                 : resolve(saved);
           });
       var propertyID =_properties._id;
-      let shareholder_data:any = shareholder;
+      let shareholder_data:any = body.shareholder;
       let idFront = [];
       let idBack = [];
-      Attachments.createAttachments(front).then(res => {
-        idFront.push(res.idAtt);
-      });
-      Attachments.createAttachments(back).then(res => {
-        idBack.push(res.idAtt);
-      });
-      
+      let front_image:any = front;
+      let back_image:any = back;
+      if(front_image != null) {
+        Attachments.createAttachments(front_image).then(res => {
+          idFront.push(res.idAtt);
+        });
+      }
+      if(back_image != null) {
+        Attachments.createAttachments(back_image).then(res => {
+          idBack.push(res.idAtt);
+        });
+      }
+
       Properties
         .findByIdAndUpdate(propertyID, {
           $push: {

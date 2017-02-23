@@ -17,7 +17,7 @@ var AgreementsRoutes = (function () {
             .post(agreements_controller_1.AgreementsController.updateAgreements);
         router
             .route('/agreements/update/:id/:type')
-            .post(agreements_controller_1.AgreementsController.updateAgreementsLOIandTA);
+            .post(agreements_controller_1.AgreementsController.updateAgreementsData);
     };
     return AgreementsRoutes;
 }());

@@ -20,6 +20,6 @@ export class AgreementsRoutes {
 			.post(AgreementsController.updateAgreements);
 		router
 			.route('/agreements/update/:id/:type')
-			.post(AgreementsController.updateAgreementsLOIandTA);
+			.post(AgreementsController.updateAgreementsData);
 	}
 }
