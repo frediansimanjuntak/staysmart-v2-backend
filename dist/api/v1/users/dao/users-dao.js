@@ -70,25 +70,45 @@ users_model_1.default.static('updateUserData', function (id, type, userData, fro
             return reject(new TypeError('Identification proof data is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
-        var idFront = [];
-        var idBack = [];
         var userObj = { $set: {} };
         for (var param in userData) {
             userObj.$set[type + '.data.' + param] = userData[param];
         }
         attachments_dao_1.default.createAttachments(front).then(function (res) {
-            idFront.push(res.idAtt);
+            var idFront = res.idAtt;
+            console.log(idFront);
+            var front_proof = type + '.data.identification_proof.front';
+            console.log(front_proof);
+            Users
+                .update({ "_id": id }, {
+                $set: {
+                    front_proof: idFront
+                }
+            })
+                .exec(function (err, saved) {
+                err ? reject(err)
+                    : resolve(saved);
+            });
         });
         attachments_dao_1.default.createAttachments(back).then(function (res) {
-            idBack.push(res.idAtt);
+            var idBack = res.idAtt;
+            var back_proof = type + ".data.identification_proof.back";
+            Users
+                .findByIdAndUpdate(id, {
+                $set: {
+                    back_proof: idBack
+                }
+            })
+                .exec(function (err, saved) {
+                err ? reject(err)
+                    : resolve(saved);
+            });
         });
-        userObj.$set[type + '.data.identification_proof.front'] = idFront;
-        userObj.$set[type + '.data.identification_proof.back'] = idBack;
         Users
             .findByIdAndUpdate(id, userObj)
-            .exec(function (err, updated) {
+            .exec(function (err, saved) {
             err ? reject(err)
-                : resolve();
+                : resolve(saved);
         });
     });
 });

@@ -74,7 +74,7 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('updateUserData', (id:string, type: string, userData: Object, front: Object, back: Object):Promise<any> =>{
+usersSchema.static('updateUserData', (id:string, type:string, userData:Object, front:Object, back:Object):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
 		if(!_.isString(id) && !_.isObject(userData)) {
 			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
@@ -83,28 +83,48 @@ usersSchema.static('updateUserData', (id:string, type: string, userData: Object,
 			return reject(new TypeError('Identification proof data is not a valid object.'));
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
-		let idFront = [];
-		let idBack = [];
 		let userObj = {$set: {}};
 		for(var param in userData) {
 			userObj.$set[type+'.data.'+param] = userData[param];
 		}
 
 		Attachments.createAttachments(front).then(res => {
-			idFront.push(res.idAtt);
+			let idFront = res.idAtt;
+			console.log(idFront);
+			let front_proof = type+'.data.identification_proof.front';
+			console.log(front_proof);
+			Users
+				.update({"_id": id}, {
+					$set: {
+						front_proof: idFront
+					}
+				})
+				.exec((err, saved) => {
+					err ? reject(err)
+					: resolve(saved);
+				});
 		});
 		Attachments.createAttachments(back).then(res => {
-			idBack.push(res.idAtt);
+			let idBack = res.idAtt;
+			let back_proof = type+".data.identification_proof.back";
+			Users
+				.findByIdAndUpdate(id, {
+					$set: {
+						back_proof: idBack
+					}
+				})
+				.exec((err, saved) => {
+					err ? reject(err)
+					: resolve(saved);
+				});
 		});
 		
-		userObj.$set[type+'.data.identification_proof.front'] = idFront;
-		userObj.$set[type+'.data.identification_proof.back'] = idBack;
-
+		
 		Users
 			.findByIdAndUpdate(id, userObj)
-			.exec((err, updated) => {
+			.exec((err, saved) => {
 				err ? reject(err)
-				: resolve();
+				: resolve(saved);
 			});
 	});
 });
