@@ -5,7 +5,7 @@ var PaymentsSchema = new mongoose.Schema({
     type: { type: String, enum: ['loi', 'ta'] },
     fee: [
         {
-            code: { type: String },
+            code: { type: String, unique: true },
             name: { type: String },
             amount: { type: Number },
             status: { type: String, enum: ['paid', 'unpaid'] },
