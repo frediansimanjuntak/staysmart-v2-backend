@@ -51,6 +51,18 @@ blogs_model_1.default.static('deleteBlogs', function (id) {
             return reject(new TypeError('Id is not a valid string.'));
         }
         Blogs
+            .findById(id, function (err, blogs) {
+            if (blogs.cover != null) {
+                var ObjectID = mongoose.Types.ObjectId;
+                attachments_dao_1.default
+                    .findByIdAndRemove(blogs.cover)
+                    .exec(function (err, deleted) {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+            }
+        });
+        Blogs
             .findByIdAndRemove(id)
             .exec(function (err, deleted) {
             err ? reject(err)

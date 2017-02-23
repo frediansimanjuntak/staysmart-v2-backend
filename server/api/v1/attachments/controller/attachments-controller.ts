@@ -33,14 +33,4 @@ export class AttachmentsController {
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
-
-	static updateAttachments(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _attachments = req.body;
-
-		AttachmentsDAO
-		['updateAttachments'](_id, _attachments)
-		.then(attachments => res.status(201).json(attachments))
-		.catch(error => res.status(400).json(error));
-	}
 }
