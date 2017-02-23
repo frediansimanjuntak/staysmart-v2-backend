@@ -3,6 +3,7 @@ var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
 var developments_model_1 = require("../model/developments-model");
+var properties_dao_1 = require("../../properties/dao/properties-dao");
 developments_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
@@ -43,6 +44,26 @@ developments_model_1.default.static('deleteDevelopments', function (id) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        Developments
+            .findById(id, function (err, developments) {
+            if (developments.properties != null) {
+                var ObjectID = mongoose.Types.ObjectId;
+                var developments_properties = [].concat(developments.properties);
+                for (var i = 0; i < developments_properties.length; i++) {
+                    var properties = developments_properties[i];
+                    properties_dao_1.default
+                        .findByIdAndRemove(properties)
+                        .exec(function (err, deleted) {
+                        err ? reject(err)
+                            : resolve(deleted);
+                    });
+                }
+            }
+        })
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
+        });
         Developments
             .findByIdAndRemove(id)
             .exec(function (err, deleted) {
