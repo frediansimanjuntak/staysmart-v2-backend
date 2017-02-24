@@ -16,7 +16,6 @@ var AttachmentsController = (function () {
     };
     AttachmentsController.createAttachments = function (req, res) {
         var _attachments = req["files"].attachment;
-        console.log(_attachments);
         attachments_dao_1.default['createAttachments'](_attachments)
             .then(function (attachments) { return res.status(201).json(attachments); })
             .catch(function (error) { return res.status(400).json(error); });

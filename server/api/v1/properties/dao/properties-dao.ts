@@ -35,10 +35,13 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (properties:Object, front:Object, back:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (properties:Object, front:Object, back:Object, living:Object, dining:Object, bed:Object, toilet:Object, kitchen:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(properties)) {
         return reject(new TypeError('Property is not a valid object.'));
+      }
+      if (!_.isObject(living)) {
+        return reject(new TypeError('Living is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = properties;
@@ -49,36 +52,98 @@ propertiesSchema.static('createProperties', (properties:Object, front:Object, ba
                 : resolve(saved);
           });
       var propertyID =_properties._id;
-      let shareholder_data:any = body.shareholder;
-      let idFront = [];
-      let idBack = [];
-      let front_image:any = front;
-      let back_image:any = back;
-      if(front_image != null) {
-        Attachments.createAttachments(front_image).then(res => {
-          idFront.push(res.idAtt);
-        });
-      }
-      if(back_image != null) {
-        Attachments.createAttachments(back_image).then(res => {
-          idBack.push(res.idAtt);
-        });
-      }
 
-      Properties
-        .findByIdAndUpdate(propertyID, {
-          $push: {
-            "shareholder.name": shareholder_data.name,
-            "shareholder.identification_type": shareholder_data.identification_type,
-            "shareholder.identification_number": shareholder_data.identification_number,
-            "shareholder.identification_proof.front": idFront,
-            "shareholder.identification_proof.back": idBack,
+      if(front!= null) {
+        Attachments.createAttachments(front).then(res => {
+          var front_proof = res.idAtt;
+
+          if(back != null) {
+            Attachments.createAttachments(back).then(res => {
+              var back_proof = res.idAtt;
+
+              //create shareholder
+              
+            });
           }
-        })
-        .exec((err, saved) => {
-            err ? reject(err)
-                : resolve(saved);
         });
+      }
+      
+      Attachments.createAttachments(living).then(res => {
+        var idLiving = res.idAtt;
+        for(var i = 0; i < idLiving.length; i++){
+          Properties
+            .update({"_id": propertyID}, {
+              $push: {
+                "pictures.living": idLiving[i]
+              }
+            })
+            .exec((err, saved) => {
+              err ? reject(err)
+              : resolve(saved);
+            });  
+        }
+      });
+      Attachments.createAttachments(dining).then(res => {
+        var idDining = res.idAtt;
+        for(var i = 0; i < idDining.length; i++){
+          Properties
+            .update({"_id": propertyID}, {
+              $push: {
+                "pictures.dining": idDining[i]
+              }
+            })
+            .exec((err, saved) => {
+              err ? reject(err)
+              : resolve(saved);
+            });  
+        }
+      });
+      Attachments.createAttachments(bed).then(res => {
+        var idBed = res.idAtt;
+        for(var i = 0; i < idBed.length; i++){
+          Properties
+            .update({"_id": propertyID}, {
+              $push: {
+                "pictures.bed": idBed[i]
+              }
+            })
+            .exec((err, saved) => {
+              err ? reject(err)
+              : resolve(saved);
+            });  
+        }
+      });
+      Attachments.createAttachments(toilet).then(res => {
+        var idToilet = res.idAtt;
+        for(var i = 0; i < idToilet.length; i++){
+          Properties
+            .update({"_id": propertyID}, {
+              $push: {
+                "pictures.toilet": idToilet[i]
+              }
+            })
+            .exec((err, saved) => {
+              err ? reject(err)
+              : resolve(saved);
+            });  
+        }
+      });
+      Attachments.createAttachments(kitchen).then(res => {
+        var idKitchen = res.idAtt;
+        for(var i = 0; i < idKitchen.length; i++){
+          Properties
+            .update({"_id": propertyID}, {
+              $push: {
+                "pictures.kitchen": idKitchen[i]
+              }
+            })
+            .exec((err, saved) => {
+              err ? reject(err)
+              : resolve(saved);
+            });  
+        }
+      });
+      
 
       Developments
         .findByIdAndUpdate(body.development, {

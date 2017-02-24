@@ -68,7 +68,7 @@ notifications_model_1.default.static('updateNotifications', function (id, type) 
                     : resolve(updated);
             });
         }
-        else {
+        else if (type === "click") {
             Notifications
                 .findByIdAndUpdate(id, {
                 $set: {

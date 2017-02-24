@@ -21,8 +21,13 @@ export class PropertiesController {
 		let _properties = req.body;
 		let _front = req["files"].front;
 		let _back = req["files"].back;
+		let _living = req["files"].living;
+		let _dining = req["files"].dining;
+		let _bed = req["files"].bed;
+		let _toilet = req["files"].toilet;
+		let _kitchen = req["files"].kitchen;
 		PropertiesDAO
-		['createProperties'](_properties, _front, _back)
+		['createProperties'](_properties, _front, _back, _living, _dining, _bed, _toilet, _kitchen)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

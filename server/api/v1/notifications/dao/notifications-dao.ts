@@ -78,7 +78,7 @@ notificationsSchema.static('updateNotifications', (id:string, type:string):Promi
                     : resolve(updated);
             });
         }
-        else{
+        else if(type === "click"){
           Notifications
             .findByIdAndUpdate(id, {
               $set: {
