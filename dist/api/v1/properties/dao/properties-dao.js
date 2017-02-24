@@ -28,13 +28,10 @@ properties_model_1.default.static('getById', function (id) {
         });
     });
 });
-properties_model_1.default.static('createProperties', function (properties, front, back, living, dining, bed, toilet, kitchen) {
+properties_model_1.default.static('createProperties', function (properties) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(properties)) {
             return reject(new TypeError('Property is not a valid object.'));
-        }
-        if (!_.isObject(living)) {
-            return reject(new TypeError('Living is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = properties;
@@ -44,17 +41,27 @@ properties_model_1.default.static('createProperties', function (properties, fron
                 : resolve(saved);
         });
         var propertyID = _properties._id;
-        if (front != null) {
-            attachments_dao_1.default.createAttachments(front).then(function (res) {
-                var front_proof = res.idAtt;
-                if (back != null) {
-                    attachments_dao_1.default.createAttachments(back).then(function (res) {
-                        var back_proof = res.idAtt;
-                        //create shareholder
-                    });
-                }
-            });
+        developments_dao_1.default
+            .findByIdAndUpdate(body.development, {
+            $push: {
+                "properties": propertyID
+            }
+        })
+            .exec(function (err, saved) {
+            err ? reject(err)
+                : resolve(saved);
+        });
+    });
+});
+properties_model_1.default.static('createPropertyPictures', function (propertyID, living, dining, bed, toilet, kitchen) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(propertyID)) {
+            return reject(new TypeError('Property ID is not a valid string.'));
         }
+        if (!_.isObject(living)) {
+            return reject(new TypeError('Living is not a valid object.'));
+        }
+        var ObjectID = mongoose.Types.ObjectId;
         attachments_dao_1.default.createAttachments(living).then(function (res) {
             var idLiving = res.idAtt;
             for (var i = 0; i < idLiving.length; i++) {
@@ -130,16 +137,6 @@ properties_model_1.default.static('createProperties', function (properties, fron
                 });
             }
         });
-        developments_dao_1.default
-            .findByIdAndUpdate(body.development, {
-            $push: {
-                "properties": propertyID
-            }
-        })
-            .exec(function (err, saved) {
-            err ? reject(err)
-                : resolve(saved);
-        });
     });
 });
 properties_model_1.default.static('deleteProperties', function (id) {
@@ -152,6 +149,28 @@ properties_model_1.default.static('deleteProperties', function (id) {
             .exec(function (err, deleted) {
             err ? reject(err)
                 : resolve();
+        });
+    });
+});
+properties_model_1.default.static('deletePropertyPictures', function (id, type, pictureID) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        var field = "pictures." + type;
+        var picObj = { $pull: {} };
+        picObj.$pull[field] = pictureID;
+        Properties
+            .findByIdAndUpdate(id, picObj)
+            .exec(function (err, saved) {
+            err ? reject(err)
+                : resolve(saved);
+        });
+        attachments_dao_1.default
+            .findByIdAndRemove(pictureID)
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
         });
     });
 });

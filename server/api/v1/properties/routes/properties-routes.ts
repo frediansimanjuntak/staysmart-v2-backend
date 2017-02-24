@@ -19,5 +19,13 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/update/:id')
 			.post(auth.isAuthenticated(),PropertiesController.updateProperties);
+
+		router
+			.route('/properties/pictures/:id')
+			.post(auth.isAuthenticated(),PropertiesController.createPropertyPictures);
+
+		router
+			.route('/properties/pictures/delete/:id/:type/:pictureID')
+			.post(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
 	}
 } 

@@ -19,15 +19,23 @@ export class PropertiesController {
 
 	static createProperties(req: express.Request, res: express.Response):void {
 		let _properties = req.body;
-		let _front = req["files"].front;
-		let _back = req["files"].back;
+		
+		PropertiesDAO
+		['createProperties'](_properties)
+		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static createPropertyPictures(req: express.Request, res: express.Response):void {
+		let _propertyID = req.params.id;
 		let _living = req["files"].living;
 		let _dining = req["files"].dining;
 		let _bed = req["files"].bed;
 		let _toilet = req["files"].toilet;
 		let _kitchen = req["files"].kitchen;
+		
 		PropertiesDAO
-		['createProperties'](_properties, _front, _back, _living, _dining, _bed, _toilet, _kitchen)
+		['createPropertyPictures'](_propertyID, _living, _dining, _bed, _toilet, _kitchen)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -36,6 +44,16 @@ export class PropertiesController {
 		let _id = req.params.id;
 		PropertiesDAO
 		['deleteProperties'](_id)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
+
+	static deletePropertyPictures(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _type = req.params.type;
+		let _pictureID = req.params.pictureID;
+		PropertiesDAO
+		['deletePropertyPictures'](_id, _type, _pictureID)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}

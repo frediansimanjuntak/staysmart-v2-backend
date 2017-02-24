@@ -16,20 +16,32 @@ var PropertiesController = (function () {
     };
     PropertiesController.createProperties = function (req, res) {
         var _properties = req.body;
-        var _front = req["files"].front;
-        var _back = req["files"].back;
+        properties_dao_1.default['createProperties'](_properties)
+            .then(function (properties) { return res.status(201).json(properties); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    PropertiesController.createPropertyPictures = function (req, res) {
+        var _propertyID = req.params.id;
         var _living = req["files"].living;
         var _dining = req["files"].dining;
         var _bed = req["files"].bed;
         var _toilet = req["files"].toilet;
         var _kitchen = req["files"].kitchen;
-        properties_dao_1.default['createProperties'](_properties, _front, _back, _living, _dining, _bed, _toilet, _kitchen)
+        properties_dao_1.default['createPropertyPictures'](_propertyID, _living, _dining, _bed, _toilet, _kitchen)
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };
     PropertiesController.deleteProperties = function (req, res) {
         var _id = req.params.id;
         properties_dao_1.default['deleteProperties'](_id)
+            .then(function () { return res.status(200).end(); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    PropertiesController.deletePropertyPictures = function (req, res) {
+        var _id = req.params.id;
+        var _type = req.params.type;
+        var _pictureID = req.params.pictureID;
+        properties_dao_1.default['deletePropertyPictures'](_id, _type, _pictureID)
             .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };

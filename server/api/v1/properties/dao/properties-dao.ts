@@ -35,13 +35,10 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (properties:Object, front:Object, back:Object, living:Object, dining:Object, bed:Object, toilet:Object, kitchen:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (properties:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(properties)) {
         return reject(new TypeError('Property is not a valid object.'));
-      }
-      if (!_.isObject(living)) {
-        return reject(new TypeError('Living is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = properties;
@@ -51,23 +48,30 @@ propertiesSchema.static('createProperties', (properties:Object, front:Object, ba
             err ? reject(err)
                 : resolve(saved);
           });
-      var propertyID =_properties._id;
-
-      if(front!= null) {
-        Attachments.createAttachments(front).then(res => {
-          var front_proof = res.idAtt;
-
-          if(back != null) {
-            Attachments.createAttachments(back).then(res => {
-              var back_proof = res.idAtt;
-
-              //create shareholder
-              
-            });
+      var propertyID = _properties._id;
+      Developments
+        .findByIdAndUpdate(body.development, {
+          $push: {
+            "properties": propertyID
           }
+        })
+        .exec((err, saved) => {
+            err ? reject(err)
+                : resolve(saved);
         });
+    });
+});
+
+propertiesSchema.static('createPropertyPictures', (propertyID:string, living:Object, dining:Object, bed:Object, toilet:Object, kitchen:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      if (!_.isString(propertyID)) {
+        return reject(new TypeError('Property ID is not a valid string.'));
       }
-      
+      if (!_.isObject(living)) {
+        return reject(new TypeError('Living is not a valid object.'));
+      }
+      var ObjectID = mongoose.Types.ObjectId;  
+
       Attachments.createAttachments(living).then(res => {
         var idLiving = res.idAtt;
         for(var i = 0; i < idLiving.length; i++){
@@ -143,18 +147,6 @@ propertiesSchema.static('createProperties', (properties:Object, front:Object, ba
             });  
         }
       });
-      
-
-      Developments
-        .findByIdAndUpdate(body.development, {
-          $push: {
-            "properties": propertyID
-          }
-        })
-        .exec((err, saved) => {
-            err ? reject(err)
-                : resolve(saved);
-        });
     });
 });
 
@@ -171,6 +163,30 @@ propertiesSchema.static('deleteProperties', (id:string):Promise<any> => {
                   : resolve();
           });
         
+    });
+});
+
+propertiesSchema.static('deletePropertyPictures', (id:string, type:string, pictureID:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+
+        var field = "pictures."+type;
+        let picObj = {$pull: {}};
+        picObj.$pull[field] = pictureID;        
+        Properties
+          .findByIdAndUpdate(id, picObj)
+          .exec((err, saved) => {
+            err ? reject(err)
+            : resolve(saved);
+          });
+        Attachments
+          .findByIdAndRemove(pictureID)
+          .exec((err, deleted) => {
+            err ? reject(err)
+            : resolve(deleted);
+          });
     });
 });
 
