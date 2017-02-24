@@ -43,4 +43,24 @@ export class CompaniesController {
 		.then(companies => res.status(201).json(companies))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static createDocument(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _attachments = req["files"].attachment;
+
+		CompaniesDAO
+		['createDocument'](_id, _attachments)
+		.then(companies => res.status(201).json(companies))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static deleteDocument(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _companies = req.body;
+
+		CompaniesDAO
+		['createDocument'](_id, _companies)
+		.then(companies => res.status(201).json(companies))
+		.catch(error => res.status(400).json(error));
+	}
 }
