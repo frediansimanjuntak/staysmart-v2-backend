@@ -76,15 +76,11 @@ users_model_1.default.static('updateUserData', function (id, type, userData, fro
         }
         attachments_dao_1.default.createAttachments(front).then(function (res) {
             var idFront = res.idAtt;
-            console.log(idFront);
+            var frontObj = { $set: {} };
             var front_proof = type + '.data.identification_proof.front';
-            console.log(front_proof);
+            frontObj.$set[front_proof] = idFront;
             Users
-                .update({ "_id": id }, {
-                $set: {
-                    front_proof: idFront
-                }
-            })
+                .findByIdAndUpdate(id, frontObj)
                 .exec(function (err, saved) {
                 err ? reject(err)
                     : resolve(saved);
@@ -92,13 +88,11 @@ users_model_1.default.static('updateUserData', function (id, type, userData, fro
         });
         attachments_dao_1.default.createAttachments(back).then(function (res) {
             var idBack = res.idAtt;
-            var back_proof = type + ".data.identification_proof.back";
+            var backObj = { $set: {} };
+            var back_proof = type + '.data.identification_proof.back';
+            backObj.$set[back_proof] = idBack;
             Users
-                .findByIdAndUpdate(id, {
-                $set: {
-                    back_proof: idBack
-                }
-            })
+                .findByIdAndUpdate(id, backObj)
                 .exec(function (err, saved) {
                 err ? reject(err)
                     : resolve(saved);
