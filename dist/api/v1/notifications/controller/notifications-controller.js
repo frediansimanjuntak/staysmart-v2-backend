@@ -28,8 +28,8 @@ var NotificationsController = (function () {
     };
     NotificationsController.updateNotifications = function (req, res) {
         var _id = req.params.id;
-        var _notifications = req.body;
-        notifications_dao_1.default['updateNotifications'](_id, _notifications)
+        var _type = req.params.type;
+        notifications_dao_1.default['updateNotifications'](_id, _type)
             .then(function (notifications) { return res.status(201).json(notifications); })
             .catch(function (error) { return res.status(400).json(error); });
     };

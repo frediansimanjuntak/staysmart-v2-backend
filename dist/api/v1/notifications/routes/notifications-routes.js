@@ -14,7 +14,7 @@ var NotificationsRoutes = (function () {
             .get(auth.isAuthenticated(), notifications_controller_1.NotificationsController.getById)
             .put(auth.isAuthenticated(), notifications_controller_1.NotificationsController.deleteNotifications);
         router
-            .route('/notifications/update/:id')
+            .route('/notifications/update/:type/:id')
             .post(auth.isAuthenticated(), notifications_controller_1.NotificationsController.updateNotifications);
     };
     return NotificationsRoutes;

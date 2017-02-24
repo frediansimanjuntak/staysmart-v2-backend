@@ -35,10 +35,10 @@ export class NotificationsController {
 
 	static updateNotifications(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _notifications = req.body;
+		let _type = req.params.type;
 
 		NotificationsDAO
-		['updateNotifications'](_id, _notifications)
+		['updateNotifications'](_id, _type)
 		.then(notifications => res.status(201).json(notifications))
 		.catch(error => res.status(400).json(error));
 	}

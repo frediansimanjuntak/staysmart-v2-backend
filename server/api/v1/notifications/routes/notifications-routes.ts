@@ -17,7 +17,7 @@ export class NotificationsRoutes {
 			.put(auth.isAuthenticated(),NotificationsController.deleteNotifications);
 
 		router
-			.route('/notifications/update/:id')
+			.route('/notifications/update/:type/:id')
 			.post(auth.isAuthenticated(),NotificationsController.updateNotifications);
 	}
 } 

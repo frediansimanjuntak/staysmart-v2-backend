@@ -8,7 +8,7 @@ var AttachmentsSchema = new mongoose.Schema({
     type: { type: String },
     metadata: {},
     remarks: { type: String },
-    uploaded_at: { type: Date }
+    uploaded_at: { type: Date, default: Date.now }
 });
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = AttachmentsSchema;

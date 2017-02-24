@@ -12,7 +12,7 @@ var AttachmentsSchema = new mongoose.Schema({
 	type: {type: String},
 	metadata: {},
 	remarks: {type: String},
-	uploaded_at: {type: Date}
+	uploaded_at: {type: Date, default: Date.now}
 });
 
 export default AttachmentsSchema;
