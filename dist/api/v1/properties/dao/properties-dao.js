@@ -28,10 +28,13 @@ properties_model_1.default.static('getById', function (id) {
         });
     });
 });
-properties_model_1.default.static('createProperties', function (properties, front, back) {
+properties_model_1.default.static('createProperties', function (properties, front, back, living, dining, bed, toilet, kitchen) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(properties)) {
             return reject(new TypeError('Property is not a valid object.'));
+        }
+        if (!_.isObject(living)) {
+            return reject(new TypeError('Living is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
         var body = properties;
@@ -41,34 +44,91 @@ properties_model_1.default.static('createProperties', function (properties, fron
                 : resolve(saved);
         });
         var propertyID = _properties._id;
-        var shareholder_data = body.shareholder;
-        var idFront = [];
-        var idBack = [];
-        var front_image = front;
-        var back_image = back;
-        if (front_image != null) {
-            attachments_dao_1.default.createAttachments(front_image).then(function (res) {
-                idFront.push(res.idAtt);
+        if (front != null) {
+            attachments_dao_1.default.createAttachments(front).then(function (res) {
+                var front_proof = res.idAtt;
+                if (back != null) {
+                    attachments_dao_1.default.createAttachments(back).then(function (res) {
+                        var back_proof = res.idAtt;
+                        //create shareholder
+                    });
+                }
             });
         }
-        if (back_image != null) {
-            attachments_dao_1.default.createAttachments(back_image).then(function (res) {
-                idBack.push(res.idAtt);
-            });
-        }
-        Properties
-            .findByIdAndUpdate(propertyID, {
-            $push: {
-                "shareholder.name": shareholder_data.name,
-                "shareholder.identification_type": shareholder_data.identification_type,
-                "shareholder.identification_number": shareholder_data.identification_number,
-                "shareholder.identification_proof.front": idFront,
-                "shareholder.identification_proof.back": idBack,
+        attachments_dao_1.default.createAttachments(living).then(function (res) {
+            var idLiving = res.idAtt;
+            for (var i = 0; i < idLiving.length; i++) {
+                Properties
+                    .update({ "_id": propertyID }, {
+                    $push: {
+                        "pictures.living": idLiving[i]
+                    }
+                })
+                    .exec(function (err, saved) {
+                    err ? reject(err)
+                        : resolve(saved);
+                });
             }
-        })
-            .exec(function (err, saved) {
-            err ? reject(err)
-                : resolve(saved);
+        });
+        attachments_dao_1.default.createAttachments(dining).then(function (res) {
+            var idDining = res.idAtt;
+            for (var i = 0; i < idDining.length; i++) {
+                Properties
+                    .update({ "_id": propertyID }, {
+                    $push: {
+                        "pictures.dining": idDining[i]
+                    }
+                })
+                    .exec(function (err, saved) {
+                    err ? reject(err)
+                        : resolve(saved);
+                });
+            }
+        });
+        attachments_dao_1.default.createAttachments(bed).then(function (res) {
+            var idBed = res.idAtt;
+            for (var i = 0; i < idBed.length; i++) {
+                Properties
+                    .update({ "_id": propertyID }, {
+                    $push: {
+                        "pictures.bed": idBed[i]
+                    }
+                })
+                    .exec(function (err, saved) {
+                    err ? reject(err)
+                        : resolve(saved);
+                });
+            }
+        });
+        attachments_dao_1.default.createAttachments(toilet).then(function (res) {
+            var idToilet = res.idAtt;
+            for (var i = 0; i < idToilet.length; i++) {
+                Properties
+                    .update({ "_id": propertyID }, {
+                    $push: {
+                        "pictures.toilet": idToilet[i]
+                    }
+                })
+                    .exec(function (err, saved) {
+                    err ? reject(err)
+                        : resolve(saved);
+                });
+            }
+        });
+        attachments_dao_1.default.createAttachments(kitchen).then(function (res) {
+            var idKitchen = res.idAtt;
+            for (var i = 0; i < idKitchen.length; i++) {
+                Properties
+                    .update({ "_id": propertyID }, {
+                    $push: {
+                        "pictures.kitchen": idKitchen[i]
+                    }
+                })
+                    .exec(function (err, saved) {
+                    err ? reject(err)
+                        : resolve(saved);
+                });
+            }
         });
         developments_dao_1.default
             .findByIdAndUpdate(body.development, {
