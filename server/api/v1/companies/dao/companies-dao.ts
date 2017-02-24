@@ -44,25 +44,27 @@ companiesSchema.static('createCompanies', (companies:Object, attachments:Object)
               });
 
         var companiesId=_companies._id;
-        
-        var attachment_data = [].concat(attachments)
-        for (var i = 0; i < attachment_data.length; i++) {
-          let attachment = attachment_data[i];
-          Attachments.createAttachments(attachment).then(res => {
+          Attachments.createAttachments(attachments).then(res => {
             var idAttachment=res.idAtt;
-            Companies
-              .findByIdAndUpdate(companiesId, {
-                $push : {
-                  "document": idAttachment
-                }
-              })
-              .exec((err, update) => {
-                  err ? reject(err)
-                      : resolve(update);
+            console.log(idAttachment);
+            for (var i = 0; i < idAttachment.length; i++){
+              console.log(idAttachment[i]);
+              Companies
+                .findByIdAndUpdate(companiesId, {
+                  $push : {
+                    "document": idAttachment[i]
+                  }
+                })
+                
+                .exec((err, update) => {
+                    err ? reject(err)
+                        : resolve(update);
               });
+            }
+            
           });
-        }
-    });
+       }
+    );
 });
 
 companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {

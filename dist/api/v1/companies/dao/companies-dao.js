@@ -38,23 +38,23 @@ companies_model_1.default.static('createCompanies', function (companies, attachm
                 : resolve(saved);
         });
         var companiesId = _companies._id;
-        var attachment_data = [].concat(attachments);
-        for (var i = 0; i < attachment_data.length; i++) {
-            var attachment = attachment_data[i];
-            attachments_dao_1.default.createAttachments(attachment).then(function (res) {
-                var idAttachment = res.idAtt;
+        attachments_dao_1.default.createAttachments(attachments).then(function (res) {
+            var idAttachment = res.idAtt;
+            console.log(idAttachment);
+            for (var i = 0; i < idAttachment.length; i++) {
+                console.log(idAttachment[i]);
                 Companies
                     .findByIdAndUpdate(companiesId, {
                     $push: {
-                        "document": idAttachment
+                        "document": idAttachment[i]
                     }
                 })
                     .exec(function (err, update) {
                     err ? reject(err)
                         : resolve(update);
                 });
-            });
-        }
+            }
+        });
     });
 });
 companies_model_1.default.static('deleteCompanies', function (id) {
