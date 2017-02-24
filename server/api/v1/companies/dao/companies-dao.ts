@@ -44,22 +44,22 @@ companiesSchema.static('createCompanies', (companies:Object, attachments:Object)
               });
 
         var companiesId=_companies._id;
-          Attachments.createAttachments(attachments).then(res => {
-            var idAttachment=res.idAtt;
-            console.log(idAttachment);
-            for (var i = 0; i < idAttachment.length; i++){
-              console.log(idAttachment[i]);
-              Companies
-                .findByIdAndUpdate(companiesId, {
-                  $push : {
-                    "document": idAttachment[i]
-                  }
-                })
-                
-                .exec((err, update) => {
-                    err ? reject(err)
-                        : resolve(update);
-              });
+            Attachments.createAttachments(attachments).then(res => {
+                var idAttachment=res.idAtt;
+                console.log(idAttachment);
+                for (var i = 0; i < idAttachment.length; i++){
+                    console.log(idAttachment[i]);
+                    Companies
+                        .findByIdAndUpdate(companiesId, {
+                            $push : {
+                                "document": idAttachment[i]
+                            }
+                        })
+                      
+          .exec((err, update) => {
+              err ? reject(err)
+                  : resolve(update);
+        });
             }
             
           });
