@@ -89,36 +89,30 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 		}
 
 		Attachments.createAttachments(front).then(res => {
-			let idFront = res.idAtt;
-			console.log(idFront);
+			var idFront = res.idAtt;
+			let frontObj = {$set: {}};
 			let front_proof = type+'.data.identification_proof.front';
-			console.log(front_proof);
+			frontObj.$set[front_proof] = idFront;
 			Users
-				.update({"_id": id}, {
-					$set: {
-						front_proof: idFront
-					}
-				})
+				.findByIdAndUpdate(id, frontObj)
 				.exec((err, saved) => {
 					err ? reject(err)
 					: resolve(saved);
 				});
 		});
+
 		Attachments.createAttachments(back).then(res => {
-			let idBack = res.idAtt;
-			let back_proof = type+".data.identification_proof.back";
+			var idBack = res.idAtt;
+			let backObj = {$set: {}};
+			let back_proof = type+'.data.identification_proof.back';
+			backObj.$set[back_proof] = idBack;
 			Users
-				.findByIdAndUpdate(id, {
-					$set: {
-						back_proof: idBack
-					}
-				})
+				.findByIdAndUpdate(id, backObj)
 				.exec((err, saved) => {
 					err ? reject(err)
 					: resolve(saved);
 				});
 		});
-		
 		
 		Users
 			.findByIdAndUpdate(id, userObj)

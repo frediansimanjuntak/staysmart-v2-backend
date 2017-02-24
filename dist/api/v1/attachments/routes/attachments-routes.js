@@ -13,9 +13,6 @@ var AttachmentsRoutes = (function () {
             .route('/attachments/:id')
             .get(auth.isAuthenticated(), attachments_controller_1.AttachmentsController.getById)
             .put(auth.isAuthenticated(), attachments_controller_1.AttachmentsController.deleteAttachments);
-        router
-            .route('/attachments/update/:id')
-            .post(auth.isAuthenticated(), attachments_controller_1.AttachmentsController.updateAttachments);
     };
     return AttachmentsRoutes;
 }());

@@ -27,13 +27,6 @@ var AttachmentsController = (function () {
             .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    AttachmentsController.updateAttachments = function (req, res) {
-        var _id = req.params.id;
-        var _attachments = req.body;
-        attachments_dao_1.default['updateAttachments'](_id, _attachments)
-            .then(function (attachments) { return res.status(201).json(attachments); })
-            .catch(function (error) { return res.status(400).json(error); });
-    };
     return AttachmentsController;
 }());
 exports.AttachmentsController = AttachmentsController;

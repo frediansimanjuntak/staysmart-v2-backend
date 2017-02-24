@@ -75,19 +75,6 @@ attachments_model_1.default.static('deleteAttachments', function (id) {
         });
     });
 });
-attachments_model_1.default.static('updateAttachments', function (id, attachments) {
-    return new Promise(function (resolve, reject) {
-        if (!_.isObject(attachments)) {
-            return reject(new TypeError('Attachment is not a valid object.'));
-        }
-        Attachments
-            .findByIdAndUpdate(id, attachments)
-            .exec(function (err, updated) {
-            err ? reject(err)
-                : resolve(updated);
-        });
-    });
-});
 var Attachments = mongoose.model('Attachments', attachments_model_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Attachments;
