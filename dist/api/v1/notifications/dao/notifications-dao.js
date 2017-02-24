@@ -51,17 +51,35 @@ notifications_model_1.default.static('deleteNotifications', function (id) {
         });
     });
 });
-notifications_model_1.default.static('updateNotifications', function (id, notifications) {
+notifications_model_1.default.static('updateNotifications', function (id, type) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(notifications)) {
-            return reject(new TypeError('Notification is not a valid object.'));
+        if (!_.isString(type)) {
+            return reject(new TypeError('Notification type is not a valid object.'));
         }
-        Notifications
-            .findByIdAndUpdate(id, notifications)
-            .exec(function (err, updated) {
-            err ? reject(err)
-                : resolve(updated);
-        });
+        if (type === "read") {
+            Notifications
+                .findByIdAndUpdate(id, {
+                $set: {
+                    "read_at": Date.now
+                }
+            })
+                .exec(function (err, updated) {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+        }
+        else {
+            Notifications
+                .findByIdAndUpdate(id, {
+                $set: {
+                    "clicked": true
+                }
+            })
+                .exec(function (err, updated) {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+        }
     });
 });
 var Notifications = mongoose.model('Notifications', notifications_model_1.default);

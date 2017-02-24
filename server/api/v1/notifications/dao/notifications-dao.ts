@@ -60,18 +60,36 @@ notificationsSchema.static('deleteNotifications', (id:string):Promise<any> => {
     });
 });
 
-notificationsSchema.static('updateNotifications', (id:string, notifications:Object):Promise<any> => {
+notificationsSchema.static('updateNotifications', (id:string, type:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(notifications)) {
-          return reject(new TypeError('Notification is not a valid object.'));
+        if (!_.isString(type)) {
+          return reject(new TypeError('Notification type is not a valid object.'));
         }
-
-        Notifications
-        .findByIdAndUpdate(id, notifications)
-        .exec((err, updated) => {
-              err ? reject(err)
-                  : resolve(updated);
-          });
+        
+        if(type === "read") {
+          Notifications
+            .findByIdAndUpdate(id, {
+              $set: {
+                "read_at": Date.now
+              }
+            })
+            .exec((err, updated) => {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+        }
+        else{
+          Notifications
+            .findByIdAndUpdate(id, {
+              $set: {
+                "clicked": true
+              }
+            })
+            .exec((err, updated) => {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+        }
     });
 });
 
