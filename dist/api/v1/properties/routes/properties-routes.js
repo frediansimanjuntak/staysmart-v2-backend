@@ -16,6 +16,12 @@ var PropertiesRoutes = (function () {
         router
             .route('/properties/update/:id')
             .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateProperties);
+        router
+            .route('/properties/pictures/:id')
+            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.createPropertyPictures);
+        router
+            .route('/properties/pictures/delete/:id/:type/:pictureID')
+            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertyPictures);
     };
     return PropertiesRoutes;
 }());
