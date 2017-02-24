@@ -19,5 +19,13 @@ export class CompaniesRoutes {
 		router
 			.route('/companies/update/:id')
 			.post(auth.isAuthenticated(),CompaniesController.updateCompanies);
+
+		router
+			.route('/companies/document/')
+			.post(auth.isAuthenticated(),CompaniesController.createDocument);
+
+		router
+			.route('/companies/document/:id')
+			.post(auth.isAuthenticated(),CompaniesController.deleteDocument);
 	}
 } 

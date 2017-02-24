@@ -116,7 +116,54 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<
               err ? reject(err)
                   : resolve(updated);
           });
+    }); 
+});
+
+
+companiesSchema.static('createDocument', (id:string, attachments:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isObject(document)) {
+            return reject(new TypeError('Document is not a valid object.'));
+        }
+        Attachments.createAttachments(attachments).then(res => {
+            var idAttachment=res.idAtt;
+            console.log(idAttachment);
+            for (var i = 0; i < idAttachment.length; i++){
+                console.log(idAttachment[i]);
+                  Companies
+                  .findById({id,
+                    $push:{"document":idAttachment[i]}
+                  })
+                  .exec((err, saved) => {
+                        err ? reject(err)
+                            : resolve(saved);
+                  });
+            }
+        });
     });
+});
+
+
+companiesSchema.static('deleteDocument', (id:string, companies:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    if (!_.isObject(document)) {
+      return reject(new TypeError('Document is not a valid object.'));
+    }
+    Companies
+      .findByIdAndUpdate(id, {
+        $pull:{"document": companies}
+      })
+      .exec((err,deleted) => {
+            err ? reject(err)
+                : resolve(deleted);
+      });
+    Attachments
+      .findByIdAndRemove(companies)
+      .exec((err,deleted) => {
+          err ? reject(err)
+              : resolve(deleted);
+      });
+  });
 });
 
 let Companies = mongoose.model('Companies', companiesSchema);
