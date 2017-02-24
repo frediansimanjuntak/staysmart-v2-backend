@@ -3,7 +3,7 @@ var mongoose = require("mongoose");
 var Promise = require("bluebird");
 var _ = require("lodash");
 var appointments_model_1 = require("../model/appointments-model");
-// import Schedules from '../../schedules/dao/schedules-dao'
+// import Schedules from '../../schedules/dao/schedules-dao' 
 appointments_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
