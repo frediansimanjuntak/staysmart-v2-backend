@@ -20,6 +20,19 @@ var PropertiesController = (function () {
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    PropertiesController.updateDetails = function (req, res) {
+        var _properties = req.body;
+        var _id = req.param.id;
+        properties_dao_1.default['updateDetails'](_properties, _id)
+            .then(function (properties) { return res.status(201).json(properties); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    PropertiesController.deleteDetails = function (req, res) {
+        var _id = req.params.id;
+        properties_dao_1.default['deleteDetails'](_id)
+            .then(function () { return res.status(200).end(); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     PropertiesController.createPropertyPictures = function (req, res) {
         var _propertyID = req.params.id;
         var _living = req["files"].living;
