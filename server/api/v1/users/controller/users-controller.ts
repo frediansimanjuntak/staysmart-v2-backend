@@ -47,7 +47,6 @@ export class UsersController {
 		let _userData = req.body;
 		let _front = req["files"].front;
 		let _back = req["files"].back;
-		console.log(_userData);
 		UsersDAO
 		['updateUserData'](_id, _type, _userData, _front, _back)
 		.then(users => res.status(201).json(users))
