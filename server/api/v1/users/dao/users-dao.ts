@@ -50,7 +50,7 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 
 		Users
 			.findById(id, '-salt -password')
-			// .populate("agreements attachments banks companies properties")
+			.populate("agreements attachments banks companies properties")
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -79,47 +79,62 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 		if(!_.isString(id) && !_.isObject(userData)) {
 			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
 		}
-		if(!_.isObject(front) && !_.isObject(back)) {
-			return reject(new TypeError('Identification proof data is not a valid object.'));
-		}
+		
 		var ObjectID = mongoose.Types.ObjectId;  
 		let userObj = {$set: {}};
+		
 		for(var param in userData) {
 			userObj.$set[type+'.data.'+param] = userData[param];
 		}
 
-		Attachments.createAttachments(front).then(res => {
-			var idFront = res.idAtt;
-			let frontObj = {$set: {}};
-			let front_proof = type+'.data.identification_proof.front';
-			frontObj.$set[front_proof] = idFront;
-			Users
-				.findByIdAndUpdate(id, frontObj)
-				.exec((err, saved) => {
-					err ? reject(err)
-					: resolve(saved);
-				});
-		});
-
-		Attachments.createAttachments(back).then(res => {
-			var idBack = res.idAtt;
-			let backObj = {$set: {}};
-			let back_proof = type+'.data.identification_proof.back';
-			backObj.$set[back_proof] = idBack;
-			Users
-				.findByIdAndUpdate(id, backObj)
-				.exec((err, saved) => {
-					err ? reject(err)
-					: resolve(saved);
-				});
-		});
-		
 		Users
-			.findByIdAndUpdate(id, userObj)
+			.findById(id, (err, usersData) => {
+				let dataRole = usersData+'.'+type;
+				if( dataRole != null) {
+					var date = Date.now;
+					
+				}
+			})
 			.exec((err, saved) => {
 				err ? reject(err)
 				: resolve(saved);
 			});
+
+		Users
+			.findByIdAndUpdate(id, userObj)
+			.exec((err, updated) => {
+				err ? reject(err)
+				: resolve(updated);
+			});
+
+		if(front) {
+			Attachments.createAttachments(front).then(res => {
+				var idFront = res.idAtt;
+				let frontObj = {$set: {}};
+				let front_proof = type+'.data.identification_proof.front';
+				frontObj.$set[front_proof] = idFront;
+				Users
+					.findByIdAndUpdate(id, frontObj)
+					.exec((err, saved) => {
+						err ? reject(err)
+						: resolve(saved);
+					});
+			});	
+		}
+		if(back) {
+			Attachments.createAttachments(back).then(res => {
+				var idBack = res.idAtt;
+				let backObj = {$set: {}};
+				let back_proof = type+'.data.identification_proof.back';
+				backObj.$set[back_proof] = idBack;
+				Users
+					.findByIdAndUpdate(id, backObj)
+					.exec((err, saved) => {
+						err ? reject(err)
+						: resolve(saved);
+					});
+			});
+		}
 	});
 });
 

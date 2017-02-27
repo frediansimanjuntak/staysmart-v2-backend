@@ -16,7 +16,8 @@ var BlogCategoriesController = (function () {
     };
     BlogCategoriesController.createBlogCategories = function (req, res) {
         var _blog_categories = req.body;
-        blog_categories_dao_1.default['createBlogCategories'](_blog_categories)
+        var _created_by = req["user"]._id;
+        blog_categories_dao_1.default['createBlogCategories'](_blog_categories, _created_by)
             .then(function (blog_categories) { return res.status(201).json(blog_categories); })
             .catch(function (error) { return res.status(400).json(error); });
     };

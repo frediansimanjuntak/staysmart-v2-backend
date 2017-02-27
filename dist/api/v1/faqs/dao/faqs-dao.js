@@ -34,7 +34,7 @@ faqs_model_1.default.static('getByFilter', function (filter) {
         });
     });
 });
-faqs_model_1.default.static('createFaqs', function (faqs) {
+faqs_model_1.default.static('createFaqs', function (faqs, created_by) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(faqs)) {
             return reject(new TypeError('FAQ is not a valid object.'));
@@ -42,6 +42,7 @@ faqs_model_1.default.static('createFaqs', function (faqs) {
         var ObjectID = mongoose.Types.ObjectId;
         var body = faqs;
         var _faqs = new Faqs(faqs);
+        _faqs.created_by = created_by;
         _faqs.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);

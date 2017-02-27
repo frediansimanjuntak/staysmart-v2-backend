@@ -44,11 +44,12 @@ export class UsersController {
 	static updateUserData(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _type = req.params.type;
-		let _user = req.body;
+		let _userData = req.body;
 		let _front = req["files"].front;
 		let _back = req["files"].back;
+		console.log(_userData);
 		UsersDAO
-		['updateUserData'](_id, _type, _user, _front, _back)
+		['updateUserData'](_id, _type, _userData, _front, _back)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}

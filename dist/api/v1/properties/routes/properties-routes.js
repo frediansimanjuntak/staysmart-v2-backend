@@ -31,6 +31,9 @@ var PropertiesRoutes = (function () {
         router
             .route('/properties/schedules/delete/:id/:idSchedule')
             .delete(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertySchedules);
+        router
+            .route('/properties/shareholder/update/:id')
+            .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updatePropertyShareholder);
     };
     return PropertiesRoutes;
 }());

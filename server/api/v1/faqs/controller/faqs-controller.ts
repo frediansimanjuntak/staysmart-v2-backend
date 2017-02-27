@@ -27,8 +27,9 @@ export class FaqsController {
 
 	static createFaqs(req: express.Request, res: express.Response):void {
 		let _faqs = req.body;
+		let _created_by = req["user"]._id;
 		FaqsDAO
-		['createFaqs'](_faqs)
+		['createFaqs'](_faqs, _created_by)
 		.then(faqs => res.status(201).json(faqs))
 		.catch(error => res.status(400).json(error));
 	}

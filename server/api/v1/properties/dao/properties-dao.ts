@@ -274,7 +274,15 @@ propertiesSchema.static('deletePropertySchedules', (id:string, idSchedule:string
     });
 });
 
+propertiesSchema.static('updatePropertyShareholder', (id:string, shareholder:Object, front:Object, back:Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      if(!_.isString(id)) {
+        return reject(new TypeError('Id is not a valid string.'));
+      }
 
+      
+  });
+});
 
 let Properties = mongoose.model('Properties', propertiesSchema);
 

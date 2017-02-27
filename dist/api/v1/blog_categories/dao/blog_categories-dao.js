@@ -24,7 +24,7 @@ blog_categories_model_1.default.static('getById', function (id) {
         });
     });
 });
-blog_categories_model_1.default.static('createBlogCategories', function (blog_categories) {
+blog_categories_model_1.default.static('createBlogCategories', function (blog_categories, created_by) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(blog_categories)) {
             return reject(new TypeError('Category is not a valid object.'));
@@ -32,6 +32,7 @@ blog_categories_model_1.default.static('createBlogCategories', function (blog_ca
         var ObjectID = mongoose.Types.ObjectId;
         var body = blog_categories;
         var _blog_categories = new BlogCategories(blog_categories);
+        _blog_categories.created_by = created_by;
         _blog_categories.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);

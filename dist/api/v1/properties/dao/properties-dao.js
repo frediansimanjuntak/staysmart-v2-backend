@@ -251,6 +251,13 @@ properties_model_1.default.static('deletePropertySchedules', function (id, idSch
         });
     });
 });
+properties_model_1.default.static('updatePropertyShareholder', function (id, shareholder, front, back) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+    });
+});
 var Properties = mongoose.model('Properties', properties_model_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Properties;
