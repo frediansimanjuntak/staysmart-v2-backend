@@ -86,19 +86,30 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 		for(var param in userData) {
 			userObj.$set[type+'.data.'+param] = userData[param];
 		}
-
+		let userOldData = type+'.data';
 		Users
-			.findById(id, (err, usersData) => {
-				let dataRole = usersData+'.'+type;
-				if( dataRole != null) {
-					var date = Date.now;
-					
+			.findById(id, userOldData, (err, usersData) => {
+				let datas:any = usersData;
+				if(type === 'tenant') {
+					var history_data = datas.tenant.data;
+				}
+				else if(type === 'landlord'){
+					var history_data = datas.landlord.data;
+				}
+				let historyData:any = history_data;
+				console.log(historyData.name);
+
+				if(historyData.name != null) {
+					var historyObj = {$push: {}};
+					historyObj.$push[type+'.histories'] = {"data": history_data};
+					Users
+						.findByIdAndUpdate(id, historyObj)
+						.exec((err, saved) => {
+							err ? reject(err)
+							: resolve(saved);
+						});
 				}
 			})
-			.exec((err, saved) => {
-				err ? reject(err)
-				: resolve(saved);
-			});
 
 		Users
 			.findByIdAndUpdate(id, userObj)

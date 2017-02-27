@@ -72,17 +72,28 @@ users_model_1.default.static('updateUserData', function (id, type, userData, fro
         for (var param in userData) {
             userObj.$set[type + '.data.' + param] = userData[param];
         }
-        console.log(userObj);
+        var userOldData = type + '.data';
         Users
-            .findById(id, function (err, usersData) {
-            var dataRole = usersData + '.' + type;
-            if (dataRole != null) {
-                console.log('data ada');
+            .findById(id, userOldData, function (err, usersData) {
+            var datas = usersData;
+            if (type === 'tenant') {
+                var history_data = datas.tenant.data;
             }
-        })
-            .exec(function (err, saved) {
-            err ? reject(err)
-                : resolve(saved);
+            else if (type === 'landlord') {
+                var history_data = datas.landlord.data;
+            }
+            var historyData = history_data;
+            console.log(historyData.name);
+            if (historyData.name != null) {
+                var historyObj = { $push: {} };
+                historyObj.$push[type + '.histories'] = { "data": history_data };
+                Users
+                    .findByIdAndUpdate(id, historyObj)
+                    .exec(function (err, saved) {
+                    err ? reject(err)
+                        : resolve(saved);
+                });
+            }
         });
         Users
             .findByIdAndUpdate(id, userObj)
