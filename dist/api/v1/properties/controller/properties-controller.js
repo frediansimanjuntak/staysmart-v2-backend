@@ -22,8 +22,8 @@ var PropertiesController = (function () {
     };
     PropertiesController.updateDetails = function (req, res) {
         var _properties = req.body;
-        var _id = req.param.id;
-        properties_dao_1.default['updateDetails'](_properties, _id)
+        var _id = req.params.id;
+        properties_dao_1.default['updateDetails'](_id, _properties)
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };
