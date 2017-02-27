@@ -73,6 +73,19 @@ var PropertiesController = (function () {
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    PropertiesController.updatePropertyShareholder = function (req, res) {
+        var _id = req.params.id;
+        var _shareholder = req.body;
+        var _front = req["files"].front;
+        var _back = req["files"].back;
+        console.log(_shareholder);
+        console.log(_front);
+        console.log(_back);
+        console.log(req);
+        properties_dao_1.default['updatePropertyShareholder'](_id, _shareholder, _front, _back)
+            .then(function (properties) { return res.status(201).json(properties); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     return PropertiesController;
 }());
 exports.PropertiesController = PropertiesController;

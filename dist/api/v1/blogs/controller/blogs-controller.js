@@ -17,7 +17,8 @@ var BlogsController = (function () {
     BlogsController.createBlogs = function (req, res) {
         var _blogs = req.body;
         var _covers = req["files"].cover;
-        blogs_dao_1.default['createBlogs'](_blogs, _covers)
+        var _created_by = req["user"]._id;
+        blogs_dao_1.default['createBlogs'](_blogs, _covers, _created_by)
             .then(function (blogs) { return res.status(201).json(blogs); })
             .catch(function (error) { return res.status(400).json(error); });
     };

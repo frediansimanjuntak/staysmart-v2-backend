@@ -29,7 +29,7 @@ companiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-companiesSchema.static('createCompanies', (companies:Object, documents:Object):Promise<any> => {
+companiesSchema.static('createCompanies', (companies:Object, documents:Object, created_by:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(companies)) {
         return reject(new TypeError('Company is not a valid object.'));
@@ -38,6 +38,7 @@ companiesSchema.static('createCompanies', (companies:Object, documents:Object):P
       let body:any = companies;
 
       var _companies = new Companies(companies);
+          _companies.created_by = created_by;
           _companies.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);

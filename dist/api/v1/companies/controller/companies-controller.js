@@ -17,7 +17,8 @@ var CompaniesController = (function () {
     CompaniesController.createCompanies = function (req, res) {
         var _companies = req.body;
         var _documents = req["files"].document;
-        companies_dao_1.default['createCompanies'](_companies, _documents)
+        var _created_by = req["user"]._id;
+        companies_dao_1.default['createCompanies'](_companies, _documents, _created_by)
             .then(function (companies) { return res.status(201).json(companies); })
             .catch(function (error) { return res.status(400).json(error); });
     };

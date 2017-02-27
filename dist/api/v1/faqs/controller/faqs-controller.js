@@ -22,7 +22,8 @@ var FaqsController = (function () {
     };
     FaqsController.createFaqs = function (req, res) {
         var _faqs = req.body;
-        faqs_dao_1.default['createFaqs'](_faqs)
+        var _created_by = req["user"]._id;
+        faqs_dao_1.default['createFaqs'](_faqs, _created_by)
             .then(function (faqs) { return res.status(201).json(faqs); })
             .catch(function (error) { return res.status(400).json(error); });
     };

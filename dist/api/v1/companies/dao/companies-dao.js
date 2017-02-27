@@ -25,7 +25,7 @@ companies_model_1.default.static('getById', function (id) {
         });
     });
 });
-companies_model_1.default.static('createCompanies', function (companies, documents) {
+companies_model_1.default.static('createCompanies', function (companies, documents, created_by) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(companies)) {
             return reject(new TypeError('Company is not a valid object.'));
@@ -33,6 +33,7 @@ companies_model_1.default.static('createCompanies', function (companies, documen
         var ObjectID = mongoose.Types.ObjectId;
         var body = companies;
         var _companies = new Companies(companies);
+        _companies.created_by = created_by;
         _companies.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);

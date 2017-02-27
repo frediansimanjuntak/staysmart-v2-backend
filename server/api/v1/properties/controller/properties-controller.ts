@@ -95,4 +95,21 @@ export class PropertiesController {
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static updatePropertyShareholder(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _shareholder = req.body;
+		let _front = req["files"].front;
+		let _back = req["files"].back;
+
+		console.log(_shareholder);
+		console.log(_front);
+		console.log(_back);
+		console.log(req);
+
+		PropertiesDAO
+		['updatePropertyShareholder'](_id, _shareholder, _front, _back)
+		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
 }

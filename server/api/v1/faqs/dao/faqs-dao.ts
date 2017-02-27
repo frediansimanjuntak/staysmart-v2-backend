@@ -40,7 +40,7 @@ faqsSchema.static('getByFilter', (filter:string):Promise<any> => {
     });
 });
 
-faqsSchema.static('createFaqs', (faqs:Object):Promise<any> => {
+faqsSchema.static('createFaqs', (faqs:Object, created_by:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(faqs)) {
         return reject(new TypeError('FAQ is not a valid object.'));
@@ -49,6 +49,7 @@ faqsSchema.static('createFaqs', (faqs:Object):Promise<any> => {
       let body:any = faqs;
       
       var _faqs = new Faqs(faqs);
+          _faqs.created_by = created_by;
           _faqs.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
