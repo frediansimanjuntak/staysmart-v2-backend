@@ -62,6 +62,60 @@ propertiesSchema.static('createProperties', (properties:Object):Promise<any> => 
     });
 });
 
+propertiesSchema.static('updateDetails', (details:Object,id:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      if(!_.isObject(details)) {
+        return reject(new TypeError('Detail is not a valid object'));
+      }
+      var objectID = mongoose.Types.ObjectId;
+      let body:any = details;
+
+              Properties
+              .findByIdAndUpdate(id, {
+                $set: {
+                  "details.size_sqf": body.size_sqf,
+                  "details.size_sqm": body.size_sqm,
+                  "details.bedroom" : body.bedroom,
+                  "details.bathroom": body.bathroom,
+                  "details.price": body.price,
+                  "details.psqft": body.psqft,
+                  "details.price_psm": body.price_psm,
+                  "details.price_psf": body.price_psf,
+                  "details.available": body.available,
+                  "details.furnishing": body.furnishing,
+                  "details.description": body.description,
+                  "details.type": body.type,
+                  "details.sale_date": body.sale_date,
+                  "details.property_type": body.property_type,
+                  "details.tenure": body.tenure,
+                  "details.completion_date": body.completion_date,
+                  "details.type_of_sale": body.type_of_sale,
+                  "details.purchaser_address_indicator": body.purchaser_address_indicator,
+                  "details.planning_region": body.planning_region,
+                  "details.planning_area": body.planning_area
+                }
+              })
+              .exec((err,saved) => {
+                err ? reject(err)
+                    : resolve(saved);
+              });
+      });
+});
+propertiesSchema.static('deleteDetails', (id:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    if(!_.isObject(id)) {
+      return reject(new TypeError('Id is not a valid string.'));
+    }
+    Properties
+      .findByIdAndRemmove(id)
+        .exec((err,deleted) => {
+            err ? reject(err)
+                : resolve(deleted);
+          });
+  });
+});
+
+
 propertiesSchema.static('createPropertyPictures', (propertyID:string, living:Object, dining:Object, bed:Object, toilet:Object, kitchen:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isString(propertyID)) {

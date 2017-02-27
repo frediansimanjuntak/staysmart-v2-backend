@@ -53,6 +53,57 @@ properties_model_1.default.static('createProperty', function (properties) {
         });
     });
 });
+properties_model_1.default.static('updateDetails', function (details, id) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(details)) {
+            return reject(new TypeError('Detail is not a valid object'));
+        }
+        var objectID = mongoose.Types.ObjectId;
+        var body = details;
+        Properties
+            .findByIdAndUpdate(id, {
+            $set: {
+                "details.size_sqf": body.size_sqf,
+                "details.size_sqm": body.size_sqm,
+                "details.bedroom": body.bedroom,
+                "details.bathroom": body.bathroom,
+                "details.price": body.price,
+                "details.psqft": body.psqft,
+                "details.price_psm": body.price_psm,
+                "details.price_psf": body.price_psf,
+                "details.available": body.available,
+                "details.furnishing": body.furnishing,
+                "details.description": body.description,
+                "details.type": body.type,
+                "details.sale_date": body.sale_date,
+                "details.property_type": body.property_type,
+                "details.tenure": body.tenure,
+                "details.completion_date": body.completion_date,
+                "details.type_of_sale": body.type_of_sale,
+                "details.purchaser_address_indicator": body.purchaser_address_indicator,
+                "details.planning_region": body.planning_region,
+                "details.planning_area": body.planning_area
+            }
+        })
+            .exec(function (err, saved) {
+            err ? reject(err)
+                : resolve(saved);
+        });
+    });
+});
+properties_model_1.default.static('deleteDetails', function (id) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        Properties
+            .findByIdAndRemmove(id)
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
+        });
+    });
+});
 properties_model_1.default.static('createPropertyPictures', function (propertyID, living, dining, bed, toilet, kitchen) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(propertyID)) {

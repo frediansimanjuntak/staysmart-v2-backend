@@ -17,6 +17,12 @@ var PropertiesRoutes = (function () {
             .route('/properties/update/:id')
             .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateProperties);
         router
+            .route('/properties/details/update/:id')
+            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateDetails);
+        router
+            .route('/properties/details/delete/:id')
+            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.deleteDetails);
+        router
             .route('/properties/pictures/:id')
             .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.createPropertyPictures);
         router
