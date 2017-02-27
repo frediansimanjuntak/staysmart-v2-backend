@@ -28,10 +28,10 @@ export class PropertiesController {
 
 	static updateDetails(req: express.Request, res: express.Response):void {
 		let _properties = req.body;
-		let _id = req.param.id;
+		let _id = req.params.id;
 
 		PropertiesDAO
-		['updateDetails'](_properties,_id)
+		['updateDetails'](_id, _properties)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

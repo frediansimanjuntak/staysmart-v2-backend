@@ -62,39 +62,34 @@ propertiesSchema.static('createProperties', (properties:Object):Promise<any> => 
     });
 });
 
-propertiesSchema.static('updateDetails', (details:Object,id:string):Promise<any> => {
+propertiesSchema.static('updateProperties', (id:string, properties:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isObject(properties)) {
+          return reject(new TypeError('Property is not a valid object.'));
+        }
+
+        Properties
+        .findByIdAndUpdate(id, properties)
+        .exec((err, updated) => {
+              err ? reject(err)
+                  : resolve(updated);
+          });
+    });
+});
+
+propertiesSchema.static('updateDetails', (id:string, details:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       if(!_.isObject(details)) {
         return reject(new TypeError('Detail is not a valid object'));
       }
       var objectID = mongoose.Types.ObjectId;
       let body:any = details;
-
+      let detailsObj = {$set: {}};
+      for(var param in details) {
+        detailsObj.$set['details.'+param] = details[param];
+      }
               Properties
-              .findByIdAndUpdate(id, {
-                $set: {
-                  "details.size_sqf": body.size_sqf,
-                  "details.size_sqm": body.size_sqm,
-                  "details.bedroom" : body.bedroom,
-                  "details.bathroom": body.bathroom,
-                  "details.price": body.price,
-                  "details.psqft": body.psqft,
-                  "details.price_psm": body.price_psm,
-                  "details.price_psf": body.price_psf,
-                  "details.available": body.available,
-                  "details.furnishing": body.furnishing,
-                  "details.description": body.description,
-                  "details.type": body.type,
-                  "details.sale_date": body.sale_date,
-                  "details.property_type": body.property_type,
-                  "details.tenure": body.tenure,
-                  "details.completion_date": body.completion_date,
-                  "details.type_of_sale": body.type_of_sale,
-                  "details.purchaser_address_indicator": body.purchaser_address_indicator,
-                  "details.planning_region": body.planning_region,
-                  "details.planning_area": body.planning_area
-                }
-              })
+              .findByIdAndUpdate(id, detailsObj)
               .exec((err,saved) => {
                 err ? reject(err)
                     : resolve(saved);
@@ -293,20 +288,7 @@ propertiesSchema.static('deletePropertySchedules', (id:string, idSchedule:string
     });
 });
 
-propertiesSchema.static('updateProperties', (id:string, properties:Object):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(properties)) {
-          return reject(new TypeError('Property is not a valid object.'));
-        }
 
-        Properties
-        .findByIdAndUpdate(id, properties)
-        .exec((err, updated) => {
-              err ? reject(err)
-                  : resolve(updated);
-          });
-    });
-});
 
 let Properties = mongoose.model('Properties', propertiesSchema);
 

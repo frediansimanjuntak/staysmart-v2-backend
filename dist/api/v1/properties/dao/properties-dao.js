@@ -28,7 +28,7 @@ properties_model_1.default.static('getById', function (id) {
         });
     });
 });
-properties_model_1.default.static('createProperty', function (properties) {
+properties_model_1.default.static('createProperties', function (properties) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(properties)) {
             return reject(new TypeError('Property is not a valid object.'));
@@ -53,38 +53,32 @@ properties_model_1.default.static('createProperty', function (properties) {
         });
     });
 });
-properties_model_1.default.static('updateDetails', function (details, id) {
+properties_model_1.default.static('updateProperties', function (id, properties) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(properties)) {
+            return reject(new TypeError('Property is not a valid object.'));
+        }
+        Properties
+            .findByIdAndUpdate(id, properties)
+            .exec(function (err, updated) {
+            err ? reject(err)
+                : resolve(updated);
+        });
+    });
+});
+properties_model_1.default.static('updateDetails', function (id, details) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(details)) {
             return reject(new TypeError('Detail is not a valid object'));
         }
         var objectID = mongoose.Types.ObjectId;
         var body = details;
+        var detailsObj = { $set: {} };
+        for (var param in details) {
+            detailsObj.$set['details.' + param] = details[param];
+        }
         Properties
-            .findByIdAndUpdate(id, {
-            $set: {
-                "details.size_sqf": body.size_sqf,
-                "details.size_sqm": body.size_sqm,
-                "details.bedroom": body.bedroom,
-                "details.bathroom": body.bathroom,
-                "details.price": body.price,
-                "details.psqft": body.psqft,
-                "details.price_psm": body.price_psm,
-                "details.price_psf": body.price_psf,
-                "details.available": body.available,
-                "details.furnishing": body.furnishing,
-                "details.description": body.description,
-                "details.type": body.type,
-                "details.sale_date": body.sale_date,
-                "details.property_type": body.property_type,
-                "details.tenure": body.tenure,
-                "details.completion_date": body.completion_date,
-                "details.type_of_sale": body.type_of_sale,
-                "details.purchaser_address_indicator": body.purchaser_address_indicator,
-                "details.planning_region": body.planning_region,
-                "details.planning_area": body.planning_area
-            }
-        })
+            .findByIdAndUpdate(id, detailsObj)
             .exec(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
@@ -267,19 +261,6 @@ properties_model_1.default.static('deletePropertySchedules', function (id, idSch
             .exec(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
-        });
-    });
-});
-properties_model_1.default.static('updateProperties', function (id, properties) {
-    return new Promise(function (resolve, reject) {
-        if (!_.isObject(properties)) {
-            return reject(new TypeError('Property is not a valid object.'));
-        }
-        Properties
-            .findByIdAndUpdate(id, properties)
-            .exec(function (err, updated) {
-            err ? reject(err)
-                : resolve(updated);
         });
     });
 });
