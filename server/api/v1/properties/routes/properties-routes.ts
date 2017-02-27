@@ -14,30 +14,27 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/:id')
 			.get(auth.isAuthenticated(),PropertiesController.getById)
-			.put(auth.isAuthenticated(),PropertiesController.deleteProperties);
+			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
 
 		router
 			.route('/properties/update/:id')
-			.post(auth.isAuthenticated(),PropertiesController.updateProperties);
+			.put(auth.isAuthenticated(),PropertiesController.updateProperties);
 
 		router
 			.route('/properties/details/update/:id')
-			.post(auth.isAuthenticated(),PropertiesController.updateDetails);
-
-		router
-			.route('/properties/details/delete/:id')
-			.post(auth.isAuthenticated(),PropertiesController.deleteDetails);	
+			.put(auth.isAuthenticated(),PropertiesController.updateDetails);
+	
 		router
 			.route('/properties/pictures/:id')
 			.post(auth.isAuthenticated(),PropertiesController.createPropertyPictures);
 
 		router
 			.route('/properties/pictures/delete/:id/:type/:pictureID')
-			.post(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
+			.delete(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
 
 		router
 			.route('/properties/schedules/update/:id')
-			.post(auth.isAuthenticated(),PropertiesController.updatePropertySchedules)
+			.put(auth.isAuthenticated(),PropertiesController.updatePropertySchedules)
 
 		router
 			.route('/properties/schedules/delete/:id/:idSchedule')

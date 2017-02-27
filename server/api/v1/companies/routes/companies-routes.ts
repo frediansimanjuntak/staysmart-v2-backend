@@ -21,11 +21,11 @@ export class CompaniesRoutes {
 			.post(auth.isAuthenticated(),CompaniesController.updateCompanies);
 
 		router
-			.route('/companies/document/')
+			.route('/companies/document/:id')
 			.post(auth.isAuthenticated(),CompaniesController.createDocument);
 
 		router
-			.route('/companies/document/:id')
+			.route('/companies/document/:id/:documentId')
 			.post(auth.isAuthenticated(),CompaniesController.deleteDocument);
 	}
 } 

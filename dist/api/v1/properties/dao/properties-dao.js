@@ -85,19 +85,6 @@ properties_model_1.default.static('updateDetails', function (id, details) {
         });
     });
 });
-properties_model_1.default.static('deleteDetails', function (id) {
-    return new Promise(function (resolve, reject) {
-        if (!_.isObject(id)) {
-            return reject(new TypeError('Id is not a valid string.'));
-        }
-        Properties
-            .findByIdAndRemmove(id)
-            .exec(function (err, deleted) {
-            err ? reject(err)
-                : resolve(deleted);
-        });
-    });
-});
 properties_model_1.default.static('createPropertyPictures', function (propertyID, living, dining, bed, toilet, kitchen) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(propertyID)) {

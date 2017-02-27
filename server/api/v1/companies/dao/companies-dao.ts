@@ -29,42 +29,38 @@ companiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-companiesSchema.static('createCompanies', (companies:Object, attachments:Object):Promise<any> => {
+companiesSchema.static('createCompanies', (companies:Object, documents:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(companies)) {
         return reject(new TypeError('Company is not a valid object.'));
       }
-        var ObjectID = mongoose.Types.ObjectId;  
-        let body:any = companies;
+      var ObjectID = mongoose.Types.ObjectId;  
+      let body:any = companies;
 
-        var _companies = new Companies(companies);
-            _companies.save((err, saved)=>{
-              err ? reject(err)
-                  : resolve(saved);
-              });
+      var _companies = new Companies(companies);
+          _companies.save((err, saved)=>{
+            err ? reject(err)
+                : resolve(saved);
+            });
 
-        var companiesId=_companies._id;
-            Attachments.createAttachments(attachments).then(res => {
-                var idAttachment=res.idAtt;
-                console.log(idAttachment);
-                for (var i = 0; i < idAttachment.length; i++){
-                    console.log(idAttachment[i]);
-                    Companies
-                        .findByIdAndUpdate(companiesId, {
-                            $push : {
-                                "document": idAttachment[i]
-                            }
-                        })
-                      
-          .exec((err, update) => {
-              err ? reject(err)
-                  : resolve(update);
-        });
-            }
-            
+      var companiesId=_companies._id;
+          Attachments.createAttachments(documents).then(res => {
+              var idAttachment=res.idAtt;
+              for (var i = 0; i < idAttachment.length; i++){
+                  console.log(idAttachment[i]);
+                  Companies
+                      .findByIdAndUpdate(companiesId, {
+                          $push : {
+                              "document": idAttachment[i]
+                          }
+                      })
+                      .exec((err, update) => {
+                          err ? reject(err)
+                              : resolve(update);
+                      });
+              }
           });
-       }
-    );
+    });
 });
 
 companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
@@ -120,12 +116,12 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<
 });
 
 
-companiesSchema.static('createDocument', (id:string, attachments:Object):Promise<any> => {
+companiesSchema.static('createDocument', (id:string, documents:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(document)) {
             return reject(new TypeError('Document is not a valid object.'));
         }
-        Attachments.createAttachments(attachments).then(res => {
+        Attachments.createAttachments(documents).then(res => {
             var idAttachment=res.idAtt;
             console.log(idAttachment);
             for (var i = 0; i < idAttachment.length; i++){
@@ -143,22 +139,21 @@ companiesSchema.static('createDocument', (id:string, attachments:Object):Promise
     });
 });
 
-
-companiesSchema.static('deleteDocument', (id:string, companies:string):Promise<any> => {
+companiesSchema.static('deleteDocument', (id:string, documentId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
     if (!_.isObject(document)) {
       return reject(new TypeError('Document is not a valid object.'));
     }
     Companies
       .findByIdAndUpdate(id, {
-        $pull:{"document": companies}
+        $pull:{"document": documentId}
       })
       .exec((err,deleted) => {
             err ? reject(err)
                 : resolve(deleted);
       });
     Attachments
-      .findByIdAndRemove(companies)
+      .findByIdAndRemove(documentId)
       .exec((err,deleted) => {
           err ? reject(err)
               : resolve(deleted);

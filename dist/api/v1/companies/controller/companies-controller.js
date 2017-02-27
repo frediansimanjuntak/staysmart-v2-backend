@@ -16,8 +16,8 @@ var CompaniesController = (function () {
     };
     CompaniesController.createCompanies = function (req, res) {
         var _companies = req.body;
-        var _attachments = req["files"].attachment;
-        companies_dao_1.default['createCompanies'](_companies, _attachments)
+        var _documents = req["files"].document;
+        companies_dao_1.default['createCompanies'](_companies, _documents)
             .then(function (companies) { return res.status(201).json(companies); })
             .catch(function (error) { return res.status(400).json(error); });
     };
@@ -36,15 +36,15 @@ var CompaniesController = (function () {
     };
     CompaniesController.createDocument = function (req, res) {
         var _id = req.params.id;
-        var _attachments = req["files"].attachment;
-        companies_dao_1.default['createDocument'](_id, _attachments)
+        var _documents = req["files"].document;
+        companies_dao_1.default['createDocument'](_id, _documents)
             .then(function (companies) { return res.status(201).json(companies); })
             .catch(function (error) { return res.status(400).json(error); });
     };
     CompaniesController.deleteDocument = function (req, res) {
         var _id = req.params.id;
-        var _companies = req.body;
-        companies_dao_1.default['createDocument'](_id, _companies)
+        var _documentId = req.params.documentId;
+        companies_dao_1.default['createDocument'](_id, _documentId)
             .then(function (companies) { return res.status(201).json(companies); })
             .catch(function (error) { return res.status(400).json(error); });
     };

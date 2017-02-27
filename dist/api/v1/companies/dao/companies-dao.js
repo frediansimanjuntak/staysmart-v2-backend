@@ -25,7 +25,7 @@ companies_model_1.default.static('getById', function (id) {
         });
     });
 });
-companies_model_1.default.static('createCompanies', function (companies, attachments) {
+companies_model_1.default.static('createCompanies', function (companies, documents) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(companies)) {
             return reject(new TypeError('Company is not a valid object.'));
@@ -38,9 +38,8 @@ companies_model_1.default.static('createCompanies', function (companies, attachm
                 : resolve(saved);
         });
         var companiesId = _companies._id;
-        attachments_dao_1.default.createAttachments(attachments).then(function (res) {
+        attachments_dao_1.default.createAttachments(documents).then(function (res) {
             var idAttachment = res.idAtt;
-            console.log(idAttachment);
             for (var i = 0; i < idAttachment.length; i++) {
                 console.log(idAttachment[i]);
                 Companies
@@ -103,12 +102,12 @@ companies_model_1.default.static('updateCompanies', function (id, companies) {
         });
     });
 });
-companies_model_1.default.static('createDocument', function (id, attachments) {
+companies_model_1.default.static('createDocument', function (id, documents) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(document)) {
             return reject(new TypeError('Document is not a valid object.'));
         }
-        attachments_dao_1.default.createAttachments(attachments).then(function (res) {
+        attachments_dao_1.default.createAttachments(documents).then(function (res) {
             var idAttachment = res.idAtt;
             console.log(idAttachment);
             for (var i = 0; i < idAttachment.length; i++) {
@@ -125,21 +124,21 @@ companies_model_1.default.static('createDocument', function (id, attachments) {
         });
     });
 });
-companies_model_1.default.static('deleteDocument', function (id, companies) {
+companies_model_1.default.static('deleteDocument', function (id, documentId) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(document)) {
             return reject(new TypeError('Document is not a valid object.'));
         }
         Companies
             .findByIdAndUpdate(id, {
-            $pull: { "document": companies }
+            $pull: { "document": documentId }
         })
             .exec(function (err, deleted) {
             err ? reject(err)
                 : resolve(deleted);
         });
         attachments_dao_1.default
-            .findByIdAndRemove(companies)
+            .findByIdAndRemove(documentId)
             .exec(function (err, deleted) {
             err ? reject(err)
                 : resolve(deleted);
