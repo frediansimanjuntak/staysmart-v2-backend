@@ -34,7 +34,7 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-blogsSchema.static('createBlogs', (blogs:Object, covers:Object):Promise<any> => {
+blogsSchema.static('createBlogs', (blogs:Object, covers:Object, created_by:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(blogs)) {
         return reject(new TypeError('Blogs is not a valid object.'));
@@ -47,6 +47,7 @@ blogsSchema.static('createBlogs', (blogs:Object, covers:Object):Promise<any> => 
         let body:any = blogs;
         
         var _blogs = new Blogs(blogs);
+            _blogs.created_by = created_by;
             _blogs.cover = idAttachment;
             _blogs.save((err, saved)=>{
               err ? reject(err)

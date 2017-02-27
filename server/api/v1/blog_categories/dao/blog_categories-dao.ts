@@ -28,7 +28,7 @@ blogCategoriesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-blogCategoriesSchema.static('createBlogCategories', (blog_categories:Object):Promise<any> => {
+blogCategoriesSchema.static('createBlogCategories', (blog_categories:Object, created_by:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(blog_categories)) {
         return reject(new TypeError('Category is not a valid object.'));
@@ -37,6 +37,7 @@ blogCategoriesSchema.static('createBlogCategories', (blog_categories:Object):Pro
       let body:any = blog_categories;
       
       var _blog_categories = new BlogCategories(blog_categories);
+          _blog_categories.created_by = created_by;
           _blog_categories.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);

@@ -39,5 +39,9 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/schedules/delete/:id/:idSchedule')
 			.delete(auth.isAuthenticated(),PropertiesController.deletePropertySchedules);
+
+		router
+			.route('/properties/shareholder/update/:id')
+			.put(auth.isAuthenticated(),PropertiesController.updatePropertyShareholder);
 	}
 } 

@@ -27,7 +27,7 @@ blogs_model_1.default.static('getById', function (id) {
         });
     });
 });
-blogs_model_1.default.static('createBlogs', function (blogs, covers) {
+blogs_model_1.default.static('createBlogs', function (blogs, covers, created_by) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(blogs)) {
             return reject(new TypeError('Blogs is not a valid object.'));
@@ -37,6 +37,7 @@ blogs_model_1.default.static('createBlogs', function (blogs, covers) {
             var ObjectID = mongoose.Types.ObjectId;
             var body = blogs;
             var _blogs = new Blogs(blogs);
+            _blogs.created_by = created_by;
             _blogs.cover = idAttachment;
             _blogs.save(function (err, saved) {
                 err ? reject(err)
