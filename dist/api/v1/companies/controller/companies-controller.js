@@ -34,6 +34,20 @@ var CompaniesController = (function () {
             .then(function (companies) { return res.status(201).json(companies); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    CompaniesController.createDocument = function (req, res) {
+        var _id = req.params.id;
+        var _attachments = req["files"].attachment;
+        companies_dao_1.default['createDocument'](_id, _attachments)
+            .then(function (companies) { return res.status(201).json(companies); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    CompaniesController.deleteDocument = function (req, res) {
+        var _id = req.params.id;
+        var _companies = req.body;
+        companies_dao_1.default['createDocument'](_id, _companies)
+            .then(function (companies) { return res.status(201).json(companies); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     return CompaniesController;
 }());
 exports.CompaniesController = CompaniesController;

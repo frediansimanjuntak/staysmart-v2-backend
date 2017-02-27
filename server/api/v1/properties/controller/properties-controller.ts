@@ -42,8 +42,7 @@ export class PropertiesController {
 
 	static updatePropertySchedules(req: express.Request, res: express.Response):void {
 		let _id = req.params.id
-		let _schedules = req["schedules"].body;
-		
+		let _schedules = req.body;
 		PropertiesDAO
 		['updatePropertySchedules'](_id, _schedules)
 		.then(properties => res.status(201).json(properties))
@@ -64,6 +63,15 @@ export class PropertiesController {
 		let _pictureID = req.params.pictureID;
 		PropertiesDAO
 		['deletePropertyPictures'](_id, _type, _pictureID)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
+
+	static deletePropertySchedules(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _idSchedule = req.params.idSchedule;
+		PropertiesDAO
+		['deletePropertySchedules'](_id, _idSchedule)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}

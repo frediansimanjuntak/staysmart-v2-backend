@@ -33,7 +33,7 @@ var PropertiesController = (function () {
     };
     PropertiesController.updatePropertySchedules = function (req, res) {
         var _id = req.params.id;
-        var _schedules = req["schedules"].body;
+        var _schedules = req.body;
         properties_dao_1.default['updatePropertySchedules'](_id, _schedules)
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
@@ -49,6 +49,13 @@ var PropertiesController = (function () {
         var _type = req.params.type;
         var _pictureID = req.params.pictureID;
         properties_dao_1.default['deletePropertyPictures'](_id, _type, _pictureID)
+            .then(function () { return res.status(200).end(); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    PropertiesController.deletePropertySchedules = function (req, res) {
+        var _id = req.params.id;
+        var _idSchedule = req.params.idSchedule;
+        properties_dao_1.default['deletePropertySchedules'](_id, _idSchedule)
             .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };

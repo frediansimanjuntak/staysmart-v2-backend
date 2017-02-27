@@ -200,6 +200,25 @@ properties_model_1.default.static('deletePropertyPictures', function (id, type, 
         });
     });
 });
+properties_model_1.default.static('deletePropertySchedules', function (id, idSchedule) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        Properties
+            .findByIdAndUpdate(id, {
+            $pull: {
+                "schedules": {
+                    "_id": idSchedule
+                }
+            }
+        })
+            .exec(function (err, saved) {
+            err ? reject(err)
+                : resolve(saved);
+        });
+    });
+});
 properties_model_1.default.static('updateProperties', function (id, properties) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(properties)) {

@@ -16,6 +16,12 @@ var CompaniesRoutes = (function () {
         router
             .route('/companies/update/:id')
             .post(auth.isAuthenticated(), companies_controller_1.CompaniesController.updateCompanies);
+        router
+            .route('/companies/document/')
+            .post(auth.isAuthenticated(), companies_controller_1.CompaniesController.createDocument);
+        router
+            .route('/companies/document/:id')
+            .post(auth.isAuthenticated(), companies_controller_1.CompaniesController.deleteDocument);
     };
     return CompaniesRoutes;
 }());

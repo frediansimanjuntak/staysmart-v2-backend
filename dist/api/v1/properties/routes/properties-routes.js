@@ -22,6 +22,12 @@ var PropertiesRoutes = (function () {
         router
             .route('/properties/pictures/delete/:id/:type/:pictureID')
             .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertyPictures);
+        router
+            .route('/properties/schedules/:id')
+            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.updatePropertySchedules);
+        router
+            .route('/properties/schedules/delete/:id/:idSchedule')
+            .delete(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertySchedules);
     };
     return PropertiesRoutes;
 }());
