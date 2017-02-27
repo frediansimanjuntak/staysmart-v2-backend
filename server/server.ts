@@ -22,7 +22,7 @@ import {Routes} from "./routes/index";
 var PORT = process.env.PORT || 3000;
 const app = express();
 
-// if(config.seedDB) { require('./config/seed'); }
+if(config.seedDB) { require('./config/seed'); }
 
 require('./config/express').default(app);
 RoutesConfig.init(app);

@@ -28,7 +28,7 @@ properties_model_1.default.static('getById', function (id) {
         });
     });
 });
-properties_model_1.default.static('createProperties', function (properties) {
+properties_model_1.default.static('createProperty', function (properties) {
     return new Promise(function (resolve, reject) {
         if (!_.isObject(properties)) {
             return reject(new TypeError('Property is not a valid object.'));
@@ -150,6 +150,32 @@ properties_model_1.default.static('deleteProperties', function (id) {
             err ? reject(err)
                 : resolve();
         });
+    });
+});
+properties_model_1.default.static('updatePropertySchedules', function (id, schedules) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        var schedule = [].concat(schedules);
+        for (var i = 0; i < schedule.length; i++) {
+            var data = schedule[i];
+            Properties
+                .findByIdAndUpdate(id, {
+                $push: {
+                    "schedules": {
+                        "day": data.day,
+                        "start_date": data.start_date,
+                        "time_from": data.time_from,
+                        "time_to": data.time_to
+                    }
+                }
+            })
+                .exec(function (err, updated) {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+        }
     });
 });
 properties_model_1.default.static('deletePropertyPictures', function (id, type, pictureID) {

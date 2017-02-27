@@ -31,6 +31,13 @@ var PropertiesController = (function () {
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };
+    PropertiesController.updatePropertySchedules = function (req, res) {
+        var _id = req.params.id;
+        var _schedules = req["schedules"].body;
+        properties_dao_1.default['updatePropertySchedules'](_id, _schedules)
+            .then(function (properties) { return res.status(201).json(properties); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
     PropertiesController.deleteProperties = function (req, res) {
         var _id = req.params.id;
         properties_dao_1.default['deleteProperties'](_id)
