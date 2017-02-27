@@ -36,14 +36,6 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static deleteDetails(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		PropertiesDAO
-		['deleteDetails'](_id)
-		.then(() => res.status(200).end())
-		.catch(error => res.status(400).json(error));
-	}
-
 	static createPropertyPictures(req: express.Request, res: express.Response):void {
 		let _propertyID = req.params.id;
 		let _living = req["files"].living;

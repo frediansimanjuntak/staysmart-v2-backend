@@ -17,10 +17,10 @@ var CompaniesRoutes = (function () {
             .route('/companies/update/:id')
             .post(auth.isAuthenticated(), companies_controller_1.CompaniesController.updateCompanies);
         router
-            .route('/companies/document/')
+            .route('/companies/document/:id')
             .post(auth.isAuthenticated(), companies_controller_1.CompaniesController.createDocument);
         router
-            .route('/companies/document/:id')
+            .route('/companies/document/:id/:documentId')
             .post(auth.isAuthenticated(), companies_controller_1.CompaniesController.deleteDocument);
     };
     return CompaniesRoutes;

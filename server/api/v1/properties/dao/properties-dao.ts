@@ -88,28 +88,14 @@ propertiesSchema.static('updateDetails', (id:string, details:Object):Promise<any
       for(var param in details) {
         detailsObj.$set['details.'+param] = details[param];
       }
-              Properties
-              .findByIdAndUpdate(id, detailsObj)
-              .exec((err,saved) => {
-                err ? reject(err)
-                    : resolve(saved);
-              });
-      });
-});
-propertiesSchema.static('deleteDetails', (id:string):Promise<any> => {
-  return new Promise((resolve:Function, reject:Function) => {
-    if(!_.isObject(id)) {
-      return reject(new TypeError('Id is not a valid string.'));
-    }
-    Properties
-      .findByIdAndRemmove(id)
-        .exec((err,deleted) => {
-            err ? reject(err)
-                : resolve(deleted);
-          });
+      Properties
+        .findByIdAndUpdate(id, detailsObj)
+        .exec((err,saved) => {
+          err ? reject(err)
+              : resolve(saved);
+        });
   });
 });
-
 
 propertiesSchema.static('createPropertyPictures', (propertyID:string, living:Object, dining:Object, bed:Object, toilet:Object, kitchen:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {

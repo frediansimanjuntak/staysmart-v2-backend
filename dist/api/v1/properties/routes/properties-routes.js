@@ -12,25 +12,22 @@ var PropertiesRoutes = (function () {
         router
             .route('/properties/:id')
             .get(auth.isAuthenticated(), properties_controller_1.PropertiesController.getById)
-            .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.deleteProperties);
+            .delete(auth.isAuthenticated(), properties_controller_1.PropertiesController.deleteProperties);
         router
             .route('/properties/update/:id')
-            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateProperties);
+            .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateProperties);
         router
             .route('/properties/details/update/:id')
-            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateDetails);
-        router
-            .route('/properties/details/delete/:id')
-            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.deleteDetails);
+            .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateDetails);
         router
             .route('/properties/pictures/:id')
             .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.createPropertyPictures);
         router
             .route('/properties/pictures/delete/:id/:type/:pictureID')
-            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertyPictures);
+            .delete(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertyPictures);
         router
             .route('/properties/schedules/update/:id')
-            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.updatePropertySchedules);
+            .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updatePropertySchedules);
         router
             .route('/properties/schedules/delete/:id/:idSchedule')
             .delete(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertySchedules);
