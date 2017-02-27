@@ -44,7 +44,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object):Promise<an
       var _appointments = new Appointments(appointments);
           _appointments.save((err, saved)=>{
             err ? reject(err)
-                : resolve(saved);
+                : resolve(saved); 
           });
     });
 });
@@ -61,7 +61,6 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
               err ? reject(err)
                   : resolve();
           });
-        
     });
 });
 
