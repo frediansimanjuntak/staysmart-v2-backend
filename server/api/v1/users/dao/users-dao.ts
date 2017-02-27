@@ -179,10 +179,6 @@ usersSchema.static('deleteUser', (id:string):Promise<any> => {
 						});
 				}
 			})
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve();
-			});
 
 		Users
 			.findByIdAndRemove(id)

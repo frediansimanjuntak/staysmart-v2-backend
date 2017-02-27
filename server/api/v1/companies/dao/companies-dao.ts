@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import companiesSchema from '../model/companies-model';
 import Attachments from '../../attachments/dao/attachments-dao'
+import Users from '../../users/dao/users-dao'
 
 companiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -45,22 +46,32 @@ companiesSchema.static('createCompanies', (companies:Object, documents:Object, c
             });
 
       var companiesId=_companies._id;
-          Attachments.createAttachments(documents).then(res => {
-              var idAttachment=res.idAtt;
-              for (var i = 0; i < idAttachment.length; i++){
-                  console.log(idAttachment[i]);
-                  Companies
-                      .findByIdAndUpdate(companiesId, {
-                          $push : {
-                              "document": idAttachment[i]
-                          }
-                      })
-                      .exec((err, update) => {
-                          err ? reject(err)
-                              : resolve(update);
-                      });
-              }
-          });
+      Attachments.createAttachments(documents).then(res => {
+          var idAttachment=res.idAtt;
+          for (var i = 0; i < idAttachment.length; i++){
+              console.log(idAttachment[i]);
+              Companies
+                  .findByIdAndUpdate(companiesId, {
+                      $push : {
+                          "document": idAttachment[i]
+                      }
+                  })
+                  .exec((err, update) => {
+                      err ? reject(err)
+                          : resolve(update);
+                  });
+          }
+      });
+      Users
+        .findByIdAndUpdate(created_by, {
+          $push: {
+            "companies": companiesId
+          }
+        })
+        .exec((err, update) => {
+            err ? reject(err)
+                : resolve(update);
+        });
     });
 });
 
@@ -69,35 +80,38 @@ companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-
-          Companies
-            .findById(id, (err,companies) => {
-                if(companies.document != null) {
-                    var ObjectID = mongoose.Types.ObjectId;
-                    var companies_document = [].concat(companies.document)
-                        for (var i = 0; i < companies_document.length; i++) {
-                            let document = companies_document[i];
-                            Attachments
-                                .findByIdAndRemove(document)
-                                .exec((err, deleted) => {
-                                    err ? reject(err)
-                                        : resolve(deleted);
-                                });
-                        }
-                }
-            })
-            .exec((err, deleted) => {
-                err ? reject(err)
-                    : resolve(deleted);
-            });
-
-          Companies
-            .findByIdAndRemove(id)
-            .exec((err, deleted) => {
-                err ? reject(err)
-                    : resolve();
-            });
-        
+        Companies
+          .findById(id, (err,companies) => {
+              if(companies.document != null) {
+                  var ObjectID = mongoose.Types.ObjectId;
+                  var companies_document = [].concat(companies.document)
+                      for (var i = 0; i < companies_document.length; i++) {
+                          let document = companies_document[i];
+                          Attachments
+                              .findByIdAndRemove(document)
+                              .exec((err, deleted) => {
+                                  err ? reject(err)
+                                      : resolve(deleted);
+                              });
+                      }
+              }
+              Users
+                .findByIdAndUpdate(companies.created_by, {
+                  $pull: {
+                    "companies": id
+                  }
+                })
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+          })
+        Companies
+          .findByIdAndRemove(id)
+          .exec((err, deleted) => {
+              err ? reject(err)
+                  : resolve();
+          });
     });
 });
 

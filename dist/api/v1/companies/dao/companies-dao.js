@@ -4,6 +4,7 @@ var Promise = require("bluebird");
 var _ = require("lodash");
 var companies_model_1 = require("../model/companies-model");
 var attachments_dao_1 = require("../../attachments/dao/attachments-dao");
+var users_dao_1 = require("../../users/dao/users-dao");
 companies_model_1.default.static('getAll', function () {
     return new Promise(function (resolve, reject) {
         var _query = {};
@@ -55,6 +56,16 @@ companies_model_1.default.static('createCompanies', function (companies, documen
                 });
             }
         });
+        users_dao_1.default
+            .findByIdAndUpdate(created_by, {
+            $push: {
+                "companies": companiesId
+            }
+        })
+            .exec(function (err, update) {
+            err ? reject(err)
+                : resolve(update);
+        });
     });
 });
 companies_model_1.default.static('deleteCompanies', function (id) {
@@ -77,10 +88,16 @@ companies_model_1.default.static('deleteCompanies', function (id) {
                     });
                 }
             }
-        })
-            .exec(function (err, deleted) {
-            err ? reject(err)
-                : resolve(deleted);
+            users_dao_1.default
+                .findByIdAndUpdate(companies.created_by, {
+                $pull: {
+                    "companies": id
+                }
+            })
+                .exec(function (err, deleted) {
+                err ? reject(err)
+                    : resolve(deleted);
+            });
         });
         Companies
             .findByIdAndRemove(id)
