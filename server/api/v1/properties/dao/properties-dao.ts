@@ -35,7 +35,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperty', (properties:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (properties:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(properties)) {
         return reject(new TypeError('Property is not a valid object.'));
@@ -214,6 +214,27 @@ propertiesSchema.static('deletePropertyPictures', (id:string, type:string, pictu
           .exec((err, deleted) => {
             err ? reject(err)
             : resolve(deleted);
+          });
+    });
+});
+
+propertiesSchema.static('deletePropertySchedules', (id:string, idSchedule:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+
+        Properties
+          .findByIdAndUpdate(id, {
+            $pull: {
+              "schedules": { 
+                  "_id": idSchedule
+              }
+            }
+          })
+          .exec((err, saved) => {
+            err ? reject(err)
+            : resolve(saved);
           });
     });
 });

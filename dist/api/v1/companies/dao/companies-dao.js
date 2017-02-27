@@ -103,6 +103,49 @@ companies_model_1.default.static('updateCompanies', function (id, companies) {
         });
     });
 });
+companies_model_1.default.static('createDocument', function (id, attachments) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(document)) {
+            return reject(new TypeError('Document is not a valid object.'));
+        }
+        attachments_dao_1.default.createAttachments(attachments).then(function (res) {
+            var idAttachment = res.idAtt;
+            console.log(idAttachment);
+            for (var i = 0; i < idAttachment.length; i++) {
+                console.log(idAttachment[i]);
+                Companies
+                    .findById({ id: id,
+                    $push: { "document": idAttachment[i] }
+                })
+                    .exec(function (err, saved) {
+                    err ? reject(err)
+                        : resolve(saved);
+                });
+            }
+        });
+    });
+});
+companies_model_1.default.static('deleteDocument', function (id, companies) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(document)) {
+            return reject(new TypeError('Document is not a valid object.'));
+        }
+        Companies
+            .findByIdAndUpdate(id, {
+            $pull: { "document": companies }
+        })
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
+        });
+        attachments_dao_1.default
+            .findByIdAndRemove(companies)
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve(deleted);
+        });
+    });
+});
 var Companies = mongoose.model('Companies', companies_model_1.default);
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = Companies;

@@ -27,5 +27,13 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/pictures/delete/:id/:type/:pictureID')
 			.post(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
+
+		router
+			.route('/properties/schedules/update/:id')
+			.post(auth.isAuthenticated(),PropertiesController.updatePropertySchedules)
+
+		router
+			.route('/properties/schedules/delete/:id/:idSchedule')
+			.delete(auth.isAuthenticated(),PropertiesController.deletePropertySchedules);
 	}
 } 
