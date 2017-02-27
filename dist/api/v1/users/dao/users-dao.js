@@ -83,7 +83,6 @@ users_model_1.default.static('updateUserData', function (id, type, userData, fro
                 var history_data = datas.landlord.data;
             }
             var historyData = history_data;
-            console.log(historyData.name);
             if (historyData.name != null) {
                 var historyObj = { $push: {} };
                 historyObj.$push[type + '.histories'] = { "data": history_data };

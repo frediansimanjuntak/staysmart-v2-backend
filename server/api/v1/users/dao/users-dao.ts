@@ -97,7 +97,6 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 					var history_data = datas.landlord.data;
 				}
 				let historyData:any = history_data;
-				console.log(historyData.name);
 
 				if(historyData.name != null) {
 					var historyObj = {$push: {}};
