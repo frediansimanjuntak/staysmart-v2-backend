@@ -38,7 +38,6 @@ var UsersController = (function () {
         var _userData = req.body;
         var _front = req["files"].front;
         var _back = req["files"].back;
-        console.log(_userData);
         users_dao_1.default['updateUserData'](_id, _type, _userData, _front, _back)
             .then(function (users) { return res.status(201).json(users); })
             .catch(function (error) { return res.status(400).json(error); });

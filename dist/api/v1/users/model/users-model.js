@@ -40,7 +40,7 @@ var UsersSchema = new mongoose.Schema({
             }
         },
         histories: [{
-                date: { type: Date },
+                date: { type: Date, default: Date.now },
                 data: {}
             }]
     },
@@ -73,7 +73,7 @@ var UsersSchema = new mongoose.Schema({
             }
         },
         histories: [{
-                date: { type: Date },
+                date: { type: Date, default: Date.now },
                 data: {}
             }]
     },
