@@ -213,8 +213,8 @@ propertiesSchema.static('updatePropertyShareholderImage', (propertyID:Object, fr
       }
       if(back != null) {
         Attachments.createAttachments(back).then(res => {
-          var idFront = res.idAtt;
-          for(var i = 0; i < idFront.length; i++){
+          var idBack = res.idAtt;
+          for(var i = 0; i < idBack.length; i++){
             Properties
               .findById(propertyID, (err, result) => {
                 for(var j = 0; j < result.owner.shareholder.length; j++){
@@ -228,7 +228,7 @@ propertiesSchema.static('updatePropertyShareholderImage', (propertyID:Object, fr
                         }
                       }, {
                         $set: {
-                          "owner.shareholder.$.identification_proof.back":idFront[i]
+                          "owner.shareholder.$.identification_proof.back":idBack[i]
                         }
                       }
                     )
