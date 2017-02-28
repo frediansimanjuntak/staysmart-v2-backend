@@ -157,10 +157,6 @@ users_model_1.default.static('deleteUser', function (id) {
                         : resolve();
                 });
             }
-        })
-            .exec(function (err, deleted) {
-            err ? reject(err)
-                : resolve();
         });
         Users
             .findByIdAndRemove(id)
