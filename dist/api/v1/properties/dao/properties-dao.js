@@ -28,21 +28,26 @@ properties_model_1.default.static('getById', function (id) {
         });
     });
 });
-properties_model_1.default.static('createProperties', function (properties) {
+properties_model_1.default.static('createProperties', function (property, files) {
     return new Promise(function (resolve, reject) {
-        if (!_.isObject(properties)) {
-            return reject(new TypeError('Property is not a valid object.'));
+        if (!_.isObject(property)) {
+            return reject(new TypeError('Property not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
-        var body = properties;
-        var _properties = new Properties(properties);
+        var body = property;
+        var _properties = new Properties(property);
         _properties.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
         });
         var propertyID = _properties._id;
+        if (files != null) {
+            var attach = files;
+            Properties.createPropertyPictures(propertyID, attach.living, attach.dining, attach.bed, attach.toilet, attach.kitchen);
+            Properties.updatePropertyShareholderImage(propertyID, attach.front, attach.back);
+        }
         developments_dao_1.default
-            .findByIdAndUpdate(body.development, {
+            .update({ "_id": body.development }, {
             $push: {
                 "properties": propertyID
             }
@@ -66,109 +71,161 @@ properties_model_1.default.static('updateProperties', function (id, properties) 
         });
     });
 });
-properties_model_1.default.static('updateDetails', function (id, details) {
-    return new Promise(function (resolve, reject) {
-        if (!_.isObject(details)) {
-            return reject(new TypeError('Detail is not a valid object'));
-        }
-        var objectID = mongoose.Types.ObjectId;
-        var body = details;
-        var detailsObj = { $set: {} };
-        for (var param in details) {
-            detailsObj.$set['details.' + param] = details[param];
-        }
-        Properties
-            .findByIdAndUpdate(id, detailsObj)
-            .exec(function (err, saved) {
-            err ? reject(err)
-                : resolve(saved);
-        });
-    });
-});
 properties_model_1.default.static('createPropertyPictures', function (propertyID, living, dining, bed, toilet, kitchen) {
     return new Promise(function (resolve, reject) {
-        if (!_.isString(propertyID)) {
+        if (!_.isObject(propertyID)) {
             return reject(new TypeError('Property ID is not a valid string.'));
         }
         if (!_.isObject(living)) {
             return reject(new TypeError('Living is not a valid object.'));
         }
         var ObjectID = mongoose.Types.ObjectId;
-        attachments_dao_1.default.createAttachments(living).then(function (res) {
-            var idLiving = res.idAtt;
-            for (var i = 0; i < idLiving.length; i++) {
+        if (living != null) {
+            attachments_dao_1.default.createAttachments(living).then(function (res) {
+                var idLiving = res.idAtt;
                 Properties
                     .update({ "_id": propertyID }, {
-                    $push: {
-                        "pictures.living": idLiving[i]
+                    $set: {
+                        "pictures.living": idLiving
                     }
                 })
                     .exec(function (err, saved) {
                     err ? reject(err)
                         : resolve(saved);
                 });
-            }
-        });
-        attachments_dao_1.default.createAttachments(dining).then(function (res) {
-            var idDining = res.idAtt;
-            for (var i = 0; i < idDining.length; i++) {
+            });
+        }
+        if (dining != null) {
+            attachments_dao_1.default.createAttachments(dining).then(function (res) {
+                var idDining = res.idAtt;
                 Properties
                     .update({ "_id": propertyID }, {
-                    $push: {
-                        "pictures.dining": idDining[i]
+                    $set: {
+                        "pictures.dining": idDining
                     }
                 })
                     .exec(function (err, saved) {
                     err ? reject(err)
                         : resolve(saved);
                 });
-            }
-        });
-        attachments_dao_1.default.createAttachments(bed).then(function (res) {
-            var idBed = res.idAtt;
-            for (var i = 0; i < idBed.length; i++) {
+            });
+        }
+        if (bed != null) {
+            attachments_dao_1.default.createAttachments(bed).then(function (res) {
+                var idBed = res.idAtt;
                 Properties
                     .update({ "_id": propertyID }, {
-                    $push: {
-                        "pictures.bed": idBed[i]
+                    $set: {
+                        "pictures.bed": idBed
                     }
                 })
                     .exec(function (err, saved) {
                     err ? reject(err)
                         : resolve(saved);
                 });
-            }
-        });
-        attachments_dao_1.default.createAttachments(toilet).then(function (res) {
-            var idToilet = res.idAtt;
-            for (var i = 0; i < idToilet.length; i++) {
+            });
+        }
+        if (toilet != null) {
+            attachments_dao_1.default.createAttachments(toilet).then(function (res) {
+                var idToilet = res.idAtt;
                 Properties
                     .update({ "_id": propertyID }, {
-                    $push: {
-                        "pictures.toilet": idToilet[i]
+                    $set: {
+                        "pictures.toilet": idToilet
                     }
                 })
                     .exec(function (err, saved) {
                     err ? reject(err)
                         : resolve(saved);
                 });
-            }
-        });
-        attachments_dao_1.default.createAttachments(kitchen).then(function (res) {
-            var idKitchen = res.idAtt;
-            for (var i = 0; i < idKitchen.length; i++) {
+            });
+        }
+        if (kitchen != null) {
+            attachments_dao_1.default.createAttachments(kitchen).then(function (res) {
+                var idKitchen = res.idAtt;
                 Properties
                     .update({ "_id": propertyID }, {
-                    $push: {
-                        "pictures.kitchen": idKitchen[i]
+                    $set: {
+                        "pictures.kitchen": idKitchen
                     }
                 })
                     .exec(function (err, saved) {
                     err ? reject(err)
                         : resolve(saved);
                 });
-            }
-        });
+            });
+        }
+    });
+});
+properties_model_1.default.static('updatePropertyShareholderImage', function (propertyID, front, back) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(propertyID)) {
+            return reject(new TypeError('Property ID is not a valid string.'));
+        }
+        if (!_.isObject(front)) {
+            return reject(new TypeError('front is not a valid object.'));
+        }
+        var ObjectID = mongoose.Types.ObjectId;
+        if (front != null) {
+            attachments_dao_1.default.createAttachments(front).then(function (res) {
+                var idFront = res.idAtt;
+                for (var i = 0; i < idFront.length; i++) {
+                    Properties
+                        .findById(propertyID, function (err, result) {
+                        for (var j = 0; j < result.owner.shareholder.length; j++) {
+                            var body = result.owner.shareholder[j];
+                            if (i == j) {
+                                Properties
+                                    .update({ "_id": propertyID, "owner.shareholder": {
+                                        $elemMatch: {
+                                            "_id": body._id
+                                        }
+                                    }
+                                }, {
+                                    $set: {
+                                        "owner.shareholder.$.identification_proof.front": idFront[i]
+                                    }
+                                })
+                                    .exec(function (err, saved) {
+                                    err ? reject(err)
+                                        : resolve(saved);
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        if (back != null) {
+            attachments_dao_1.default.createAttachments(back).then(function (res) {
+                var idFront = res.idAtt;
+                for (var i = 0; i < idFront.length; i++) {
+                    Properties
+                        .findById(propertyID, function (err, result) {
+                        for (var j = 0; j < result.owner.shareholder.length; j++) {
+                            var body = result.owner.shareholder[j];
+                            if (i == j) {
+                                Properties
+                                    .update({ "_id": propertyID, "owner.shareholder": {
+                                        $elemMatch: {
+                                            "_id": body._id
+                                        }
+                                    }
+                                }, {
+                                    $set: {
+                                        "owner.shareholder.$.identification_proof.back": idFront[i]
+                                    }
+                                })
+                                    .exec(function (err, saved) {
+                                    err ? reject(err)
+                                        : resolve(saved);
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        }
     });
 });
 properties_model_1.default.static('deleteProperties', function (id) {

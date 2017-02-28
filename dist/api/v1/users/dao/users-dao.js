@@ -4,7 +4,6 @@ var Promise = require("bluebird");
 var _ = require("lodash");
 var users_model_1 = require("../model/users-model");
 var attachments_dao_1 = require("../../attachments/dao/attachments-dao");
-var banks_dao_1 = require("../../banks/dao/banks-dao");
 users_model_1.default.static('index', function () {
     return new Promise(function (resolve, reject) {
         Users
@@ -20,6 +19,7 @@ users_model_1.default.static('getAll', function () {
         var _query = {};
         Users
             .find(_query)
+            .populate("agreements attachments banks companies properties picture")
             .exec(function (err, users) {
             err ? reject(err)
                 : resolve(users);
@@ -30,7 +30,7 @@ users_model_1.default.static('me', function (userId) {
     return new Promise(function (resolve, reject) {
         Users
             .findOne({ _id: userId }, '-salt -password')
-            .populate("agreements attachments banks companies properties")
+            .populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.company landlord.data.bank_account.bank owned_properties companies")
             .exec(function (err, users) {
             err ? reject(err)
                 : resolve(users);
@@ -39,9 +39,12 @@ users_model_1.default.static('me', function (userId) {
 });
 users_model_1.default.static('getById', function (id) {
     return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
         Users
             .findById(id, '-salt -password')
-            .populate("agreements attachments banks companies properties")
+            .populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.company landlord.data.bank_account.bank owned_properties companies")
             .exec(function (err, users) {
             err ? reject(err)
                 : resolve(users);
@@ -53,12 +56,85 @@ users_model_1.default.static('createUser', function (user) {
         if (!_.isObject(user)) {
             return reject(new TypeError('User is not a valid object.'));
         }
-        var ObjectID = mongoose.Types.ObjectId;
-        var body = user;
+        var randomCode = Math.random().toString(36).substr(2, 6);
         var _user = new Users(user);
+        _user.verification.code = randomCode;
         _user.save(function (err, saved) {
             err ? reject(err)
                 : resolve(saved);
+        });
+    });
+});
+users_model_1.default.static('sendActivationCode', function (id) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        var randomCode = Math.random().toString(36).substr(2, 6);
+        Users
+            .update({ "_id": id }, {
+            $set: {
+                "verification.code": randomCode
+            }
+        })
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve();
+        });
+    });
+});
+users_model_1.default.static('deleteUser', function (id) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        Users
+            .findByIdAndRemove(id)
+            .exec(function (err, deleted) {
+            err ? reject(err)
+                : resolve();
+        });
+    });
+});
+users_model_1.default.static('updateUser', function (id, user, attachment) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isObject(user)) {
+            return reject(new TypeError('User is not a valid object.'));
+        }
+        var body = user;
+        var file = attachment;
+        var attachmentFile = file.picture;
+        if (attachmentFile) {
+            attachments_dao_1.default.createAttachments(attachmentFile)
+                .then(function (res) {
+                var idAttachment = res.idAtt;
+                Users
+                    .update({ "_id": id }, {
+                    $set: {
+                        "picture": idAttachment
+                    }
+                })
+                    .exec(function (err, updated) {
+                    err ? reject(err)
+                        : resolve(updated);
+                });
+            })
+                .catch(function (err) {
+                resolve({ message: "attachment error" });
+            });
+        }
+        Users
+            .findById(id, function (err, user) {
+            user.username = body.username;
+            user.email = body.email;
+            user.phone = body.phone;
+            if (body.password) {
+                user.password = body.password;
+            }
+            user.save(function (err, saved) {
+                err ? reject(err)
+                    : resolve(saved);
+            });
         });
     });
 });
@@ -130,71 +206,28 @@ users_model_1.default.static('updateUserData', function (id, type, userData, fro
         }
     });
 });
-users_model_1.default.static('deleteUser', function (id) {
+users_model_1.default.static('activationUser', function (id, user) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        var body = user;
         Users
-            .findById(id, function (err, userr) {
-            if (userr.tenant.data.bank_account.bank != null) {
-                var ObjectID = mongoose.Types.ObjectId;
-                var bank_account = userr.tenant.data.bank_account.bank;
-                banks_dao_1.default
-                    .findByIdAndRemove(bank_account)
-                    .exec(function (err, deleted) {
+            .findById(id, function (err, user) {
+            var code = user.verification.code;
+            if (code == body.code) {
+                Users
+                    .update({ "_id": id }, {
+                    $set: {
+                        "verification.verified": true,
+                        "verification.verified_date": Date.now()
+                    }
+                })
+                    .exec(function (err, updated) {
                     err ? reject(err)
-                        : resolve();
+                        : resolve(updated);
                 });
             }
-            if (userr.landlord.data.bank_account.bank != null) {
-                var ObjectID = mongoose.Types.ObjectId;
-                var bank_account = userr.landlord.data.bank_account.bank;
-                banks_dao_1.default
-                    .findByIdAndRemove(bank_account)
-                    .exec(function (err, deleted) {
-                    err ? reject(err)
-                        : resolve();
-                });
-            }
-        });
-        Users
-            .findByIdAndRemove(id)
-            .exec(function (err, deleted) {
-            err ? reject(err)
-                : resolve();
-        });
-    });
-});
-users_model_1.default.static('updateUser', function (id, user) {
-    return new Promise(function (resolve, reject) {
-        if (!_.isObject(user)) {
-            return reject(new TypeError('User is not a valid object.'));
-        }
-        Users
-            .findByIdAndUpdate(id, user)
-            .exec(function (err, updated) {
-            err ? reject(err)
-                : resolve(updated);
-        });
-    });
-});
-users_model_1.default.static('activationUser', function (id, code) {
-    return new Promise(function (resolve, reject) {
-        if (!_.isString(id)) {
-            return reject(new TypeError('Id is not a valid string.'));
-        }
-        Users
-            .findByIdAndUpdate(id, {
-            $set: {
-                "verification.verified": true,
-                "verification.verified_date": Date.now(),
-                "verification.code": code
-            }
-        })
-            .exec(function (err, updated) {
-            err ? reject(err)
-                : resolve(updated);
         });
     });
 });

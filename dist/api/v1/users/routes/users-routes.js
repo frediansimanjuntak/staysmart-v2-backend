@@ -10,15 +10,15 @@ var UserRoutes = (function () {
             .get(auth.isAuthenticated(), users_controller_1.UsersController.getAll)
             .post(auth.isAuthenticated(), users_controller_1.UsersController.createUser);
         router
-            .route('/users/data/:id/:type')
-            .post(auth.isAuthenticated(), users_controller_1.UsersController.updateUserData);
-        router
             .route('/users/:id')
             .get(auth.isAuthenticated(), users_controller_1.UsersController.getById)
-            .put(auth.isAuthenticated(), users_controller_1.UsersController.deleteUser);
+            .delete(auth.isAuthenticated(), users_controller_1.UsersController.deleteUser);
         router
             .route('/users/update/:id')
             .post(auth.isAuthenticated(), users_controller_1.UsersController.updateUser);
+        router
+            .route('/users/data/:id/:type')
+            .post(auth.isAuthenticated(), users_controller_1.UsersController.updateUserData);
         router
             .route('/')
             .get(auth.isAuthenticated(), users_controller_1.UsersController.index);
@@ -26,8 +26,11 @@ var UserRoutes = (function () {
             .route('/me')
             .get(auth.isAuthenticated(), users_controller_1.UsersController.me);
         router
-            .route('/users/active/:id/:code')
+            .route('/users/active/:id')
             .post(auth.isAuthenticated(), users_controller_1.UsersController.activationUser);
+        router
+            .route('/users/send_active_code/:id')
+            .post(auth.isAuthenticated(), users_controller_1.UsersController.sendActivationCode);
         router
             .route('/users/unactive/:id')
             .post(auth.isAuthenticated(), users_controller_1.UsersController.unActiveUser);

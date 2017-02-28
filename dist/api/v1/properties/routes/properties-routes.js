@@ -17,17 +17,8 @@ var PropertiesRoutes = (function () {
             .route('/properties/update/:id')
             .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateProperties);
         router
-            .route('/properties/details/update/:id')
-            .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updateDetails);
-        router
-            .route('/properties/pictures/:id')
-            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.createPropertyPictures);
-        router
             .route('/properties/pictures/delete/:id/:type/:pictureID')
             .delete(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertyPictures);
-        router
-            .route('/properties/schedules/add/:id')
-            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.createPropertySchedules);
         router
             .route('/properties/schedules/update/:id/:scheduleId')
             .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updatePropertySchedules);

@@ -9,6 +9,10 @@ var UsersSchema = new mongoose.Schema({
     salt: { type: String },
     phone: { type: String, trim: true },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    picture: {
+        type: Schema.Types.ObjectId,
+        ref: 'Attachments'
+    },
     verification: {
         verified: { type: Boolean, default: false },
         verified_date: { type: Date },
@@ -112,6 +116,7 @@ var UsersSchema = new mongoose.Schema({
     ],
     created_at: { type: Date, default: Date.now }
 });
+// Public profile information
 UsersSchema
     .virtual('profile')
     .get(function () {
@@ -199,13 +204,13 @@ UsersSchema
  */
 UsersSchema.methods = {
     /**
-    * Authenticate - check if the passwords are the same
-    *
-    * @param {String} password
-    * @param {Function} callback
-    * @return {Boolean}
-    * @api public
-    */
+     * Authenticate - check if the passwords are the same
+     *
+     * @param {String} password
+     * @param {Function} callback
+     * @return {Boolean}
+     * @api public
+     */
     authenticate: function (password, callback) {
         var _this = this;
         if (!callback) {
@@ -224,13 +229,13 @@ UsersSchema.methods = {
         });
     },
     /**
-    * Make salt
-    *
-    * @param {Number} [byteSize] - Optional salt byte size, default to 16
-    * @param {Function} callback
-    * @return {String}
-    * @api public
-    */
+     * Make salt
+     *
+     * @param {Number} [byteSize] - Optional salt byte size, default to 16
+     * @param {Function} callback
+     * @return {String}
+     * @api public
+     */
     makeSalt: function (byteSize, callback) {
         var defaultByteSize = 16;
         if (typeof arguments[0] === 'function') {
@@ -256,13 +261,13 @@ UsersSchema.methods = {
         });
     },
     /**
-    * Encrypt password
-    *
-    * @param {String} password
-    * @param {Function} callback
-    * @return {String}
-    * @api public
-    */
+     * Encrypt password
+     *
+     * @param {String} password
+     * @param {Function} callback
+     * @return {String}
+     * @api public
+     */
     encryptPassword: function (password, callback) {
         if (!password || !this.salt) {
             if (!callback) {

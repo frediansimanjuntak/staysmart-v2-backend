@@ -15,7 +15,7 @@ var UsersController = (function () {
             .catch(function (error) { return res.status(400).json(error); });
     };
     UsersController.me = function (req, res) {
-        var _userId = req.user._id;
+        var _userId = req["user"]._id;
         users_dao_1.default['me'](_userId)
             .then(function (users) { return res.status(200).json(users); })
             .catch(function (error) { return res.status(400).json(error); });
@@ -29,6 +29,14 @@ var UsersController = (function () {
     UsersController.createUser = function (req, res) {
         var _user = req.body;
         users_dao_1.default['createUser'](_user)
+            .then(function (users) { return res.status(201).json(users); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    UsersController.updateUser = function (req, res) {
+        var _id = req.params.id;
+        var _user = req.body;
+        var _attachment = req["files"];
+        users_dao_1.default['updateUser'](_id, _user, _attachment)
             .then(function (users) { return res.status(201).json(users); })
             .catch(function (error) { return res.status(400).json(error); });
     };
@@ -48,18 +56,17 @@ var UsersController = (function () {
             .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    UsersController.updateUser = function (req, res) {
+    UsersController.activationUser = function (req, res) {
         var _id = req.params.id;
         var _user = req.body;
-        users_dao_1.default['updateUser'](_id, _user)
+        users_dao_1.default['activationUser'](_id, _user)
             .then(function (users) { return res.status(201).json(users); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    UsersController.activationUser = function (req, res) {
+    UsersController.sendActivationCode = function (req, res) {
         var _id = req.params.id;
-        var _code = req.params.code;
-        users_dao_1.default['activationUser'](_id, _code)
-            .then(function (users) { return res.status(201).json(users); })
+        users_dao_1.default['sendActivationCode'](_id)
+            .then(function () { return res.status(200).end(); })
             .catch(function (error) { return res.status(400).json(error); });
     };
     UsersController.unActiveUser = function (req, res) {

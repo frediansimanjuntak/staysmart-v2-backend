@@ -23,8 +23,7 @@ var PropertiesSchema = new mongoose.Schema({
         bathroom: { type: Number },
         price: { type: Number },
         psqft: { type: Number },
-        price_psm: { type: Number },
-        price_psf: { type: Number },
+        psqm: { type: Number },
         available: { type: Date },
         furnishing: { type: String },
         description: { type: String },
@@ -122,7 +121,7 @@ var PropertiesSchema = new mongoose.Schema({
         },
         date: { type: Date }
     },
-    status: { type: String, enum: ['initiated', 'published', 'rented'] },
+    status: { type: String, enum: ['initiated', 'published', 'rented', 'draft'] },
     histories: [{
             action: { type: String, enum: ['remove', 'update'] },
             date: { type: Date },
