@@ -38,10 +38,18 @@ var PropertiesController = (function () {
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };
-    PropertiesController.updatePropertySchedules = function (req, res) {
+    PropertiesController.createPropertySchedules = function (req, res) {
         var _id = req.params.id;
         var _schedules = req.body;
-        properties_dao_1.default['updatePropertySchedules'](_id, _schedules)
+        properties_dao_1.default['createPropertySchedules'](_id, _schedules)
+            .then(function (properties) { return res.status(201).json(properties); })
+            .catch(function (error) { return res.status(400).json(error); });
+    };
+    PropertiesController.updatePropertySchedules = function (req, res) {
+        var _id = req.params.id;
+        var _scheduleId = req.params.scheduleId;
+        var _scheduleData = req.body;
+        properties_dao_1.default['updatePropertySchedules'](_id, _scheduleId, _scheduleData)
             .then(function (properties) { return res.status(201).json(properties); })
             .catch(function (error) { return res.status(400).json(error); });
     };

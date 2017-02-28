@@ -201,7 +201,7 @@ propertiesSchema.static('deleteProperties', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('updatePropertySchedules', (id:string, schedules:Object):Promise<any> => {
+propertiesSchema.static('createPropertySchedules', (id:string, schedules:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
@@ -226,6 +226,30 @@ propertiesSchema.static('updatePropertySchedules', (id:string, schedules:Object)
                     : resolve(updated);
             });
         }
+    });
+});
+
+propertiesSchema.static('updatePropertySchedules', (id:string, scheduleId:string, scheduleData:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        let body:any = scheduleData;
+        
+        Properties
+          .update({"_id": id, "schedules": {$elemMatch: {"_id": scheduleId}}}, 
+          {
+            $set: {
+              "schedules.$.day": body.day,
+              "schedules.$.start_date": body.start_date,
+              "schedules.$.time_from": body.time_from,
+              "schedules.$.time_to": body.time_to
+            }
+          })
+          .exec((err, updated) => {
+              err ? reject(err)
+                  : resolve(updated);
+          });
     });
 });
 

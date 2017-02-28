@@ -184,7 +184,7 @@ properties_model_1.default.static('deleteProperties', function (id) {
         });
     });
 });
-properties_model_1.default.static('updatePropertySchedules', function (id, schedules) {
+properties_model_1.default.static('createPropertySchedules', function (id, schedules) {
     return new Promise(function (resolve, reject) {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
@@ -208,6 +208,27 @@ properties_model_1.default.static('updatePropertySchedules', function (id, sched
                     : resolve(updated);
             });
         }
+    });
+});
+properties_model_1.default.static('updatePropertySchedules', function (id, scheduleId, scheduleData) {
+    return new Promise(function (resolve, reject) {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        var body = scheduleData;
+        Properties
+            .update({ "_id": id, "schedules": { $elemMatch: { "_id": scheduleId } } }, {
+            $set: {
+                "schedules.$.day": body.day,
+                "schedules.$.start_date": body.start_date,
+                "schedules.$.time_from": body.time_from,
+                "schedules.$.time_to": body.time_to
+            }
+        })
+            .exec(function (err, updated) {
+            err ? reject(err)
+                : resolve(updated);
+        });
     });
 });
 properties_model_1.default.static('deletePropertyPictures', function (id, type, pictureID) {

@@ -50,11 +50,21 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updatePropertySchedules(req: express.Request, res: express.Response):void {
+	static createPropertySchedules(req: express.Request, res: express.Response):void {
 		let _id = req.params.id
 		let _schedules = req.body;
 		PropertiesDAO
-		['updatePropertySchedules'](_id, _schedules)
+		['createPropertySchedules'](_id, _schedules)
+		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static updatePropertySchedules(req: express.Request, res: express.Response):void {
+		let _id = req.params.id
+		let _scheduleId = req.params.scheduleId
+		let _scheduleData = req.body;
+		PropertiesDAO
+		['updatePropertySchedules'](_id, _scheduleId, _scheduleData)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
