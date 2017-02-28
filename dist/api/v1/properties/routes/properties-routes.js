@@ -26,7 +26,10 @@ var PropertiesRoutes = (function () {
             .route('/properties/pictures/delete/:id/:type/:pictureID')
             .delete(auth.isAuthenticated(), properties_controller_1.PropertiesController.deletePropertyPictures);
         router
-            .route('/properties/schedules/update/:id')
+            .route('/properties/schedules/add/:id')
+            .post(auth.isAuthenticated(), properties_controller_1.PropertiesController.createPropertySchedules);
+        router
+            .route('/properties/schedules/update/:id/:scheduleId')
             .put(auth.isAuthenticated(), properties_controller_1.PropertiesController.updatePropertySchedules);
         router
             .route('/properties/schedules/delete/:id/:idSchedule')

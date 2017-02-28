@@ -33,7 +33,11 @@ export class PropertiesRoutes {
 			.delete(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
 
 		router
-			.route('/properties/schedules/update/:id')
+			.route('/properties/schedules/add/:id')
+			.post(auth.isAuthenticated(),PropertiesController.createPropertySchedules)
+
+		router
+			.route('/properties/schedules/update/:id/:scheduleId')
 			.put(auth.isAuthenticated(),PropertiesController.updatePropertySchedules)
 
 		router
