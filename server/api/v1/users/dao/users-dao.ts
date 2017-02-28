@@ -25,6 +25,7 @@ usersSchema.static('getAll', ():Promise<any> => {
 
 		Users
 			.find(_query)
+			.populate("agreements attachments banks companies properties picture")
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -37,7 +38,7 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 
 		Users
 			.findOne({_id:userId}, '-salt -password')
-			.populate("agreements attachments banks companies properties")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.company landlord.data.bank_account.bank owned_properties companies")
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -47,10 +48,13 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 
 usersSchema.static('getById', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
 
 		Users
 			.findById(id, '-salt -password')
-			.populate("agreements attachments banks companies properties")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.company landlord.data.bank_account.bank owned_properties companies")
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -62,15 +66,98 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
-		}
-		var ObjectID = mongoose.Types.ObjectId;  
-		let body:any = user;
+		}	
+
+		let randomCode = Math.random().toString(36).substr(2, 6);
 
 		var _user = new Users(user);
-			_user.save((err, saved)=>{
-				err ? reject(err)
+		_user.verification.code = randomCode;
+		_user.save((err, saved)=>{
+
+			err ? reject(err)
 				: resolve(saved);
+		});
+	});
+});
+
+usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		
+		let randomCode = Math.random().toString(36).substr(2, 6);
+
+		Users
+			.update({"_id": id}, {
+				$set: {
+					"verification.code": randomCode
+				}
+			})
+			.exec((err, deleted) => {
+				err ? reject(err)
+				: resolve();
 			});
+	});
+});
+
+usersSchema.static('deleteUser', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		
+		Users
+			.findByIdAndRemove(id)
+			.exec((err, deleted) => {
+				err ? reject(err)
+				: resolve();
+			});
+	});
+});
+
+usersSchema.static('updateUser', (id:string, user:Object, attachment:Object ):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(user)) {
+			return reject(new TypeError('User is not a valid object.'));
+		}
+		let body:any = user;
+    let file:any = attachment;
+    let attachmentFile = file.picture;
+
+    if(attachmentFile){
+      Attachments.createAttachments(attachmentFile)
+      .then(res => {
+      	var idAttachment = res.idAtt;
+          Users
+          	.update({"_id": id}, {
+          		$set: {
+          			"picture": idAttachment
+          		}
+          	})    
+          	.exec((err, updated) => {
+							err ? reject(err)
+								: resolve(updated);
+						});
+      })
+      .catch(err=>{
+          resolve({message: "attachment error"});
+      }) 
+    }  
+
+		Users
+			.findById(id, (err, user)=>{
+				user.username = body.username;
+	      user.email = body.email;
+	      user.phone = body.phone;
+	      if(body.password){
+	      	user.password = body.password;
+	      }	            
+	      user.save((err, saved) => {
+	        err ? reject(err)
+	            : resolve(saved);
+	        });
+			})
 	});
 });
 
@@ -148,82 +235,33 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 	});
 });
 
-usersSchema.static('deleteUser', (id:string):Promise<any> => {
+usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
+		let body:any = user;
 
 		Users
-			.findById(id, (err, userr) => {
-				if(userr.tenant.data.bank_account.bank != null) {
-					var ObjectID = mongoose.Types.ObjectId; 
-					let bank_account = userr.tenant.data.bank_account.bank;
+			.findById(id, (err,user)=>{
+				var code = user.verification.code;
 
-					Banks
-						.findByIdAndRemove(bank_account)
-						.exec((err, deleted) => {
+				if (code == body.code){
+					Users
+						.update({"_id": id},{
+							$set:
+							{
+								"verification.verified": true, 
+								"verification.verified_date": Date.now()
+							}
+						})
+						.exec((err, updated) => {
 							err ? reject(err)
-							: resolve();
-						});
-				}
-				if(userr.landlord.data.bank_account.bank != null) {
-					var ObjectID = mongoose.Types.ObjectId; 
-					let bank_account = userr.landlord.data.bank_account.bank;
-
-					Banks
-						.findByIdAndRemove(bank_account)
-						.exec((err, deleted) => {
-							err ? reject(err)
-							: resolve();
+									: resolve(updated);
 						});
 				}
 			})
-
-		Users
-			.findByIdAndRemove(id)
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve();
-			});
-	});
-});
-
-usersSchema.static('updateUser', (id:string, user:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(user)) {
-			return reject(new TypeError('User is not a valid object.'));
-		}
-
-		Users
-			.findByIdAndUpdate(id, user)
-			.exec((err, updated) => {
-				err ? reject(err)
-				: resolve(updated);
-			});
-	});
-});
-
-usersSchema.static('activationUser', (id:string, code:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
-		Users
-			.findByIdAndUpdate(id,{
-				$set:
-				{
-					"verification.verified": true, 
-					"verification.verified_date": Date.now(), 
-					"verification.code": code
-				}
-			})
-			.exec((err, updated) => {
-				err ? reject(err)
-				: resolve(updated);
-			});
-	});
+		});
 });
 
 usersSchema.static('unActiveUser', (id:string):Promise<any> => {

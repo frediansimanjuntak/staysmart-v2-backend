@@ -18,7 +18,8 @@ export class UsersController {
 	}
 
 	static me(req: express.Request, res: express.Response):void {
-		let _userId = req.user._id;
+		let _userId = req["user"]._id;
+
 		UsersDAO
 		['me'](_userId)
 		.then(users => res.status(200).json(users))
@@ -27,6 +28,7 @@ export class UsersController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+
 		UsersDAO
 		['getById'](_id)
 		.then(users => res.status(200).json(users))
@@ -35,8 +37,20 @@ export class UsersController {
 
 	static createUser(req: express.Request, res: express.Response):void {
 		let _user = req.body;
+
 		UsersDAO
 		['createUser'](_user)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static updateUser(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _user = req.body;
+		let _attachment = req["files"];
+
+		UsersDAO
+		['updateUser'](_id, _user, _attachment)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
@@ -55,30 +69,31 @@ export class UsersController {
 	
 	static deleteUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+
 		UsersDAO
 		['deleteUser'](_id)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updateUser(req: express.Request, res: express.Response):void {
+
+	static activationUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _user = req.body;
 
 		UsersDAO
-		['updateUser'](_id, _user)
-		.then(users => res.status(201).json(users))
-		.catch(error => res.status(400).json(error));
-	}
-
-	static activationUser(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _code = req.params.code;
-
-		UsersDAO
-		  ['activationUser'](_id, _code)
+		  ['activationUser'](_id, _user)
 		  .then(users => res.status(201).json(users))
 		  .catch(error => res.status(400).json(error));
+	}
+
+	static sendActivationCode(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		UsersDAO
+		['sendActivationCode'](_id)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
 	}
 
 	static unActiveUser(req: express.Request, res: express.Response):void {

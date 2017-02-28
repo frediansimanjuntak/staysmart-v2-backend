@@ -12,17 +12,17 @@ export class UserRoutes {
 			.post(auth.isAuthenticated(), UsersController.createUser);
 
 		router
-			.route('/users/data/:id/:type')
-			.post(auth.isAuthenticated(), UsersController.updateUserData);
-
-		router
 			.route('/users/:id')
 			.get(auth.isAuthenticated(), UsersController.getById)
-			.put(auth.isAuthenticated(), UsersController.deleteUser);
+			.delete(auth.isAuthenticated(), UsersController.deleteUser);
 
 		router
 			.route('/users/update/:id')
 			.post(auth.isAuthenticated(), UsersController.updateUser);
+			
+		router
+			.route('/users/data/:id/:type')
+			.post(auth.isAuthenticated(), UsersController.updateUserData);
 
 		router
 			.route('/')
@@ -33,8 +33,12 @@ export class UserRoutes {
 			.get(auth.isAuthenticated(), UsersController.me);
 
 		router
-			.route('/users/active/:id/:code')
+			.route('/users/active/:id')
 			.post(auth.isAuthenticated(), UsersController.activationUser);
+
+		router
+			.route('/users/send_active_code/:id')
+			.post(auth.isAuthenticated(), UsersController.sendActivationCode);
 
 		router
 			.route('/users/unactive/:id')
