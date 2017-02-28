@@ -21,20 +21,8 @@ export class PropertiesRoutes {
 			.put(auth.isAuthenticated(),PropertiesController.updateProperties);
 
 		router
-			.route('/properties/details/update/:id')
-			.put(auth.isAuthenticated(),PropertiesController.updateDetails);
-	
-		router
-			.route('/properties/pictures/:id')
-			.post(auth.isAuthenticated(),PropertiesController.createPropertyPictures);
-
-		router
 			.route('/properties/pictures/delete/:id/:type/:pictureID')
 			.delete(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
-
-		router
-			.route('/properties/schedules/add/:id')
-			.post(auth.isAuthenticated(),PropertiesController.createPropertySchedules)
 
 		router
 			.route('/properties/schedules/update/:id/:scheduleId')
