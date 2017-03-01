@@ -34,7 +34,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (property:Object, files:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (property:Object, userId:string, files:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(property)) {
         return reject(new TypeError('Property not a valid object.'));
@@ -44,6 +44,7 @@ propertiesSchema.static('createProperties', (property:Object, files:Object):Prom
       let body:any = property;
       
       var _properties = new Properties(property);
+          _properties.owner.user = userId;
           _properties.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
@@ -52,7 +53,7 @@ propertiesSchema.static('createProperties', (property:Object, files:Object):Prom
 
       if(files != null) {
         Properties.createPropertyPictures(propertyID, files);
-        Properties.updatePropertyShareholderImage(propertyID, files);
+        Properties.updatePropertyShareholderImage(userId, propertyID, files);
       }
       
       Developments
@@ -172,7 +173,7 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
     });
 });
 
-propertiesSchema.static('updatePropertyShareholderImage', (propertyID:string, files:Object):Promise<any> => {
+propertiesSchema.static('updatePropertyShareholderImage', (userId:string, propertyID:string, files:Object):Promise<any> => {
     // propertyID and files not validated, if validate -> error
     return new Promise((resolve:Function, reject:Function) => {
       var ObjectID = mongoose.Types.ObjectId;  
@@ -186,6 +187,28 @@ propertiesSchema.static('updatePropertyShareholderImage', (propertyID:string, fi
                 for(var j = 0; j < result.owner.shareholder.length; j++){
                   let body:any = result.owner.shareholder[j];
                   if(i == j) {
+                    if(i == 0) {
+                      Users
+                        .findById(userId, (err, result) => {
+                          if(result.landlord.data == null){
+                            var type = 'landlord';
+                            Users.createHistory(userId, type);
+                            Users
+                              .findByIdAndUpdate(userId, {
+                                $set: {
+                                  "landlord.data.name":body.name,
+                                  "landlord.data.identification_type":body.identification_type,
+                                  "landlord.data.identification_number":body.identification_number,
+                                  "landlord.data.identification_proof.front":idFront[i]
+                                }
+                              })
+                              .exec((err, saved) => {
+                                err ? reject(err)
+                                : resolve(saved);
+                              }); 
+                          }
+                        })
+                    }
                     Properties
                       .update({"_id":propertyID, "owner.shareholder": {
                           $elemMatch: {
@@ -217,6 +240,26 @@ propertiesSchema.static('updatePropertyShareholderImage', (propertyID:string, fi
                 for(var j = 0; j < result.owner.shareholder.length; j++){
                   let body:any = result.owner.shareholder[j];
                   if(i == j) {
+                    if(i == 0) {
+                      Users
+                        .findById(userId, (err, result) => {
+                          if(result.landlord.data == null){
+                            var type = 'landlord';
+                            Users.createHistory(userId, type);
+                            Users
+                              .findByIdAndUpdate(userId, {
+                                $set: {
+                                  "landlord.data.identification_proof.back":idBack[i]
+                                }
+                              })
+                              .exec((err, saved) => {
+                                err ? reject(err)
+                                : resolve(saved);
+                              }); 
+                            Properties.deletePropertyShareholder(propertyID, body._id);
+                          }
+                        })
+                    }
                     Properties
                       .update({"_id":propertyID, "owner.shareholder": {
                           $elemMatch: {
