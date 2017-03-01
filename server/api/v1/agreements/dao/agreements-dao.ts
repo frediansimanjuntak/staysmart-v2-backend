@@ -2,11 +2,11 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import agreementsSchema from '../model/agreements-model';
+import Users from '../../users/dao/users-dao';
 
 agreementsSchema.static('getAll', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {};
-
 		Agreements
 			.find(_query)
 			.exec((err, agreements) => {
@@ -52,6 +52,9 @@ agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 		var ObjectID = mongoose.Types.ObjectId;  
 		let agreementObj = {$set: {}};
 		for(var param in data) {
+			if(param == 'status' || param == 'payment') {
+				agreementObj.$set['tenancy_agreement.data.'+param] = data[param];
+			}
 			agreementObj.$set['tenancy_agreement.data.confirmation.landlord.'+param] = data[param];
 		}
 		Agreements
@@ -70,10 +73,40 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
 		var type = 'tenancy_agreement';
-		
+		let body:any = data;
 		let agreementObj = {$set: {}};
 		for(var param in data) {
+			if(param == 'status' || param == 'payment') {
+				agreementObj.$set['tenancy_agreement.data.'+param] = data[param];
+			}
 			agreementObj.$set['tenancy_agreement.data.confirmation.tenant.'+param] = data[param];
+		}
+
+		if(body.status = 'accepted') {
+			Agreements
+				.findById(id, (err, result) => {
+					var propertyID = result.property;
+					var landlordID = result.landlord;
+					var date_start = result.letter_of_intent.data.date_commencement;
+					var rent_time = result.letter_of_intent.data.term_lease;
+					var extend_rent_time = result.letter_of_intent.data.term_lease_extend;
+					var long_rent_time = rent_time + extend_rent_time;
+					
+					Users
+						.findById(landlordID, {
+							$push: {
+								"rented_properties": {
+									"until": new Date(+new Date() + long_rent_time*30*24*60*60*1000),
+									"property": propertyID,
+									"agreement": id
+								}
+							}
+						})
+						.exec((err, updated) => {
+							err ? reject(err)
+							: resolve();
+						});	
+				})
 		}
 
 		Agreements.createLOIandTAHistory(id, type);
