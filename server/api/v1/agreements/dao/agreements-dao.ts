@@ -44,30 +44,62 @@ agreementsSchema.static('createAgreements', (agreements:Object):Promise<any> => 
 	});
 });
 
-agreementsSchema.static('updateAgreementsData', (id:string, type:string, data:Object):Promise<any> => {
+agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
-			return reject(new TypeError('LOI is not a valid object.'));
+			return reject(new TypeError('TA is not a valid object.'));
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
-
-		if(type != 'inventory') {
-			let agreementObj = {$set: {}};
-			for(var param in data) {
-				agreementObj.$set[type+'.data.'+param] = data[param];
-			}
-			Agreements
-				.findByIdAndUpdate(id,agreementObj)
-				.exec((err, updated) => {
-					err ? reject(err)
-					: resolve();
-				});	
+		let agreementObj = {$set: {}};
+		for(var param in data) {
+			agreementObj.$set['tenancy_agreement.data.confirmation.landlord.'+param] = data[param];
 		}
-		else{
-			
+		Agreements
+			.findByIdAndUpdate(id,agreementObj)
+			.exec((err, updated) => {
+				err ? reject(err)
+				: resolve();
+			});	
+	});
+});
+
+agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(data)) {
+			return reject(new TypeError('TA is not a valid object.'));
+		}
+		var ObjectID = mongoose.Types.ObjectId;  
+		var type = 'tenancy_agreement';
+		
+		let agreementObj = {$set: {}};
+		for(var param in data) {
+			agreementObj.$set['tenancy_agreement.data.confirmation.tenant.'+param] = data[param];
 		}
 		
+		Agreements.createLOIandTAHistory(id, type);
+		Agreements
+			.findByIdAndUpdate(id,agreementObj)
+			.exec((err, updated) => {
+				err ? reject(err)
+				: resolve();
+			});	
 	});
+});
+
+agreementsSchema.static('createLOIandTAHistory', (id:string, type:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Agreements
+          .findById(id, type, (err, result) => {
+            var historyObj = {$push: {}};
+            historyObj.$push[type+'.histories'] = {"data": result.data};
+            Agreements
+              .findByIdAndUpdate(id, historyObj)
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              });
+          })
+    });
 });
 
 agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
