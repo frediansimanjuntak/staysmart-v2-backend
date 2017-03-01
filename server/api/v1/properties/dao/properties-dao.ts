@@ -66,6 +66,17 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
             err ? reject(err)
                 : resolve(saved);
         });
+
+      Users
+        .update({"_id":userId}, {
+          $push: {
+            "owned_properties": propertyID
+          }
+        })
+        .exec((err, saved) => {
+            err ? reject(err)
+                : resolve(saved);
+        });
     });
 });
 
