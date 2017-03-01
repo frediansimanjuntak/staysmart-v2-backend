@@ -250,66 +250,71 @@ propertiesSchema.static('deleteProperties', (id:string):Promise<any> => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        Properties
+          .findById(id, (err, result) => {
+            for(var i = 0; i < result.pictures.living.length; i++){
+              Attachments
+                .findByIdAndRemove(result.pictures.living[i])
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+            }
+            for(var i = 0; i < result.pictures.dining.length; i++){
+              Attachments
+                .findByIdAndRemove(result.pictures.dining[i])
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+            }
+            for(var i = 0; i < result.pictures.bed.length; i++){
+              Attachments
+                .findByIdAndRemove(result.pictures.bed[i])
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+            }
+            for(var i = 0; i < result.pictures.toilet.length; i++){
+              Attachments
+                .findByIdAndRemove(result.pictures.toilet[i])
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+            }
+            for(var i = 0; i < result.pictures.kitchen.length; i++){
+              Attachments
+                .findByIdAndRemove(result.pictures.kitchen[i])
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+            }
+            for(var i = 0; i < result.owner.shareholder.length; i++){
+              Attachments
+                .findByIdAndRemove(result.owner.shareholder[i].identification_proof.front)
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+              Attachments
+                .findByIdAndRemove(result.owner.shareholder[i].identification_proof.back)
+                .exec((err, deleted) => {
+                    err ? reject(err)
+                        : resolve(deleted);
+                });
+            }
+          })
 
         Properties
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
-                  : resolve();
+                  : resolve(deleted);
           });
         
-    });
-});
-
-propertiesSchema.static('createPropertySchedules', (id:string, schedules:Object):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(id)) {
-            return reject(new TypeError('Id is not a valid string.'));
-        }
-
-        var schedule = [].concat(schedules);
-        for(var i = 0; i < schedule.length; i++) {
-          let data:any = schedule[i];
-          Properties
-            .findByIdAndUpdate(id, {
-              $push: {
-                "schedules": {
-                  "day": data.day,
-                  "start_date": data.start_date,
-                  "time_from": data.time_from,
-                  "time_to": data.time_to
-                }
-              }
-            })
-            .exec((err, updated) => {
-                err ? reject(err)
-                    : resolve(updated);
-            });
-        }
-    });
-});
-
-propertiesSchema.static('updatePropertySchedules', (id:string, scheduleId:string, scheduleData:Object):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(id)) {
-            return reject(new TypeError('Id is not a valid string.'));
-        }
-        let body:any = scheduleData;
-        
-        Properties
-          .update({"_id": id, "schedules": {$elemMatch: {"_id": scheduleId}}}, 
-          {
-            $set: {
-              "schedules.$.day": body.day,
-              "schedules.$.start_date": body.start_date,
-              "schedules.$.time_from": body.time_from,
-              "schedules.$.time_to": body.time_to
-            }
-          })
-          .exec((err, updated) => {
-              err ? reject(err)
-                  : resolve(updated);
-          });
     });
 });
 
@@ -337,34 +342,40 @@ propertiesSchema.static('deletePropertyPictures', (id:string, type:string, pictu
     });
 });
 
-propertiesSchema.static('deletePropertySchedules', (id:string, idSchedule:string):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(id)) {
-            return reject(new TypeError('Id is not a valid string.'));
-        }
-
-        Properties
-          .findByIdAndUpdate(id, {
-            $pull: {
-              "schedules": { 
-                  "_id": idSchedule
-              }
-            }
-          })
-          .exec((err, saved) => {
-            err ? reject(err)
-            : resolve(saved);
-          });
-    });
-});
-
-propertiesSchema.static('updatePropertyShareholder', (id:string, shareholder:Object, front:Object, back:Object):Promise<any> => {
+propertiesSchema.static('deletePropertyShareholder', (id:string, idShareholder:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       if(!_.isString(id)) {
         return reject(new TypeError('Id is not a valid string.'));
       }
-
-      
+      Properties
+        .update({"_id": id, "owner.shareholder": {$elemMatch: { "_id": idShareholder}}}, (err, result) => {
+          Attachments
+            .findByIdAndRemove(result.identification_proof.front)
+            .exec((err, deleted) => {
+              err ? reject(err)
+              : resolve(deleted);
+            });
+          Attachments
+            .findByIdAndRemove(result.identification_proof.back)
+            .exec((err, deleted) => {
+              err ? reject(err)
+              : resolve(deleted);
+            });
+        })
+      Properties
+        .findById(id, {
+          $pull: {
+            "owner.shareholder": {
+              $elemMatch: {
+                "_id": idShareholder
+              }
+            }
+          }
+        })
+        .exec((err, deleted) => {
+          err ? reject(err)
+          : resolve(deleted);
+        });
   });
 });
 

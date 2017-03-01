@@ -39,16 +39,6 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updatePropertySchedules(req: express.Request, res: express.Response):void {
-		let _id = req.params.id
-		let _scheduleId = req.params.scheduleId
-		let _scheduleData = req.body;
-		PropertiesDAO
-		['updatePropertySchedules'](_id, _scheduleId, _scheduleData)
-		.then(properties => res.status(201).json(properties))
-		.catch(error => res.status(400).json(error));
-	}
-
 	static updateProperties(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _properties = req.body;
@@ -59,14 +49,12 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updatePropertyShareholder(req: express.Request, res: express.Response):void {
+	static deletePropertyShareholder(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _shareholder = req.body;
-		let _front = req["files"].front;
-		let _back = req["files"].back;
+		let _idShareholder = req.params.idShareholder;
 
 		PropertiesDAO
-		['updatePropertyShareholder'](_id, _shareholder, _front, _back)
+		['deletePropertyShareholder'](_id, _idShareholder)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -85,15 +73,6 @@ export class PropertiesController {
 		let _pictureID = req.params.pictureID;
 		PropertiesDAO
 		['deletePropertyPictures'](_id, _type, _pictureID)
-		.then(() => res.status(200).end())
-		.catch(error => res.status(400).json(error));
-	}
-
-	static deletePropertySchedules(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _idSchedule = req.params.idSchedule;
-		PropertiesDAO
-		['deletePropertySchedules'](_id, _idSchedule)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
