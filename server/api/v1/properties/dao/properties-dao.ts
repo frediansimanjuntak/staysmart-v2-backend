@@ -48,12 +48,11 @@ propertiesSchema.static('createProperties', (property:Object, files:Object):Prom
             err ? reject(err)
                 : resolve(saved);
           });
-      let propertyID = _properties._id;
+      let propertyID:string = _properties._id;
 
       if(files != null) {
-        let attach:any = files;
-        Properties.createPropertyPictures(propertyID, attach.living, attach.dining, attach.bed, attach.toilet, attach.kitchen);
-        Properties.updatePropertyShareholderImage(propertyID, attach.front, attach.back);
+        Properties.createPropertyPictures(propertyID, files);
+        Properties.updatePropertyShareholderImage(propertyID, files);
       }
       
       Developments
@@ -69,32 +68,34 @@ propertiesSchema.static('createProperties', (property:Object, files:Object):Prom
     });
 });
 
-propertiesSchema.static('updateProperties', (id:string, properties:Object):Promise<any> => {
+propertiesSchema.static('updateProperties', (id:string, properties:Object, files:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(properties)) {
           return reject(new TypeError('Property is not a valid object.'));
         }
 
         Properties
-        .findByIdAndUpdate(id, properties)
-        .exec((err, updated) => {
-              err ? reject(err)
-                  : resolve(updated);
-          });
+          .findByIdAndUpdate(id, properties)
+          .exec((err, updated) => {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+
+        if(files != null) {
+          let attach:any = files;
+          Properties.createPropertyPictures(id, files);
+          Properties.updatePropertyShareholderImage(id, files);
+        }
     });
 });
 
-propertiesSchema.static('createPropertyPictures', (propertyID:Object, living:Object, dining:Object, bed:Object, toilet:Object, kitchen:Object):Promise<any> => {
+propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Object):Promise<any> => {
+    // propertyID and files not validated, if validate -> error
     return new Promise((resolve:Function, reject:Function) => {
-      if (!_.isObject(propertyID)) {
-        return reject(new TypeError('Property ID is not a valid string.'));
-      }
-      if (!_.isObject(living)) {
-        return reject(new TypeError('Living is not a valid object.'));
-      }
       var ObjectID = mongoose.Types.ObjectId;  
-      if(living != null) {
-        Attachments.createAttachments(living).then(res => {
+      let attach:any = files;
+      if(attach.living != null) {
+        Attachments.createAttachments(attach.living).then(res => {
           var idLiving = res.idAtt;
           Properties
             .update({"_id": propertyID}, {
@@ -108,8 +109,8 @@ propertiesSchema.static('createPropertyPictures', (propertyID:Object, living:Obj
             });  
         });  
       }
-      if(dining != null) {
-        Attachments.createAttachments(dining).then(res => {
+      if(attach.dining != null) {
+        Attachments.createAttachments(attach.dining).then(res => {
           var idDining = res.idAtt;
           Properties
             .update({"_id": propertyID}, {
@@ -123,8 +124,8 @@ propertiesSchema.static('createPropertyPictures', (propertyID:Object, living:Obj
             });  
         });  
       }
-      if(bed != null) {
-        Attachments.createAttachments(bed).then(res => {
+      if(attach.bed != null) {
+        Attachments.createAttachments(attach.bed).then(res => {
           var idBed = res.idAtt;
           Properties
             .update({"_id": propertyID}, {
@@ -138,8 +139,8 @@ propertiesSchema.static('createPropertyPictures', (propertyID:Object, living:Obj
             });  
         });  
       }
-      if(toilet != null) {
-        Attachments.createAttachments(toilet).then(res => {
+      if(attach.toilet != null) {
+        Attachments.createAttachments(attach.toilet).then(res => {
           var idToilet = res.idAtt;
           Properties
             .update({"_id": propertyID}, {
@@ -153,8 +154,8 @@ propertiesSchema.static('createPropertyPictures', (propertyID:Object, living:Obj
             });  
         });
       }
-      if(kitchen != null) {
-        Attachments.createAttachments(kitchen).then(res => {
+      if(attach.kitchen != null) {
+        Attachments.createAttachments(attach.kitchen).then(res => {
           var idKitchen = res.idAtt;
           Properties
             .update({"_id": propertyID}, {
@@ -171,17 +172,13 @@ propertiesSchema.static('createPropertyPictures', (propertyID:Object, living:Obj
     });
 });
 
-propertiesSchema.static('updatePropertyShareholderImage', (propertyID:Object, front:Object, back:Object):Promise<any> => {
+propertiesSchema.static('updatePropertyShareholderImage', (propertyID:string, files:Object):Promise<any> => {
+    // propertyID and files not validated, if validate -> error
     return new Promise((resolve:Function, reject:Function) => {
-      if (!_.isObject(propertyID)) {
-        return reject(new TypeError('Property ID is not a valid string.'));
-      }
-      if (!_.isObject(front)) {
-        return reject(new TypeError('front is not a valid object.'));
-      }
       var ObjectID = mongoose.Types.ObjectId;  
-      if(front != null) {
-        Attachments.createAttachments(front).then(res => {
+      let attach:any = files;
+      if(attach.front != null) {
+        Attachments.createAttachments(attach.front).then(res => {
           var idFront = res.idAtt;
           for(var i = 0; i < idFront.length; i++){
             Properties
@@ -211,8 +208,8 @@ propertiesSchema.static('updatePropertyShareholderImage', (propertyID:Object, fr
           }
         });  
       }
-      if(back != null) {
-        Attachments.createAttachments(back).then(res => {
+      if(attach.back != null) {
+        Attachments.createAttachments(attach.back).then(res => {
           var idBack = res.idAtt;
           for(var i = 0; i < idBack.length; i++){
             Properties
