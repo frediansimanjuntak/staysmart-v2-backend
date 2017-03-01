@@ -60,6 +60,9 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
         .update({"_id":body.development}, {
           $push: {
             "properties": propertyID
+          },
+          $inc:{
+            "number_of_units": 1
           }
         })
         .exec((err, saved) => {

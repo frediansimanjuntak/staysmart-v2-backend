@@ -10,7 +10,7 @@ var Schema = mongoose.Schema;
 var DevelopmentsSchema = new mongoose.Schema({
 	name: {type: String, unique:false},
 	slug: {type: String},
-	number_of_units: {type: Number},
+	number_of_units: {type: Number, default:0},
 	properties: 
 	[
 		{
