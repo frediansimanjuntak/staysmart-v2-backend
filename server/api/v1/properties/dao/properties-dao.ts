@@ -49,7 +49,6 @@ propertiesSchema.static('createProperties', (property:Object, files:Object):Prom
                 : resolve(saved);
           });
       let propertyID:string = _properties._id;
-      console.log(propertyID);
 
       if(files != null) {
         Properties.createPropertyPictures(propertyID, files);
