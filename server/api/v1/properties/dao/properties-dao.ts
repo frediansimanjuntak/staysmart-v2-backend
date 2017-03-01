@@ -302,7 +302,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promis
         Properties
           .findById(id, "development address details schedules amenities pictures owned_type owner publish confirmation status", (err, result) => {
             var historyObj = {$push: {}};
-            historyObj.$push['histories'] = {"action": type, "data": result};
+            historyObj.$push['histories'] = {"action": type, "date": Date.now, "data": result};
             Properties
               .findByIdAndUpdate(id, historyObj)
               .exec((err, saved) => {

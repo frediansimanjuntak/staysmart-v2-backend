@@ -75,7 +75,7 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 		for(var param in data) {
 			agreementObj.$set['tenancy_agreement.data.confirmation.tenant.'+param] = data[param];
 		}
-		
+
 		Agreements.createLOIandTAHistory(id, type);
 		Agreements
 			.findByIdAndUpdate(id,agreementObj)
@@ -91,7 +91,7 @@ agreementsSchema.static('createLOIandTAHistory', (id:string, type:string):Promis
         Agreements
           .findById(id, type, (err, result) => {
             var historyObj = {$push: {}};
-            historyObj.$push[type+'.histories'] = {"data": result.data};
+            historyObj.$push[type+'.histories'] = {"date": Date.now, "data": result.data};
             Agreements
               .findByIdAndUpdate(id, historyObj)
               .exec((err, saved) => {
