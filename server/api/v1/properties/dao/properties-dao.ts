@@ -85,7 +85,8 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, files
         if (!_.isObject(properties)) {
           return reject(new TypeError('Property is not a valid object.'));
         }
-
+        var type = 'update';
+        Properties.createPropertyHistory(id, type);
         Properties
           .findByIdAndUpdate(id, properties)
           .exec((err, updated) => {
@@ -293,6 +294,22 @@ propertiesSchema.static('updatePropertyShareholderImage', (userId:string, proper
           }
         });  
       }
+    });
+});
+
+propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Properties
+          .findById(id, "development address details schedules amenities pictures owned_type owner publish confirmation status", (err, result) => {
+            var historyObj = {$push: {}};
+            historyObj.$push['histories'] = {"action": type, "data": result};
+            Properties
+              .findByIdAndUpdate(id, historyObj)
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              });
+          })
     });
 });
 
