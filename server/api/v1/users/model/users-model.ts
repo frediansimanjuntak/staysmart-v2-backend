@@ -70,11 +70,6 @@ var UsersSchema = new mongoose.Schema({
 					ref: 'Attachments'
 				}
 			},
-			company: 
-			{
-				type: Schema.Types.ObjectId,
-				ref: 'Companies'
-			},
 			bank_account: {
 				bank: 
 				{

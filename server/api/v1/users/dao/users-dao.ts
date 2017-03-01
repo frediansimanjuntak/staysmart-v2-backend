@@ -173,29 +173,8 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 		for(var param in userData) {
 			userObj.$set[type+'.data.'+param] = userData[param];
 		}
-		let userOldData = type+'.data';
-		Users
-			.findById(id, userOldData, (err, usersData) => {
-				let datas:any = usersData;
-				if(type === 'tenant') {
-					var history_data = datas.tenant.data;
-				}
-				else if(type === 'landlord'){
-					var history_data = datas.landlord.data;
-				}
-				let historyData:any = history_data;
-
-				if(historyData.name != null) {
-					var historyObj = {$push: {}};
-					historyObj.$push[type+'.histories'] = {"data": history_data};
-					Users
-						.findByIdAndUpdate(id, historyObj)
-						.exec((err, saved) => {
-							err ? reject(err)
-							: resolve(saved);
-						});
-				}
-			})
+		
+		Users.createHistory(id, type);
 
 		Users
 			.findByIdAndUpdate(id, userObj)
@@ -234,6 +213,34 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 		}
 	});
 });
+
+usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let userOldData = type+'.data';
+		Users
+			.findById(id, userOldData, (err, usersData) => {
+				let datas:any = usersData;
+				if(type === 'tenant') {
+					var history_data = datas.tenant.data;
+				}
+				else if(type === 'landlord'){
+					var history_data = datas.landlord.data;
+				}
+				let historyData:any = history_data;
+
+				if(historyData.name != null) {
+					var historyObj = {$push: {}};
+					historyObj.$push[type+'.histories'] = {"data": history_data};
+					Users
+						.findByIdAndUpdate(id, historyObj)
+						.exec((err, saved) => {
+							err ? reject(err)
+							: resolve(saved);
+						});
+				}
+			})
+	})
+})
 
 usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
