@@ -7,7 +7,6 @@ import Properties from "../../properties/dao/properties-dao";
 developmentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
-
         Developments
           .find(_query)
           .exec((err, developments) => {
@@ -36,14 +35,26 @@ developmentsSchema.static('createDevelopments', (developments:Object):Promise<an
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = developments;
-      
+      var slug_name = Developments.slug(body.name);
+
       var _developments = new Developments(developments);
+          _developments.slug = slug_name;
           _developments.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
           });
     });
 });
+
+developmentsSchema.static('slug', (text:string):Promise<any> => {
+  return text.toString().toLowerCase()
+      .replace(/\s+/g, '-')        // Replace spaces with -
+      .replace(/[^\w\-]+/g, '')   // Remove all non-word chars
+      .replace(/\-\-+/g, '-')      // Replace multiple - with single -
+      .replace(/^-+/, '')          // Trim - from start of text
+      .replace(/-+$/, '');         // Trim - from end of text
+  }
+);
 
 developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
