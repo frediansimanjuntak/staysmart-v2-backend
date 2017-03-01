@@ -100,7 +100,7 @@ var AgreementsSchema = new mongoose.Schema({
 		},
 		histories: 
 		[{
-			date: {type: Date, default: Date.now},
+			date: {type: Date},
 			data: {}
 		}]
 	},
@@ -131,7 +131,7 @@ var AgreementsSchema = new mongoose.Schema({
 		},
 		histories: 
 		[{
-			date: {type: Date, default: Date.now},
+			date: {type: Date},
 			data: {}
 		}]
 	},

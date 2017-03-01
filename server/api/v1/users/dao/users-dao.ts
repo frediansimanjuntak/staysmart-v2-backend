@@ -230,7 +230,7 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 
 				if(historyData.name != null) {
 					var historyObj = {$push: {}};
-					historyObj.$push[type+'.histories'] = {"data": history_data};
+					historyObj.$push[type+'.histories'] = {"date": Date.now, "data": history_data};
 					Users
 						.findByIdAndUpdate(id, historyObj)
 						.exec((err, saved) => {

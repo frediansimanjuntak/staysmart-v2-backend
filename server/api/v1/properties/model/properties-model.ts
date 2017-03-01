@@ -144,7 +144,7 @@ var PropertiesSchema = new mongoose.Schema({
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},
-		date: {type: Date, default: Date.now},
+		date: {type: Date},
 		data: {}
 	}],
 	created_at: {type: Date}
