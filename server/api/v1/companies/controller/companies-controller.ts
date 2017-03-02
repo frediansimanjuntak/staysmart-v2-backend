@@ -51,7 +51,7 @@ export class CompaniesController {
 		let _documentId = req.params.documentId;
 
 		CompaniesDAO
-		['createDocument'](_id, _documentId)
+		['deleteDocument'](_id, _documentId)
 		.then(companies => res.status(201).json(companies))
 		.catch(error => res.status(400).json(error));
 	}
