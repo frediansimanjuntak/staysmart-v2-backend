@@ -44,12 +44,15 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
           var attachmentfile = function() {
             let file:any = files[i];
             let key:string = 'attachment/'+file.name;
+            if(files[i].size >= 8388608) {
+              reject({message: "Error uploading your images, file size to large"});
+            }
             AWSService.upload(key, file).then(fileDetails => {
               var _attachment = new Attachments(attachments);
               _attachment.name = fileDetails.name;
               _attachment.type = fileDetails.type;
               _attachment.key = fileDetails.url;
-              _attachment.size = fileDetails.size;                 
+              _attachment.size = files[i].size;    
               _attachment.save((err, saved) => {
                 if(err != null) 
                 {
