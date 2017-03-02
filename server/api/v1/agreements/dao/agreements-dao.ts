@@ -178,23 +178,21 @@ agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Pr
 					var ObjectID = mongoose.Types.ObjectId;
 					var list_result = {$push: {}};
 					var item_result = {$push: {}};
-					var attachment_result = {$push: {}};
 					let body:any = agreements
-					list_result.$push['.list'] = {
+					list_result.$push['.data'] = {
 						"name": body.name, 
-						"items": item_result.$push['.items'] = {
+						"items": item_result.$push['.list'] = {
 							"name": body.name,
 							"quantity": body.quantity,
 							"remark": body.remark,
-							"attachments": attachment_result.$push['.attachments'] = { 
-								"attachments": 
+							"attachments":  
 								Attachments.createAttachments(agreements).then(res => {
 									var idAttachment = res.idAtt;
 									for ( var i = 0; i < idAttachment.length; i++){
 										Agreements
 										.findByIdAndUpdate(id,{
 											$push: {
-												"attachment": idAttachment[i]
+												"attachments": idAttachment[i]
 											}
 										})
 										.exec((err,updated) => {
@@ -202,8 +200,8 @@ agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Pr
 												: resolve(updated);
 										});
 									}
-								})
-							},
+								}),
+							
 							"landlord_check": body.landlord_check,
 							"tenant_check": body.tenant_check
 						}};
