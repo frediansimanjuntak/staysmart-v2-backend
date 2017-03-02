@@ -57,7 +57,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
                   for(var j =0; j < idAtt.length; j++){
                     Attachments.deleteAttachments(idAtt[j]);
                   }
-                  resolve({message: "attachment deleted"});
+                  reject({message: "Error uploading your images"});
                 }                
               });
 
