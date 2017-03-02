@@ -73,11 +73,11 @@ companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
                       for (var i = 0; i < companies_document.length; i++) {
                           let document = companies_document[i];
                           Attachments
-                              .findByIdAndRemove(document)
-                              .exec((err, deleted) => {
-                                  err ? reject(err)
-                                      : resolve(deleted);
-                              });
+                            .findByIdAndRemove(document)
+                            .exec((err, deleted) => {
+                                err ? reject(err)
+                                    : resolve(deleted);
+                            });
                       }
               }
               Users
@@ -86,16 +86,17 @@ companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
                     "companies": id
                   }
                 })
-                .exec((err, deleted) => {
-                    err ? reject(err)
-                        : resolve(deleted);
-                });
+                .exec((err, update) => {
+                      err ? reject(err)
+                          : resolve(update);
+                  });
           })
+          
         Companies
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
-                  : resolve();
+                  : resolve(deleted);
           });
     });
 });
@@ -119,7 +120,6 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object, document
     }); 
 });
 
-
 companiesSchema.static('createDocument', (id:string, documents:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Attachments.createAttachments(documents).then(res => {
@@ -142,22 +142,22 @@ companiesSchema.static('createDocument', (id:string, documents:Object):Promise<a
 
 companiesSchema.static('deleteDocument', (id:string, documentId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
-    if (!_.isObject(document)) {
-      return reject(new TypeError('Document is not a valid object.'));
-    }
     Companies
       .findByIdAndUpdate(id, {
-        $pull:{"document": documentId}
+        $pull: {
+          "document": documentId
+        }
       })
       .exec((err,deleted) => {
-            err ? reject(err)
-                : resolve(deleted);
-      });
+              err ? reject(err)
+                  : resolve(deleted);
+        });
+
     Attachments
       .findByIdAndRemove(documentId)
       .exec((err,deleted) => {
-          err ? reject(err)
-              : resolve(deleted);
+            err ? reject(err)
+                : resolve(deleted);
       });
   });
 });
