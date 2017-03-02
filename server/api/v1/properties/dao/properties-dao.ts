@@ -115,6 +115,9 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
         Attachments.createAttachments(attach.living).then(res => {
           var idLiving = res.idAtt;
           var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           Properties
             .update({"_id": propertyID}, {
               $set: {
@@ -130,6 +133,10 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
       if(attach.dining != null) {
         Attachments.createAttachments(attach.dining).then(res => {
           var idDining = res.idAtt;
+          var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           Properties
             .update({"_id": propertyID}, {
               $set: {
@@ -145,6 +152,10 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
       if(attach.bed != null) {
         Attachments.createAttachments(attach.bed).then(res => {
           var idBed = res.idAtt;
+          var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           Properties
             .update({"_id": propertyID}, {
               $set: {
@@ -160,6 +171,10 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
       if(attach.toilet != null) {
         Attachments.createAttachments(attach.toilet).then(res => {
           var idToilet = res.idAtt;
+          var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           Properties
             .update({"_id": propertyID}, {
               $set: {
@@ -175,6 +190,10 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
       if(attach.kitchen != null) {
         Attachments.createAttachments(attach.kitchen).then(res => {
           var idKitchen = res.idAtt;
+          var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           Properties
             .update({"_id": propertyID}, {
               $set: {
@@ -198,6 +217,10 @@ propertiesSchema.static('updatePropertyShareholderImage', (userId:string, proper
       if(attach.front != null) {
         Attachments.createAttachments(attach.front).then(res => {
           var idFront = res.idAtt;
+          var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           for(var i = 0; i < idFront.length; i++){
             Properties
               .findById(propertyID, (err, result) => {
@@ -251,6 +274,10 @@ propertiesSchema.static('updatePropertyShareholderImage', (userId:string, proper
       if(attach.back != null) {
         Attachments.createAttachments(attach.back).then(res => {
           var idBack = res.idAtt;
+          var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           for(var i = 0; i < idBack.length; i++){
             Properties
               .findById(propertyID, (err, result) => {
