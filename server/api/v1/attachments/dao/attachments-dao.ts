@@ -36,6 +36,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
       }
       var files = [].concat(attachments);
       var idAtt = [];
+      var errAtt = 0;
 
       if(files.length > 0)
       {
@@ -48,21 +49,40 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
               _attachment.name = fileDetails.name;
               _attachment.type = fileDetails.type;
               _attachment.key = fileDetails.url;
-              _attachment.size = fileDetails.size;
-              _attachment.save();
-              let idattach = _attachment.id;
-              idAtt.push(idattach);
+              _attachment.size = fileDetails.size;                 
+              _attachment.save((err, saved) => {
+                if(err != null) 
+                {
+                  errAtt = errAtt + 1;
+                  for(var j =0; j < idAtt.length; j++){
+                    Attachments.deleteAttachments(idAtt[j]);
+                  }
+                  reject({message: "Error uploading your images"});
+                }                
+              });
 
-              if (i >= files.length - 1) {
-                resolve({idAtt});
+              let idattach = _attachment.id;  
+              idAtt.push(idattach);
+               
+              if (i >= files.length - 1){
+                if(errAtt == 0) {
+                  resolve({idAtt, errAtt});  
+                }
+                else{
+                  resolve({errAtt});
+                }
               }
               else {
                 i++;
-                attachmentfile();
-              }
+                if(errAtt == 0) {
+                  attachmentfile();
+                }
+              }              
             })
           }
-          attachmentfile();
+          if(errAtt == 0) {
+            attachmentfile();
+          }
       }
       else {
         resolve({message: "success"});

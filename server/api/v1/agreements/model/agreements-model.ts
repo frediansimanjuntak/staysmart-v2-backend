@@ -164,7 +164,7 @@ var AgreementsSchema = new mongoose.Schema({
 				items: [{
 					name: {type: String},
 					quantity: {type: Number},
-					remark: {type: Number},
+					remark: {type: String},
 					attachments: [{
 						type: Schema.Types.ObjectId,
 						ref: 'Attachments'

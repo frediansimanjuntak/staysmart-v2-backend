@@ -53,4 +53,34 @@ export class AgreementsController {
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static updateInventoryList(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _inventorylist = req.body;
+
+		AgreementsDAO
+		['updateInventoryList'](_id, _inventorylist)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static createItemAttachments(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _attachments = req["files"].attachments;
+
+		AgreementsDAO
+		['createItemAttachments'](_id, _attachments)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static deleteItemAttachments(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _attachmentsId = req.params.attachmentsId;
+
+		AgreementsDAO
+		['deleteDocument'](_id, _attachmentsId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
 }

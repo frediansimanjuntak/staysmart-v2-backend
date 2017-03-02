@@ -46,22 +46,7 @@ companiesSchema.static('createCompanies', (companies:Object, documents:Object, c
             });
 
       var companiesId=_companies._id;
-      Attachments.createAttachments(documents).then(res => {
-          var idAttachment=res.idAtt;
-          for (var i = 0; i < idAttachment.length; i++){
-              console.log(idAttachment[i]);
-              Companies
-                  .findByIdAndUpdate(companiesId, {
-                      $push : {
-                          "document": idAttachment[i]
-                      }
-                  })
-                  .exec((err, update) => {
-                      err ? reject(err)
-                          : resolve(update);
-                  });
-          }
-      });
+      Companies.createDocument(companiesId, documents);
       Users
         .findByIdAndUpdate(created_by, {
           $push: {
@@ -115,7 +100,7 @@ companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
     });
 });
 
-companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<any> => {
+companiesSchema.static('updateCompanies', (id:string, companies:Object, documents:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(companies)) {
           return reject(new TypeError('Company is not a valid object.'));
@@ -127,30 +112,31 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<
               err ? reject(err)
                   : resolve(updated);
           });
+
+        if(documents != null) {
+          Companies.createDocument(id, documents);
+        }
     }); 
 });
 
 
 companiesSchema.static('createDocument', (id:string, documents:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(document)) {
-            return reject(new TypeError('Document is not a valid object.'));
-        }
         Attachments.createAttachments(documents).then(res => {
-            var idAttachment=res.idAtt;
-            console.log(idAttachment);
-            for (var i = 0; i < idAttachment.length; i++){
-                console.log(idAttachment[i]);
-                  Companies
-                  .findById({id,
-                    $push:{"document":idAttachment[i]}
-                  })
-                  .exec((err, saved) => {
-                        err ? reject(err)
-                            : resolve(saved);
-                  });
-            }
-        });
+          var idAttachment=res.idAtt;
+          for (var i = 0; i < idAttachment.length; i++){
+            Companies
+              .findByIdAndUpdate(id, {
+                $push : {
+                    "document": idAttachment[i]
+                }
+              })
+              .exec((err, update) => {
+                err ? reject(err)
+                    : resolve(update);
+              });
+          }
+      });
     });
 });
 
