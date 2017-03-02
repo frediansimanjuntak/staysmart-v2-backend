@@ -167,9 +167,9 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 	});
 });
 
-agreementsSchema.static('updateInventoryList', (id:string, inventorylist:Object):Promise<any> => {
+agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(inventorylist)) {
+		if (!_.isObject(agreements)) {
 			return reject(new TypeError('Inventory List is not a valid object.'));
 		}
 		Agreements
@@ -179,15 +179,16 @@ agreementsSchema.static('updateInventoryList', (id:string, inventorylist:Object)
 					var list_result = {$push: {}};
 					var item_result = {$push: {}};
 					var attachment_result = {$push: {}};
+					let body:any = agreements
 					list_result.$push['.list'] = {
-						"name": String, 
+						"name": body.name, 
 						"items": item_result.$push['.items'] = {
-							"name": String,
-							"quantity": Number,
-							"remark": Number,
+							"name": body.name,
+							"quantity": body.quantity,
+							"remark": body.remark,
 							"attachments": attachment_result.$push['.attachments'] = { 
 								"attachments": 
-								Attachments.createAttachments(inventorylist).then(res => {
+								Attachments.createAttachments(agreements).then(res => {
 									var idAttachment = res.idAtt;
 									for ( var i = 0; i < idAttachment.length; i++){
 										Agreements
@@ -203,8 +204,8 @@ agreementsSchema.static('updateInventoryList', (id:string, inventorylist:Object)
 									}
 								})
 							},
-							"landlord_check": Boolean,
-							"tenant_check": Boolean
+							"landlord_check": body.landlord_check,
+							"tenant_check": body.tenant_check
 						}};
 						Agreements
 						.findByIdAndUpdate(id, list_result)
@@ -215,7 +216,7 @@ agreementsSchema.static('updateInventoryList', (id:string, inventorylist:Object)
 			})
 
             Agreements
-              .findByIdAndUpdate(id, inventorylist)
+              .findByIdAndUpdate(id, agreements)
               .populate("property")
               .exec((err, updated) => {
                 err ? reject(err)
@@ -227,53 +228,6 @@ agreementsSchema.static('updateInventoryList', (id:string, inventorylist:Object)
 
 
 
-// agreementsSchema.static('createItemAttachments',(id:string, item:Object):Promise<any> => {
-// 	return new Promise((resolve:Function, reject:Function) => {
-// 		if (!_.isObject(item)) {
-// 			return reject(new TypeError('Item is not a valid object.'));
-// 		}
-		
-// 		Attachments.createAttachments(item).then(res => {
-// 			var idAttachment=res.idAtt;
-// 			console.log(idAttachment);
-// 			for (var i = 0; i < idAttachment.length; i++){
-// 				console.log(idAttachment[i]);
-// 				Agreements
-// 				.findByIdAndUpdate(id, {
-// 					$push : {
-// 						"attachments":idAttachment[i]
-// 					}
-// 				})
-// 				.exec((err,saved) => {
-// 					err ? reject(err)
-// 						: resolve(saved);
-// 				});
-// 			}
-// 		});
-// 	});
-// });
-
-// agreementsSchema.static('deleteItemAttachments', (id:string, attachmentsId:string):Promise<any> => {
-//   return new Promise((resolve:Function, reject:Function) => {
-//     if (!_.isString(id)) {
-//       return reject(new TypeError('id is not a valid string.'));
-//     }
-//     Agreements
-//       .findByIdAndUpdate(id, {
-//         $pull:{"attachments": attachmentsId}
-//       })
-//       .exec((err,deleted) => {
-//             err ? reject(err)
-//                 : resolve(deleted);
-//       });
-//     Agreements
-//       .findByIdAndRemove(attachmentsId)
-//       .exec((err,deleted) => {
-//           err ? reject(err)
-//               : resolve(deleted);
-//       });
-//   });
-// });
 
 let Agreements = mongoose.model('Agreements', agreementsSchema);
 

@@ -36,13 +36,5 @@ export class AgreementsRoutes {
 			.route('/agreements/inventorylist/update/:id')
 			.post(auth.isAuthenticated(),AgreementsController.updateInventoryList);
 
-		// router
-		// 	.route('agreements/inventorylist/item:id')
-		// 	.post(auth.isAuthenticated(),AgreementsController.createItemAttachments);
-
-		// router
-		// 	.route('/agreements/inventorylist/item/:id/:attachmentsId')
-		// 	.post(auth.isAuthenticated(),AgreementsController.deleteItemAttachments);
-
 	}
 }
