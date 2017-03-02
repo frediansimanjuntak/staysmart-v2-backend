@@ -224,7 +224,21 @@ agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Pr
     });
 });
 
-
+agreementsSchema.static('createLIHistories', (id:string):Promise =>{
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements
+			.findById(id, (err, ilist) => {
+				var ILHistoryObj = {$push: {}};
+				ILHistoryObj.$push['.histories'] = {"date": Date.now, "data": ilist.data};
+				Agreements
+					.findByIdAndUpdate(id, ILHistoryObj)
+					.exec((err,saved) => {
+						err ? reject(err)
+							: resolve(saved);
+					});
+			})
+	});
+});
 
 
 let Agreements = mongoose.model('Agreements', agreementsSchema);
