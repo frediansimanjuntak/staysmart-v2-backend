@@ -19,7 +19,7 @@ var PropertiesSchema = new mongoose.Schema({
 		],
 		country: {type: String},
 		full_address: {type: String},
-		type: {type: String}
+		type: {type: String, default: "Point"}
 	},
 	details: {
 		size_sqf: {type: Number},

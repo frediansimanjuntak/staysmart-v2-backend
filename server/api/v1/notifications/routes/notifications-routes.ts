@@ -14,10 +14,10 @@ export class NotificationsRoutes {
 		router
 			.route('/notifications/:id')
 			.get(auth.isAuthenticated(),NotificationsController.getById)
-			.put(auth.isAuthenticated(),NotificationsController.deleteNotifications);
+			.delete(auth.isAuthenticated(),NotificationsController.deleteNotifications);
 
 		router
-			.route('/notifications/update/:type/:id')
-			.post(auth.isAuthenticated(),NotificationsController.updateNotifications);
+			.route('/notifications/update/:id')
+			.put(auth.isAuthenticated(),NotificationsController.updateNotifications);
 	}
 } 

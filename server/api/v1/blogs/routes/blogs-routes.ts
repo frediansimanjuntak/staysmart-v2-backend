@@ -14,10 +14,10 @@ export class BlogsRoutes {
 		router
 			.route('/blogs/:id')
 			.get(auth.isAuthenticated(),BlogsController.getById)
-			.put(auth.isAuthenticated(),BlogsController.deleteBlogs);
+			.delete(auth.isAuthenticated(),BlogsController.deleteBlogs);
 
 		router
 			.route('/blogs/update/:id')
-			.post(auth.isAuthenticated(),BlogsController.updateBlogs);
+			.put(auth.isAuthenticated(),BlogsController.updateBlogs);
 	}
 }

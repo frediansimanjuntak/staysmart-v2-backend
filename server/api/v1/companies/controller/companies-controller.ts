@@ -38,19 +38,10 @@ export class CompaniesController {
 	static updateCompanies(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _companies = req.body;
-
-		CompaniesDAO
-		['updateCompanies'](_id, _companies)
-		.then(companies => res.status(201).json(companies))
-		.catch(error => res.status(400).json(error));
-	}
-
-	static createDocument(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
 		let _documents = req["files"].document;
 
 		CompaniesDAO
-		['createDocument'](_id, _documents)
+		['updateCompanies'](_id, _companies, _documents)
 		.then(companies => res.status(201).json(companies))
 		.catch(error => res.status(400).json(error));
 	}

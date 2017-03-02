@@ -14,18 +14,14 @@ export class CompaniesRoutes {
 		router
 			.route('/companies/:id')
 			.get(auth.isAuthenticated(),CompaniesController.getById)
-			.put(auth.isAuthenticated(),CompaniesController.deleteCompanies);
+			.delete(auth.isAuthenticated(),CompaniesController.deleteCompanies);
 
 		router
 			.route('/companies/update/:id')
-			.post(auth.isAuthenticated(),CompaniesController.updateCompanies);
-
-		router
-			.route('/companies/document/:id')
-			.post(auth.isAuthenticated(),CompaniesController.createDocument);
+			.put(auth.isAuthenticated(),CompaniesController.updateCompanies);
 
 		router
 			.route('/companies/document/:id/:documentId')
-			.post(auth.isAuthenticated(),CompaniesController.deleteDocument);
+			.delete(auth.isAuthenticated(),CompaniesController.deleteDocument);
 	}
 } 
