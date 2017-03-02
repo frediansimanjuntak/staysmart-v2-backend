@@ -79,6 +79,7 @@ export class AWSService {
   static s3UploadPromise(params) {
     return new Promise((resolve:Function, reject:Function) => {
       AWSConfig.getS3().upload(params, function(err, data) {
+         console.log('error '+err);
         if (err) {
           reject(err);
         } else {

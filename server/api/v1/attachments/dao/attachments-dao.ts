@@ -45,6 +45,9 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
             let file:any = files[i];
             let key:string = 'attachment/'+file.name;
             if(files[i].size >= 8388608) {
+              for(var j =0; j < idAtt.length; j++){
+                Attachments.deleteAttachments(idAtt[j]);
+              }
               reject({message: "Error uploading your images, file size to large"});
             }
             AWSService.upload(key, file).then(fileDetails => {
