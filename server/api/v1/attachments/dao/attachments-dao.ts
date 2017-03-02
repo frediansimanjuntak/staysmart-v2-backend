@@ -40,33 +40,33 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
       if(files.length > 0)
       {
           var i = 0;
-          var attachmentfile = function(){
+          var attachmentfile = function() {
             let file:any = files[i];
-            let key:string = 'Staysmart-revamp/attachment/'+file.name;
+            let key:string = 'attachment/'+file.name;
             AWSService.upload(key, file).then(fileDetails => {
               var _attachment = new Attachments(attachments);
               _attachment.name = fileDetails.name;
               _attachment.type = fileDetails.type;
               _attachment.key = fileDetails.url;
-              _attachment.size = fileDetails.size;                 
-              _attachment.save(); 
-              let idattach = _attachment.id;  
+              _attachment.size = fileDetails.size;
+              _attachment.save();
+              let idattach = _attachment.id;
               idAtt.push(idattach);
-               
-              if (i >= files.length - 1){
+
+              if (i >= files.length - 1) {
                 resolve({idAtt});
               }
-              else{
+              else {
                 i++;
                 attachmentfile();
-              }              
+              }
             })
           }
           attachmentfile();
       }
-      else{
+      else {
         resolve({message: "success"});
-      } 
+      }
     });
 });
 
@@ -82,7 +82,7 @@ attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
               err ? reject(err)
                   : resolve();
           });
-        
+
     });
 });
 

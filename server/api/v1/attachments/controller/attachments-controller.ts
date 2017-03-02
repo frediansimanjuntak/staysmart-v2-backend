@@ -19,6 +19,7 @@ export class AttachmentsController {
 
 	static createAttachments(req: express.Request, res: express.Response):void {
 		let _attachments = req["files"].attachment;
+		if (req["files"].file) _attachments = req["files"].file;
 		AttachmentsDAO
 		['createAttachments'](_attachments)
 		.then(attachments => res.status(201).json(attachments))
