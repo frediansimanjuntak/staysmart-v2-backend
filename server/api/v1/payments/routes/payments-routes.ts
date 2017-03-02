@@ -14,10 +14,10 @@ export class PaymentsRoutes {
 		router
 			.route('/payments/:id')
 			.get(auth.isAuthenticated(),PaymentsController.getById)
-			.put(auth.isAuthenticated(),PaymentsController.deletePayments);
+			.delete(auth.isAuthenticated(),PaymentsController.deletePayments);
 
 		router
 			.route('/payments/update/:id')
-			.post(auth.isAuthenticated(),PaymentsController.updatePayments);
+			.put(auth.isAuthenticated(),PaymentsController.updatePayments);
 	}
 }

@@ -14,10 +14,10 @@ export class AppointmentsRoutes {
 		router
 			.route('/appointments/:id')
 			.get(auth.isAuthenticated(),AppointmentsController.getById)
-			.put(auth.isAuthenticated(),AppointmentsController.deleteAppointments);
+			.delete(auth.isAuthenticated(),AppointmentsController.deleteAppointments);
 
 		router
 			.route('/appointments/update/:id')
-			.post(auth.isAuthenticated(),AppointmentsController.updateAppointments);
+			.put(auth.isAuthenticated(),AppointmentsController.updateAppointments);
 	}
 }

@@ -55,20 +55,21 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
         Properties.createPropertyPictures(propertyID, files);
         Properties.updatePropertyShareholderImage(userId, propertyID, files);
       }
-      
-      Developments
-        .update({"_id":body.development}, {
-          $push: {
-            "properties": propertyID
-          },
-          $inc:{
-            "number_of_units": 1
-          }
-        })
-        .exec((err, saved) => {
-            err ? reject(err)
-                : resolve(saved);
-        });
+      if(body.status != 'draft') {
+        Developments
+          .update({"_id":body.development}, {
+            $push: {
+              "properties": propertyID
+            },
+            $inc:{
+              "number_of_units": 1
+            }
+          })
+          .exec((err, saved) => {
+              err ? reject(err)
+                  : resolve(saved);
+          });
+      }
 
       Users
         .update({"_id":userId}, {
@@ -113,6 +114,7 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
       if(attach.living != null) {
         Attachments.createAttachments(attach.living).then(res => {
           var idLiving = res.idAtt;
+          var errUpload = res.errAtt;
           Properties
             .update({"_id": propertyID}, {
               $set: {

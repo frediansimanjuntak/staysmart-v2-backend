@@ -14,7 +14,7 @@ export class FaqsRoutes {
 		router
 			.route('/faqs/:id')
 			.get(auth.isAuthenticated(),FaqsController.getById)
-			.put(auth.isAuthenticated(),FaqsController.deleteFaqs);
+			.delete(auth.isAuthenticated(),FaqsController.deleteFaqs);
 
 		router
 			.route('/faqs/filter/:filter')
@@ -22,6 +22,6 @@ export class FaqsRoutes {
 
 		router
 			.route('/faqs/update/:id')
-			.post(auth.isAuthenticated(),FaqsController.updateFaqs);
+			.put(auth.isAuthenticated(),FaqsController.updateFaqs);
 	}
 }

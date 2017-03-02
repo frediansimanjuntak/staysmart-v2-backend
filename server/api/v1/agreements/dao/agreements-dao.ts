@@ -86,14 +86,14 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 			Agreements
 				.findById(id, (err, result) => {
 					var propertyID = result.property;
-					var landlordID = result.landlord;
+					var tenantID = result.tenant;
 					var date_start = result.letter_of_intent.data.date_commencement;
 					var rent_time = result.letter_of_intent.data.term_lease;
 					var extend_rent_time = result.letter_of_intent.data.term_lease_extend;
 					var long_rent_time = rent_time + extend_rent_time;
 					
 					Users
-						.findById(landlordID, {
+						.findById(tenantID, {
 							$push: {
 								"rented_properties": {
 									"until": new Date(+new Date() + long_rent_time*30*24*60*60*1000),

@@ -14,11 +14,11 @@ export class CommentsRoutes {
 		router
 			.route('/comments/:id')
 			.get(auth.isAuthenticated(),CommentsController.getById)
-			.put(auth.isAuthenticated(),CommentsController.deleteComments)
-			.delete(auth.isAuthenticated(),CommentsController.deleteReplies);
+			.delete(auth.isAuthenticated(),CommentsController.deleteComments)
+			.put(auth.isAuthenticated(),CommentsController.deleteReplies);
 
 		router
 			.route('/comments/update/:id')
-			.post(auth.isAuthenticated(),CommentsController.updateComments);
+			.put(auth.isAuthenticated(),CommentsController.updateComments);
 	}
 }

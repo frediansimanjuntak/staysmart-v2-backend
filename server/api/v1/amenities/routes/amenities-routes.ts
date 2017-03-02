@@ -14,10 +14,10 @@ export class AmenitiesRoutes {
 		router
 			.route('/amenities/:id')
 			.get(auth.isAuthenticated(),AmenitiesController.getById)
-			.put(auth.isAuthenticated(),AmenitiesController.deleteAmenities);
+			.delete(auth.isAuthenticated(),AmenitiesController.deleteAmenities);
 
 		router
 			.route('/amenities/update/:id')
-			.post(auth.isAuthenticated(),AmenitiesController.updateAmenities);
+			.put(auth.isAuthenticated(),AmenitiesController.updateAmenities);
 	}
 }

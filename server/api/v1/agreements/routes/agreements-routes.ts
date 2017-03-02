@@ -13,13 +13,13 @@ export class AgreementsRoutes {
 		router
 			.route('/agreements/:id')
 			.get(AgreementsController.getById)
-			.put(AgreementsController.deleteAgreements);
+			.delete(AgreementsController.deleteAgreements);
 
 		router
 			.route('/agreements/update/:id')
-			.post(AgreementsController.updateAgreements);
+			.put(AgreementsController.updateAgreements);
 		router
 			.route('/agreements/update/:id/:type')
-			.post(AgreementsController.updateAgreementsData);
+			.put(AgreementsController.updateAgreementsData);
 	}
 }

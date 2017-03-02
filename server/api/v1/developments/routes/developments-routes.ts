@@ -14,10 +14,10 @@ export class DevelopmentsRoutes {
 		router
 			.route('/developments/:id')
 			.get(auth.isAuthenticated(),DevelopmentsController.getById)
-			.put(auth.isAuthenticated(),DevelopmentsController.deleteDevelopments);
+			.delete(auth.isAuthenticated(),DevelopmentsController.deleteDevelopments);
 
 		router
 			.route('/developments/update/:id')
-			.post(auth.isAuthenticated(),DevelopmentsController.updateDevelopments);
+			.put(auth.isAuthenticated(),DevelopmentsController.updateDevelopments);
 	}
 } 

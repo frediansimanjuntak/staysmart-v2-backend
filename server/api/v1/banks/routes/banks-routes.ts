@@ -14,10 +14,10 @@ export class BanksRoutes {
 		router
 			.route('/banks/:id')
 			.get(auth.isAuthenticated(),BanksController.getById)
-			.put(auth.isAuthenticated(),BanksController.deleteBanks);
+			.delete(auth.isAuthenticated(),BanksController.deleteBanks);
 
 		router
 			.route('/banks/update/:id')
-			.post(auth.isAuthenticated(),BanksController.updateBanks);
+			.put(auth.isAuthenticated(),BanksController.updateBanks);
 	}
 } 
