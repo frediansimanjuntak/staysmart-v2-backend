@@ -106,6 +106,89 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, files
     });
 });
 
+propertiesSchema.static('updatePropertiesShareholder', (id:string, shareholderId:string, shareholder:Object, files:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isObject(shareholder)) {
+          return reject(new TypeError('Shareholder data is not a valid object.'));
+        }
+        var type = 'update';
+        let body:any = shareholder;
+        Properties.createPropertyHistory(id, type);
+        Properties
+          .update({"_id": id, "owner.shareholder": {
+              $elemMatch: {
+                "_id": shareholderId
+              }
+            }
+          }, 
+          {
+            $set: {
+              "owner.shareholder.$.name": body.name,
+              "owner.shareholder.$.identification_type": body.identification_type,
+              "owner.shareholder.$.identification_number": body.identification_number
+            }
+          })
+          .exec((err, updated) => {
+                err ? reject(err)
+                    : resolve(updated);
+            });
+
+        if(files != null) {
+          let attach:any = files;
+          if(attach.front != null) {
+            Attachments.createAttachments(attach.front).then(res => {
+              var idFront = res.idAtt;
+              var errUpload = res.errAtt;
+              if(errUpload > 0) {
+                reject({message: 'Failed to upload image'});
+              }
+              Properties
+                .update({"_id": id, "owner.shareholder": {
+                    $elemMatch: {
+                      "_id": shareholderId
+                    }
+                  }
+                }, 
+                {
+                  $set: {
+                    "owner.shareholder.$.identification_proof.front": idFront
+                  }
+                })
+                .exec((err, updated) => {
+                      err ? reject(err)
+                          : resolve(updated);
+                  });
+            });
+          }          
+          if(attach.back != null) {
+            Attachments.createAttachments(attach.back).then(res => {
+              var idBack = res.idAtt;
+              var errUpload = res.errAtt;
+              if(errUpload > 0) {
+                reject({message: 'Failed to upload image'});
+              }
+              Properties
+                .update({"_id": id, "owner.shareholder": {
+                    $elemMatch: {
+                      "_id": shareholderId
+                    }
+                  }
+                }, 
+                {
+                  $set: {
+                    "owner.shareholder.$.identification_proof.back": idBack
+                  }
+                })
+                .exec((err, updated) => {
+                      err ? reject(err)
+                          : resolve(updated);
+                  });
+            });
+          }          
+        }
+    });
+});
+
 propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Object):Promise<any> => {
     // propertyID and files not validated, if validate -> error
     return new Promise((resolve:Function, reject:Function) => {
@@ -254,9 +337,16 @@ propertiesSchema.static('updatePropertyShareholderImage', (userId:string, proper
             Properties
               .findById(propertyID, (err, result) => {
                 for(var j = 0; j < result.owner.shareholder.length; j++){
+                  var lengthDiff = result.owner.shareholder.length - idFront.length;
+                  if(lengthDiff == 0){
+                    var k = i;
+                  }
+                  else{
+                    k = i+lengthDiff;
+                  }
                   let body:any = result.owner.shareholder[j];
-                  if(i == j) {
-                    if(i == 0) {
+                  if(k == j) {
+                    if(k == 0) {
                       Users
                         .findById(userId, (err, result) => {
                           if(result.landlord.data == null){
