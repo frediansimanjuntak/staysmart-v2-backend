@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 // import * as expressJwt from 'express-jwt';
 var expressJwt = require('express-jwt')
 import * as compose from 'composable-middleware';
-import User from '../api/v1/users/dao/users-dao';
+import User from '../api/v2/users/dao/users-dao';
 
 var validateJwt = expressJwt({
   secret: config.secrets.session

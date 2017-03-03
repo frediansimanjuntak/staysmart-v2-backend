@@ -4,7 +4,7 @@
  */
 
 'use strict';
-import User from '../api/v1/users/dao/users-dao';
+import User from '../api/v2/users/dao/users-dao';
 
 User
   .find({})
