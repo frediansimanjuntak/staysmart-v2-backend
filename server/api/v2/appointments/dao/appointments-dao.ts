@@ -64,14 +64,18 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
     });
 });
 
-appointmentsSchema.static('updateAppointments', (id:string, appointments:Object):Promise<any> => {
+appointmentsSchema.static('updateAppointments', (id:string, status:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(appointments)) {
-          return reject(new TypeError('Appointment is not a valid object.'));
+        if (!_.isString(status)) {
+          return reject(new TypeError('Status is not a valid string.'));
         }
 
         Appointments
-        .findByIdAndUpdate(id, appointments)
+        .findByIdAndUpdate(id, {
+          $set: {
+            "status": status
+          }
+        })
         .exec((err, updated) => {
               err ? reject(err)
                   : resolve(updated);
