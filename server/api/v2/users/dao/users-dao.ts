@@ -161,7 +161,7 @@ usersSchema.static('updateUser', (id:string, user:Object, attachment:Object ):Pr
 	});
 });
 
-usersSchema.static('updateUserData', (id:string, type:string, userData:Object, front:Object, back:Object):Promise<any> =>{
+usersSchema.static('updateUserData', (id:string, type:string, userData:Object, files:Object):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
 		if(!_.isString(id) && !_.isObject(userData)) {
 			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
@@ -169,6 +169,9 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 		
 		var ObjectID = mongoose.Types.ObjectId;  
 		let userObj = {$set: {}};
+		let file:any = files;
+		let front = file.front;
+		let back = file.back;
 		
 		for(var param in userData) {
 			userObj.$set[type+'.data.'+param] = userData[param];
