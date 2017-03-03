@@ -118,16 +118,18 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
           if(errUpload > 0) {
             reject({message: 'Failed to upload image'});
           }
-          Properties
-            .update({"_id": propertyID}, {
-              $set: {
-                "pictures.living": idLiving
-              }
-            })
-            .exec((err, saved) => {
-              err ? reject(err)
-              : resolve(saved);
-            });  
+          for(var i = 0; i < idLiving.length; i++){
+            Properties
+              .update({"_id": propertyID}, {
+                $push: {
+                  "pictures.living": idLiving[i]
+                }
+              })
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              });    
+          }
         });  
       }
       if(attach.dining != null) {
@@ -137,16 +139,18 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
           if(errUpload > 0) {
             reject({message: 'Failed to upload image'});
           }
-          Properties
-            .update({"_id": propertyID}, {
-              $set: {
-                "pictures.dining": idDining
-              }
-            })
-            .exec((err, saved) => {
-              err ? reject(err)
-              : resolve(saved);
-            });  
+          for(var i = 0; i < idDining.length; i++){
+            Properties
+              .update({"_id": propertyID}, {
+                $push: {
+                  "pictures.dining": idDining
+                }
+              })
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              }); 
+          } 
         });  
       }
       if(attach.bed != null) {
@@ -156,16 +160,18 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
           if(errUpload > 0) {
             reject({message: 'Failed to upload image'});
           }
-          Properties
-            .update({"_id": propertyID}, {
-              $set: {
-                "pictures.bed": idBed
-              }
-            })
-            .exec((err, saved) => {
-              err ? reject(err)
-              : resolve(saved);
-            });  
+          for(var i = 0; i < idBed.length; i++){
+            Properties
+              .update({"_id": propertyID}, {
+                $push: {
+                  "pictures.bed": idBed
+                }
+              })
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              });  
+          }
         });  
       }
       if(attach.toilet != null) {
@@ -175,16 +181,18 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
           if(errUpload > 0) {
             reject({message: 'Failed to upload image'});
           }
-          Properties
-            .update({"_id": propertyID}, {
-              $set: {
-                "pictures.toilet": idToilet
-              }
-            })
-            .exec((err, saved) => {
-              err ? reject(err)
-              : resolve(saved);
-            });  
+          for(var i = 0; i < idToilet.length; i++){
+            Properties
+              .update({"_id": propertyID}, {
+                $push: {
+                  "pictures.toilet": idToilet
+                }
+              })
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              });  
+          }
         });
       }
       if(attach.kitchen != null) {
@@ -194,10 +202,31 @@ propertiesSchema.static('createPropertyPictures', (propertyID:string, files:Obje
           if(errUpload > 0) {
             reject({message: 'Failed to upload image'});
           }
+          for(var i = 0; i < idKitchen.length; i++){
+            Properties
+              .update({"_id": propertyID}, {
+                $push: {
+                  "pictures.kitchen": idKitchen
+                }
+              })
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              });  
+          }
+        });
+      }
+      if(attach.proof != null) {
+        Attachments.createAttachments(attach.proof).then(res => {
+          var idProof = res.idAtt;
+          var errUpload = res.errAtt;
+          if(errUpload > 0) {
+            reject({message: 'Failed to upload image'});
+          }
           Properties
             .update({"_id": propertyID}, {
               $set: {
-                "pictures.kitchen": idKitchen
+                "confirmation.proof": idProof
               }
             })
             .exec((err, saved) => {
