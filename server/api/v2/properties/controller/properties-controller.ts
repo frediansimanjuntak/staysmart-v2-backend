@@ -50,27 +50,6 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updatePropertiesShareholder(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _shareholderId = req.params.shareholderID;
-		let _shareholder = req.body;
-		let _files = req["files"];
-		PropertiesDAO
-		['updatePropertiesShareholder'](_id, _shareholderId, _shareholder, _files)
-		.then(properties => res.status(201).json(properties))
-		.catch(error => res.status(400).json(error));
-	}
-
-	static deletePropertyShareholder(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _idShareholder = req.params.idShareholder;
-
-		PropertiesDAO
-		['deletePropertyShareholder'](_id, _idShareholder)
-		.then(properties => res.status(201).json(properties))
-		.catch(error => res.status(400).json(error));
-	}
-
 	static deleteProperties(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		PropertiesDAO
@@ -85,6 +64,25 @@ export class PropertiesController {
 		let _pictureID = req.params.pictureID;
 		PropertiesDAO
 		['deletePropertyPictures'](_id, _type, _pictureID)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
+
+	static approveProperty(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _proof = req["files"].proof;
+		let _userId = req["user"]._id;
+		PropertiesDAO
+		['approveProperty'](_id, _proof, _userId)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
+
+	static rejectProperty(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		PropertiesDAO
+		['rejectProperty'](_id, _userId)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}

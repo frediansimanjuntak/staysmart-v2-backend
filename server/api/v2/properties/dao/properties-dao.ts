@@ -45,6 +45,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
       
       var _properties = new Properties(property);
           _properties.owner.user = userId;
+          _properties.confirmation.status = 'pending';
           _properties.save((err, saved)=>{
             err ? reject(err)
                 : resolve(saved);
@@ -101,90 +102,6 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, files
         if(files != null) {
           let attach:any = files;
           Properties.createPropertyPictures(id, files);
-          Properties.updatePropertyShareholderImage(id, files);
-        }
-    });
-});
-
-propertiesSchema.static('updatePropertiesShareholder', (id:string, shareholderId:string, shareholder:Object, files:Object):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isObject(shareholder)) {
-          return reject(new TypeError('Shareholder data is not a valid object.'));
-        }
-        var type = 'update';
-        let body:any = shareholder;
-        Properties.createPropertyHistory(id, type);
-        Properties
-          .update({"_id": id, "owner.shareholder": {
-              $elemMatch: {
-                "_id": shareholderId
-              }
-            }
-          }, 
-          {
-            $set: {
-              "owner.shareholder.$.name": body.name,
-              "owner.shareholder.$.identification_type": body.identification_type,
-              "owner.shareholder.$.identification_number": body.identification_number
-            }
-          })
-          .exec((err, updated) => {
-                err ? reject(err)
-                    : resolve(updated);
-            });
-
-        if(files != null) {
-          let attach:any = files;
-          if(attach.front != null) {
-            Attachments.createAttachments(attach.front).then(res => {
-              var idFront = res.idAtt;
-              var errUpload = res.errAtt;
-              if(errUpload > 0) {
-                reject({message: 'Failed to upload image'});
-              }
-              Properties
-                .update({"_id": id, "owner.shareholder": {
-                    $elemMatch: {
-                      "_id": shareholderId
-                    }
-                  }
-                }, 
-                {
-                  $set: {
-                    "owner.shareholder.$.identification_proof.front": idFront
-                  }
-                })
-                .exec((err, updated) => {
-                      err ? reject(err)
-                          : resolve(updated);
-                  });
-            });
-          }          
-          if(attach.back != null) {
-            Attachments.createAttachments(attach.back).then(res => {
-              var idBack = res.idAtt;
-              var errUpload = res.errAtt;
-              if(errUpload > 0) {
-                reject({message: 'Failed to upload image'});
-              }
-              Properties
-                .update({"_id": id, "owner.shareholder": {
-                    $elemMatch: {
-                      "_id": shareholderId
-                    }
-                  }
-                }, 
-                {
-                  $set: {
-                    "owner.shareholder.$.identification_proof.back": idBack
-                  }
-                })
-                .exec((err, updated) => {
-                      err ? reject(err)
-                          : resolve(updated);
-                  });
-            });
-          }          
         }
     });
 });
@@ -337,16 +254,9 @@ propertiesSchema.static('updatePropertyShareholderImage', (userId:string, proper
             Properties
               .findById(propertyID, (err, result) => {
                 for(var j = 0; j < result.owner.shareholder.length; j++){
-                  var lengthDiff = result.owner.shareholder.length - idFront.length;
-                  if(lengthDiff == 0){
-                    var k = i;
-                  }
-                  else{
-                    k = i+lengthDiff;
-                  }
                   let body:any = result.owner.shareholder[j];
-                  if(k == j) {
-                    if(k == 0) {
+                  if(i == j) {
+                    if(i == 0) {
                       Users
                         .findById(userId, (err, result) => {
                           if(result.landlord.data == null){
@@ -594,6 +504,53 @@ propertiesSchema.static('deletePropertyShareholder', (id:string, idShareholder:s
         .exec((err, deleted) => {
           err ? reject(err)
           : resolve(deleted);
+        });
+  });
+});
+
+propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      if(!_.isString(id)) {
+        return reject(new TypeError('Id is not a valid string.'));
+      }
+      if(proof != null) {
+        Attachments.createAttachments(proof).then(res => {
+          var idProof = res.idAtt;
+          Properties
+            .update({"_id": id}, {
+              $set: {
+                "confirmation.status": "approved",
+                "confirmation.proof": idProof,
+                "confirmation.by": userId,
+                "confirmation.date": Date.now
+              }
+            })
+            .exec((err, update) => {
+              err ? reject(err)
+              : resolve(update);
+            });
+        });
+      }
+      
+  });
+});
+
+propertiesSchema.static('rejectProperty', (id:string, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      if(!_.isString(id)) {
+        return reject(new TypeError('Id is not a valid string.'));
+      }
+      Properties
+        .update({"_id": id}, {
+          $set: {
+            "confirmation.status": "rejected",
+            "confirmation.by": userId,
+            "confirmation.date": Date.now
+          }
+        })
+        .exec((err, update) => {
+          err ? reject(err)
+          : resolve(update);
         });
   });
 });
