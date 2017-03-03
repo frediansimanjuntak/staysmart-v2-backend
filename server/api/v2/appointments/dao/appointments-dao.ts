@@ -12,7 +12,7 @@ appointmentsSchema.static('getAll', ():Promise<any> => {
 
         Appointments
           .find(_query)
-          .populate("landlord tenant property schedule")
+          .populate("landlord tenant property")
           .exec((err, appointments) => {
               err ? reject(err)
                   : resolve(appointments);
@@ -25,7 +25,7 @@ appointmentsSchema.static('getById', (id:string):Promise<any> => {
 
         Appointments
           .findById(id)
-          .populate("landlord tenant property schedule")
+          .populate("landlord tenant property")
           .exec((err, appointments) => {
               err ? reject(err)
                   : resolve(appointments);

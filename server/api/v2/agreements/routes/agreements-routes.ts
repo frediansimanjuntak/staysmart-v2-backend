@@ -25,6 +25,13 @@ export class AgreementsRoutes {
 		router
 			.route('/agreements/inventorylist/update/:id')
 			.post(auth.isAuthenticated(), AgreementsController.updateInventoryList);
+			
+		router
+			.route('/agreements/update/:id/:type')
+			.post(AgreementsController.updateAgreementsData);
 
+		router
+			.route('/loi/:id')
+			.post(AgreementsController.createLoi);
 	}
 }

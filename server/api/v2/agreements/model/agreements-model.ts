@@ -20,7 +20,7 @@ var AgreementsSchema = new mongoose.Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Properties'
 	},
-	appoinment: {
+	appointment: {
 		type: Schema.Types.ObjectId,
 		ref: 'Appoinments'
 	},
@@ -93,10 +93,9 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String, 
-				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation'],
-				default: 'pending'
+				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation']
 			},
-			created_at: {type: Date, default: Date.now}
+			created_at: {type: Date}
 		},
 		histories: 
 		[{
@@ -124,10 +123,9 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String, 
-				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation'],
-				default: 'pending'
+				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation']
 			},
-			created_at: {type: Date, default: Date.now}
+			created_at: {type: Date}
 		},
 		histories: 
 		[{

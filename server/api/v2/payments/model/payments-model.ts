@@ -17,6 +17,10 @@ var PaymentsSchema = new mongoose.Schema({
 			refunded: {type: Boolean}
 		}
 	],
+	attachment: {
+		type: Schema.Types.ObjectId,
+		ref: 'Attachments'	
+	},
 	refund: {type: Boolean},
 	remarks: {type: String}
 });

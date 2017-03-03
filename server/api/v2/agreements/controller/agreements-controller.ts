@@ -25,6 +25,17 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static createLoi(req: express.Request, res: express.Response):void {
+		let _agreements = req.body;
+		let _id = req.params.id;
+		let _files = req["files"];
+		
+		AgreementsDAO
+		['createLoi'](_id, _agreements, _files)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static updateAgreementsData(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;
