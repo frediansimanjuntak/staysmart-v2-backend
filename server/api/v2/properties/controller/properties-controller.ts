@@ -50,6 +50,17 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updatePropertiesShareholder(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _shareholderId = req.params.shareholderID;
+		let _shareholder = req.body;
+		let _files = req["files"];
+		PropertiesDAO
+		['updatePropertiesShareholder'](_id, _shareholderId, _shareholder, _files)
+		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static deletePropertyShareholder(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _idShareholder = req.params.idShareholder;
