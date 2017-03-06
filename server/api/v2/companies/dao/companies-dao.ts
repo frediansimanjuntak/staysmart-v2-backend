@@ -57,6 +57,7 @@ companiesSchema.static('createCompanies', (companies:Object, documents:Object, c
             err ? reject(err)
                 : resolve(update);
         });
+      resolve({companiesId});
     });
 });
 
