@@ -67,7 +67,7 @@ var AgreementsSchema = new mongoose.Schema({
 			minor_repair_cost: {type: Number},
 			lapse_offer: {type: Number},
 			term_lease_extend: {type: Number},
-			appoinment: {
+			appointment: {
 				type: Schema.Types.ObjectId,
 				ref: 'Appoinments'
 			},
@@ -156,7 +156,7 @@ var AgreementsSchema = new mongoose.Schema({
 				type: Schema.Types.ObjectId,
 				ref: 'Properties'
 			},
-			created_at: {type: Date, default: Date.now},
+			created_at: {type: Date},
 			list: [{
 				name: {type: String},
 				items: [{

@@ -11,6 +11,7 @@ export class AgreementsController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		
 		AgreementsDAO
 		['getById'](_id)
 		.then(agreements => res.status(200).json(agreements))
@@ -19,19 +20,32 @@ export class AgreementsController {
 
 	static createAgreements(req: express.Request, res: express.Response):void {
 		let _agreements = req.body;
+		let _userId = req["user"].id;
+
 		AgreementsDAO
-		['createAgreements'](_agreements)
+		['createAgreements'](_agreements, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static createLoi(req: express.Request, res: express.Response):void {
-		let _agreements = req.body;
+		let _data = req.body;
 		let _id = req.params.id;
 		let _files = req["files"];
 		
 		AgreementsDAO
-		['createLoi'](_id, _agreements, _files)
+		['createLoi'](_id, _data, _files)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static updateLoi(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.id;
+		let _files = req["files"];
+		
+		AgreementsDAO
+		['updateLoi'](_id, _data, _files)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -40,7 +54,7 @@ export class AgreementsController {
 		let _data = req.body;
 		let _id = req.params.id;
 		let _type = req.params.type;
-		console.log(_data);
+
 		AgreementsDAO
 		['updateAgreementsData'](_id, _type, _data)
 		.then(agreements => res.status(201).json(agreements))
@@ -49,6 +63,7 @@ export class AgreementsController {
 
 	static deleteAgreements(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+
 		AgreementsDAO
 		['deleteAgreements'](_id)
 		.then(() => res.status(200).end())

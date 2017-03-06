@@ -14,13 +14,11 @@ export class AgreementsRoutes {
 		router
 			.route('/agreements/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getById)
-			.delete(auth.isAuthenticated(), AgreementsController.deleteAgreements);
-	
+			.delete(auth.isAuthenticated(), AgreementsController.deleteAgreements);	
 
 		router
 			.route('/agreements/update/:id')
-			.post(auth.isAuthenticated(), AgreementsController.updateAgreements);
-	
+			.post(auth.isAuthenticated(), AgreementsController.updateAgreements);	
 
 		router
 			.route('/agreements/inventorylist/update/:id')
@@ -32,6 +30,7 @@ export class AgreementsRoutes {
 
 		router
 			.route('/loi/:id')
-			.post(AgreementsController.createLoi);
+			.post(AgreementsController.createLoi)
+			.put(AgreementsController.updateLoi);
 	}
 }
