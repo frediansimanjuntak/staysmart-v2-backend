@@ -59,6 +59,22 @@ agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
 	});
 });
 
+agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Agreements
+          .findById(id, type, (err, result) => {
+            var historyObj = {$push: {}};
+            historyObj.$push[type+'.histories'] = {"date": Date.now, "data": result.data};
+            Agreements
+            	.findByIdAndUpdate(id, historyObj)
+          		.exec((err,saved) => {
+          			err ? reject(err)
+          				: resolve(saved);
+          		});
+          });
+    });
+});
+
 agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(agreements)) {
