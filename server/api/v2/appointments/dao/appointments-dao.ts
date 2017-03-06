@@ -5,6 +5,7 @@ import appointmentsSchema from '../model/appointments-model';
 import Users from '../../users/dao/users-dao'
 import Properties from '../../properties/dao/properties-dao'
 import Notifications from '../../notifications/dao/notifications-dao'
+import Developments from '../../developments/dao/developments-dao'
 
 appointmentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -47,14 +48,21 @@ appointmentsSchema.static('createAppointments', (appointments:Object):Promise<an
                 : resolve(saved); 
           });
       var appointmentId = _appointments._id;
-
-      var notification = {
-        "user": body.landlord,
-        "message": "Appointment proposed for "+body.choosen_time.date+" from "+body.choosen_time.from+" to "+body.choosen_time.to,
-        "type": "appointment_proposed",
-        "ref_id": appointmentId
-      };
-      Notifications.createNotifications(notification);   
+      Properties
+        .findById(body.property, (err, result) => {
+          var devID = result.development;
+          var unit = '#'+result.address.floor+'-'+result.address.unit;
+          Developments
+            .findById(devID, (error, devResult) => {
+              var notification = {
+                "user": body.landlord,
+                "message": "Appointment proposed for "+unit+" "+devResult.name+" at "+body.choosen_time.date+" from "+body.choosen_time.from+" to "+body.choosen_time.to,
+                "type": "appointment_proposed",
+                "ref_id": appointmentId
+              };
+              Notifications.createNotifications(notification);  
+            })
+          })
     });
 });
 
@@ -91,18 +99,26 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
         });
         Appointments
           .findById(id, (err, result) => {
-            var notification = {
-              "user": result.tenant,
-              "message": "Appointment "+status+" for "+result.choosen_time.date+" from "+result.choosen_time.from+" to "+result.choosen_time.to,
-              "type": "appointment_"+status,
-              "ref_id": id
-            };
-            Notifications.createNotifications(notification);      
+            Properties
+              .findById(result.property, (err, result) => {
+                var devID = result.development;
+                var unit = '#'+result.address.floor+'-'+result.address.unit;
+                Developments
+                  .findById(devID, (error, devResult) => {
+                    var notification = {
+                      "user": result.tenant,
+                      "message": "Appointment "+status+" for "+unit+" "+devResult.name+" at "+result.choosen_time.date+" from "+result.choosen_time.from+" to "+result.choosen_time.to,
+                      "type": "appointment_proposed",
+                      "ref_id": id
+                    };
+                    Notifications.createNotifications(notification);  
+                  })
+                  .exec((err, updated) => {
+                    err ? reject(err)
+                        : resolve(updated);
+                  });
+                })
           })
-          .exec((err, updated) => {
-            err ? reject(err)
-                : resolve(updated);
-          });
     });
 });
 
