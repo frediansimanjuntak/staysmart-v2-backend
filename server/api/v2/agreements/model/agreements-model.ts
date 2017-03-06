@@ -149,8 +149,7 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String,
-				enum: ['pending', 'completed'],
-				default: 'pending'
+				enum: ['pending', 'completed']
 			},
 			property: {
 				type: Schema.Types.ObjectId,

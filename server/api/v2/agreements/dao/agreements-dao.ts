@@ -367,51 +367,107 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 });
 
 //Inventory List
-agreementsSchema.static('createInventoryList', (id:string, agreements:Object):Promise<any> => { 
+agreementsSchema.static('createInventoryList', (id:string, agreements:Object, files:Object):Promise<any> => { 
   return new Promise((resolve:Function, reject:Function) => { 
     if (!_.isObject(agreements)) { 
       return reject(new TypeError('Inventory List is not a valid object.')); 
     } 
+
+    let file:any = files;
+    let body:any = agreements;
+
     Agreements
     	.findById(id, (err, ilist) => {
+    		let propertyId = ilist.property;
+
     		if (ilist != null){
     			let type = "inventory_list";
     			Agreements.createHistory(id, type);
     		}
-    		var ObjectID = mongoose.Types.ObjectId; 
-    		var data_result = {$set: {}}; 
-    		var list_result = {$push: {}}; 
-    		var item_result = {$push: {}};
-    		var listname = ilist.inventory_list.data.lists.name;
-    		var itemname = ilist.inventory_list.data.lists.items.name;
-    		let body:any = agreements; 
-    		data_result.$set['.data'] = { 
-    			"lists":list_result.$push['.lists'] = { 
-    				"name": body.listname, 
-    				"items": item_result.$push['.items'] = { 
-    					"name": body.itemname, 
-    					"quantity": body.quantity,
-    					"remark": body.remark, 
-    					"landlord_check": body.landlord_check,
-    					"tenant_check": body.tenant_check 
-    				}, 
-    			}, 
-    		}; 
-           	console.log(data_result);
-            Agreements 
-	            .findByIdAndUpdate(id, data_result) 
-	            .exec((err,updated) => { 
-	              err ? reject(err) 
-	                : resolve(updated); 
-	            }); 
-       })
-       	Agreements
-       		.findByIdAndUpdate(id, agreements)
-       		.populate("property")
-       		.exec((err,updated) => {
-       			err ? reject(err)
-       				: resolve(updated);
-       		}); 
+
+    		Agreements
+    			.findByIdAndUpdate(id, {
+    				$set: {
+    					"inventory_list.data.status": "pending",
+    					"inventory_list.data.property": propertyId
+    				}
+    			})
+    			.exec((err, updated) => {
+					err ? reject(err)
+					: resolve();
+				});	    		
+
+    		let list = body.lists;
+    		let listData = [].concat(list);
+
+    		for(var i = 0; i < listData.length; i++){
+
+    			let listss = listData[i];
+    			let listname = listss.name;
+    			Agreements
+	    			.findByIdAndUpdate(id, {
+	    				$push: {
+	    					"inventory_list.data.$.lists": {
+	    						"name": listname
+	    					}
+	    				}
+	    			})
+	    			.exec((err, updated) => {
+						err ? reject(err)
+							: resolve(updated);
+					});	
+				let item = body.items;
+				let itemData = [].concat(item);
+
+				for(var j = 0; j < itemData.length; j++){
+					let itemss = itemData[j];
+					let itemName = itemss.name;
+					let itemQuantity = itemss.quantity;
+					let itemRemark = itemss.remark;
+					let itemLandlordCheck = false;
+					let itemTenantCheck = false;
+
+					let attachments = file.attachment;
+					if(file){
+						Attachments.createAttachments(attachments).then(res => {
+					        var idAttachment = res.idAtt;
+					        console.log(idAttachment);
+							Agreements
+								.Update({"_id": id, "inventory_list.data.lists.name": listname}, {
+									$push: {
+										"inventory_list.data.0.lists.$.items": {
+											"attachments": idAttachment
+										}
+									}
+
+								})
+								.exec((err, updated) => {
+									err ? reject(err)
+										: resolve(updated);
+								});	        
+					    });
+					}					
+
+					Agreements
+	    			.Update({"_id": id, "inventory_list.data.lists.name": listname}, {
+	    				$push: {
+	    					"inventory_list.data.0.lists.$.items": {
+	    						"name": itemName,
+	    						"quantity": itemQuantity,
+	    						"remark": itemRemark,
+	    						"landlord_check": itemLandlordCheck,
+	    						"tenant_check": itemTenantCheck
+	    					}
+	    				}
+
+	    			})
+	    			.exec((err, updated) => {
+						err ? reject(err)
+							: resolve(updated);
+					});	
+				}
+    		}
+   		}); 
     }); 
 }); 
 
