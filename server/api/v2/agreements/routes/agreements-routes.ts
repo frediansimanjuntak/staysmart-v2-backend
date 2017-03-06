@@ -21,8 +21,8 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.updateAgreements);	
 
 		router
-			.route('/agreements/inventorylist/update/:id')
-			.post(auth.isAuthenticated(), AgreementsController.updateInventoryList);
+			.route('/agreements/inventorylist/:id')
+			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
 			
 		router
 			.route('/agreements/update/:id/:type')
