@@ -28,8 +28,25 @@ export class AgreementsRoutes {
 			.route('/agreements/update/:id/:type')
 			.post(AgreementsController.updateAgreementsData);
 
+		//LOI
 		router
 			.route('/loi/:id')
 			.post(AgreementsController.createLoi);
+
+		router
+			.route('/loi/status/acccepted/:id')
+			.post(AgreementsController.acceptLoi);
+
+		router
+			.route('/loi/status/rejected/:id')
+			.post(AgreementsController.rejectLoi);
+
+		router
+			.route('/loi/status/admin_confirm/:id')
+			.post(AgreementsController.adminConfirmationLoi);
+
+		router
+			.route('/loi/status/landlord_confirm/:id')
+			.post(AgreementsController.landlordConfirmationLoi);
 	}
 }

@@ -88,6 +88,10 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 
 		Agreements
 			.findById(id, "letter_of_intent.data", (err, agreement) => {
+				let propertyId = agreement.property;
+				let landlordId = agreement.landlord;
+				let tenantId = agreement.tenant;
+
 				if (agreement != null){
 					Agreements.createHistory(id, type);
 				}
@@ -136,6 +140,16 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 				if(body.status == "send"){
 					let type_notif = "initiateLoi";
 					Agreements.notificationLoi(id, type_notif);
+					Properties
+						.findByIdAndUpdate(propertyId, {
+							$set: {
+								"status": "initiated"
+							}
+						})
+						.exec((err, updated) => {
+							err ? reject(err)
+								: resolve();
+						});
 				}   
 			})		
 	});
@@ -148,21 +162,10 @@ agreementsSchema.static('acceptLoi', (id:string):Promise<any> => {
 		}
 		let type_notif = "acceptLoi";
 		let type = "letter_of_intent";	
+		let status = "accepted";
 
 		Agreements.createHistory(id, type);
-
-		Agreements
-			.findByIdAndUpdate(id,{
-				$set: {
-					"letter_of_intent.data.status": "accepted",
-					"letter_of_intent.data.created_at": new Date()
-				}
-			})
-			.exec((err, updated) => {
-				err ? reject(err)
-					: resolve();
-			});	
-			
+		Agreements.changeStatusLoi(id, status);			
 		Agreements.notificationLoi(id, type_notif);
 	});
 });
@@ -172,23 +175,13 @@ agreementsSchema.static('rejectLoi', (id:string):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
+
 		let type_notif = "rejectLoi";
 		let type = "letter_of_intent";
+		let status = "rejected";
 
 		Agreements.createHistory(id, type);
-
-		Agreements
-			.findByIdAndUpdate(id,{
-				$set: {
-					"letter_of_intent.data.status": "rejected",
-					"letter_of_intent.data.created_at": new Date()
-				}
-			})
-			.exec((err, updated) => {
-				err ? reject(err)
-					: resolve();
-			});	
-
+		Agreements.changeStatusLoi(id, status);
 		Agreements.notificationLoi(id, type_notif);
 	});
 });
@@ -198,20 +191,12 @@ agreementsSchema.static('adminConfirmationLoi', (id:string):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		let type = "letter_of_intent";
-		Agreements.createHistory(id, type);
 
-		Agreements
-			.findByIdAndUpdate(id,{
-				$set: {
-					"letter_of_intent.data.status": "admin-confirmation",
-					"letter_of_intent.data.created_at": new Date()
-				}
-			})
-			.exec((err, updated) => {
-				err ? reject(err)
-					: resolve();
-			});	
+		let type = "letter_of_intent";
+		let status = "admin-confirmation";
+
+		Agreements.createHistory(id, type);		
+		Agreements.changeStatusLoi(id, status);
 	});
 });
 
@@ -220,13 +205,25 @@ agreementsSchema.static('landlordConfirmationLoi', (id:string):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
+
 		let type = "letter_of_intent";
+		let status = "landlord-confirmation";
+		
 		Agreements.createHistory(id, type);
+		Agreements.changeStatusLoi(id, status);
+	});
+});
+
+agreementsSchema.static('changeStatusLoi', (id:string, status:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
 
 		Agreements
 			.findByIdAndUpdate(id,{
 				$set: {
-					"letter_of_intent.data.status": "landlord-confirmation",
+					"letter_of_intent.data.status": status,
 					"letter_of_intent.data.created_at": new Date()
 				}
 			})

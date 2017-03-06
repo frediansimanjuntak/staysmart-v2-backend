@@ -58,6 +58,42 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static acceptLoi(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		
+		AgreementsDAO
+		['acceptLoi'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static rejectLoi(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['rejectLoi'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static adminConfirmationLoi(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		
+		AgreementsDAO
+		['adminConfirmationLoi'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static landlordConfirmationLoi(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		
+		AgreementsDAO
+		['landlordConfirmationLoi'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static updateAgreementsData(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;
