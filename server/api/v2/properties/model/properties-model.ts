@@ -131,7 +131,7 @@ var PropertiesSchema = new mongoose.Schema({
 	},
 	publish: {type: Boolean},
 	confirmation: {
-		status: {type: String, enum:['approved','rejected','pending']},
+		status: {type: String, enum:['approved','rejected','pending'], default: 'pending'},
 		proof: {type: String},
 		by: 
 			{
@@ -140,7 +140,7 @@ var PropertiesSchema = new mongoose.Schema({
 			},
 		date: {type: Date}
 	},
-	status: {type: String, enum:['initiated','published','rented','draft']},
+	status: {type: String, enum:['initiated','published','rented','draft'], default: 'published'},
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},
