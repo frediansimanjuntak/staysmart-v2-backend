@@ -129,6 +129,11 @@ var PropertiesSchema = new mongoose.Schema({
 			}
 		]
 	},
+	manager: 
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Users'
+		},
 	publish: {type: Boolean},
 	confirmation: {
 		status: {type: String, enum:['approved','rejected','pending'], default: 'pending'},
