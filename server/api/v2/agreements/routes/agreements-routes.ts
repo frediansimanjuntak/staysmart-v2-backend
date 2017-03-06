@@ -30,7 +30,6 @@ export class AgreementsRoutes {
 
 		router
 			.route('/loi/:id')
-			.post(AgreementsController.createLoi)
-			.put(AgreementsController.updateLoi);
+			.post(AgreementsController.createLoi);
 	}
 }

@@ -81,88 +81,55 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 		let body:any = data;
-
-		let monthly_rental = body.monthly_rental;
-		let term_lease = body.term_lease;
-		let security_deposit = 0;
-
-		let gfd_amount = monthly_rental;
-		let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
-
-		if (term_lease <= 12){
-			security_deposit = gfd_amount;
-		}
-		else if(term_lease > 12 && term_lease <= 24){
-			security_deposit = gfd_amount * 2;
-		}
-
-		let _query = {"_id": id};
-
-		let loiObj = {$set: {}};
-	    for(var param in body) {
-	    	loiObj.$set["letter_of_intent.data." + param] = body[param];
-	    }
-	    loiObj.$set["letter_of_intent.data"] = {"sd_amount": sd_amount, "security_deposit": security_deposit};
+		let type = "letter_of_intent";
 
 		Agreements
-			.update(_query, loiObj)
-			.exec((err, updated) => {
-				err ? reject(err)
-				: resolve();
-			});	
+			.findById(id, "letter_of_intent.data", (err, agreement) => {
+				if (agreement != null){
+					Agreements.createHistory(id, type);
+				}
 
-		let remark = body.remark_payment;
-		let type = "letter_of_intent"
-		if(files){
-			Agreements.payment(id, sd_amount, gfd_amount, security_deposit, remark, files, type);
-			Agreements.confirmation(id, data, files, type);
-		}    
-	});
-});
+				let monthly_rental = body.monthly_rental;
+				let term_lease = body.term_lease;
+				let security_deposit = 0;
 
-agreementsSchema.static('updateLoi', (id:string, data:Object, files:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(data)) {
-			return reject(new TypeError('TA is not a valid object.'));
-		}
-		let body:any = data;
+				let gfd_amount = monthly_rental;
+				let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
 
-		let monthly_rental = body.monthly_rental;
-		let term_lease = body.term_lease;
-		let security_deposit = 0;
+				let remark = body.remark_payment;
 
-		let gfd_amount = monthly_rental;
-		let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
+				if (term_lease <= 12){
+					security_deposit = gfd_amount;
+				}
+				else if(term_lease > 12 && term_lease <= 24){
+					security_deposit = gfd_amount * 2;
+				}
 
-		if (term_lease <= 12){
-			security_deposit = gfd_amount;
-		}
-		else if(term_lease > 12 && term_lease <= 24){
-			security_deposit = gfd_amount * 2;
-		}
+				let _query = {"_id": id};
 
-		let _query = {"_id": id};
+				let loiObj = {$set: {}};
+			    for(var param in body) {
+			    	loiObj.$set["letter_of_intent.data." + param] = body[param];
+			    }
+			    loiObj.$set["letter_of_intent.data"] = {
+			    	"sd_amount": sd_amount, 
+			    	"security_deposit": security_deposit,
+			    	"status": "pending",
+			    	"created_at": new Date()
+			    };
 
-		let loiObj = {$set: {}};
-	    for(var param in body) {
-	    	loiObj.$set["letter_of_intent.data." + param] = body[param];
-	    }
-	    loiObj.$set["letter_of_intent.data"] = {"sd_amount": sd_amount, "security_deposit": security_deposit};
+				Agreements
+					.update(_query, loiObj)
+					.exec((err, updated) => {
+						err ? reject(err)
+							: resolve();
+					});	
 
-		Agreements
-			.update(_query, loiObj)
-			.exec((err, updated) => {
-				err ? reject(err)
-				: resolve();
-			});	
-
-		let remark = body.remark_payment;
-		let type = "letter_of_intent"
-		if(files){
-			Agreements.payment(id, sd_amount, gfd_amount, security_deposit, remark, files, type);
-			Agreements.confirmation(id, data, files, type);
-		} 
-		Agreements.createHistory(id, type);   
+				if(files){
+					Agreements.payment(id, sd_amount, gfd_amount, security_deposit, remark, files, type);
+					Agreements.confirmation(id, data, files, type);
+				}    
+			})		
 	});
 });
 
