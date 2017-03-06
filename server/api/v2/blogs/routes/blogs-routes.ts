@@ -12,8 +12,11 @@ export class BlogsRoutes {
 			.post(auth.isAuthenticated(),BlogsController.createBlogs);
 
 		router
+			.route('/blogs/:slug')
+			.get(auth.isAuthenticated(),BlogsController.getById);
+
+		router
 			.route('/blogs/:id')
-			.get(auth.isAuthenticated(),BlogsController.getById)
 			.delete(auth.isAuthenticated(),BlogsController.deleteBlogs);
 
 		router
