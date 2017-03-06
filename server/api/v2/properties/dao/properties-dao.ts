@@ -7,6 +7,7 @@ import Attachments from '../../attachments/dao/attachments-dao'
 import Users from '../../users/dao/users-dao'
 import Companies from '../../companies/dao/companies-dao'
 import Developments from '../../developments/dao/developments-dao'
+import Notifications from '../../notifications/dao/notifications-dao'
 
 propertiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -529,6 +530,26 @@ propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:stri
               err ? reject(err)
               : resolve(update);
             });
+          Properties
+            .findById(id, (err, result) => {
+              var devID = result.development;
+              var unit = '#'+result.address.floor+'-'+result.address.unit;
+              Developments
+                .findById(devID, (error, devResult) => {
+                  var notification = {
+                    "user": result.owner.user,
+                    "message": "Property approved for "+unit+" "+devResult.name,
+                    "type": "approved_property",
+                    "ref_id": id
+                  };
+
+                  Notifications.createNotifications(notification);        
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                  : resolve(update);
+                });
+            })
         });
       }
       
@@ -552,6 +573,26 @@ propertiesSchema.static('rejectProperty', (id:string, userId:string):Promise<any
           err ? reject(err)
           : resolve(update);
         });
+      Properties
+        .findById(id, (err, result) => {
+          var devID = result.development;
+          var unit = '#'+result.address.floor+'-'+result.address.unit;
+          Developments
+            .findById(devID, (error, devResult) => {
+              var notification = {
+                "user": result.owner.user,
+                "message": "Property rejected for "+unit+" "+devResult.name,
+                "type": "rejected_property",
+                "ref_id": id
+              };
+
+              Notifications.createNotifications(notification);        
+            })
+            .exec((err, update) => {
+              err ? reject(err)
+              : resolve(update);
+            });
+        })
   });
 });
 
