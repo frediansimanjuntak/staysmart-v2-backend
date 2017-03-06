@@ -4,8 +4,11 @@ import * as _ from 'lodash';
 import agreementsSchema from '../model/agreements-model';
 import Users from '../../users/dao/users-dao';
 import Payments from '../../payments/dao/payments-dao';
-import Attachments from '../../attachments/dao/attachments-dao'
-import Appointments from '../../appointments/dao/appointments-dao'
+import Attachments from '../../attachments/dao/attachments-dao';
+import Appointments from '../../appointments/dao/appointments-dao';
+import Developments from '../../developments/dao/developments-dao';
+import Notifications from '../../notifications/dao/notifications-dao';
+import Properties from '../../properties/dao/properties-dao';
 
 agreementsSchema.static('getAll', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -57,22 +60,6 @@ agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
 					: resolve();
 			});
 	});
-});
-
-agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        Agreements
-          .findById(id, type, (err, result) => {
-            var historyObj = {$push: {}};
-            historyObj.$push[type+'.histories'] = {"date": Date.now, "data": result.data};
-            Agreements
-            	.findByIdAndUpdate(id, historyObj)
-          		.exec((err,saved) => {
-          			err ? reject(err)
-          				: resolve(saved);
-          		});
-          });
-    });
 });
 
 agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promise<any> => {
@@ -144,8 +131,165 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 				if(files){
 					Agreements.payment(id, sd_amount, gfd_amount, security_deposit, remark, files, type);
 					Agreements.confirmation(id, data, files, type);
-				}    
+				} 
+
+				if(body.status == "send"){
+					let type_notif = "initiateLoi";
+					Agreements.notificationLoi(id, type_notif);
+				}   
 			})		
+	});
+});
+
+agreementsSchema.static('acceptLoi', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let type_notif = "acceptLoi";
+		let type = "letter_of_intent";	
+
+		Agreements.createHistory(id, type);
+
+		Agreements
+			.findByIdAndUpdate(id,{
+				$set: {
+					"letter_of_intent.data.status": "accepted",
+					"letter_of_intent.data.created_at": new Date()
+				}
+			})
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve();
+			});	
+			
+		Agreements.notificationLoi(id, type_notif);
+	});
+});
+
+agreementsSchema.static('rejectLoi', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let type_notif = "rejectLoi";
+		let type = "letter_of_intent";
+
+		Agreements.createHistory(id, type);
+
+		Agreements
+			.findByIdAndUpdate(id,{
+				$set: {
+					"letter_of_intent.data.status": "rejected",
+					"letter_of_intent.data.created_at": new Date()
+				}
+			})
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve();
+			});	
+
+		Agreements.notificationLoi(id, type_notif);
+	});
+});
+
+agreementsSchema.static('adminConfirmationLoi', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let type = "letter_of_intent";
+		Agreements.createHistory(id, type);
+
+		Agreements
+			.findByIdAndUpdate(id,{
+				$set: {
+					"letter_of_intent.data.status": "admin-confirmation",
+					"letter_of_intent.data.created_at": new Date()
+				}
+			})
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve();
+			});	
+	});
+});
+
+agreementsSchema.static('landlordConfirmationLoi', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let type = "letter_of_intent";
+		Agreements.createHistory(id, type);
+
+		Agreements
+			.findByIdAndUpdate(id,{
+				$set: {
+					"letter_of_intent.data.status": "landlord-confirmation",
+					"letter_of_intent.data.created_at": new Date()
+				}
+			})
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve();
+			});	
+	});
+});
+
+agreementsSchema.static('notificationLoi', (id:string, type:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+
+		let message = "";
+		let type_notif = "";
+		let user = "";
+
+		Agreements
+			.findById(id, (err, agreement) => {
+				let agreementId = agreement._id;
+				let tenantId = agreement.tenant;
+				let landlordId = agreement.landlord;
+				let propertyId = agreement.property;
+
+				Properties
+			        .findById(propertyId, (err, result) => {
+			          var devID = result.development;
+			          var unit = '#' + result.address.floor + '-' + result.address.unit;
+			          Developments
+			            .findById(devID, (error, devResult) => {
+			            	if(type == "initiateLoi"){
+								message = "Letter of Intent (LOI) received for" + unit + " " + devResult.name;
+								type_notif = "received_LOI";
+								user = landlordId;
+							}
+			            	if(type == "rejectLoi"){
+								message = "Letter of Intent (LOI) rejected for" + unit + " " + devResult.name;
+								type_notif = "rejected_LOI";
+								user = tenantId;
+							}
+							if(type == "acceptLoi"){
+								message = "Letter of Intent (LOI) accepted for" + unit + " " + devResult.name;
+								type_notif = "accepted_LOI";
+								user = tenantId;
+							}
+				            var notification = {
+				            	"user": user,
+				                "message": message,
+				                "type": type_notif,
+				                "ref_id": id
+				              };
+
+			              Notifications.createNotifications(notification);        
+			            })
+			            .exec((err, update) => {
+			              err ? reject(err)
+			              : resolve(update);
+			            });
+			})
+        })		
 	});
 });
 
@@ -167,7 +311,7 @@ agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 			.findByIdAndUpdate(id,agreementObj)
 			.exec((err, updated) => {
 				err ? reject(err)
-				: resolve();
+					: resolve();
 			});	
 	});
 });
@@ -225,8 +369,49 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 	});
 });
 
+//Inventory List
+agreementsSchema.static('createInventoryList', (id:string, agreements:Object):Promise<any> => { 
+  return new Promise((resolve:Function, reject:Function) => { 
+    if (!_.isObject(agreements)) { 
+      return reject(new TypeError('Inventory List is not a valid object.')); 
+    } 
+    Agreements
+    	.findById(id, (err, ilist) => {
+    		if (ilist != null){
+    			let type = "inventory_list";
+    			Agreements.createHistory(id, type)
+    		}
+    		var ObjectID = mongoose.Types.ObjectId; 
+    		var data_result = {$set: {}}; 
+    		var list_result = {$push: {}}; 
+    		var item_result = {$push: {}}; 
+    		let body:any = agreements; 
+    		data_result.$set['.data'] = { 
+    			"lists":list_result.$push['.lists'] = { 
+    				"name": body.name, 
+    				"items": item_result.$push['.items'] = { 
+    					"name": body.name, 
+    					"quantity": body.quantity,
+    					"remark": body.remark, 
+    					"landlord_check": body.landlord_check,
+    					"tenant_check": body.tenant_check 
+    				}, 
+    			}, 
+    		}; 
+           
+            Agreements 
+	            .findByIdAndUpdate(id, data_result) 
+	            .exec((err,updated) => { 
+	              err ? reject(err) 
+	                : resolve(updated); 
+	            }); 
+       })  
+    }); 
+}); 
 
-agreementsSchema.static('createLOIandTAHistory', (id:string, type:string):Promise<any> => {
+
+//create History
+agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Agreements
           .findById(id, type, (err, result) => {
@@ -239,120 +424,6 @@ agreementsSchema.static('createLOIandTAHistory', (id:string, type:string):Promis
                 : resolve(saved);
               });
           })
-    });
-});
-
-agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
-		Agreements
-			.findByIdAndRemove(id)
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve();
-			});
-
-	});
-});
-
-agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(agreements)) {
-			return reject(new TypeError('Agreement is not a valid object.'));
-		}
-
-		Agreements
-			.findByIdAndUpdate(id, agreements)
-			.exec((err, updated) => {
-				err ? reject(err)
-				: resolve(updated);
-			});
-	});
-});
-
-agreementsSchema.static('createInventoryList', (id:string, agreements:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(agreements)) {
-			return reject(new TypeError('Inventory List is not a valid object.'));
-		}
-		Agreements
-			.findById(id, (err,ilist) => {
-				
-					var ObjectID = mongoose.Types.ObjectId;
-					var data_result = {$set: {}};
-					var list_result = {$push: {}};
-					var item_result = {$push: {}};
-					let body:any = agreements;
-					data_result.$set['.data'] = {
-						"lists":list_result.$push['.lists'] = {
-							"name": body.name, 
-							"items": item_result.$push['.items'] = {
-								"name": body.name,
-								"quantity": body.quantity,
-								"remark": body.remark,
-								"landlord_check": body.landlord_check,
-								"tenant_check": body.tenant_check
-							},
-						},
-					};
-					
-						Agreements
-						.findByIdAndUpdate(id, data_result)
-						.exec((err,updated) => {
-							err ? reject(err)
-								: resolve(updated);
-						});
-
-					// Agreements
-					// 	.findById(id, (err,ilist) => {
-					// 		var ILData = ilist.inventory_list.data;
-					// 		var ILList = ilist.inventory_list.data.lists;
-					// 		var ILItem = ilist.inventory_list.data.lists.items;
-					// 		var Listname = ilist.inventory_list.data.lists.name;
-					// 		var Itemname = ilist.inventory_list.data.lists.items.name;
-
-					// 		if(ILData == null){
-					// 			Agreements.ilist(body);						
-					// 		}
-
-					// 		if(body.Listname != ILList.name ||
-					// 			body.Itemname != ILItem.name ||
-					// 			body.quantity != ILItem.quantity ||
-					// 			body.remark != ILItem.remark ||
-					// 			body.landlord_check != ILItem.landlord_check ||
-					// 			body.tenant_check != ILItem.tenant_check) {
-
-					// 			Agreements
-					// 				.findByIdAndUpdate(id, {
-					// 					$push: {
-					// 						"inventory_list.histories":{
-					// 							"date": new Date(),
-					// 							"data": ILData
-					// 						}
-					// 					}
-					// 				})
-					// 				.exec((err,updated) => {
-					// 					err ? reject(err)
-					// 						: resolve(updated);
-					// 				});
-					// 				Agreements.ilist(body);
-					// 		}
-					// 	})
-			})
-
-
-
-            Agreements
-              .findByIdAndUpdate(id, agreements)
-              .populate("property")
-              .exec((err, updated) => {
-                err ? reject(err)
-                : resolve(updated);
-              });
-
     });
 });
 
