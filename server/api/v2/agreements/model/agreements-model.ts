@@ -157,7 +157,7 @@ var AgreementsSchema = new mongoose.Schema({
 				ref: 'Properties'
 			},
 			created_at: {type: Date},
-			list: [{
+			lists: [{
 				name: {type: String},
 				items: [{
 					name: {type: String},

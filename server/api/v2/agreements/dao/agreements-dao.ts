@@ -376,18 +376,20 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object):Pr
     	.findById(id, (err, ilist) => {
     		if (ilist != null){
     			let type = "inventory_list";
-    			Agreements.createHistory(id, type)
+    			Agreements.createHistory(id, type);
     		}
     		var ObjectID = mongoose.Types.ObjectId; 
     		var data_result = {$set: {}}; 
     		var list_result = {$push: {}}; 
-    		var item_result = {$push: {}}; 
+    		var item_result = {$push: {}};
+    		var listname = ilist.inventory_list.data.lists.name;
+    		var itemname = ilist.inventory_list.data.lists.items.name;
     		let body:any = agreements; 
     		data_result.$set['.data'] = { 
     			"lists":list_result.$push['.lists'] = { 
-    				"name": body.name, 
+    				"name": body.listname, 
     				"items": item_result.$push['.items'] = { 
-    					"name": body.name, 
+    					"name": body.itemname, 
     					"quantity": body.quantity,
     					"remark": body.remark, 
     					"landlord_check": body.landlord_check,
@@ -395,14 +397,21 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object):Pr
     				}, 
     			}, 
     		}; 
-           
+           	console.log(data_result);
             Agreements 
 	            .findByIdAndUpdate(id, data_result) 
 	            .exec((err,updated) => { 
 	              err ? reject(err) 
 	                : resolve(updated); 
 	            }); 
-       })  
+       })
+       	Agreements
+       		.findByIdAndUpdate(id, agreements)
+       		.populate("property")
+       		.exec((err,updated) => {
+       			err ? reject(err)
+       				: resolve(updated);
+       		}); 
     }); 
 }); 
 
