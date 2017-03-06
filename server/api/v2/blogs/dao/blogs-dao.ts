@@ -22,11 +22,11 @@ blogsSchema.static('getAll', ():Promise<any> => {
     });
 });
 
-blogsSchema.static('getById', (id:string):Promise<any> => {
+blogsSchema.static('getById', (slug:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Blogs
-          .findById(id)
+          .findOne({"slug": slug})
           .populate("cover category comments created_by")
           .exec((err, blogs) => {
               err ? reject(err)
