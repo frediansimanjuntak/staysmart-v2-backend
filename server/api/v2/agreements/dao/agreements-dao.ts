@@ -209,81 +209,8 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 	});
 });
 
-//Inventory List
-agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(agreements)) {
-			return reject(new TypeError('Inventory List is not a valid object.'));
-		}
-		Agreements
-			.findById(id, (err,ilist) => {				
-				var ObjectID = mongoose.Types.ObjectId;
-				var list_result = {$push: {}};
-				var item_result = {$push: {}};
-				let body:any = agreements
-				list_result.$push['.data'] = {
-					"name": body.name, 
-					"items": item_result.$push['.list'] = {
-						"name": body.name,
-						"quantity": body.quantity,
-						"remark": body.remark,
-						"attachments":  
-							Attachments.createAttachments(agreements).then(res => {
-								var idAttachment = res.idAtt;
-								for ( var i = 0; i < idAttachment.length; i++){
-									Agreements
-									.findByIdAndUpdate(id,{
-										$push: {
-											"attachments": idAttachment[i]
-										}
-									})
-									.exec((err,updated) => {
-										err ? reject(err)
-											: resolve(updated);
-									});
-								}
-							}),
-						
-						"landlord_check": body.landlord_check,
-						"tenant_check": body.tenant_check
-					}};
-					Agreements
-					.findByIdAndUpdate(id, list_result)
-					.exec((err,updated) => {
-						err ? reject(err)
-							: resolve(updated);
-					});
-			})
 
-            Agreements
-              .findByIdAndUpdate(id, agreements)
-              .populate("property")
-              .exec((err, updated) => {
-                err ? reject(err)
-                : resolve(updated);
-              });
-
-    });
-});
-
-agreementsSchema.static('createLIHistories', (id:string):Promise =>{
-	return new Promise((resolve:Function, reject:Function) => {
-		Agreements
-			.findById(id, (err, ilist) => {
-				var ILHistoryObj = {$push: {}};
-				ILHistoryObj.$push['.histories'] = {"date": Date.now, "data": ilist.data};
-				Agreements
-					.findByIdAndUpdate(id, ILHistoryObj)
-					.exec((err,saved) => {
-						err ? reject(err)
-							: resolve(saved);
-					});
-			})
-	});
-});
-
-//create History
-agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> => {
+agreementsSchema.static('createLOIandTAHistory', (id:string, type:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Agreements
           .findById(id, type, (err, result) => {
@@ -296,6 +223,120 @@ agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> =
                 : resolve(saved);
               });
           })
+    });
+});
+
+agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+
+		Agreements
+			.findByIdAndRemove(id)
+			.exec((err, deleted) => {
+				err ? reject(err)
+				: resolve();
+			});
+
+	});
+});
+
+agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(agreements)) {
+			return reject(new TypeError('Agreement is not a valid object.'));
+		}
+
+		Agreements
+			.findByIdAndUpdate(id, agreements)
+			.exec((err, updated) => {
+				err ? reject(err)
+				: resolve(updated);
+			});
+	});
+});
+
+agreementsSchema.static('createInventoryList', (id:string, agreements:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(agreements)) {
+			return reject(new TypeError('Inventory List is not a valid object.'));
+		}
+		Agreements
+			.findById(id, (err,ilist) => {
+				
+					var ObjectID = mongoose.Types.ObjectId;
+					var data_result = {$set: {}};
+					var list_result = {$push: {}};
+					var item_result = {$push: {}};
+					let body:any = agreements;
+					data_result.$set['.data'] = {
+						"lists":list_result.$push['.lists'] = {
+							"name": body.name, 
+							"items": item_result.$push['.items'] = {
+								"name": body.name,
+								"quantity": body.quantity,
+								"remark": body.remark,
+								"landlord_check": body.landlord_check,
+								"tenant_check": body.tenant_check
+							},
+						},
+					};
+					
+						Agreements
+						.findByIdAndUpdate(id, data_result)
+						.exec((err,updated) => {
+							err ? reject(err)
+								: resolve(updated);
+						});
+
+					// Agreements
+					// 	.findById(id, (err,ilist) => {
+					// 		var ILData = ilist.inventory_list.data;
+					// 		var ILList = ilist.inventory_list.data.lists;
+					// 		var ILItem = ilist.inventory_list.data.lists.items;
+					// 		var Listname = ilist.inventory_list.data.lists.name;
+					// 		var Itemname = ilist.inventory_list.data.lists.items.name;
+
+					// 		if(ILData == null){
+					// 			Agreements.ilist(body);						
+					// 		}
+
+					// 		if(body.Listname != ILList.name ||
+					// 			body.Itemname != ILItem.name ||
+					// 			body.quantity != ILItem.quantity ||
+					// 			body.remark != ILItem.remark ||
+					// 			body.landlord_check != ILItem.landlord_check ||
+					// 			body.tenant_check != ILItem.tenant_check) {
+
+					// 			Agreements
+					// 				.findByIdAndUpdate(id, {
+					// 					$push: {
+					// 						"inventory_list.histories":{
+					// 							"date": new Date(),
+					// 							"data": ILData
+					// 						}
+					// 					}
+					// 				})
+					// 				.exec((err,updated) => {
+					// 					err ? reject(err)
+					// 						: resolve(updated);
+					// 				});
+					// 				Agreements.ilist(body);
+					// 		}
+					// 	})
+			})
+
+
+
+            Agreements
+              .findByIdAndUpdate(id, agreements)
+              .populate("property")
+              .exec((err, updated) => {
+                err ? reject(err)
+                : resolve(updated);
+              });
+
     });
 });
 
