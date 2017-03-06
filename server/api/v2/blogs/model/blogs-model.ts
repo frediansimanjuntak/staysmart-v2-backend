@@ -17,6 +17,7 @@ var BlogsSchema = new mongoose.Schema({
 			ref: 'BlogCategories'
 		},
 	title: {type: String},
+	slug: {type: String},
 	source: {type: String},
 	content: {type: String},
 	comments:
