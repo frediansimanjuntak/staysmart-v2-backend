@@ -97,28 +97,31 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
             err ? reject(err)
                 : resolve(updated);
         });
-        Appointments
-          .findById(id, (err, result) => {
-            Properties
-              .findById(result.property, (err, result) => {
-                var devID = result.development;
-                var unit = '#'+result.address.floor+'-'+result.address.unit;
-                Developments
-                  .findById(devID, (error, devResult) => {
-                    var notification = {
-                      "user": result.tenant,
-                      "message": "Appointment "+status+" for "+unit+" "+devResult.name+" at "+result.choosen_time.date+" from "+result.choosen_time.from+" to "+result.choosen_time.to,
-                      "type": "appointment_proposed",
-                      "ref_id": id
-                    };
-                    Notifications.createNotifications(notification);  
+        if(status == 'accepted' || status == 'rejected')
+        {
+          Appointments
+            .findById(id, (err, result) => {
+              Properties
+                .findById(result.property, (err, result) => {
+                  var devID = result.development;
+                  var unit = '#'+result.address.floor+'-'+result.address.unit;
+                  Developments
+                    .findById(devID, (error, devResult) => {
+                      var notification = {
+                        "user": result.tenant,
+                        "message": "Appointment "+status+" for "+unit+" "+devResult.name+" at "+result.choosen_time.date+" from "+result.choosen_time.from+" to "+result.choosen_time.to,
+                        "type": "appointment_proposed",
+                        "ref_id": id
+                      };
+                      Notifications.createNotifications(notification);  
+                    })
+                    .exec((err, updated) => {
+                      err ? reject(err)
+                          : resolve(updated);
+                    });
                   })
-                  .exec((err, updated) => {
-                    err ? reject(err)
-                        : resolve(updated);
-                  });
-                })
-          })
+            })
+        }
     });
 });
 
