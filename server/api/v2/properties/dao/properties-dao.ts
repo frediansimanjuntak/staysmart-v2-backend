@@ -43,7 +43,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
       
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = property;
-      
+
       var _properties = new Properties(property);
           _properties.owner.user = userId;
           _properties.confirmation.status = 'pending';
@@ -52,6 +52,34 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
                 : resolve(saved);
           });
       let propertyID:string = _properties._id;
+
+      if(body.owned_type == 'company'){
+        let attach:any = files;
+        if(attach.document != null) {
+          var companyData = {
+            "name": body.company_name,
+            "registration_number": body.company_registration_number
+          };
+          Users
+            .findById(userId, (err, result) => {
+              if(result.companies.length == 0){
+                Companies.createCompanies(companyData, attach.document, userId).then(res => {
+                  var companyId = res.companiesId;
+                  Properties
+                    .findByIdAndUpdate(propertyID, {
+                      $set: {
+                        "owner.company": companyId
+                      }
+                    })
+                    .exec((err, update) => {
+                        err ? reject(err)
+                            : resolve(update);
+                    });
+                });
+              }
+            })  
+        }
+      }
 
       if(files != null) {
         Properties.createPropertyPictures(propertyID, files);
