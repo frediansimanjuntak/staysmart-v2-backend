@@ -6,6 +6,7 @@ import Comments from '../../comments/dao/comments-dao';
 import Attachments from '../../attachments/dao/attachments-dao';
 import BlogCategories from '../../blog_categories/dao/blog_categories-dao';
 import Users from '../../users/dao/users-dao';
+import Developments from '../../developments/dao/developments-dao';
 
 blogsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -42,11 +43,13 @@ blogsSchema.static('createBlogs', (blogs:Object, covers:Object, created_by:strin
       
       Attachments.createAttachments(covers).then(res => {
         var idAttachment=res.idAtt;
-
+        
         var ObjectID = mongoose.Types.ObjectId;  
         let body:any = blogs;
+        var slug_name = Developments.slug(body.title);
         
         var _blogs = new Blogs(blogs);
+            _blogs.slug = slug_name;
             _blogs.created_by = created_by;
             _blogs.cover = idAttachment;
             _blogs.save((err, saved)=>{
@@ -90,6 +93,11 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promi
         if (!_.isObject(blogs)) {
           return reject(new TypeError('Blogs is not a valid object.'));
         }
+        let body:any = blogs;
+        if(body.title != null){
+          var slug_name = Developments.slug(body.title);
+        }
+        
         if(covers != null) {
           Attachments.createAttachments(covers).then(res => {
             var idAttachment=res.idAtt;
@@ -98,6 +106,9 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promi
               blogObj.$set[param] = blogs[param];
             }
             blogObj.$set['cover'] = idAttachment;
+            if(body.title != null) {
+              blogObj.$set['slug'] = slug_name;
+            }
 
             Blogs
               .findByIdAndUpdate(id, blogObj)
