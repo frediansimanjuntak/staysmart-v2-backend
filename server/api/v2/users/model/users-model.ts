@@ -107,6 +107,13 @@ var UsersSchema = new mongoose.Schema({
 			ref: 'Agreements'
 		},
 	}],
+  manage_properties:
+  [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Properties'
+    }
+  ],
 	agreements: 
 	[
 		{
