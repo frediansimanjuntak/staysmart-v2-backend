@@ -85,21 +85,6 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
         Properties.createPropertyPictures(propertyID, files);
         Properties.updatePropertyShareholderImage(userId, propertyID, files);
       }
-      if(body.status != 'draft') {
-        Developments
-          .update({"_id":body.development}, {
-            $push: {
-              "properties": propertyID
-            },
-            $inc:{
-              "number_of_units": 1
-            }
-          })
-          .exec((err, saved) => {
-              err ? reject(err)
-                  : resolve(saved);
-          });
-      }
 
       Users
         .update({"_id":userId}, {
@@ -562,6 +547,23 @@ propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:stri
             .findById(id, (err, result) => {
               var devID = result.development;
               var unit = '#'+result.address.floor+'-'+result.address.unit;
+              
+              if(result.status != 'draft') {
+                Developments
+                  .update({"_id":result.development}, {
+                    $push: {
+                      "properties": id
+                    },
+                    $inc:{
+                      "number_of_units": 1
+                    }
+                  })
+                  .exec((err, saved) => {
+                      err ? reject(err)
+                          : resolve(saved);
+                  });
+              }
+
               Developments
                 .findById(devID, (error, devResult) => {
                   var notification = {
@@ -578,6 +580,7 @@ propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:stri
                   : resolve(update);
                 });
             })
+
         });
       }
       
