@@ -14,7 +14,7 @@ agreementsSchema.static('getAll', ():Promise<any> => {
 			.find(_query)
 			.exec((err, agreements) => {
 				err ? reject(err)
-				: resolve(agreements);
+					: resolve(agreements);
 			});
 	});
 });
@@ -26,7 +26,7 @@ agreementsSchema.static('getById', (id:string):Promise<any> => {
 			.findById(id)
 			.exec((err, agreements) => {
 				err ? reject(err)
-				: resolve(agreements);
+					: resolve(agreements);
 			});
 	});
 });
@@ -39,11 +39,42 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 		var _agreements = new Agreements(agreements);		
 		_agreements.save((err, saved)=>{
 			err ? reject(err)
-			: resolve(saved);
+				: resolve(saved);
 		});
 	});
 });
 
+agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+
+		Agreements
+			.findByIdAndRemove(id)
+			.exec((err, deleted) => {
+				err ? reject(err)
+					: resolve();
+			});
+	});
+});
+
+agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(agreements)) {
+			return reject(new TypeError('Agreement is not a valid object.'));
+		}
+
+		Agreements
+			.findByIdAndUpdate(id, agreements)
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve(updated);
+			});
+	});
+});
+
+//LOI
 agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
@@ -56,7 +87,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 		let security_deposit = 0;
 
 		let gfd_amount = monthly_rental;
-		let sd_amount = Math.round((monthly_rental*term_lease)*0.4/100);
+		let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
 
 		if (term_lease <= 12){
 			security_deposit = gfd_amount;
@@ -69,7 +100,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 
 		let loiObj = {$set: {}};
 	    for(var param in body) {
-	    	loiObj.$set["letter_of_intent.data."+param] = body[param];
+	    	loiObj.$set["letter_of_intent.data." + param] = body[param];
 	    }
 	    loiObj.$set["letter_of_intent.data"] = {"sd_amount": sd_amount, "security_deposit": security_deposit};
 
@@ -101,7 +132,7 @@ agreementsSchema.static('updateLoi', (id:string, data:Object, files:Object):Prom
 		let security_deposit = 0;
 
 		let gfd_amount = monthly_rental;
-		let sd_amount = Math.round((monthly_rental*term_lease)*0.4/100);
+		let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
 
 		if (term_lease <= 12){
 			security_deposit = gfd_amount;
@@ -114,7 +145,7 @@ agreementsSchema.static('updateLoi', (id:string, data:Object, files:Object):Prom
 
 		let loiObj = {$set: {}};
 	    for(var param in body) {
-	    	loiObj.$set["letter_of_intent.data."+ param] = body[param];
+	    	loiObj.$set["letter_of_intent.data." + param] = body[param];
 	    }
 	    loiObj.$set["letter_of_intent.data"] = {"sd_amount": sd_amount, "security_deposit": security_deposit};
 
@@ -131,10 +162,11 @@ agreementsSchema.static('updateLoi', (id:string, data:Object, files:Object):Prom
 			Agreements.payment(id, sd_amount, gfd_amount, security_deposit, remark, files, type);
 			Agreements.confirmation(id, data, files, type);
 		} 
-		Agreements.createLOIandTAHistory(id, type);   
+		Agreements.createHistory(id, type);   
 	});
 });
 
+//TA
 agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
@@ -144,9 +176,9 @@ agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 		let agreementObj = {$set: {}};
 		for(var param in data) {
 			if(param == 'status' || param == 'payment') {
-				agreementObj.$set['tenancy_agreement.data.'+ param] = data[param];
+				agreementObj.$set['tenancy_agreement.data.' + param] = data[param];
 			}
-			agreementObj.$set['tenancy_agreement.data.confirmation.landlord.'+ param] = data[param];
+			agreementObj.$set['tenancy_agreement.data.confirmation.landlord.' + param] = data[param];
 		}
 		Agreements
 			.findByIdAndUpdate(id,agreementObj)
@@ -168,9 +200,9 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 		let agreementObj = {$set: {}};
 		for(var param in data) {
 			if(param == 'status' || param == 'payment') {
-				agreementObj.$set['tenancy_agreement.data.'+param] = data[param];
+				agreementObj.$set['tenancy_agreement.data.' + param] = data[param];
 			}
-			agreementObj.$set['tenancy_agreement.data.confirmation.tenant.'+param] = data[param];
+			agreementObj.$set['tenancy_agreement.data.confirmation.tenant.' + param] = data[param];
 		}
 
 		if(body.status = 'accepted') {
@@ -187,7 +219,7 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 						.findById(tenantID, {
 							$push: {
 								"rented_properties": {
-									"until": new Date(+new Date() + long_rent_time*30*24*60*60*1000),
+									"until": new Date(+ new Date() + long_rent_time * 30 * 24 * 60 * 60 * 1000),
 									"property": propertyID,
 									"agreement": id
 								}
@@ -200,7 +232,7 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 				})
 		}
 
-		Agreements.createLOIandTAHistory(id, type);
+		Agreements.createHistory(id, type);
 		Agreements
 			.findByIdAndUpdate(id,agreementObj)
 			.exec((err, updated) => {
@@ -210,52 +242,7 @@ agreementsSchema.static('updateTA', (id:string, data:Object):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('createLOIandTAHistory', (id:string, type:string):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-        Agreements
-          .findById(id, type, (err, result) => {
-            var historyObj = {$push: {}};
-            historyObj.$push[type+'.histories'] = {"date": Date.now, "data": result.data};
-            Agreements
-              .findByIdAndUpdate(id, historyObj)
-              .exec((err, saved) => {
-                err ? reject(err)
-                : resolve(saved);
-              });
-          })
-    });
-});
-
-agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
-		Agreements
-			.findByIdAndRemove(id)
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve();
-			});
-	});
-});
-
-agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(agreements)) {
-			return reject(new TypeError('Agreement is not a valid object.'));
-		}
-
-		Agreements
-			.findByIdAndUpdate(id, agreements)
-			.exec((err, updated) => {
-				err ? reject(err)
-				: resolve(updated);
-			});
-	});
-});
-
+//Inventory List
 agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(agreements)) {
@@ -328,37 +315,24 @@ agreementsSchema.static('createLIHistories', (id:string):Promise =>{
 	});
 });
 
-
-agreementsSchema.static('updateLoi', (id:string, agreements:Object, files:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(agreements)) {
-			return reject(new TypeError('Agreement is not a valid object.'));
-		}
-
-		let body:any = agreements;
-		let file:any = files;
-		
-		Agreements
-			.findById(id, (err, agreement)=>{
-				var loi = agreement.letter_of_intent;
-
-				Agreements
-					.findByIdAndUpdate(id, {
-						$push: {
-							"letter_of_intent.histories": {
-								"date": new Date(),
-								"data": loi
-							}
-						}
-					})
-					.exec((err, updated) => {
-			      		err ? reject(err)
-			      			: resolve(updated);
-			      	});
-			})
-		});
+//create History
+agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Agreements
+          .findById(id, type, (err, result) => {
+            var historyObj = {$push: {}};
+            historyObj.$push[type+'.histories'] = {"date": Date.now, "data": result.data};
+            Agreements
+              .findByIdAndUpdate(id, historyObj)
+              .exec((err, saved) => {
+                err ? reject(err)
+                : resolve(saved);
+              });
+          })
+    });
 });
 
+//confirmation
 agreementsSchema.static('confirmation', (id:string, data:Object, files:Object, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
@@ -407,6 +381,7 @@ agreementsSchema.static('confirmation', (id:string, data:Object, files:Object, t
 	});
 });
 
+//payment
 agreementsSchema.static('payment', (id:string, std:number, gfd:number, scd:number, remark:string, files:Object, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 
