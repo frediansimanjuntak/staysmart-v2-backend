@@ -15,7 +15,10 @@ export class CommentsRoutes {
 			.route('/comments/:id')
 			.get(auth.isAuthenticated(),CommentsController.getById)
 			.delete(auth.isAuthenticated(),CommentsController.deleteComments)
-			.put(auth.isAuthenticated(),CommentsController.deleteReplies);
+			
+		router
+			.route('/replies/:id')
+			.delete(auth.isAuthenticated(),CommentsController.deleteReplies);
 
 		router
 			.route('/comments/update/:id')

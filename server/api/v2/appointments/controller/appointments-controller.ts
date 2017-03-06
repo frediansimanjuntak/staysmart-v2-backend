@@ -35,10 +35,10 @@ export class AppointmentsController {
 
 	static updateAppointments(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _appointments = req.body;
+		let _status = req.params.status;
 
 		AppointmentsDAO
-		['updateAppointments'](_id, _appointments)
+		['updateAppointments'](_id, _status)
 		.then(appointments => res.status(201).json(appointments))
 		.catch(error => res.status(400).json(error));
 	}

@@ -21,15 +21,15 @@ export class PropertiesRoutes {
 			.put(auth.isAuthenticated(),PropertiesController.updateProperties);
 
 		router
-			.route('/properties/update/:id/:shareholderID')
-			.put(auth.isAuthenticated(),PropertiesController.updatePropertiesShareholder);
-
-		router
 			.route('/properties/pictures/delete/:id/:type/:pictureID')
 			.delete(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
 
 		router
-			.route('/properties/shareholder/delete/:id/:idShareholder')
-			.delete(auth.isAuthenticated(),PropertiesController.deletePropertyShareholder);
+			.route('/properties/approve/:id')
+			.put(auth.isAuthenticated(),PropertiesController.approveProperty);
+
+		router
+			.route('/properties/reject/:id')
+			.put(auth.isAuthenticated(),PropertiesController.rejectProperty);
 	}
 } 

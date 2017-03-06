@@ -17,7 +17,7 @@ export class AppointmentsRoutes {
 			.delete(auth.isAuthenticated(),AppointmentsController.deleteAppointments);
 
 		router
-			.route('/appointments/update/:id')
+			.route('/appointments/update/:id/:status')
 			.put(auth.isAuthenticated(),AppointmentsController.updateAppointments);
 	}
 }
