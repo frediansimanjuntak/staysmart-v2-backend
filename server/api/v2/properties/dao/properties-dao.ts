@@ -15,7 +15,7 @@ propertiesSchema.static('getAll', ():Promise<any> => {
 
         Properties
           .find(_query)
-          .populate("amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company")
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
           .exec((err, properties) => {
               err ? reject(err)
                   : resolve(properties);
@@ -27,7 +27,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .findById(id)
-          .populate("amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company")
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
           .exec((err, properties) => {
               err ? reject(err)
                   : resolve(properties);

@@ -11,6 +11,7 @@ companiesSchema.static('getAll', ():Promise<any> => {
 
         Companies
           .find(_query)
+          .populate("document created_by")
           .exec((err, companies) => {
               err ? reject(err)
                   : resolve(companies);
@@ -23,6 +24,7 @@ companiesSchema.static('getById', (id:string):Promise<any> => {
 
         Companies
           .findById(id)
+          .populate("document created_by")
           .exec((err, companies) => {
               err ? reject(err)
                   : resolve(companies);

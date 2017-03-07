@@ -9,6 +9,7 @@ faqsSchema.static('getAll', ():Promise<any> => {
 
         Faqs
           .find(_query)
+          .populate("created_by")
           .exec((err, faqs) => {
               err ? reject(err)
                   : resolve(faqs);
@@ -21,6 +22,7 @@ faqsSchema.static('getById', (id:string):Promise<any> => {
 
         Faqs
           .findById(id)
+          .populate("created_by")
           .exec((err, faqs) => {
               err ? reject(err)
                   : resolve(faqs);

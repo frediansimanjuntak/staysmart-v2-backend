@@ -6,7 +6,11 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 var PropertiesSchema = new mongoose.Schema({
-	development: {type:String},
+	development: 
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Developments'
+		},
 	address: {
 		floor:{type: String},
 		unit: {type: String},
@@ -14,9 +18,9 @@ var PropertiesSchema = new mongoose.Schema({
 		street_name: {type: String},
 		postal_code: {type: Number},
 		coordinates: 
-		[
-		{type: String}
-		],
+			[
+				{type: String}
+			],
 		country: {type: String},
 		full_address: {type: String},
 		type: {type: String, default: "Point"}
@@ -62,36 +66,36 @@ var PropertiesSchema = new mongoose.Schema({
 		living:
 		[
 			{
-			type: Schema.Types.ObjectId,
-			ref: 'Attachments'
+				type: Schema.Types.ObjectId,
+				ref: 'Attachments'
 			}
 		],
 		dining:
 		[
 			{
-			type: Schema.Types.ObjectId,
-			ref: 'Attachments'
+				type: Schema.Types.ObjectId,
+				ref: 'Attachments'
 			}
 		],
 		bed:
 		[
 			{
-			type: Schema.Types.ObjectId,
-			ref: 'Attachments'
+				type: Schema.Types.ObjectId,
+				ref: 'Attachments'
 			}
 		],
 		toilet:
 		[
 			{
-			type: Schema.Types.ObjectId,
-			ref: 'Attachments'
+				type: Schema.Types.ObjectId,
+				ref: 'Attachments'
 			}
 		],
 		kitchen:
 		[
 			{
-			type: Schema.Types.ObjectId,
-			ref: 'Attachments'
+				type: Schema.Types.ObjectId,
+				ref: 'Attachments'
 			}
 		]
 	},
@@ -137,7 +141,11 @@ var PropertiesSchema = new mongoose.Schema({
 	publish: {type: Boolean},
 	confirmation: {
 		status: {type: String, enum:['approved','rejected','pending'], default: 'pending'},
-		proof: {type: String},
+		proof: 
+			{
+				type: Schema.Types.ObjectId,
+				ref: 'Attachments'
+			},
 		by: 
 			{
 				type: Schema.Types.ObjectId,

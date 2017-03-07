@@ -9,6 +9,7 @@ notificationsSchema.static('getAll', ():Promise<any> => {
 
         Notifications
           .find(_query)
+          .populate("user")
           .exec((err, notifications) => {
               err ? reject(err)
                   : resolve(notifications);
@@ -21,6 +22,7 @@ notificationsSchema.static('getById', (id:string):Promise<any> => {
 
         Notifications
           .findById(id)
+          .populate("user")
           .exec((err, notifications) => {
               err ? reject(err)
                   : resolve(notifications);
