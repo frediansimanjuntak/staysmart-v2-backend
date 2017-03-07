@@ -44,5 +44,13 @@ export class UserRoutes {
 			.route('/users/unactive/:id')
 			.post(auth.isAuthenticated(), UsersController.unActiveUser);
 
+		router
+			.route('/users/block/:id')
+			.put(auth.isAuthenticated(), UsersController.blockUser);
+
+		router
+			.route('/users/unblock/:id')
+			.put(auth.isAuthenticated(), UsersController.unblockUser);
+
 	}
 }

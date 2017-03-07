@@ -242,8 +242,8 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 						});
 				}
 			})
-	})
-})
+	});
+});
 
 usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -287,6 +287,48 @@ usersSchema.static('unActiveUser', (id:string):Promise<any> => {
 			.exec((err, deleted) => {
 				err ? reject(err)
 					: resolve();
+			});
+	});
+});
+
+usersSchema.static('blockUser', (id:string, userId:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		if (!_.isObject(userId)) {
+			return reject(new TypeError('User Id is not a valid object.'));
+		}
+		Users
+			.findByIdAndUpdate(userId, {
+				$push: {
+					"blocked_users": id
+				}
+			})
+			.exec((err, update) => {
+				err ? reject(err)
+					: resolve(update);
+			});
+	});
+});
+
+usersSchema.static('unblockUser', (id:string, userId:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		if (!_.isObject(userId)) {
+			return reject(new TypeError('User Id is not a valid object.'));
+		}
+		Users
+			.findByIdAndUpdate(userId, {
+				$pull: {
+					"blocked_users": id
+				}
+			})
+			.exec((err, update) => {
+				err ? reject(err)
+					: resolve(update);
 			});
 	});
 });

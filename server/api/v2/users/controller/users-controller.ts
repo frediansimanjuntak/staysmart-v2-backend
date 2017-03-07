@@ -104,4 +104,22 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static blockUser(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req['user']._id;
+		UsersDAO
+		['blockUser'](_id, _userId)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static unblockUser(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req['user']._id;
+		UsersDAO
+		['unblockUser'](_id, _userId)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 }
