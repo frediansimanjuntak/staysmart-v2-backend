@@ -126,6 +126,13 @@ var UsersSchema = new mongoose.Schema({
 		loginToken: {type: String},
 		loginTokenExpires: {type: Date}
 	}],
+  blocked_users: 
+  [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Users'
+    }
+  ],
 	companies: 
 	[
 		{

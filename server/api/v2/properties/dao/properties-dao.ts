@@ -40,6 +40,9 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
       if (!_.isObject(property)) {
         return reject(new TypeError('Property not a valid object.'));
       }
+      if (!_.isString(userId)) {
+        return reject(new TypeError('User id not a valid string.'));
+      }
       
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = property;
@@ -101,6 +104,9 @@ propertiesSchema.static('createProperties', (property:Object, userId:string, fil
 
 propertiesSchema.static('updateProperties', (id:string, properties:Object, files:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+          return reject(new TypeError('Id is not a valid string.'));
+        }
         if (!_.isObject(properties)) {
           return reject(new TypeError('Property is not a valid object.'));
         }
@@ -466,6 +472,12 @@ propertiesSchema.static('deletePropertyPictures', (id:string, type:string, pictu
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        if (!_.isString(type)) {
+            return reject(new TypeError('Picture type is not a valid string.'));
+        }
+        if (!_.isString(pictureID)) {
+            return reject(new TypeError('Picture id is not a valid string.'));
+        }
 
         var field = "pictures."+type;
         let picObj = {$pull: {}};
@@ -526,6 +538,15 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
   return new Promise((resolve:Function, reject:Function) => {
       if(!_.isString(id)) {
         return reject(new TypeError('Id is not a valid string.'));
+      }
+      if(!_.isString(userId)) {
+        return reject(new TypeError('UserId is not a valid string.'));
+      }
+      if(!_.isObject(proof)) {
+        return reject(new TypeError('Proof is not a valid object.'));
+      }
+      if(!_.isString(confirmation)) {
+        return reject(new TypeError('Confirmation type is not a valid string.'));
       }
       if(confirmation == 'approve') {
         var confirmation_result = 'approved';
