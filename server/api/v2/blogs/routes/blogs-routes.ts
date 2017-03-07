@@ -9,7 +9,7 @@ export class BlogsRoutes {
 		router
 			.route('/blogs')
 			.get(auth.isAuthenticated(),BlogsController.getAll)
-			.post(auth.isAuthenticated(),BlogsController.createBlogs);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.createBlogs);
 
 		router
 			.route('/blogs/:slug')
@@ -17,10 +17,10 @@ export class BlogsRoutes {
 
 		router
 			.route('/blogs/:id')
-			.delete(auth.isAuthenticated(),BlogsController.deleteBlogs);
+			.delete(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.deleteBlogs);
 
 		router
 			.route('/blogs/update/:id')
-			.put(auth.isAuthenticated(),BlogsController.updateBlogs);
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.updateBlogs);
 	}
 }

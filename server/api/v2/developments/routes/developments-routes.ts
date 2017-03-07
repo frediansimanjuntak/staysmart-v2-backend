@@ -9,15 +9,15 @@ export class DevelopmentsRoutes {
 		router
 			.route('/developments')
 			.get(auth.isAuthenticated(),DevelopmentsController.getAll)
-			.post(auth.isAuthenticated(),DevelopmentsController.createDevelopments);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.createDevelopments);
 
 		router
 			.route('/developments/:id')
 			.get(auth.isAuthenticated(),DevelopmentsController.getById)
-			.delete(auth.isAuthenticated(),DevelopmentsController.deleteDevelopments);
+			.delete(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.deleteDevelopments);
 
 		router
 			.route('/developments/update/:id')
-			.put(auth.isAuthenticated(),DevelopmentsController.updateDevelopments);
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.updateDevelopments);
 	}
 } 

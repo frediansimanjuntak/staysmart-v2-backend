@@ -9,12 +9,12 @@ export class FaqsRoutes {
 		router
 			.route('/faqs')
 			.get(auth.isAuthenticated(),FaqsController.getAll)
-			.post(auth.isAuthenticated(),FaqsController.createFaqs);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), FaqsController.createFaqs);
 
 		router
 			.route('/faqs/:id')
 			.get(auth.isAuthenticated(),FaqsController.getById)
-			.delete(auth.isAuthenticated(),FaqsController.deleteFaqs);
+			.delete(auth.isAuthenticated(), auth.hasRole('admin'), FaqsController.deleteFaqs);
 
 		router
 			.route('/faqs/filter/:filter')
@@ -22,6 +22,6 @@ export class FaqsRoutes {
 
 		router
 			.route('/faqs/update/:id')
-			.put(auth.isAuthenticated(),FaqsController.updateFaqs);
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), FaqsController.updateFaqs);
 	}
 }

@@ -9,15 +9,15 @@ export class BanksRoutes {
 		router
 			.route('/banks')
 			.get(auth.isAuthenticated(),BanksController.getAll)
-			.post(auth.isAuthenticated(),BanksController.createBanks);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), BanksController.createBanks);
 
 		router
 			.route('/banks/:id')
 			.get(auth.isAuthenticated(),BanksController.getById)
-			.delete(auth.isAuthenticated(),BanksController.deleteBanks);
+			.delete(auth.isAuthenticated(), auth.hasRole('admin'), BanksController.deleteBanks);
 
 		router
 			.route('/banks/update/:id')
-			.put(auth.isAuthenticated(),BanksController.updateBanks);
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), BanksController.updateBanks);
 	}
 } 
