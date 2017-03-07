@@ -29,6 +29,10 @@ export class PropertiesRoutes {
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.confirmationProperty);
 
 		router
+			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location')
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.searchProperty);
+
+		router
 			.route('/properties/shortlist_property/:id')
 			.post(auth.isAuthenticated(), PropertiesController.shortlistProperty)
 			.put(auth.isAuthenticated(), PropertiesController.unShortlistProperty);

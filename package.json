@@ -3,22 +3,15 @@
   "version": "0.0.1",
   "main": "src/staysmart.js",
   "scripts": {
-    
-        "start": "node index",
-        "watch": "gulp",
-        
-          "dev": "tsc && concurrently \"nodemon ./server/index --watch server\" \"gulp\"",
-        
-
-        "build-dev": "gulp client.build:dev",
-        "build-dist": "gulp client.build:dist",
-        "test-client": "gulp client.unit_test",
-        
-          "test-server": "mocha 'tests/server/**/*_test.js' --recursive --check-leaks --reporter min --compilers js:babel-register",
-          "coverage-server": "istanbul cover ./node_modules/mocha/bin/_mocha -- 'tests/server/**/*_test.js' --compilers js:babel-register",
-          "coveralls-server": "istanbul cover ./node_modules/mocha/bin/_mocha -- 'tests/server/**/*_test.js' --compilers js:babel-register --report lcovonly && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
-        
-    
+    "start": "node index",
+    "watch": "gulp",
+    "dev": "tsc && concurrently \"nodemon ./server/index --watch server\" \"gulp\"",
+    "build-dev": "gulp client.build:dev",
+    "build-dist": "gulp client.build:dist",
+    "test-client": "gulp client.unit_test",
+    "test-server": "mocha 'tests/server/**/*_test.js' --recursive --check-leaks --reporter min --compilers js:babel-register",
+    "coverage-server": "istanbul cover ./node_modules/mocha/bin/_mocha -- 'tests/server/**/*_test.js' --compilers js:babel-register",
+    "coveralls-server": "istanbul cover ./node_modules/mocha/bin/_mocha -- 'tests/server/**/*_test.js' --compilers js:babel-register --report lcovonly && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "dependencies": {
     "aws-sdk": "^2.7.24",
@@ -30,6 +23,7 @@
     "connect-multiparty": "^2.0.0",
     "cookie-parser": "^1.4.3",
     "crypto": "0.0.3",
+    "ddp": "0.12.1",
     "ejs": "^2.5.5",
     "errorhandler": "^1.5.0",
     "express": "^4.14.0",
@@ -47,15 +41,16 @@
     "newrelic": "^1.18.2",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
+    "sendmail": "^1.1.1",
     "serve-favicon": "^2.3.2",
     "slug": "^0.9.1"
   },
   "devDependencies": {
     "@types/node": "^7.0.0",
     "aliv": "^1.6.0",
-    "karma-ng-html2js-preprocessor": "^0.1.2",
+    "karma-ng-html2js-preprocessor": "^1.0.0",
     "del": "^2.2.1",
-  	"gulp": "^3.9.0",
+    "gulp": "^3.9.0",
     "protractor": "^3.1.0",
     "browser-sync": "^2.5.2",
     "require-dir": "^0.3.0",
@@ -79,7 +74,6 @@
     "karma-coverage": "^1.1.1",
     "karma-firefox-launcher": "^1.0.0",
     "karma-ie-launcher": "^1.0.0",
-    "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-opera-launcher": "^1.0.0",
     "karma-phantomjs-launcher": "^1.0.1",
     "karma-safari-launcher": "^1.0.0",
@@ -89,7 +83,6 @@
     "istanbul": "^0.4.4",
     "concurrently": "^2.0.0"
   },
-  
   "repository": {
     "type": "git",
     "url": "https://bitbucket.org/felixprawira8/staysmart.git"

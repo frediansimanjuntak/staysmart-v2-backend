@@ -612,6 +612,13 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
   });
 });
 
+
+propertiesSchema.static('searchProperty', (latlng:string, pricemin:string, pricemax:string, bedroom:string, bathroom:string, available:string, sizemin:string, sizemax:string, location:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+               
+    });
+});
+
 propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       if(!_.isString(id)) {

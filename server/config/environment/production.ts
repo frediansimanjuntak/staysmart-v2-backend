@@ -28,4 +28,5 @@ export default {
   },
   // AWS bucket name
   awsBucket: 'staysmart-revamp',
+  dreamTalk: 'https://dt.shrimpventures.com',
 };

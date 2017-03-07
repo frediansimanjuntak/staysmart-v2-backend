@@ -14,6 +14,7 @@ import * as http from "http";
 import * as https from "https";
 import config from './config/environment/index';
 import {AWSConfig} from './global/aws.service';
+import {DDPConfig} from './global/chat.service';
 import {GlobalService} from './global/global.service';
 import {RoutesConfig} from "./config/routes.conf";
 import {DBConfig} from "./config/db.conf";
@@ -30,6 +31,7 @@ DBConfig.init();
 GlobalService.init();
 GlobalService.initGlobalFunction();
 AWSConfig.init();
+// DDPConfig.init();
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
