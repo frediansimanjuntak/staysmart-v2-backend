@@ -9,15 +9,15 @@ export class BlogCategoriesRoutes {
 		router
 			.route('/blog-categories')
 			.get(auth.isAuthenticated(),BlogCategoriesController.getAll)
-			.post(auth.isAuthenticated(),BlogCategoriesController.createBlogCategories);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), BlogCategoriesController.createBlogCategories);
 
 		router
 			.route('/blog-categories/:id')
 			.get(auth.isAuthenticated(),BlogCategoriesController.getById)
-			.delete(auth.isAuthenticated(),BlogCategoriesController.deleteBlogCategories);
+			.delete(auth.isAuthenticated(), auth.hasRole('admin'), BlogCategoriesController.deleteBlogCategories);
 
 		router
 			.route('/blog-categories/update/:id')
-			.put(auth.isAuthenticated(),BlogCategoriesController.updateBlogCategories);
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), BlogCategoriesController.updateBlogCategories);
 	}
 }
