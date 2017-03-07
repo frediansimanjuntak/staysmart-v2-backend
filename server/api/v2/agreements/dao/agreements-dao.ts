@@ -134,7 +134,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 
 				if(files){
 					Agreements.payment(id, sd_amount, gfd_amount, security_deposit, remark, files, type);
-					Agreements.confirmation(id, data, files, type);
+					Agreements.confirmation(id, files, type);
 				} 
 
 				if(body.status == "send"){
@@ -155,7 +155,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, files:Object):Prom
 	});
 });
 
-agreementsSchema.static('acceptLoi', (id:string):Promise<any> => {
+agreementsSchema.static('acceptLoi', (id:string, files:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -164,7 +164,22 @@ agreementsSchema.static('acceptLoi', (id:string):Promise<any> => {
 		let type = "letter_of_intent";	
 		let status = "accepted";
 
+		Agreements
+			.findById(id, (err, agreement)=>{
+				let propertyId = agreement.property;
+				Properties
+					.findByIdAndUpdate(propertyId, {
+						$set: {
+							"status": "rented"
+						}
+					})
+					.exec((err, updated) => {
+						err ? reject(err)
+							: resolve();
+					});
+			})
 		Agreements.createHistory(id, type);
+		Agreements.confirmation(id, files, type);		
 		Agreements.changeStatusLoi(id, status);			
 		Agreements.notificationLoi(id, type_notif);
 	});
@@ -193,23 +208,9 @@ agreementsSchema.static('adminConfirmationLoi', (id:string):Promise<any> => {
 		}
 
 		let type = "letter_of_intent";
-		let status = "admin-confirmation";
+		let status = "landlord-confirmation";
 
 		Agreements.createHistory(id, type);		
-		Agreements.changeStatusLoi(id, status);
-	});
-});
-
-agreementsSchema.static('landlordConfirmationLoi', (id:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
-		let type = "letter_of_intent";
-		let status = "landlord-confirmation";
-		
-		Agreements.createHistory(id, type);
 		Agreements.changeStatusLoi(id, status);
 	});
 });
@@ -389,12 +390,13 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object, fi
     			.findByIdAndUpdate(id, {
     				$set: {
     					"inventory_list.data.status": "pending",
-    					"inventory_list.data.property": propertyId
+    					"inventory_list.data.property": propertyId,
+    					"inventory_list.data.created_at": new Date()
     				}
     			})
     			.exec((err, updated) => {
 					err ? reject(err)
-					: resolve();
+						: resolve();
 				});	    		
 
     		let list = body.lists;
@@ -490,15 +492,14 @@ agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> =
 });
 
 //confirmation
-agreementsSchema.static('confirmation', (id:string, data:Object, files:Object, type:string):Promise<any> => {
+agreementsSchema.static('confirmation', (id:string, files:Object, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(data)) {
-			return reject(new TypeError('Agreement is not a valid object.'));
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
 		}
 
 		let typeDataLandlord = type+'.data.confirmation.landlord';
 		let typeDataTenant = type+'.data.confirmation.tenant';
-		let body:any = data;
 		let file:any = files;
 		let landlordFile = file.landlord;
 		let tenantFile = file.tenant;
@@ -511,7 +512,6 @@ agreementsSchema.static('confirmation', (id:string, data:Object, files:Object, t
 	          	.findById(id, typeDataLandlord, (err, agreement)=>{
 	          		agreement.sign = idLandlordFile;
 	          		agreement.date = new Date();
-	          		agreement.remarks = body.remarks
 	          		agreement.save((err, saved) => {
 				        err ? reject(err)
 				            : resolve(saved);
@@ -527,7 +527,6 @@ agreementsSchema.static('confirmation', (id:string, data:Object, files:Object, t
 	          	.findById(id, typeDataTenant, (err, agreement)=>{
 	          		agreement.sign = idTenantFile;
 	          		agreement.date = new Date();
-	          		agreement.remarks = body.remarks
 	          		agreement.save((err, saved) => {
 				        err ? reject(err)
 				            : resolve(saved);

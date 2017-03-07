@@ -14,23 +14,26 @@ import {DevelopmentsRoutes} from "../developments/routes/developments-routes";
 import {PropertiesRoutes} from "../properties/routes/properties-routes";
 import {AppointmentsRoutes} from "../appointments/routes/appointments-routes";
 import {AgreementsRoutes} from "../agreements/routes/agreements-routes";
+import {ManagersRoutes} from "../managers/routes/managers-routes";
 
 var router = express.Router();
 
 UserRoutes.init(router);
-BlogCategoriesRoutes.init(router);
+
 FaqsRoutes.init(router);
+BlogsRoutes.init(router);
 BanksRoutes.init(router);
 PaymentsRoutes.init(router);
-AmenitiesRoutes.init(router);
-BlogsRoutes.init(router);
-AttachmentsRoutes.init(router);
-NotificationsRoutes.init(router);
-CompaniesRoutes.init(router);
 CommentsRoutes.init(router);
-DevelopmentsRoutes.init(router);
+ManagersRoutes.init(router);
+AmenitiesRoutes.init(router);
+CompaniesRoutes.init(router);
 PropertiesRoutes.init(router);
-AppointmentsRoutes.init(router);
 AgreementsRoutes.init(router);
+AttachmentsRoutes.init(router);
+AppointmentsRoutes.init(router);
+DevelopmentsRoutes.init(router);
+NotificationsRoutes.init(router);
+BlogCategoriesRoutes.init(router);
 
 export default router;
