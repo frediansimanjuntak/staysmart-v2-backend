@@ -133,7 +133,7 @@ var UsersSchema = new mongoose.Schema({
       type: Schema.Types.ObjectId,
       ref: 'Users'
     }
-  ],
+  ],  
 	companies: 
 	[
 		{
@@ -141,6 +141,10 @@ var UsersSchema = new mongoose.Schema({
 			ref: 'Companies'
 		}
 	],
+  shortlist_property :[{
+      type: Schema.Types.ObjectId,
+      ref: 'Properties'
+  }],
 	created_at: {type: Date, default: Date.now}
 });
 

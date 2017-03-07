@@ -612,10 +612,47 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
   });
 });
 
+
 propertiesSchema.static('searchProperty', (latlng:string, pricemin:string, pricemax:string, bedroom:string, bathroom:string, available:string, sizemin:string, sizemax:string, location:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
                
     });
+});
+
+propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      if(!_.isString(id)) {
+        return reject(new TypeError('Id is not a valid string.'));
+      }
+      Users
+        .findByIdAndUpdate(id, {
+          $push: {
+            "shortlist_property": id
+          }
+        })
+        .exec((err, update) => {
+          err ? reject(err)
+              : resolve(update);
+        });
+  });
+});
+
+propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      if(!_.isString(id)) {
+        return reject(new TypeError('Id is not a valid string.'));
+      }
+      Users
+        .findByIdAndUpdate(id, {
+          $pull: {
+            "shortlist_property": id
+          }
+        })
+        .exec((err, update) => {
+          err ? reject(err)
+              : resolve(update);
+        });
+  });
 });
 
 let Properties = mongoose.model('Properties', propertiesSchema);
