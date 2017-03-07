@@ -78,4 +78,24 @@ export class PropertiesController {
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
+
+	static shortlistProperty(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+
+		PropertiesDAO
+		['shortlistProperty'](_id, _userId)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
+
+	static unShortlistProperty(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+
+		PropertiesDAO
+		['unShortlistProperty'](_id, _userId)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
 }

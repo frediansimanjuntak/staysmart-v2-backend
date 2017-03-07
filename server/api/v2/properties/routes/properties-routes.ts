@@ -27,6 +27,11 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/:confirmation/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.confirmationProperty);
+
+		router
+			.route('/properties/shortlist_property/:id')
+			.post(auth.isAuthenticated(), PropertiesController.shortlistProperty)
+			.put(auth.isAuthenticated(), PropertiesController.unShortlistProperty);
 		
 	}
 } 
