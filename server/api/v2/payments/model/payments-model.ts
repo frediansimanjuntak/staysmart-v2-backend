@@ -21,6 +21,11 @@ var PaymentsSchema = new mongoose.Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Attachments'	
 	},
+	payment_confirmation: {
+		type: Schema.Types.ObjectId,
+		ref: 'Attachments'
+	},
+	total_payment: {type: String},
 	refund: {type: Boolean},
 	remarks: {type: String}
 });

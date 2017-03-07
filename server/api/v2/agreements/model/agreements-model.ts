@@ -125,6 +125,10 @@ var AgreementsSchema = new mongoose.Schema({
 				type: String, 
 				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation']
 			},
+			stamp_certificate: {
+				type: Schema.Types.ObjectId,
+				ref: 'Attachments'
+			},
 			created_at: {type: Date}
 		},
 		histories: 

@@ -201,15 +201,52 @@ agreementsSchema.static('rejectLoi', (id:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('adminConfirmationLoi', (id:string):Promise<any> => {
+agreementsSchema.static('adminConfirmationLoi', (id:string, agreements:Object, files:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 
 		let type = "letter_of_intent";
-		let status = "landlord-confirmation";
+		let status = "";
+		let file:any = files;
+		let body:any = agreements;
+		let paymentConfirm = file.paymentConfirm;
 
+		Agreements
+			.findById(id, (err, agreement) => {
+				let paymentId = agreement.letter_of_intent.data.payment;
+
+				if (body.type == "accept"){
+					Attachments.createAttachments(paymentConfirm).then(res => {
+				        var idPaymentFile = res.idAtt;
+				        console.log(idPaymentFile);
+				        Payments
+				        	.findById(paymentId, (err, payment)=>{
+				        		payment.payment_confirmation = idPaymentFile;
+				        		payment.total_payment = body.total_payment;
+				        		payment.save((err, saved)=>{
+				        			err ? reject(err)
+				        				: resolve(saved);
+				        		})
+				        	})	        
+			    	});
+			    	status = "landlord-confirmation";
+				}
+				if (body.type == "reject"){
+					Payments
+			        	.findById(paymentId, (err, payment)=>{
+			        		payment.remarks = body.remarks;
+			        		payment.refund = true;
+			        		payment.save((err, saved)=>{
+			        			err ? reject(err)
+			        				: resolve(saved);
+			        		})
+			        	})
+			        status = "rejected";	
+				}
+				
+			})
 		Agreements.createHistory(id, type);		
 		Agreements.changeStatusLoi(id, status);
 	});
