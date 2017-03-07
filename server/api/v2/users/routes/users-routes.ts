@@ -9,7 +9,7 @@ export class UserRoutes {
 		router
 			.route('/users')
 			.get(auth.isAuthenticated(), UsersController.getAll)
-			.post(auth.isAuthenticated(), UsersController.createUser);
+			.post(UsersController.createUser);
 
 		router
 			.route('/users/:id')
