@@ -68,21 +68,13 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static approveProperty(req: express.Request, res: express.Response):void {
+	static confirmationProperty(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _proof = req["files"].proof;
 		let _userId = req["user"]._id;
+		let _confirmation = req.params.confirmation;
 		PropertiesDAO
-		['approveProperty'](_id, _proof, _userId)
-		.then(() => res.status(200).end())
-		.catch(error => res.status(400).json(error));
-	}
-
-	static rejectProperty(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _userId = req["user"]._id;
-		PropertiesDAO
-		['rejectProperty'](_id, _userId)
+		['confirmationProperty'](_id, _proof, _userId, _confirmation)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}

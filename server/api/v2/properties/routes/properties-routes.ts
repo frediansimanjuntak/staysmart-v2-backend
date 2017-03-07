@@ -25,11 +25,8 @@ export class PropertiesRoutes {
 			.delete(auth.isAuthenticated(),PropertiesController.deletePropertyPictures);
 
 		router
-			.route('/properties/approve/:id')
-			.put(auth.isAuthenticated(),PropertiesController.approveProperty);
-
-		router
-			.route('/properties/reject/:id')
-			.put(auth.isAuthenticated(),PropertiesController.rejectProperty);
+			.route('/properties/:confirmation/:id')
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.confirmationProperty);
+		
 	}
 } 

@@ -522,10 +522,16 @@ propertiesSchema.static('deletePropertyShareholder', (id:string, idShareholder:s
   });
 });
 
-propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:string):Promise<any> => {
+propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId:string, confirmation:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       if(!_.isString(id)) {
         return reject(new TypeError('Id is not a valid string.'));
+      }
+      if(confirmation == 'approve') {
+        var confirmation_result = 'approved';
+      }
+      else if(confirmation == 'reject'){
+        confirmation_result = 'rejected';
       }
       if(proof != null) {
         Attachments.createAttachments(proof).then(res => {
@@ -533,7 +539,7 @@ propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:stri
           Properties
             .update({"_id": id}, {
               $set: {
-                "confirmation.status": "approved",
+                "confirmation.status": confirmation_result,
                 "confirmation.proof": idProof,
                 "confirmation.by": userId,
                 "confirmation.date": Date.now
@@ -568,7 +574,7 @@ propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:stri
                 .findById(devID, (error, devResult) => {
                   var notification = {
                     "user": result.owner.user,
-                    "message": "Property approved for "+unit+" "+devResult.name,
+                    "message": "Property "+confirmation_result+" for "+unit+" "+devResult.name,
                     "type": "approved_property",
                     "ref_id": id
                   };
@@ -580,50 +586,8 @@ propertiesSchema.static('approveProperty', (id:string, proof:Object, userId:stri
                   : resolve(update);
                 });
             })
-
         });
       }
-      
-  });
-});
-
-propertiesSchema.static('rejectProperty', (id:string, userId:string):Promise<any> => {
-  return new Promise((resolve:Function, reject:Function) => {
-      if(!_.isString(id)) {
-        return reject(new TypeError('Id is not a valid string.'));
-      }
-      Properties
-        .update({"_id": id}, {
-          $set: {
-            "confirmation.status": "rejected",
-            "confirmation.by": userId,
-            "confirmation.date": Date.now
-          }
-        })
-        .exec((err, update) => {
-          err ? reject(err)
-          : resolve(update);
-        });
-      Properties
-        .findById(id, (err, result) => {
-          var devID = result.development;
-          var unit = '#'+result.address.floor+'-'+result.address.unit;
-          Developments
-            .findById(devID, (error, devResult) => {
-              var notification = {
-                "user": result.owner.user,
-                "message": "Property rejected for "+unit+" "+devResult.name,
-                "type": "rejected_property",
-                "ref_id": id
-              };
-
-              Notifications.createNotifications(notification);        
-            })
-            .exec((err, update) => {
-              err ? reject(err)
-              : resolve(update);
-            });
-        })
   });
 });
 
