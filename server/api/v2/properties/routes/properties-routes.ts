@@ -27,6 +27,10 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/:confirmation/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.confirmationProperty);
+
+		router
+			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location')
+			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.searchProperty);
 		
 	}
 } 

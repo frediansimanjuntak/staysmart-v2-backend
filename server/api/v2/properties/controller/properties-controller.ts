@@ -78,4 +78,20 @@ export class PropertiesController {
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
+
+	static searchProperty(req: express.Request, res: express.Response):void {
+		let _latlng = req.params.latlng;
+		let _pricemin = req.params.pricemin;
+		let _pricemax = req.params.pricemax;
+		let _bedroom = req.params.bedroom;
+		let _bathroom = req.params.bathroom;
+		let _available = req.params.available;
+		let _sizemin = req.params.sizemin;
+		let _sizemax = req.params.sizemax;
+		let _location = req.params.location;
+		PropertiesDAO
+		['searchProperty'](_latlng, _pricemin, _pricemax, _bedroom, _bathroom, _available, _sizemin, _sizemax, _location)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
 }

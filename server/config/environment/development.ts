@@ -11,6 +11,8 @@ export default {
   },
   awsBucket: 'staysmart-revamp',
 
+  dreamTalk: 'https://dt.shrimpventures.com',
+
   // Seed database on startup
   seedDB: true
 

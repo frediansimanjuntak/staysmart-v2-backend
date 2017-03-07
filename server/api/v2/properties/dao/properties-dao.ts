@@ -612,6 +612,12 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
   });
 });
 
+propertiesSchema.static('searchProperty', (latlng:string, pricemin:string, pricemax:string, bedroom:string, bathroom:string, available:string, sizemin:string, sizemax:string, location:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+               
+    });
+});
+
 let Properties = mongoose.model('Properties', propertiesSchema);
 
 export default Properties;
