@@ -9,6 +9,7 @@ developmentsSchema.static('getAll', ():Promise<any> => {
         let _query = {};
         Developments
           .find(_query)
+          .populate("properties")
           .exec((err, developments) => {
               err ? reject(err)
                   : resolve(developments);
@@ -21,6 +22,7 @@ developmentsSchema.static('getById', (id:string):Promise<any> => {
 
         Developments
           .findById(id)
+          .populate("properties")
           .exec((err, developments) => {
               err ? reject(err)
                   : resolve(developments);

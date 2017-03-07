@@ -25,7 +25,7 @@ usersSchema.static('getAll', ():Promise<any> => {
 
 		Users
 			.find(_query)
-			.populate("agreements attachments banks companies properties picture")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -38,7 +38,7 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 
 		Users
 			.findOne({_id:userId}, '-salt -password')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.company landlord.data.bank_account.bank owned_properties companies")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -54,7 +54,7 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 
 		Users
 			.findById(id, '-salt -password')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.company landlord.data.bank_account.bank owned_properties companies")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);

@@ -22,8 +22,7 @@ var AppointmentsSchema = new mongoose.Schema({
 		ref: 'Properties'
 	},
 	schedule: {
-		type: Schema.Types.ObjectId,
-		ref: 'Schedules'	
+		type: String
 	},
 	chosen_time: {
 		date: {type: Date},
