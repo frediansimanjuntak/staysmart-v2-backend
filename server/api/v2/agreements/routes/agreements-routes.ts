@@ -23,14 +23,11 @@ export class AgreementsRoutes {
 		router
 			.route('/agreements/inventorylist/:id')
 			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
-			
-		router
-			.route('/agreements/update/:id/:type')
-			.post(AgreementsController.updateAgreementsData);
-
+					
 		//LOI
 		router
 			.route('/loi/:id')
+			.get(AgreementsController.getLoi)
 			.post(AgreementsController.createLoi);
 
 		router
@@ -45,8 +42,22 @@ export class AgreementsRoutes {
 			.route('/loi/status/admin_confirm/:id')
 			.post(AgreementsController.adminConfirmationLoi);
 
+		//TA
 		router
-			.route('/loi/status/landlord_confirm/:id')
-			.post(AgreementsController.landlordConfirmationLoi);
+			.route('/ta/:id')
+			.get(AgreementsController.getTA)
+			.post(AgreementsController.createTA);
+
+		router
+			.route('/ta/status/acccepted/:id')
+			.post(AgreementsController.acceptTA);
+
+		router
+			.route('/ta/status/rejected/:id')
+			.post(AgreementsController.rejectTA);
+
+		router
+			.route('/ta/status/admin_confirm/:id')
+			.post(AgreementsController.adminConfirmationTA);
 	}
 }
