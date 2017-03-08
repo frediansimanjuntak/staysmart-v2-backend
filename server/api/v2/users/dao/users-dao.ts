@@ -308,26 +308,31 @@ usersSchema.static('resetPassword', (link:string, newPassword:Object):Promise<an
 		let body:any = newPassword;
 		Users
 			.findOne({"reset_password.link": link}, (err, result) => {
-			 	var dateNow = new Date();
-			 	if(dateNow < result.reset_password.expired_at) {
-			 		result.password = body.password;
-			 		result.save((err, saved)=>{
-	        			err ? reject(err)
-	        				: resolve(saved);
-	        		})
-	        		Users
-	        			.update({"reset_password.link": link}, {
-	        				$unset: {"reset_password": ""}
-	        			})
-	        			.exec((err, update) => {
-							err ? reject(err)
-								: resolve(update);
-						});
-			 	}
-			 	else{
-			 		resolve({message: "can't use this link"});
-			 	}
-		 })
+				if(result == null) {
+					reject({message: 'You already reset your password.'});
+				}
+				else{
+				 	var dateNow = new Date();
+				 	if(dateNow < result.reset_password.expired_at) {
+				 		result.password = body.password;
+				 		result.save((err, saved)=>{
+		        			err ? reject(err)
+		        				: resolve(saved);
+		        		})
+		        		Users
+		        			.update({"reset_password.link": link}, {
+		        				$unset: {"reset_password": ""}
+		        			})
+		        			.exec((err, update) => {
+								err ? reject(err)
+									: resolve(update);
+							});
+				 	}
+				 	else{
+				 		reject({message: "Your link has expired."});
+				 	}
+				}
+		 	})
 	});
 });
 
