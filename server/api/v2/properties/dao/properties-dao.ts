@@ -130,7 +130,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
         }
         if(body.ownersData != null) {
           var type = 'landlord';
-          Users.updateUserData(userId, type, body.landlordData);
+          Users.updateUserData(userId, type, body.ownersData);
         }
       }
 
