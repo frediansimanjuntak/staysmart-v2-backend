@@ -8,8 +8,11 @@ export class PropertiesRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/properties')
-			.get(auth.isAuthenticated(),PropertiesController.getAll)
 			.post(auth.isAuthenticated(),PropertiesController.createProperties);
+
+		router
+			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location')
+			.get(PropertiesController.searchProperties);
 
 		router
 			.route('/properties/:id')
@@ -27,10 +30,6 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/:confirmation/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.confirmationProperty);
-
-		router
-			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location')
-			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.searchProperty);
 
 		router
 			.route('/properties/shortlist_property/:id')
