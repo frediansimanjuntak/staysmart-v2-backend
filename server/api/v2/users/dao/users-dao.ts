@@ -279,6 +279,58 @@ usersSchema.static('unblockUser', (id:string, userId:Object):Promise<any> => {
 	});
 });
 
+usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(email)) {
+			return reject(new TypeError('Email is not a valid string.'));
+		}
+		var randomLink = Math.random().toString(36).substr(2, 30);
+		Users
+			.update({"email": email}, {
+				$set: {
+					"reset_password.link": randomLink,
+					"reset_password.created_at": new Date(),
+					"reset_password.expired_at": new Date(+new Date() + 24*60*60*1000)
+				}
+			})
+			.exec((err, update) => {
+				err ? reject(err)
+					: resolve(update);
+			});
+	});
+});
+
+usersSchema.static('resetPassword', (link:string, newPassword:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(link)) {
+			return reject(new TypeError('Link is not a valid string.'));
+		}
+		let body:any = newPassword;
+		Users
+			.findOne({"reset_password.link": link}, (err, result) => {
+			 	var dateNow = new Date();
+			 	if(dateNow < result.reset_password.expired_at) {
+			 		result.password = body.password;
+			 		result.save((err, saved)=>{
+	        			err ? reject(err)
+	        				: resolve(saved);
+	        		})
+	        		Users
+	        			.update({"reset_password.link": link}, {
+	        				$unset: {"reset_password": ""}
+	        			})
+	        			.exec((err, update) => {
+							err ? reject(err)
+								: resolve(update);
+						});
+			 	}
+			 	else{
+			 		resolve({message: "can't use this link"});
+			 	}
+		 })
+	});
+});
+
 let Users = mongoose.model('Users', usersSchema);
 
 export default Users;

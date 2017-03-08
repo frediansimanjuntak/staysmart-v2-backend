@@ -122,4 +122,21 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static sendResetPassword(req: express.Request, res: express.Response):void {
+		let _email = req.body.email;
+		UsersDAO
+		['sendResetPassword'](_email)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static resetPassword(req: express.Request, res: express.Response):void {
+		let _link = req.params.link;
+		let _newPassword = req.body;
+		UsersDAO
+		['resetPassword'](_link, _newPassword)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 }
