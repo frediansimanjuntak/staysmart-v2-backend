@@ -26,7 +26,7 @@ var PaymentsSchema = new mongoose.Schema({
 		ref: 'Attachments'
 	},
 	total_payment: {type: String},
-	refund: {type: Boolean},
+	refund: {type: Boolean, default: false},
 	remarks: {type: String}
 });
 

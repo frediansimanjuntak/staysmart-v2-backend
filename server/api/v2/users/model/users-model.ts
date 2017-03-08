@@ -141,7 +141,7 @@ var UsersSchema = new mongoose.Schema({
 			ref: 'Companies'
 		}
 	],
-  shortlist_property :[{
+  shortlisted_property :[{
       type: Schema.Types.ObjectId,
       ref: 'Properties'
   }],

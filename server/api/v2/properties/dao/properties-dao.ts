@@ -660,7 +660,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
       Users
         .findByIdAndUpdate(id, {
           $push: {
-            "shortlist_property": id
+            "shortlisted_property": id
           }
         })
         .exec((err, update) => {
@@ -678,7 +678,7 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
       Users
         .findByIdAndUpdate(id, {
           $pull: {
-            "shortlist_property": id
+            "shortlisted_property": id
           }
         })
         .exec((err, update) => {
