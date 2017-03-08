@@ -19,9 +19,5 @@ export class CompaniesRoutes {
 		router
 			.route('/companies/update/:id')
 			.put(auth.isAuthenticated(),CompaniesController.updateCompanies);
-
-		router
-			.route('/companies/document/:id/:documentId')
-			.delete(auth.isAuthenticated(),CompaniesController.deleteDocument);
 	}
 } 

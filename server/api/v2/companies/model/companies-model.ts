@@ -7,12 +7,31 @@ var Schema = mongoose.Schema;
 
 var CompaniesSchema = new mongoose.Schema({
 	name: {type: String},
-	registeration_number: {type: String},
-	document: 
+	registration_number: {type: String},
+	documents: 
 	[
 		{
 			type: Schema.Types.ObjectId,
 			ref: 'Attachments'
+		}
+	],
+	shareholders: 
+	[
+		{
+			name: {type: String},
+			identification_type: {type: String},
+			identification_number: {type: String},
+			identification_proof: 
+			{
+				front: {
+					type: Schema.Types.ObjectId,
+					ref: 'Attachments'
+				},
+				back: {
+					type: Schema.Types.ObjectId,
+					ref: 'Attachments'
+				}
+			}
 		}
 	],
 	created_by: 
