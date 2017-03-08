@@ -116,52 +116,30 @@ usersSchema.static('deleteUser', (id:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('updateUser', (id:string, user:Object, attachment:Object ):Promise<any> => {
+usersSchema.static('updateUser', (id:string, user:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
 		}
 		let body:any = user;
-    let file:any = attachment;
-    let attachmentFile = file.picture;
-
-    if(attachmentFile){
-      Attachments.createAttachments(attachmentFile)
-      .then(res => {
-      	var idAttachment = res.idAtt;
-          Users
-          	.update({"_id": id}, {
-          		$set: {
-          			"picture": idAttachment
-          		}
-          	})    
-          	.exec((err, updated) => {
-							err ? reject(err)
-								: resolve(updated);
-						});
-      })
-      .catch(err=>{
-          resolve({message: "attachment error"});
-      }) 
-    }  
 
 		Users
 			.findById(id, (err, user)=>{
 				user.username = body.username;
-	      user.email = body.email;
-	      user.phone = body.phone;
-	      if(body.password){
-	      	user.password = body.password;
-	      }	            
-	      user.save((err, saved) => {
-	        err ? reject(err)
-	            : resolve(saved);
-	        });
+				user.email = body.email;
+				user.phone = body.phone;
+				if(body.password){
+					user.password = body.password;
+				}	            
+				user.save((err, saved) => {
+		        err ? reject(err)
+		            : resolve(saved);
+	    	    });
 			})
 	});
 });
 
-usersSchema.static('updateUserData', (id:string, type:string, userData:Object, files:Object):Promise<any> =>{
+usersSchema.static('updateUserData', (id:string, type:string, userData:Object):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
 		if(!_.isString(id) && !_.isObject(userData)) {
 			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
@@ -169,9 +147,6 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 		
 		var ObjectID = mongoose.Types.ObjectId;  
 		let userObj = {$set: {}};
-		let file:any = files;
-		let front = file.front;
-		let back = file.back;
 		
 		for(var param in userData) {
 			userObj.$set[type+'.data.'+param] = userData[param];
@@ -185,35 +160,6 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, f
 				err ? reject(err)
 				: resolve(updated);
 			});
-
-		if(front) {
-			Attachments.createAttachments(front).then(res => {
-				var idFront = res.idAtt;
-				let frontObj = {$set: {}};
-				let front_proof = type+'.data.identification_proof.front';
-				frontObj.$set[front_proof] = idFront;
-				Users
-					.findByIdAndUpdate(id, frontObj)
-					.exec((err, saved) => {
-						err ? reject(err)
-						: resolve(saved);
-					});
-			});	
-		}
-		if(back) {
-			Attachments.createAttachments(back).then(res => {
-				var idBack = res.idAtt;
-				let backObj = {$set: {}};
-				let back_proof = type+'.data.identification_proof.back';
-				backObj.$set[back_proof] = idBack;
-				Users
-					.findByIdAndUpdate(id, backObj)
-					.exec((err, saved) => {
-						err ? reject(err)
-						: resolve(saved);
-					});
-			});
-		}
 	});
 });
 

@@ -70,6 +70,24 @@ var UsersSchema = new mongoose.Schema({
 					ref: 'Attachments'
 				}
 			},
+      owners: [
+        {
+          name: {type: String},
+          identification_type: {type: String},
+          identification_number: {type: String},
+          identification_proof: 
+          {
+            front: {
+              type: Schema.Types.ObjectId,
+              ref: 'Attachments'
+            },
+            back: {
+              type: Schema.Types.ObjectId,
+              ref: 'Attachments'
+            }
+          }
+        }
+      ],
 			bank_account: {
 				bank: 
 				{
