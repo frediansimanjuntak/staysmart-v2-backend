@@ -110,28 +110,7 @@ var PropertiesSchema = new mongoose.Schema({
 			{
 				type: Schema.Types.ObjectId,
 				ref: 'Companies'
-			},
-		shareholder: 
-		[
-			{
-				name: {type: String},
-				identification_type: {type: String},
-				identification_number: {type: String},
-				identification_proof: 
-				{
-					front: 
-						{
-							type: Schema.Types.ObjectId,
-							ref: 'Attachments'
-						},
-					back: 
-						{
-							type: Schema.Types.ObjectId,
-							ref: 'Attachments'
-						}
-				},
 			}
-		]
 	},
 	manager: 
 		{
