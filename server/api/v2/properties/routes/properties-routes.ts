@@ -16,7 +16,7 @@ export class PropertiesRoutes {
 
 		router
 			.route('/properties/:id')
-			.get(auth.isAuthenticated(),PropertiesController.getById)
+			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
 
 		router
