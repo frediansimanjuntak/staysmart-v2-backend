@@ -20,7 +20,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           var latlng = search.latlng.split(",").map(function(val){
             return Number(val)
           });
-          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ latlng, 1500 ] } } });
+          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ latlng, 1500/3963.2 ] } } });
         }
         if(search.pricemin != 'all') 
         {
