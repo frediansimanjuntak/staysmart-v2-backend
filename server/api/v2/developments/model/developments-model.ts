@@ -23,7 +23,16 @@ var DevelopmentsSchema = new mongoose.Schema({
 	planning_region: {type: String},
 	planning_area: {type: String},
 	type_of_area: {type: String},
-	postal_district: {type: Number}
+	postal_district: {type: Number},
+	address: {
+	    block_number: {type: String},
+	    street_name: {type: String},
+	    postal_code: {type: String},
+	    coordinates: [{type: String}], //longitude, latitude for radius query
+	    country: {type: String},
+	    full_address: {type: String},
+	    type: {type: String} //default to Point
+	}
 });
 
 export default DevelopmentsSchema;
