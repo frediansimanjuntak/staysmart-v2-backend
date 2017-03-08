@@ -11,7 +11,7 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(),PropertiesController.createProperties);
 
 		router
-			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location')
+			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location/:radius')
 			.get(PropertiesController.searchProperties);
 
 		router
