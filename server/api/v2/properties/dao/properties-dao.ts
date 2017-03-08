@@ -17,10 +17,16 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         let search:any = searchComponent;
         if(search.latlng != 'all') 
         {
+          if(search.radius != 'all') {
+            var radius = search.radius;
+          }
+          else{
+            radius = 1500;
+          }
           var latlng = search.latlng.split(",").map(function(val){
             return Number(val)
           });
-          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ latlng, 1500/3963.2 ] } } });
+          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ latlng, radius/3963.2 ] } } });
         }
         if(search.pricemin != 'all') 
         {
