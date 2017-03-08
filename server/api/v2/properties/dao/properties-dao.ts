@@ -9,17 +9,57 @@ import Companies from '../../companies/dao/companies-dao'
 import Developments from '../../developments/dao/developments-dao'
 import Notifications from '../../notifications/dao/notifications-dao'
 
-propertiesSchema.static('getAll', ():Promise<any> => {
+propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
+        var property = Properties.find(_query);
 
-        Properties
-          .find(_query)
-          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
-          .exec((err, properties) => {
-              err ? reject(err)
-                  : resolve(properties);
+        let search:any = searchComponent;
+        if(search.latlng != 'all') 
+        {
+          var latlng = search.latlng.split(",").map(function(val){
+            return Number(val)
           });
+          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ latlng, 1500 ] } } });
+        }
+        if(search.pricemin != 'all') 
+        {
+          property.where('details.price').gte(search.pricemin);
+        }
+        if(search.pricemax != 'all') 
+        {
+          property.where('details.price').lte(search.pricemax);
+        }
+        if(search.bedroom != 'all') 
+        {
+          property.where('details.bedroom', search.bedroom);
+        }
+        if(search.bathroom != 'all') 
+        {
+          property.where('details.bathroom', search.bathroom);
+        }
+        if(search.available != 'all') 
+        {
+          property.where('details.available').gte(search.available);
+        }
+        if(search.sizemin != 'all') 
+        {
+          property.where('details.size_sqf').gte(search.sizemin);
+        }
+        if(search.sizemax != 'all') 
+        {
+          property.where('details.size_sqf').lte(search.sizemax);
+        }
+        if(search.location != 'all') 
+        {
+          property.where('address.street_name', search.location);
+        }
+
+        property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
+        property.exec((err, properties) => {
+          err ? reject(err)
+              : resolve(properties);
+        });
     });
 });
 
@@ -35,13 +75,13 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (property:Object, userId:string, files:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (property:Object, userId:Object, files:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(property)) {
         return reject(new TypeError('Property not a valid object.'));
       }
-      if (!_.isString(userId)) {
-        return reject(new TypeError('User id not a valid string.'));
+      if (!_.isObject(userId)) {
+        return reject(new TypeError('User id not a valid object.'));
       }
       
       var ObjectID = mongoose.Types.ObjectId;  
@@ -610,13 +650,6 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
         });
       }
   });
-});
-
-
-propertiesSchema.static('searchProperty', (latlng:string, pricemin:string, pricemax:string, bedroom:string, bathroom:string, available:string, sizemin:string, sizemax:string, location:string):Promise<any> => {
-    return new Promise((resolve:Function, reject:Function) => {
-               
-    });
 });
 
 propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<any> => {
