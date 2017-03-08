@@ -52,5 +52,13 @@ export class UserRoutes {
 			.route('/users/unblock/:id')
 			.put(auth.isAuthenticated(), UsersController.unblockUser);
 
+		router
+			.route('/send_reset_password')
+			.post(UsersController.sendResetPassword);
+
+		router
+			.route('/reset_password/:link')
+			.post(UsersController.resetPassword);
+
 	}
 }

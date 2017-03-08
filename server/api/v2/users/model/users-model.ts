@@ -163,6 +163,11 @@ var UsersSchema = new mongoose.Schema({
       type: Schema.Types.ObjectId,
       ref: 'Properties'
   }],
+  reset_password: {
+    link: {type: String},
+    created_at: {type: Date},
+    expired_at: {type: Date}
+  },
 	created_at: {type: Date, default: Date.now}
 });
 
