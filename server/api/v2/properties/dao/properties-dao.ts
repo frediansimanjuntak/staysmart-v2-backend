@@ -17,7 +17,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         let search:any = searchComponent;
         if(search.latlng != 'all') 
         {
-          if(search.radius != 0) {
+          if(search.radius != 'all') {
             var radius = search.radius;
           }
           else{
