@@ -160,7 +160,11 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
         if (!_.isObject(properties)) {
           return reject(new TypeError('Property is not a valid object.'));
         }
-        Properties.ownerProperty(id, userId);
+        Properties.ownerProperty(id, userId).then(res => {
+          if(res.message) {
+            reject({message: "forbidden"});
+          }
+        });
         var type = 'update';
         Properties.createPropertyHistory(id, type);
         Properties
@@ -193,7 +197,11 @@ propertiesSchema.static('deleteProperties', (id:string, userId:string):Promise<a
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-        Properties.ownerProperty(id, userId);
+        Properties.ownerProperty(id, userId).then(res => {
+          if(res.message) {
+            reject({message: "forbidden"});
+          }
+        });
 
         Properties.findById(id, (err, result) => {
           for(var i = 0; i < result.pictures.living.length; i++){
@@ -374,7 +382,7 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:string):Prom
         if(user.role != 'admin') {
           Properties.findById(propertyId, (err, result) => {
             if(result.owner.user != userId) {
-              reject({message: "Forbidden"});
+              resolve({message: "Forbidden"});
             }
           })    
         }
