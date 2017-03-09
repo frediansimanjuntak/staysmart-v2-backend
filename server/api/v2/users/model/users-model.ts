@@ -164,7 +164,7 @@ var UsersSchema = new mongoose.Schema({
       ref: 'Properties'
   }],
   reset_password: {
-    link: {type: String},
+    token: {type: String},
     created_at: {type: Date},
     expired_at: {type: Date}
   },

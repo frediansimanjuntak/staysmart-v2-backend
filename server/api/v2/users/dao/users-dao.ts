@@ -284,11 +284,11 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 		if (!_.isString(email)) {
 			return reject(new TypeError('Email is not a valid string.'));
 		}
-		var randomLink = Math.random().toString(36).substr(2, 30);
+		var randomToken = Math.random().toString(36).substr(2, 30);
 		Users
 			.update({"email": email}, {
 				$set: {
-					"reset_password.link": randomLink,
+					"reset_password.token": randomToken,
 					"reset_password.created_at": new Date(),
 					"reset_password.expired_at": new Date(+new Date() + 24*60*60*1000)
 				}
@@ -300,14 +300,14 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('resetPassword', (link:string, newPassword:Object):Promise<any> => {
+usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(link)) {
+		if (!_.isString(token)) {
 			return reject(new TypeError('Link is not a valid string.'));
 		}
 		let body:any = newPassword;
 		Users
-			.findOne({"reset_password.link": link}, (err, result) => {
+			.findOne({"reset_password.token": token}, (err, result) => {
 				if(result == null) {
 					reject({message: 'You already reset your password.'});
 				}
@@ -320,7 +320,7 @@ usersSchema.static('resetPassword', (link:string, newPassword:Object):Promise<an
 		        				: resolve(saved);
 		        		})
 		        		Users
-		        			.update({"reset_password.link": link}, {
+		        			.update({"reset_password.token": token}, {
 		        				$unset: {"reset_password": ""}
 		        			})
 		        			.exec((err, update) => {

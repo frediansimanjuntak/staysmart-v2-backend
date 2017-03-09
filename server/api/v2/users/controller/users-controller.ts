@@ -132,10 +132,10 @@ export class UsersController {
 	}
 
 	static resetPassword(req: express.Request, res: express.Response):void {
-		let _link = req.params.link;
+		let _token = req.params.token;
 		let _newPassword = req.body;
 		UsersDAO
-		['resetPassword'](_link, _newPassword)
+		['resetPassword'](_token, _newPassword)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
