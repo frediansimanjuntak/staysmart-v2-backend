@@ -195,49 +195,58 @@ propertiesSchema.static('deleteProperties', (id:string, userId:string):Promise<a
         }
         Properties.ownerProperty(id, userId);
 
-        Properties
-          .findById(id, (err, result) => {
-            for(var i = 0; i < result.pictures.living.length; i++){
-              Attachments
-                .findByIdAndRemove(result.pictures.living[i])
-                .exec((err, deleted) => {
-                    err ? reject(err)
-                        : resolve(deleted);
-                });
-            }
-            for(var i = 0; i < result.pictures.dining.length; i++){
-              Attachments
-                .findByIdAndRemove(result.pictures.dining[i])
-                .exec((err, deleted) => {
-                    err ? reject(err)
-                        : resolve(deleted);
-                });
-            }
-            for(var i = 0; i < result.pictures.bed.length; i++){
-              Attachments
-                .findByIdAndRemove(result.pictures.bed[i])
-                .exec((err, deleted) => {
-                    err ? reject(err)
-                        : resolve(deleted);
-                });
-            }
-            for(var i = 0; i < result.pictures.toilet.length; i++){
-              Attachments
-                .findByIdAndRemove(result.pictures.toilet[i])
-                .exec((err, deleted) => {
-                    err ? reject(err)
-                        : resolve(deleted);
-                });
-            }
-            for(var i = 0; i < result.pictures.kitchen.length; i++){
-              Attachments
-                .findByIdAndRemove(result.pictures.kitchen[i])
-                .exec((err, deleted) => {
-                    err ? reject(err)
-                        : resolve(deleted);
-                });
+        Properties.findById(id, (err, result) => {
+          for(var i = 0; i < result.pictures.living.length; i++){
+            Attachments
+              .findByIdAndRemove(result.pictures.living[i])
+              .exec((err, deleted) => {
+                  err ? reject(err)
+                      : resolve(deleted);
+              });
+          }
+          for(var i = 0; i < result.pictures.dining.length; i++){
+            Attachments
+              .findByIdAndRemove(result.pictures.dining[i])
+              .exec((err, deleted) => {
+                  err ? reject(err)
+                      : resolve(deleted);
+              });
+          }
+          for(var i = 0; i < result.pictures.bed.length; i++){
+            Attachments
+              .findByIdAndRemove(result.pictures.bed[i])
+              .exec((err, deleted) => {
+                  err ? reject(err)
+                      : resolve(deleted);
+              });
+          }
+          for(var i = 0; i < result.pictures.toilet.length; i++){
+            Attachments
+              .findByIdAndRemove(result.pictures.toilet[i])
+              .exec((err, deleted) => {
+                  err ? reject(err)
+                      : resolve(deleted);
+              });
+          }
+          for(var i = 0; i < result.pictures.kitchen.length; i++){
+            Attachments
+              .findByIdAndRemove(result.pictures.kitchen[i])
+              .exec((err, deleted) => {
+                  err ? reject(err)
+                      : resolve(deleted);
+              });
+          }
+        })
+        Users
+          .findByIdAndUpdate(userId, {
+            $pull: {
+              "owned_properties": id
             }
           })
+          .exec((err, deleted) => {
+              err ? reject(err)
+                  : resolve(deleted);
+          });
 
         Properties
           .findByIdAndRemove(id)
