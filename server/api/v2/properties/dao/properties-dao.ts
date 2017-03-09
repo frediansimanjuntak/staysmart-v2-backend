@@ -135,8 +135,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
           Users.updateUserData(userId, type, body.landlordData);
         }
         if(body.ownersData != null) {
-          var type = 'landlord';
-          Users.updateUserData(userId, type, body.ownersData);
+          Users.updateUserDataOwners(userId, body.ownersData);
         }
       }
 
