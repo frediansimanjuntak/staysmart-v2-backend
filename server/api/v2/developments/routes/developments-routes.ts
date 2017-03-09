@@ -8,7 +8,7 @@ export class DevelopmentsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/developments')
-			.get(auth.isAuthenticated(),DevelopmentsController.getAll)
+			.get(DevelopmentsController.getAll)
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.createDevelopments);
 
 		router

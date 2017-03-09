@@ -152,7 +152,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
     });
 });
 
-propertiesSchema.static('updateProperties', (id:string, properties:Object):Promise<any> => {
+propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
           return reject(new TypeError('Id is not a valid string.'));
@@ -160,6 +160,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object):Promi
         if (!_.isObject(properties)) {
           return reject(new TypeError('Property is not a valid object.'));
         }
+        Properties.ownerProperty(id, userId);
         var type = 'update';
         Properties.createPropertyHistory(id, type);
         Properties
@@ -187,11 +188,13 @@ propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promis
     });
 });
 
-propertiesSchema.static('deleteProperties', (id:string):Promise<any> => {
+propertiesSchema.static('deleteProperties', (id:string, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
+        Properties.ownerProperty(id, userId);
+
         Properties
           .findById(id, (err, result) => {
             for(var i = 0; i < result.pictures.living.length; i++){
@@ -353,6 +356,20 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
           err ? reject(err)
               : resolve(update);
         });
+  });
+});
+
+propertiesSchema.static('ownerProperty', (propertyId:string, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Users.findById(userId, (err, user) => {
+        if(user.role != 'admin') {
+          Properties.findById(propertyId, (err, result) => {
+            if(result.owner.user != userId) {
+              reject({message: "Forbidden"});
+            }
+          })    
+        }
+      })
   });
 });
 

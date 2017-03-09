@@ -30,16 +30,18 @@ export class PropertiesController {
 	static updateProperties(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _properties = req.body;
+		let _userId = req["user"]._id;
 		PropertiesDAO
-		['updateProperties'](_id, _properties)
+		['updateProperties'](_id, _properties, _userId)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static deleteProperties(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 		PropertiesDAO
-		['deleteProperties'](_id)
+		['deleteProperties'](_id, _userId)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
