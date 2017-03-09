@@ -103,12 +103,12 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('deleteUser', (id:string):Promise<any> => {
+usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		
+		Users.validateUser(id, currentUser);
 		Users
 			.findByIdAndRemove(id)
 			.exec((err, deleted) => {
@@ -118,11 +118,12 @@ usersSchema.static('deleteUser', (id:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('updateUser', (id:string, user:Object):Promise<any> => {
+usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
 		}
+		Users.validateUser(id, currentUser);
 		let body:any = user;
 
 		Users
@@ -141,11 +142,12 @@ usersSchema.static('updateUser', (id:string, user:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('updateUserData', (id:string, type:string, userData:Object):Promise<any> =>{
+usersSchema.static('updateUserData', (id:string, type:string, userData:Object, currentUser:string):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
 		if(!_.isString(id) && !_.isObject(userData)) {
 			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
 		}
+		Users.validateUser(id, currentUser);
 		
 		var ObjectID = mongoose.Types.ObjectId;  
 		let userObj = {$set: {}};
@@ -362,6 +364,22 @@ usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<a
 				 	}
 				}
 		 	})
+	});
+});
+
+
+usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(userId)) {
+			return reject(new TypeError('Id user is not a valid string.'));
+		}
+		Users.findById(currentUser, (err, result) => {
+			if(result.role != 'admin'){
+				if(userId != currentUser) {
+					reject({message: "Forbidden"});
+				}		
+			}
+		})
 	});
 });
 
