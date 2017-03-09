@@ -317,10 +317,31 @@ agreementsSchema.static('acceptTA', (id:string, files:Object):Promise<any> => {
 		Agreements
 			.findById(id, (err, agreement)=>{
 				let propertyId = agreement.property;
+				let tenantID = agreement.tenant;
+				let termLease = agreement.letter_of_intent.data.term_lease;
+				let termLeaseExtend = agreement.letter_of_intent.data.term_lease_extend;
+				let dateCommencement = agreement.letter_of_intent.data.date_commencement;
+				let longTerm = termLease + termLeaseExtend;
+
+				let until = dateCommencement(+ dateCommencement + longTerm *30*24*60*60*1000) ;
 				Properties
 					.findByIdAndUpdate(propertyId, {
 						$set: {
 							"status": "rented"
+						}
+					})
+					.exec((err, updated) => {
+						err ? reject(err)
+							: resolve();
+					});
+				Users
+					.findByIdAndUpdate(tenantID, {
+						$push: {
+							"rented_properties": {
+								"until": until,
+								"property": propertyId,
+								"agreement": id
+							}
 						}
 					})
 					.exec((err, updated) => {

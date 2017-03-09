@@ -33,12 +33,12 @@ export class UserRoutes {
 			.get(auth.isAuthenticated(), UsersController.me);
 
 		router
-			.route('/users/active/:id')
+			.route('/users/activate/:id')
 			.post(auth.isAuthenticated(), UsersController.activationUser);
 
 		router
-			.route('/users/send_active_code/:id')
-			.post(auth.isAuthenticated(), UsersController.sendActivationCode);
+			.route('/users/verification_code/:id')
+			.get(auth.isAuthenticated(), UsersController.sendActivationCode);
 
 		router
 			.route('/users/unactive/:id')

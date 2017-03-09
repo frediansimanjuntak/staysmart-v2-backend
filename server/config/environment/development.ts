@@ -9,9 +9,14 @@ export default {
   mongo: {
     uri: 'mongodb://localhost/staysmart-revamp'
   },
+  
   awsBucket: 'staysmart-revamp',
 
-  dreamTalk: 'https://dt.shrimpventures.com',
+  dream_talk: {
+  	ws: 'wss://dt.shrimpventures.com/websocket'
+  },
+
+  // dreamTalk: 'https://dt.shrimpventures.com',
 
   // Seed database on startup
   seedDB: true
