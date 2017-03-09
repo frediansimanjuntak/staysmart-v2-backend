@@ -163,6 +163,33 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object):P
 	});
 });
 
+usersSchema.static('updateUserDataOwners', (id:string, ownerData:Object):Promise<any> =>{
+	return new Promise((resolve:Function, reject:Function) => {
+		if(!_.isString(id) && !_.isObject(ownerData)) {
+			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
+		}
+		
+		var ObjectID = mongoose.Types.ObjectId;  
+		let body:any = ownerData;
+		var type = 'landlord';
+		
+		Users.createHistory(id, type);
+
+		for (var i = 0; i < body.owners.length; i++) {
+			Users
+				.findByIdAndUpdate(id, {
+					$push: {
+						"landlord.data.owners": body.owners[i]
+					}
+				})
+				.exec((err, updated) => {
+					err ? reject(err)
+					: resolve(updated);
+				});	
+		}
+	});
+});
+
 usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let userOldData = type+'.data';
