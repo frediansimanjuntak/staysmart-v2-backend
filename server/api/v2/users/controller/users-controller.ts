@@ -47,10 +47,10 @@ export class UsersController {
 	static updateUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _user = req.body;
-		let _attachment = req["files"];
+		let _currentUser = req["user"]._id;
 
 		UsersDAO
-		['updateUser'](_id, _user, _attachment)
+		['updateUser'](_id, _user, _currentUser)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
@@ -60,7 +60,7 @@ export class UsersController {
 		let _type = req.params.type;
 		let _userData = req.body;
 		let _files = req["files"];
-
+		let _currentUser = req["user"]._id;
 		UsersDAO
 		['updateUserData'](_id, _type, _userData, _files)
 		.then(users => res.status(201).json(users))
@@ -69,9 +69,9 @@ export class UsersController {
 	
 	static deleteUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-
+		let _currentUser = req["user"]._id;
 		UsersDAO
-		['deleteUser'](_id)
+		['deleteUser'](_id, _currentUser)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
