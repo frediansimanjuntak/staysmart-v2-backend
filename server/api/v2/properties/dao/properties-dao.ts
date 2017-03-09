@@ -132,7 +132,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
       else if(body.owned_type == 'individual'){
         if(body.landlordData != null) {
           var type = 'landlord';
-          Users.updateUserData(userId, type, body.landlordData);
+          Users.updateUserData(userId, type, body.landlordData, userId);
         }
         if(body.ownersData != null) {
           Users.updateUserDataOwners(userId, body.ownersData);
