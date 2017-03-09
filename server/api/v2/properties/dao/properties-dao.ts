@@ -125,7 +125,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
         }
         if(body.owner.company != null) {
           if(body.shareholders != null) {
-            Companies.updateCompanies(body.companyId, body.shareholders);
+            Companies.addCompaniesShareholders(body.companyId, body.shareholders);
           }
         }
       }
