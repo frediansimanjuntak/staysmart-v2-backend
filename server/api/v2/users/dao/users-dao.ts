@@ -77,6 +77,8 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 			err ? reject(err)
 				: resolve(saved);
 		});
+		var userId = _user._id;
+		resolve({userId});
 	});
 });
 
@@ -172,7 +174,7 @@ usersSchema.static('updateUserDataOwners', (id:string, ownerData:Object):Promise
 		var ObjectID = mongoose.Types.ObjectId;  
 		let body:any = ownerData;
 		var type = 'landlord';
-		
+
 		Users.createHistory(id, type);
 
 		for (var i = 0; i < body.owners.length; i++) {
