@@ -162,7 +162,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
         }
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
-            reject({message: "forbidden"});
+            reject({message: res.message});
           }
         });
         var type = 'update';
@@ -199,7 +199,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:string):Promise<a
         }
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
-            reject({message: "forbidden"});
+            reject({message: res.message});
           }
         });
 

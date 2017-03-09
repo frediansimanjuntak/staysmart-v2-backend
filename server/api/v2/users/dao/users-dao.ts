@@ -110,7 +110,7 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 		}
 		Users.validateUser(id, currentUser).then(res => {
 			if(res.message) {
-				reject({message: "forbidden"});
+				reject({message: res.message});
 			}
 		});
 		Users
@@ -129,7 +129,7 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 		}
 		Users.validateUser(id, currentUser).then(res => {
 			if(res.message) {
-				reject({message: "forbidden"});
+				reject({message: res.message});
 			}
 		});
 		let body:any = user;
@@ -157,7 +157,7 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, c
 		}
 		Users.validateUser(id, currentUser).then(res => {
 			if(res.message) {
-				reject({message: "forbidden"});
+				reject({message: res.message});
 			}
 		});
 		
