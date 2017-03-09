@@ -62,6 +62,31 @@ companiesSchema.static('createCompanies', (companies:Object, created_by:string):
     });
 });
 
+
+companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Object):Promise<any> =>{
+  return new Promise((resolve:Function, reject:Function) => {
+    if(!_.isString(id) && !_.isObject(shareholder)) {
+      return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
+    }
+    
+    var ObjectID = mongoose.Types.ObjectId;  
+    let body:any = shareholder;
+
+    for (var i = 0; i < body.shareholders.length; i++) {
+      Users
+        .findByIdAndUpdate(id, {
+          $push: {
+            "shareholders": body.shareholders[i]
+          }
+        })
+        .exec((err, updated) => {
+          err ? reject(err)
+          : resolve(updated);
+        });  
+    }
+  });
+});
+
 companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
