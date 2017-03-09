@@ -18,11 +18,11 @@ export class UserRoutes {
 
 		router
 			.route('/users/update/:id')
-			.post(auth.isAuthenticated(), UsersController.updateUser);
+			.put(auth.isAuthenticated(), UsersController.updateUser);
 			
 		router
 			.route('/users/data/:id/:type')
-			.post(auth.isAuthenticated(), UsersController.updateUserData);
+			.put(auth.isAuthenticated(), UsersController.updateUserData);
 
 		router
 			.route('/')

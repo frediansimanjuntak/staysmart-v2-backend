@@ -108,7 +108,11 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		Users.validateUser(id, currentUser);
+		Users.validateUser(id, currentUser).then(res => {
+			if(res.message) {
+				reject({message: "forbidden"});
+			}
+		});
 		Users
 			.findByIdAndRemove(id)
 			.exec((err, deleted) => {
@@ -123,7 +127,11 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
 		}
-		Users.validateUser(id, currentUser);
+		Users.validateUser(id, currentUser).then(res => {
+			if(res.message) {
+				reject({message: "forbidden"});
+			}
+		});
 		let body:any = user;
 
 		Users
@@ -147,7 +155,11 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, c
 		if(!_.isString(id) && !_.isObject(userData)) {
 			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
 		}
-		Users.validateUser(id, currentUser);
+		Users.validateUser(id, currentUser).then(res => {
+			if(res.message) {
+				reject({message: "forbidden"});
+			}
+		});
 		
 		var ObjectID = mongoose.Types.ObjectId;  
 		let userObj = {$set: {}};
@@ -376,7 +388,7 @@ usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<
 		Users.findById(currentUser, (err, result) => {
 			if(result.role != 'admin'){
 				if(userId != currentUser) {
-					reject({message: "Forbidden"});
+					resolve({message: "Forbidden"});
 				}		
 			}
 		})
