@@ -22,7 +22,7 @@ reportsSchema.static('getById', (id:string):Promise<any> => {
 
         Reports
           .findById(id)
-          .populate("reported reported")
+          .populate("reported reporter")
           .exec((err, reports) => {
               err ? reject(err)
                   : resolve(reports);

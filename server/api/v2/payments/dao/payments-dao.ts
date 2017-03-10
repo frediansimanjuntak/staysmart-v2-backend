@@ -68,9 +68,9 @@ paymentsSchema.static('updatePayments', (id:string, payments:Object):Promise<any
 
         Payments
         .findByIdAndUpdate(id, payments)
-        .exec((err, updated) => {
+        .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     });
 });

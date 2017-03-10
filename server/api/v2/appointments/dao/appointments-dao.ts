@@ -93,9 +93,9 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
             "status": status
           }
         })
-        .exec((err, updated) => {
+        .exec((err, update) => {
             err ? reject(err)
-                : resolve(updated);
+                : resolve(update);
         });
         if(status == 'accepted' || status == 'rejected')
         {
@@ -115,9 +115,9 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                       };
                       Notifications.createNotifications(notification);  
                     })
-                    .exec((err, updated) => {
+                    .exec((err, update) => {
                       err ? reject(err)
-                          : resolve(updated);
+                          : resolve(update);
                     });
                   })
             })

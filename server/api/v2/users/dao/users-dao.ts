@@ -53,7 +53,7 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 		}
 
 		Users
-			.findById(id, '-salt -password')
+			.findById(id, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
 			.exec((err, users) => {
 				err ? reject(err)
@@ -172,9 +172,9 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, c
 
 		Users
 			.findByIdAndUpdate(id, userObj)
-			.exec((err, updated) => {
+			.exec((err, update) => {
 				err ? reject(err)
-				: resolve(updated);
+				: resolve(update);
 			});
 	});
 });
@@ -198,9 +198,9 @@ usersSchema.static('updateUserDataOwners', (id:string, ownerData:Object):Promise
 						"landlord.data.owners": body.owners[i]
 					}
 				})
-				.exec((err, updated) => {
+				.exec((err, update) => {
 					err ? reject(err)
-					: resolve(updated);
+					: resolve(update);
 				});	
 		}
 	});
@@ -254,9 +254,9 @@ usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 								"verification.verified_date": Date.now()
 							}
 						})
-						.exec((err, updated) => {
+						.exec((err, update) => {
 							err ? reject(err)
-									: resolve(updated);
+									: resolve(update);
 						});
 				}
 			})

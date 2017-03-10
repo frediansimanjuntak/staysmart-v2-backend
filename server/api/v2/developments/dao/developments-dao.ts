@@ -102,9 +102,9 @@ developmentsSchema.static('updateDevelopments', (id:string, developments:Object)
 
         Developments
         .findByIdAndUpdate(id, developments)
-        .exec((err, updated) => {
+        .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     });
 });

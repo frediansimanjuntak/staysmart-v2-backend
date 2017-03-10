@@ -169,9 +169,9 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
         Properties.createPropertyHistory(id, type);
         Properties
           .findByIdAndUpdate(id, properties)
-          .exec((err, updated) => {
+          .exec((err, update) => {
                 err ? reject(err)
-                    : resolve(updated);
+                    : resolve(update);
             });
     });
 });
