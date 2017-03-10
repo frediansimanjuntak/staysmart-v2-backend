@@ -145,9 +145,9 @@ commentsSchema.static('updateComments', (id:string, comments:Object):Promise<any
 
 		Comments
 			.findByIdAndUpdate(id, comments)
-			.exec((err, updated) => {
+			.exec((err, update) => {
 				err ? reject(err)
-				: resolve(updated);
+				: resolve(update);
 			});
 	});
 });

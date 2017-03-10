@@ -112,18 +112,18 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promi
 
             Blogs
               .findByIdAndUpdate(id, blogObj)
-              .exec((err, updated) => {
+              .exec((err, update) => {
                     err ? reject(err)
-                        : resolve(updated);
+                        : resolve(update);
                 });  
           });
         }
         else{
           Blogs
             .findByIdAndUpdate(id, blogs)
-            .exec((err, updated) => {
+            .exec((err, update) => {
                   err ? reject(err)
-                      : resolve(updated);
+                      : resolve(update);
               }); 
         }
            

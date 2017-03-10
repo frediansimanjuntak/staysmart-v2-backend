@@ -68,9 +68,9 @@ banksSchema.static('updateBanks', (id:string, banks:Object):Promise<any> => {
 
         Banks
         .findByIdAndUpdate(id, banks)
-        .exec((err, updated) => {
+        .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     });
 });

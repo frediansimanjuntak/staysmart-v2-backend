@@ -83,9 +83,9 @@ faqsSchema.static('updateFaqs', (id:string, faqs:Object):Promise<any> => {
 
         Faqs
         .findByIdAndUpdate(id, faqs)
-        .exec((err, updated) => {
+        .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     });
 });

@@ -71,9 +71,9 @@ blogCategoriesSchema.static('updateBlogCategories', (id:string, blog_categories:
 
         BlogCategories
         .findByIdAndUpdate(id, blog_categories)
-        .exec((err, updated) => {
+        .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     });
 });

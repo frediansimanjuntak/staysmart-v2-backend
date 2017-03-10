@@ -79,9 +79,9 @@ companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Objec
             "shareholders": body.shareholders[i]
           }
         })
-        .exec((err, updated) => {
+        .exec((err, update) => {
           err ? reject(err)
-          : resolve(updated);
+          : resolve(update);
         });  
     }
   });
@@ -136,9 +136,9 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<
 
         Companies
         .findByIdAndUpdate(id, companies)
-        .exec((err, updated) => {
+        .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     }); 
 });

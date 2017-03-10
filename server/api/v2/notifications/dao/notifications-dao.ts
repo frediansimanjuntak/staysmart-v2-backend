@@ -74,9 +74,9 @@ notificationsSchema.static('updateNotifications', (id:string):Promise<any> => {
               "clicked": true
             }
           })
-          .exec((err, updated) => {
+          .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     });
 });

@@ -68,9 +68,9 @@ amenitiesSchema.static('updateAmenities', (id:string, amenities:Object):Promise<
 
         Amenities
         .findByIdAndUpdate(id, amenities)
-        .exec((err, updated) => {
+        .exec((err, update) => {
               err ? reject(err)
-                  : resolve(updated);
+                  : resolve(update);
           });
     });
 });
