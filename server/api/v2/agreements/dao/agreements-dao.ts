@@ -439,31 +439,33 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object, fi
    	});
 }); 
 
-agreementsSchema.static('updateInventoryList', (id:string, agreements:Object, files:Object):Promise<any> => {
+agreementsSchema.static('updateInventoryList', (id:string, agreements:Object, filesId:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if(!_.isObject(agreements)) {
 			return reject(new TypeError('Agreement is not a valid object.'));
 		}
 
-		let file:any = files;
-		let type = "inventory_list";
+		// let file:any = filesId;
+		// let type = "inventory_list";
 		let body:any = agreements;
-		Agreements.createHistory(id, type);
-		Agreements.confirmation(id, files, type);
-			
+		// Agreements.createHistory(id, type);
+		// Agreements.confirmation(id, filesId, type);
+		
 		for (var h = 0; h < body.lists.length; h++){
-			if (body.lists[h].id == null){
+			if (!body.lists[h].id){
 				Agreements
-					.populate("property")
 					.update({"_id":id},{
 						$push: {
-							"inventory_list.data.list":body.lists[h]
+							"inventory_list.data.lists":body.lists[h]
 						}
+					})
+					.exec((err,updated) => {
+						err ? reject(err)
+							: resolve(updated);
 					});
 			}
 			else{
 				Agreements
-					.populate("property")
 					.update({"_id": id, "inventory_list.data.lists": {
 						$elemMatch: {
 							"_id": body.lists[h].id
@@ -548,7 +550,8 @@ agreementsSchema.static('createHistory', (id:string, type:string):Promise<any> =
         Agreements
           .findById(id, type, (err, result) => {
             var historyObj = {$push: {}};
-            historyObj.$push[type+'.histories'] = {"date": Date.now, "data": result.data};
+            historyObj.$push[type+'.histories'] = {"date": Date.now(), "data": result.data ? result.data : {}};
+            console.log(historyObj);
             Agreements
               .findByIdAndUpdate(id, historyObj)
               .exec((err, saved) => {
@@ -738,7 +741,7 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 							if(type == "acceptInventoryList"){
 								message = "Inventory List accepted for" + unit + " " + devResult.name;
 								type_notif = "received_Inventory_List";
-								user = landlordId;
+								user = tenantId;
 							}
 				            var notification = {
 				            	"user": user,
