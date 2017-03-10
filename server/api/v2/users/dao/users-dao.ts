@@ -222,12 +222,21 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 
 				if(historyData.name != null) {
 					var historyObj = {$push: {}};
-					historyObj.$push[type+'.histories'] = {"date": Date.now, "data": history_data};
+					historyObj.$push[type+'.histories'] = {"date": new Date(), "data": history_data};
 					Users
 						.findByIdAndUpdate(id, historyObj)
 						.exec((err, saved) => {
 							err ? reject(err)
 							: resolve(saved);
+						});
+
+					var unsetObj = {$unset: {}};
+					unsetObj.$unset[userOldData] = "";
+					Users
+						.findByIdAndUpdate(id, unsetObj)
+						.exec((err, update) => {
+							err ? reject(err)
+							: resolve(update);
 						});
 				}
 			})
@@ -251,7 +260,7 @@ usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 							$set:
 							{
 								"verification.verified": true, 
-								"verification.verified_date": Date.now()
+								"verification.verified_date": new Date()
 							}
 						})
 						.exec((err, update) => {
