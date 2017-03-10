@@ -20,9 +20,18 @@ export class AgreementsRoutes {
 			.route('/agreements/update/:id')
 			.post(auth.isAuthenticated(), AgreementsController.updateAgreements);	
 
+		//Inventory List
 		router
-			.route('/agreements/inventorylist/:id')
+			.route('/inventorylist/:id')
 			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
+
+		router
+			.route('/inventorylist/update/:id')
+			.post(auth.isAuthenticated(), AgreementsController.updateInventoryList);
+
+		router
+			.route('/inventorylist/status/accepted/:id')
+			.post(auth.isAuthenticated(), AgreementsController.acceptInventoryList);
 					
 		//LOI
 		router
@@ -31,7 +40,7 @@ export class AgreementsRoutes {
 			.post(AgreementsController.createLoi);
 
 		router
-			.route('/loi/status/acccepted/:id')
+			.route('/loi/status/accepted/:id')
 			.post(AgreementsController.acceptLoi);
 
 		router
