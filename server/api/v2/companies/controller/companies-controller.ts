@@ -28,8 +28,9 @@ export class CompaniesController {
 
 	static deleteCompanies(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _currentUser = req["user"]._id;
 		CompaniesDAO
-		['deleteCompanies'](_id)
+		['deleteCompanies'](_id, _currentUser)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
@@ -37,9 +38,9 @@ export class CompaniesController {
 	static updateCompanies(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _companies = req.body;
-
+		let _currentUser = req["user"]._id;
 		CompaniesDAO
-		['updateCompanies'](_id, _companies)
+		['updateCompanies'](_id, _companies, _currentUser)
 		.then(companies => res.status(201).json(companies))
 		.catch(error => res.status(400).json(error));
 	}

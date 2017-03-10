@@ -63,7 +63,7 @@ companiesSchema.static('createCompanies', (companies:Object, created_by:string):
 });
 
 
-companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Object):Promise<any> =>{
+companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Object, currentUser:string):Promise<any> =>{
   return new Promise((resolve:Function, reject:Function) => {
     if(!_.isString(id) && !_.isObject(shareholder)) {
       return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
@@ -71,9 +71,16 @@ companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Objec
     
     var ObjectID = mongoose.Types.ObjectId;  
     let body:any = shareholder;
-
+    Companies
+      .findById(id, (err, companies) => {
+        Users.validateUser(companies.created_by, currentUser).then(res => {
+          if(res.message) {
+            reject({message: res.message});
+          }
+        });    
+      })
     for (var i = 0; i < body.shareholders.length; i++) {
-      Users
+      Companies
         .findByIdAndUpdate(id, {
           $push: {
             "shareholders": body.shareholders[i]
@@ -87,36 +94,41 @@ companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Objec
   });
 });
 
-companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
+companiesSchema.static('deleteCompanies', (id:string, currentUser:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
         Companies
           .findById(id, (err,companies) => {
-              if(companies.documents != null) {
-                  var ObjectID = mongoose.Types.ObjectId;
-                  var companies_documents = [].concat(companies.documents)
-                      for (var i = 0; i < companies_documents.length; i++) {
-                          let document = companies_documents[i];
-                          Attachments
-                            .findByIdAndRemove(document)
-                            .exec((err, deleted) => {
-                                err ? reject(err)
-                                    : resolve(deleted);
-                            });
-                      }
+            Users.validateUser(companies.created_by, currentUser).then(res => {
+              if(res.message) {
+                reject({message: res.message});
               }
-              Users
-                .findByIdAndUpdate(companies.created_by, {
-                  $pull: {
-                    "companies": id
-                  }
-                })
-                .exec((err, update) => {
-                      err ? reject(err)
-                          : resolve(update);
-                  });
+            });
+            if(companies.documents != null) {
+                var ObjectID = mongoose.Types.ObjectId;
+                var companies_documents = [].concat(companies.documents)
+                    for (var i = 0; i < companies_documents.length; i++) {
+                        let document = companies_documents[i];
+                        Attachments
+                          .findByIdAndRemove(document)
+                          .exec((err, deleted) => {
+                              err ? reject(err)
+                                  : resolve(deleted);
+                          });
+                    }
+            }
+            Users
+              .findByIdAndUpdate(companies.created_by, {
+                $pull: {
+                  "companies": id
+                }
+              })
+              .exec((err, update) => {
+                    err ? reject(err)
+                        : resolve(update);
+                });
           })
           
         Companies
@@ -128,12 +140,19 @@ companiesSchema.static('deleteCompanies', (id:string):Promise<any> => {
     });
 });
 
-companiesSchema.static('updateCompanies', (id:string, companies:Object):Promise<any> => {
+companiesSchema.static('updateCompanies', (id:string, companies:Object, currentUser:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(companies)) {
           return reject(new TypeError('Company is not a valid object.'));
         }
-
+        Companies
+          .findById(id, (err, companies) => {
+            Users.validateUser(companies.created_by, currentUser).then(res => {
+              if(res.message) {
+                reject({message: res.message});
+              }
+            });    
+          })
         Companies
         .findByIdAndUpdate(id, companies)
         .exec((err, update) => {
