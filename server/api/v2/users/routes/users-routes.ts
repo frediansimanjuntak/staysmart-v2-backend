@@ -8,7 +8,7 @@ export class UserRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/users')
-			.get(auth.isAuthenticated(), UsersController.getAll)
+			.get(auth.isAuthenticated(),  UsersController.getAll)
 			.post(UsersController.createUser);
 
 		router

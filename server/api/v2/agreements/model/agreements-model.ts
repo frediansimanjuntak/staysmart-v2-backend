@@ -26,8 +26,8 @@ var AgreementsSchema = new mongoose.Schema({
 	},
 	letter_of_intent: {
 		data: {
-			monthly_rental: {type: Number},
-			term_lease: {type: Number},
+			monthly_rental: {type: String},
+			term_lease: {type: String},
 			date_commencement: {type: Date},
 			requirements: 
 			[
@@ -35,38 +35,57 @@ var AgreementsSchema = new mongoose.Schema({
 			],
 			populate_tenant: {type: Boolean},
 			landlord: {
-				full_name: {type: String},
-				type: {type: String},
+				name: {type: String},
+				identification_type: {type: String},
 				identification_number: {type: String},
-				identity_front: {
-					type: Schema.Types.ObjectId,
-					ref: 'Attachments'
-				},
-				identity_back: {
-					type: Schema.Types.ObjectId,
-					ref: 'Attachments'
+				identification_proof: {
+					front: {
+					  type: Schema.Types.ObjectId,
+					  ref: 'Attachments'
+					},
+					back: {
+					  type: Schema.Types.ObjectId,
+					  ref: 'Attachments'
+					}
 				}
 			},
 			tenant: {
 				name: {type: String},
-				type: {type: String},
+				identification_type: {type: String},
 				identification_number: {type: String},
-				identity_front: {
-					type: Schema.Types.ObjectId,
-					ref: 'Attachments'
-				},
-				identity_back: {
-					type: Schema.Types.ObjectId,
-					ref: 'Attachments'
+				identification_proof: {
+					front: {
+					  type: Schema.Types.ObjectId,
+					  ref: 'Attachments'
+					},
+					back: {
+					  type: Schema.Types.ObjectId,
+					  ref: 'Attachments'
+					}
 				}
 			},
-			gfd_amount: {type: Number},
-			sd_amount: {type: Number},
-			security_deposit: {type: Number},
-			term_payment: {type: Number},
-			minor_repair_cost: {type: Number},
-			lapse_offer: {type: Number},
-			term_lease_extend: {type: Number},
+			occupiers: {
+				name: {type: String},
+				identification_type: {type: String},
+				identification_number: {type: String},
+				identification_proof: {
+					front: {
+					  type: Schema.Types.ObjectId,
+					  ref: 'Attachments'
+					},
+					back: {
+					  type: Schema.Types.ObjectId,
+					  ref: 'Attachments'
+					}
+				}
+			},
+			gfd_amount: {type: String},
+			sd_amount: {type: String},
+			security_deposit: {type: String},
+			term_payment: {type: String},
+			minor_repair_cost: {type: String},
+			lapse_offer: {type: String},
+			term_lease_extend: {type: String},
 			appointment: {
 				type: Schema.Types.ObjectId,
 				ref: 'Appoinments'

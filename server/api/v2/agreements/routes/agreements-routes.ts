@@ -32,24 +32,36 @@ export class AgreementsRoutes {
 		router
 			.route('/inventorylist/status/accepted/:id')
 			.post(auth.isAuthenticated(), AgreementsController.acceptInventoryList);
+		
+		router
+			.route('/agreement/confirmation/:id')
+			.post(auth.isAuthenticated(), AgreementsController.confirmation);
+
+		router
+			.route('/agreement/payment/:id')
+			.post(auth.isAuthenticated(), AgreementsController.payment);
 					
 		//LOI
 		router
 			.route('/loi/:id')
-			.get(AgreementsController.getLoi)
-			.post(AgreementsController.createLoi);
+			.get(auth.isAuthenticated(), AgreementsController.getLoi)
+			.post(auth.isAuthenticated(), AgreementsController.createLoi);
+
+		router
+			.route('/loi/send/:id')
+			.post(auth.isAuthenticated(), AgreementsController.sendLoi);
 
 		router
 			.route('/loi/status/accepted/:id')
-			.post(AgreementsController.acceptLoi);
+			.post(auth.isAuthenticated(), AgreementsController.acceptLoi);
 
 		router
 			.route('/loi/status/rejected/:id')
-			.post(AgreementsController.rejectLoi);
+			.post(auth.isAuthenticated(), AgreementsController.rejectLoi);
 
 		router
 			.route('/loi/status/admin_confirm/:id')
-			.post(AgreementsController.adminConfirmationLoi);
+			.post(auth.isAuthenticated(), AgreementsController.adminConfirmationLoi);
 
 		//TA
 		router

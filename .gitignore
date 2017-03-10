@@ -1,4 +1,5 @@
 .idea
+.do
 coverage
 node_modules
 unit_coverage
