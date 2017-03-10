@@ -13,7 +13,7 @@ export class DevelopmentsRoutes {
 
 		router
 			.route('/developments/:id')
-			.get(auth.isAuthenticated(),DevelopmentsController.getById)
+			.get(DevelopmentsController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.deleteDevelopments);
 
 		router
