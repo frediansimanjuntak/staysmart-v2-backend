@@ -8,12 +8,12 @@ export class CommentsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/comments')
-			.get(auth.isAuthenticated(),CommentsController.getAll)
+			.get(CommentsController.getAll)
 			.post(auth.isAuthenticated(),CommentsController.createComments);
 
 		router
 			.route('/comments/:id')
-			.get(auth.isAuthenticated(),CommentsController.getById)
+			.get(CommentsController.getById)
 			.delete(auth.isAuthenticated(),CommentsController.deleteComments)
 			
 		router

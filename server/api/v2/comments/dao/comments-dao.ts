@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import commentsSchema from '../model/comments-model';
 import Blogs from '../../blogs/dao/blogs-dao';
+import Users from '../../users/dao/users-dao';
 
 commentsSchema.static('getAll', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -74,12 +75,17 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 	});
 });
 
-commentsSchema.static('deleteReplies', (idComment:string, reply: Object):Promise<any> => {
+commentsSchema.static('deleteReplies', (idComment:string, reply: Object, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(idComment) && !_.isObject(reply)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 		let body:any = reply;
+		Comments.validationReply(currentUser, idComment, body.idReply).then(res => {
+			if(res.message) {
+				reject({message: res.message});
+			}
+		});
 		Comments
 			.update({"_id": idComment},
 				{
@@ -102,11 +108,16 @@ commentsSchema.static('deleteReplies', (idComment:string, reply: Object):Promise
 	});
 });
 
-commentsSchema.static('deleteComments', (idComment:string):Promise<any> => {
+commentsSchema.static('deleteComments', (idComment:string, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(idComment)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
+		Comments.validationComment(currentUser, idComment).then(res => {
+			if(res.message) {
+				reject({message: res.message});
+			}
+		});
 		Comments
 			.findById(idComment, (err, commentt ) => {
 				if(commentt.replies != null) {
@@ -137,18 +148,73 @@ commentsSchema.static('deleteComments', (idComment:string):Promise<any> => {
 	});
 });
 
-commentsSchema.static('updateComments', (id:string, comments:Object):Promise<any> => {
+commentsSchema.static('updateComments', (id:string, comments:Object, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(comments)) {
 			return reject(new TypeError('Comment is not a valid object.'));
 		}
-
+		Comments.validationComment(currentUser, id).then(res => {
+			if(res.message) {
+				reject({message: res.message});
+			}
+		});
 		Comments
 			.findByIdAndUpdate(id, comments)
 			.exec((err, update) => {
 				err ? reject(err)
 				: resolve(update);
 			});
+	});
+});
+
+commentsSchema.static('validationComment', (userId:string, commentsId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Comments
+			.findById(commentsId, (err, result) => {
+				var blog = result.blog;
+				var comment_owner = result.user;
+				if(userId != comment_owner) {
+					Blogs
+						.findById(blog, (err, blog) => {
+							var blog_owner = blog.created_by;
+							if(userId != blog_owner) {
+								Users
+									.findById(userId, (err, user) => {
+										if(user.role != 'admin') {
+											resolve({message: "Forbidden"});
+										}
+									})
+							}
+						})
+				}
+			})
+	});
+});
+
+commentsSchema.static('validationReply', (userId:string, commentsId:string, replyId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Comments
+			.findById(replyId, (err, reply) => {
+				if(reply.user != userId) {
+					Comments
+						.findById(commentsId, (err, comment) => {
+							if(comment.user != userId) {
+								Blogs
+									.findById(comment.blog, (err, blog) => {
+										var blog_owner = blog.created_by;
+										if(userId != blog_owner) {
+											Users
+												.findById(userId, (err, user) => {
+													if(user.role != 'admin') {
+														resolve({message: "Forbidden"});
+													}
+												})
+										}
+									})
+							}
+						})
+				}
+			})
 	});
 });
 
