@@ -15,6 +15,9 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
+        if(search.development != 'all') {
+          property.where('development', search.development);
+        }
         if(search.latlng != 'all') 
         {
           if(search.radius != 'all') {
