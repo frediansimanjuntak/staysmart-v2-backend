@@ -36,10 +36,6 @@ usersSchema.static('getAll', ():Promise<any> => {
 
 usersSchema.static('me', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		let emailTo = 'felixprawira8@gmail.com';
-		let emailSubject = 'test';
-		let emailText = 'test email';
-		EmailService.sendEmail(emailTo, emailSubject, emailText);
 		Users
 			.findOne({_id:userId}, '-salt -password')
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
