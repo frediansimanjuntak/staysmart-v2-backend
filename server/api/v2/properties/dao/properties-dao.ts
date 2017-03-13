@@ -64,7 +64,15 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           property.where('address.street_name', search.location);
         }
 
-        property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
+        property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+        property.populate({
+          path: 'owner.user',
+          populate: {
+            path: 'picture landlord.data.identification_proof.front landlord.data.identification_proof.back tenant.data.identification_proof.front tenant.data.identification_proof.back',
+            model: 'Attachments'
+          },
+          select: 'email picture landlord.data tenant.data'
+        })
         property.exec((err, properties) => {
           err ? reject(err)
               : resolve(properties);
@@ -76,7 +84,15 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .findById(id)
-          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+          .populate({
+            path: 'owner.user',
+            populate: {
+              path: 'landlord.data.identification_proof.front landlord.data.identification_proof.back tenant.data.identification_proof.front tenant.data.identification_proof.back',
+              model: 'Attachments'
+            },
+            select: 'email picture landlord.data tenant.data'
+          })
           .exec((err, properties) => {
               err ? reject(err)
                   : resolve(properties);
