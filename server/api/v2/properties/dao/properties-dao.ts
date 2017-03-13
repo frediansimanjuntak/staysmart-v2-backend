@@ -226,7 +226,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
 propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
-          .findById(id, "development address details schedules amenities pictures owned_type owner publish confirmation status", (err, result) => {
+          .findById(id, "details schedules amenities pictures owned_type owner publish confirmation status", (err, result) => {
             var historyObj = {$push: {}};
             historyObj.$push['histories'] = {"action": type, "date": Date.now, "data": result};
             Properties
@@ -238,8 +238,6 @@ propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promis
             Properties
               .findById(id, {
                 $unset: {
-                  "development": "",
-                  "address": "",
                   "details": "",
                   "schedules": "",
                   "amenities": "",

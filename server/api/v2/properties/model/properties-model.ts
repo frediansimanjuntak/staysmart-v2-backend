@@ -21,7 +21,7 @@ var PropertiesSchema = new mongoose.Schema({
 			[
 				{type: String}
 			],
-		country: {type: String},
+		country: {type: String, default: 'Singapore'},
 		full_address: {type: String},
 		type: {type: String, default: "Point"}
 	},
