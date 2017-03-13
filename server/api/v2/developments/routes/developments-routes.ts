@@ -12,6 +12,10 @@ export class DevelopmentsRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.createDevelopments);
 
 		router
+			.route('/developments/filter/:number_of_units')
+			.get(DevelopmentsController.getDevelopment)
+
+		router
 			.route('/developments/:id')
 			.get(DevelopmentsController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.deleteDevelopments);

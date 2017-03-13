@@ -17,6 +17,14 @@ export class DevelopmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getDevelopment(req: express.Request, res: express.Response):void {
+		let _unit = req.params.number_of_units;
+		DevelopmentsDAO
+		['getDevelopment'](_unit)
+		.then(developments => res.status(200).json(developments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createDevelopments(req: express.Request, res: express.Response):void {
 		let _developments = req.body;
 		DevelopmentsDAO
