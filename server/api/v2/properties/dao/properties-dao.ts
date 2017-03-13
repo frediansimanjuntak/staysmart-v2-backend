@@ -68,10 +68,10 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         property.populate({
           path: 'owner.user',
           populate: {
-            path: 'picture landlord.data.identification_proof.front landlord.data.identification_proof.back tenant.data.identification_proof.front tenant.data.identification_proof.back',
+            path: 'picture',
             model: 'Attachments'
           },
-          select: 'email picture landlord.data tenant.data'
+          select: 'email picture landlord.data.name tenant.data.name'
         })
         property.exec((err, properties) => {
           err ? reject(err)
@@ -88,10 +88,10 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
           .populate({
             path: 'owner.user',
             populate: {
-              path: 'landlord.data.identification_proof.front landlord.data.identification_proof.back tenant.data.identification_proof.front tenant.data.identification_proof.back',
+              path: 'picture',
               model: 'Attachments'
             },
-            select: 'email picture landlord.data tenant.data'
+            select: 'email picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
               err ? reject(err)
