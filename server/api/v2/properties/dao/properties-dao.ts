@@ -186,16 +186,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
         }
       }
 
-      Users
-        .update({"_id":userId}, {
-          $push: {
-            "owned_properties": propertyID
-          }
-        })
-        .exec((err, saved) => {
-            err ? reject(err)
-                : resolve(saved);
-        });
+      
     });
 });
 
@@ -365,6 +356,17 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
               Properties.unsetTemp(id, type);
             }
           })
+
+        Users
+          .update({"_id":userId}, {
+            $push: {
+              "owned_properties": id
+            }
+          })
+          .exec((err, saved) => {
+              err ? reject(err)
+                  : resolve(saved);
+          });
       }
       else if(confirmation == 'reject'){
         confirmation_result = 'rejected';
