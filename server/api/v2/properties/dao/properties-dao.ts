@@ -138,14 +138,33 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
                         err ? reject(err)
                             : resolve(update);
                     });
+                  
+                  Properties
+                    .findById(propertyID, {
+                      $set: {
+                        "temp.shareholders": body.shareholders
+                      }
+                    })
+                    .exec((err, update) => {
+                        err ? reject(err)
+                            : resolve(update);
+                    });
                 });
               }
             })  
         }
-        if(body.owner.company != null) {
-          if(body.shareholders != null) {
-            Companies.addCompaniesShareholders(body.companyId, body.shareholders, userId);
-          }
+
+        if(body.owner.company != null && body.shareholders != null) {
+          Properties
+            .findById(propertyID, {
+              $set: {
+                "temp.shareholders": body.shareholders
+              }
+            })
+            .exec((err, update) => {
+                err ? reject(err)
+                    : resolve(update);
+            });
         }
       }
       else if(body.owned_type == 'individual'){
@@ -154,7 +173,16 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
           Users.updateUserData(userId, type, body.landlordData, userId);
         }
         if(body.ownersData != null) {
-          Users.updateUserDataOwners(userId, body.ownersData);
+          Properties
+            .findById(propertyID, {
+              $set: {
+                "temp.owners": body.ownersData
+              }
+            })
+            .exec((err, update) => {
+                err ? reject(err)
+                    : resolve(update);
+            });
         }
       }
 
@@ -321,6 +349,24 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
       }
       if(confirmation == 'approve') {
         var confirmation_result = 'approved';
+
+        Properties
+          .findById(id, (err, properties) => {
+            var shareholders = properties.temp.shareholders;
+            var owners = properties.temp.owners;
+            var companyId = properties.owner.company;
+
+            if(shareholders.length > 0) {
+              Companies.addCompaniesShareholders(companyId, shareholders, userId);
+              var type = 'shareholders';
+              Properties.unsetTemp(id, type);
+            }
+            if(owners.length > 0) {
+              Users.updateUserDataOwners(userId, owners);
+              var type = 'owners';
+              Properties.unsetTemp(id, type);
+            }
+          })
       }
       else if(confirmation == 'reject'){
         confirmation_result = 'rejected';
@@ -426,6 +472,20 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:string):Prom
           })    
         }
       })
+  });
+});
+
+propertiesSchema.static('unsetTemp', (propertyId:string, type:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      var unset = 'temp.'+type;
+      var unsetObj = {$unset:{}};
+      unsetObj.$unset[unset] = "";
+      Properties
+        .findByIdAndUpdate(propertyId, unsetObj)
+        .exec((err, update) => {
+          err ? reject(err)
+              : resolve(update);
+        });
   });
 });
 
