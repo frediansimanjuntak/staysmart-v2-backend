@@ -10,9 +10,9 @@ chatsSchema.static('requestToken', (userId:string, username:string):Promise<any>
     });
 });
 
-chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
+chatsSchema.static('login', (token:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        DreamTalk.requestToken(userId, username);
+        DreamTalk.login(token);
     });
 });
 

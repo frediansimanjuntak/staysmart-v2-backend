@@ -207,6 +207,26 @@ propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promis
                 err ? reject(err)
                 : resolve(saved);
               });
+            Properties
+              .findById(id, {
+                $unset: {
+                  "development": "",
+                  "address": "",
+                  "details": "",
+                  "schedules": "",
+                  "amenities": "",
+                  "pictures": "",
+                  "owned_type": "",
+                  "owner": "",
+                  "publish": "",
+                  "confirmation": "",
+                  "status": ""
+                }
+              })
+              .exec((err, update) => {
+                err ? reject(err)
+                : resolve(update);
+              });
           })
     });
 });
