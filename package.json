@@ -34,6 +34,7 @@
     "fs-extra": "^1.0.0",
     "helmet": "^2.1.1",
     "jsonwebtoken": "^7.2.1",
+    "jsreport": "^1.5.1",
     "lodash": "^4.17.4",
     "mailgun-js": "^0.7.15",
     "method-override": "^2.3.7",
@@ -42,6 +43,7 @@
     "newrelic": "^1.18.2",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
+    "phantomjs": "^2.1.7",
     "sendmail": "^1.1.1",
     "serve-favicon": "^2.3.2",
     "slug": "^0.9.1"

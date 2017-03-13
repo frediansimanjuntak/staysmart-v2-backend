@@ -658,7 +658,7 @@ agreementsSchema.static('confirmation', (id:string, data:Object):Promise<any> =>
 			typeData = type+'.data.confirmation.landlord'
 		}
 		else if(status == "tenant"){
-			typeData = type+'.data.confirmation.landlord'
+			typeData = type+'.data.confirmation.tenant'
 		}
 
 		Agreements
