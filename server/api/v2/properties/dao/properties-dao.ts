@@ -223,18 +223,45 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
     });
 });
 
-propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promise<any> => {
+propertiesSchema.static('createPropertyHistory', (id:string, action:string, type:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .findById(id, "details schedules amenities pictures owned_type owner confirmation status", (err, result) => {
             var historyObj = {$push: {}};
-            historyObj.$push['histories'] = {"action": type, "date": Date.now, "data": result};
+            historyObj.$push['histories'] = {"action": action, "date": Date.now, "data": result};
             Properties
               .findByIdAndUpdate(id, historyObj)
               .exec((err, saved) => {
                 err ? reject(err)
                 : resolve(saved);
               });
+            if(type == 'data') {
+              Properties
+                .findById(id, {
+                  $unset: {
+                    "details": "",
+                    "schedules": "",
+                    "amenities": "",
+                    "pictures": "",
+                  }
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                  : resolve(update);
+                });
+            }
+            else if(type == 'confirmation'){
+              Properties
+                .findById(id, {
+                  $unset: {
+                    "confirmation": ""
+                  }
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                  : resolve(update);
+                }); 
+            }
           })
     });
 });
@@ -327,6 +354,10 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
       if(!_.isString(confirmation)) {
         return reject(new TypeError('Confirmation type is not a valid string.'));
       }
+      var action = 'update';
+      var type = 'confirmation';
+      Properties.createPropertyHistory(id, action, type);
+
       if(confirmation == 'approve') {
         var confirmation_result = 'approved';
 
