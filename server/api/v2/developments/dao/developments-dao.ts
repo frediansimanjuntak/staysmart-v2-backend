@@ -30,6 +30,20 @@ developmentsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
+developmentsSchema.static('getDevelopment', (unit:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query = {};
+        Developments
+          .find(_query)
+          .where('number_of_units').gt(unit)
+          .populate("properties")
+          .exec((err, developments) => {
+              err ? reject(err)
+                  : resolve(developments);
+          });
+    });
+});
+
 developmentsSchema.static('createDevelopments', (developments:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(developments)) {
