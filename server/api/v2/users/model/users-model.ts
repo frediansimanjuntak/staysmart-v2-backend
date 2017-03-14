@@ -142,6 +142,7 @@ var UsersSchema = new mongoose.Schema({
 	],
 	dreamtalk:
 	[{
+    loginId: {type: String},
 		loginToken: {type: String},
 		loginTokenExpires: {type: Date}
 	}],

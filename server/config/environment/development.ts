@@ -13,7 +13,8 @@ export default {
   awsBucket: 'staysmart-revamp',
 
   dream_talk: {
-  	ws: 'wss://dt.shrimpventures.com/websocket'
+  	ws: 'wss://dt.shrimpventures.com/websocket',
+    url: 'https://dt.shrimpventures.com/api/v1'
   },
 
   mailgun: {

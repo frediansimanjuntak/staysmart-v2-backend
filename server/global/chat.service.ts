@@ -7,8 +7,8 @@ import Users from '../api/v2/users/dao/users-dao';
 
 var DDPClient = require('ddp');
 var headers = {
-	'X-Client-ID': 'b6xW7APE2FXmtBAyg',
-	'X-Client-Secret': 'Gdgu2ZyCNktSPopKdMC1Db22FDjeDgoW02sAfZpG',
+	'X-Client-ID': 'xyb6HBZQK8Jq2YX3h',
+	'X-Client-Secret': 'pGnYqGHHdvoy4NOyDzXH6VW7rIjd-evVxnjgotH8',
 	'Content-Type': 'application/json'
 };
 var ddp = new DDPClient({
@@ -20,11 +20,11 @@ var ddp = new DDPClient({
 });
 
 export class DreamTalk{
-	static init():void{
+	static init(){
 		DreamTalk.connect();
 	}
 
-	static connect():void{
+	static connect(){
 		ddp.connect((err, wasReconnect) => {
 			if (err) {
 				console.log("DDP connection error: "+err);
@@ -39,7 +39,7 @@ export class DreamTalk{
 	    });
 	}
 
-	static lastChatSubscribe():void{
+	static lastChatSubscribe(){
 		ddp.subscribe(
 	      'organizations.chats.last',
 	      [
@@ -55,7 +55,7 @@ export class DreamTalk{
 	    DreamTalk.observeChanges();
 	}
 
-	static observeChanges():void{
+	static observeChanges(){
 		return new Promise((resolve:Function, reject:Function) => {
 			let observer = ddp.observe('chats');
 			observer.added = function(id) {
@@ -98,10 +98,9 @@ export class DreamTalk{
 	}
 	static doHTTP(method, url, data) {
 		if (!url) throw "Url not defined";
-		let options = { method:'GET' };
-		options["headers"] = headers;
+		let options = { method:'GET', headers: headers };
 		if (method) options.method = method;
-		options["url"] = config.dream_talk.ws + url;
+		options["url"] = config.dream_talk.url + url;
 		if (method == 'GET' && data) {
 		  options["qs"] = data;
 		} else if (data) {
@@ -114,26 +113,27 @@ export class DreamTalk{
 		    }
 		    if (res && (res.statusCode >= 200 && res.statusCode < 400)) {
 		      try {
+		      	resolve(res);
 		        resolve(JSON.parse(body));
 		      } catch (e) {
-		        resolve(body)
+		        resolve(e)
 		      }
 		    } else {
 		      try {
 		        resolve(JSON.parse(body));
 		      } catch (e) {
-		        resolve(body)
+		        resolve(e)
 		      }
 		    }
 		  });
 		});
 	}
 
-	static requestToken(uid, name):void {
+	static requestToken(uid, name) {
 		return new Promise((resolve:Function, reject:Function) => {
 			DreamTalk.doHTTP('GET', '/users/token', {uid, name})
 			.then(res => {
-			resolve(res)
+			resolve(res.body)
 			})
 			.catch(err => {
 			reject(err);
@@ -141,14 +141,14 @@ export class DreamTalk{
 		});
 	}
 
-	static login(token):void {
+	static login(token) {
 		return new Promise((resolve:Function, reject:Function) => {
 			ddp.call(
 				'login',
 				[{resume: token}],
 				(err, res) => {
-				  if (err) reject(err);
-				  else resolve(res);
+				  if (err) resolve({err});
+				  else resolve({res});
 				}
 			);
 	    });
