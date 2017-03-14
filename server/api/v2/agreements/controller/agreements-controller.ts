@@ -69,6 +69,26 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static acceptPayment(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['acceptPayment'](_id, _data)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static rejectPayment(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['rejectPayment'](_id, _data)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//LOI
 	static getLoi(req: express.Request, res: express.Response):void {
 		AgreementsDAO
@@ -100,17 +120,15 @@ export class AgreementsController {
 	static acceptLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _data = req.body;
-		let _userId = req["user"]._id;
 				
 		AgreementsDAO
-		['acceptLoi'](_id, _data, _userId)
+		['acceptLoi'](_id, _data)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static rejectLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _userId = req["user"]._id;
 
 		AgreementsDAO
 		['rejectLoi'](_id)
@@ -139,10 +157,9 @@ export class AgreementsController {
 	static createTA(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;
-		let _files = req["files"];
 		
 		AgreementsDAO
-		['createTA'](_id, _data, _files)
+		['createTA'](_id, _data)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

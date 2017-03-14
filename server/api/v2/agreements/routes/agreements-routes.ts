@@ -33,13 +33,23 @@ export class AgreementsRoutes {
 			.route('/inventorylist/status/accepted/:id')
 			.post(auth.isAuthenticated(), AgreementsController.acceptInventoryList);
 		
+		//confirmation
 		router
 			.route('/agreement/confirmation/:id')
 			.post(auth.isAuthenticated(), AgreementsController.confirmation);
 
+		//payment
 		router
 			.route('/agreement/payment/:id')
 			.post(auth.isAuthenticated(), AgreementsController.payment);
+
+		router
+			.route('/agreement/payment/accepted/:id')
+			.post(auth.isAuthenticated(), AgreementsController.acceptPayment);
+
+		router
+			.route('/agreement/payment/rejected/:id')
+			.post(auth.isAuthenticated(), AgreementsController.rejectPayment);
 					
 		//LOI
 		router

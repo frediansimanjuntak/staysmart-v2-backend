@@ -112,7 +112,7 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String, 
-				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation']
+				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation', 'rejected']
 			},
 			created_at: {type: Date}
 		},
@@ -142,7 +142,7 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String, 
-				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation']
+				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation', 'rejected']
 			},
 			stamp_certificate: {
 				type: Schema.Types.ObjectId,

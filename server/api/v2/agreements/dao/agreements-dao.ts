@@ -111,10 +111,9 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 		let body:any = data;
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
-		
+
 		Agreements
 			.findById(id, (err, agreement) =>{
-
 				let propertyId = agreement.property;
 				let landlordId = agreement.landlord;
 				let tenantId = agreement.tenant;
@@ -135,7 +134,6 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 						Users
 							.findById(userId, (err, tenantUser) => {
 								let tenantData = tenantUser.tenant.data;
-								console.log(tenantData.name);
 								if(!tenantData.name){
 									Users
 										.findByIdAndUpdate(userId, {
@@ -151,12 +149,16 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 
 								let inputBankNo = body.bank_account.no;
 								Users
-									.find({"_id": userId}, {"tenant.data.bank_account.no": inputBankNo}, (err, user) => {
-										if (!user){
+									.findOne({"_id": tenantId, "tenant.data.bank_account.no": inputBankNo}, (err, user) => {
+										if (user == null){
 											Users
 												.update({"_id": id}, {
 													$push:{
-														"tenant.data.bank_account": body.bank_account
+														"tenant.data.bank_account": {
+															"no": body.bank_account.no,
+															"name": body.bank_account.name,
+															"bank": body.bank_account.bank
+														}
 													}
 												})
 												.exec((err, updated) => {
@@ -189,16 +191,15 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 								loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
 							    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
 							    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
-							    loiObj.$set["letter_of_intent.data.status"] = "pending";
+							    loiObj.$set["letter_of_intent.data.status"] = "admin-confirmation";
 							    loiObj.$set["letter_of_intent.data.created_at"] = new Date();
 
-							    console.log(loiObj);
 								Agreements
 									.update(_query, loiObj)
 									.exec((err, updated) => {
 										err ? reject(err)
 											: resolve(updated);
-											console.log(updated);
+										console.log(updated);
 									});	
 							})
 					})
@@ -231,23 +232,7 @@ agreementsSchema.static('sendLoi', (id:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('validateUserLandlord', (id:string, userId:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-		Agreements
-			.findById(id, (err, agreement) => {
-				let landlordId = agreement.landlord;
-
-				if (landlordId =! userId){
-					resolve({message: "forbidden"})
-				}
-			})
-	});
-});
-
-agreementsSchema.static('acceptLoi', (id:string, data:Object, _userId:string):Promise<any> => {
+agreementsSchema.static('acceptLoi', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -262,63 +247,34 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, _userId:string):Pr
 	});
 });
 
-agreementsSchema.static('rejectLoi', (id:string, _userId:string):Promise<any> => {
+agreementsSchema.static('rejectLoi', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 
 		let type_notif = "rejectLoi";
-		let type = "letter_of_intent";
-		let status = "rejected";
-
-		Agreements.changeStatus(id, status, type);
-		Agreements.notification(id, type_notif);
-	});
-});
-
-agreementsSchema.static('adminConfirmationLoi', (id:string, agreements:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
-		let type = "letter_of_intent";
-		let status = "";
-		let body:any = agreements;
-		let attachment = body.attachment;
 
 		Agreements
 			.findById(id, (err, agreement) => {
-				let paymentId = agreement.letter_of_intent.data.payment;
+				let loiData = agreement.letter_of_intent.data;	
+				loiData.status = "rejected";
+				agreement.save();			
+				let paymentID = loiData.payment;
 
-				if (body.type == "accept"){
-			        Payments
-			        	.findById(paymentId, (err, payment)=>{
-			        		payment.payment_confirmation = attachment;
-			        		payment.total_payment = body.total_payment;
-			        		payment.save((err, saved)=>{
-			        			err ? reject(err)
-			        				: resolve(saved);
-			        		})
-			        	})	   
-			    	status = "landlord-confirmation";
-				}
-
-				if (body.type == "reject"){
-					Payments
-			        	.findById(paymentId, (err, payment)=>{
-			        		payment.remarks = body.remarks;
-			        		payment.refund = true;
-			        		payment.save((err, saved)=>{
-			        			err ? reject(err)
-			        				: resolve(saved);
-			        		})
-			        	})
-			        status = "rejected";	
-				}				
+				Payments
+					.findByIdAndUpdate(paymentID, {
+						$set: {
+							"refund": true
+						}
+					})
+					.exec((err, updated) => {
+			      		err ? reject(err)
+			      			: resolve(updated);
+			      			console.log(updated);
+			      	});
 			})
-		Agreements.changeStatus(id, status, type);
+		Agreements.notification(id, type_notif);
 	});
 });
 
@@ -336,51 +292,74 @@ agreementsSchema.static('getTA', (id:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('createTA', (id:string, data:Object, files:Object):Promise<any> => {
+agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 		let type = "tenancy_agreement";
 		let body:any = data;
-		let remark = body.remark_payment;
-
+		console.log(data);
+		let bankNo = body.no;
+		
 		Agreements
 			.findById(id, (err, agreement) => {
-				let security_deposit = agreement["letter_of_intent.data.security_deposit"];
-				let ta = agreement["tenancy_agreement.data"];
+				let lanlordId = agreement.landlord;
+				let ta = agreement.tenancy_agreement.data;
 				if (ta != null){
 					Agreements.createHistory(id, type);
 				}
 
-				let fee = {
-					"scd" : security_deposit
-				};
-				
+				Users
+					.findOne({"_id": lanlordId, "landlord.data.bank_account.no": bankNo}, (err, user) => {
+						if (user == null){
+							Users
+								.update({"_id": lanlordId}, {
+									$push: {
+										"landlord.data.bank_account": {
+											"no": body.no,
+											"name": body.name,
+											"bank": body.bank._id
+										}
+									}
+								})
+								.exec((err, updated) => {
+									err ? reject(err)
+										: resolve(updated);
+										console.log(updated);
+								});
+						}
+					})						
 				agreement.tenancy_agreement.data.status = "admin-confirmation";
 				agreement.tenancy_agreement.data.created_at = new Date();
 				agreement.save((err, saved)=>{
 					err ? reject(err)
-						: resolve();
+						: resolve(saved);
 				});
-
-
-				if(files){
-					Agreements.payment(id, fee, remark, files, type);
-					Agreements.confirmation(id, files, type);
-				} 
 			})		
 	});
 });
 
-agreementsSchema.static('acceptTA', (id:string, files:Object):Promise<any> => {
+agreementsSchema.static('sendTA', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Agreements
+			.findById(id, (err, agreement) => {
+				let propertyId = agreement.landlord;
+				let type = "initiateTA";
+				Agreements.notifications(id, type);				
+			})
+	});
+});
+
+agreementsSchema.static('acceptTA', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 		let type_notif = "acceptTA";
-		let type = "tenancy_agreement";	
-		let status = "accepted";
 
 		Agreements
 			.findById(id, (err, agreement)=>{
@@ -391,7 +370,7 @@ agreementsSchema.static('acceptTA', (id:string, files:Object):Promise<any> => {
 				let dateCommencement = agreement.letter_of_intent.data.date_commencement;
 				let longTerm = termLease + termLeaseExtend;
 
-				let until = dateCommencement(+ dateCommencement + longTerm *30*24*60*60*1000) ;
+				let until = dateCommencement + (dateCommencement + longTerm * 30 * 24 * 60 * 60 * 1000) ;
 				Properties
 					.findByIdAndUpdate(propertyId, {
 						$set: {
@@ -416,9 +395,14 @@ agreementsSchema.static('acceptTA', (id:string, files:Object):Promise<any> => {
 						err ? reject(err)
 							: resolve();
 					});
-			})
-		Agreements.confirmation(id, files, type);		
-		Agreements.changeStatus(id, status, type);		
+
+				agreement.tenancy_agreement.data.status = "accepted";
+				agreement.tenancy_agreement.data.created_at = new Date();
+				agreement.save((err, saved)=>{
+					err ? reject(err)
+						: resolve();
+				});
+			})			
 		Agreements.notification(id, type_notif);
 	});
 });
@@ -430,61 +414,27 @@ agreementsSchema.static('rejectTA', (id:string):Promise<any> => {
 		}
 
 		let type_notif = "rejectTA";
-		let type = "tenancy_agreement";
-		let status = "rejected";
-
-		Agreements.changeStatus(id, status, type);
-		Agreements.notification(id, type_notif);
-	});
-});
-
-agreementsSchema.static('adminConfirmationTA', (id:string, agreements:Object, files:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
-		let type = "tenancy_agreement";
-		let status = "";
-		let file:any = files;
-		let body:any = agreements;
-		let paymentConfirm = file.paymentConfirm;
-
 
 		Agreements
 			.findById(id, (err, agreement) => {
-				let paymentId = agreement.tenancy_agreement.data.payment;
+				let loiData = agreement.tenancy_agreement.data;	
+				loiData.status = "rejected";
+				agreement.save();			
+				let paymentID = loiData.payment;
 
-				if (body.type == "accept"){
-					Attachments.createAttachments(paymentConfirm).then(res => {
-				        var idPaymentFile = res.idAtt;
-				        console.log(idPaymentFile);
-				        Payments
-				        	.findById(paymentId, (err, payment)=>{
-				        		payment.payment_confirmation = idPaymentFile;
-				        		payment.total_payment = body.total_payment;
-				        		payment.save((err, saved)=>{
-				        			err ? reject(err)
-				        				: resolve(saved);
-				        		})
-				        	})	        
-			    	});
-			    	status = "landlord-confirmation";
-				}
-				if (body.type == "reject"){
-					Payments
-			        	.findById(paymentId, (err, payment)=>{
-			        		payment.remarks = body.remarks;
-			        		payment.refund = true;
-			        		payment.save((err, saved)=>{
-			        			err ? reject(err)
-			        				: resolve(saved);
-			        		})
-			        	})
-			        status = "rejected";	
-				}				
+				Payments
+					.findByIdAndUpdate(paymentID, {
+						$set: {
+							"refund": true
+						}
+					})
+					.exec((err, updated) => {
+			      		err ? reject(err)
+			      			: resolve(updated);
+			      			console.log(updated);
+			      	});
 			})
-		Agreements.changeStatus(id, status, type);	
+		Agreements.notification(id, type_notif);
 	});
 });
 
@@ -615,7 +565,7 @@ agreementsSchema.static('changeStatus', (id:string, status:string, type:string):
 //create History
 agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-    	let data = ""
+    	let data = "";
         Agreements
           .findById(id, typeDataa, (err, result) => {
           	if (typeDataa == "letter_of_intent"){
@@ -654,22 +604,16 @@ agreementsSchema.static('confirmation', (id:string, data:Object):Promise<any> =>
 		let status = body.status; //status ('tenant', 'landlord')
 		let typeData = "";
 
-		if(status == "landlord"){
-			typeData = type+'.data.confirmation.landlord'
-		}
-		else if(status == "tenant"){
-			typeData = type+'.data.confirmation.tenant'
-		}
+		let confirmObj = {$set: {}};
+		confirmObj.$set[type + ".data.confirmation." + status + ".sign"] = body.sign;
+		confirmObj.$set[type + ".data.confirmation." + status + ".date"] = new Date;
 
 		Agreements
-			.findById(id, typeData, (err, agreement)=>{
-				agreement.sign = sign;
-				agreement.date = new Date();
-				agreement.save((err, saved) => {
-			    err ? reject(err)
-			        : resolve(saved);
-			    });
-			})
+			.findByIdAndUpdate(id, confirmObj)
+			.exec((err, saved) => {
+                err ? reject(err)
+                	: resolve(saved);
+            });
 	});
 });
 
@@ -677,11 +621,12 @@ agreementsSchema.static('confirmation', (id:string, data:Object):Promise<any> =>
 agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let body:any = data;
-		let type = body.type; //type ('letter_of_intent', 'tenancy_agreement', 'inventory_list')
+		let type = body.type; //type ('letter_of_intent', 'tenancy_agreement')
 		let paymentFee = [];
 		let paymentType = "";
 		let payObj = {$set: {}};
 
+		console.log(body);
 		Agreements
 			.findById(id, (err, agreement) => {
 				let loiData = agreement.letter_of_intent.data;
@@ -705,8 +650,6 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 						"refunded": false
 					}];
 					paymentType = "loi";
-					payObj.$set["letter_of_intent.data.payment"] = paymentId;
-
 				}
 				else if (type ==  "tenancy_agreement"){
 					paymentFee = [{
@@ -717,18 +660,17 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 						"refunded": false
 					}];
 					paymentType = "ta";
-					payObj.$set["tenancy_agreement.data.payment"] = paymentId;
 				}
 
 				var _payment = new Payments();
 				_payment.type = paymentType;
 				_payment.fee = paymentFee;
-				_payment.remarks = body.remark;
 				_payment.attachment = body.attachment;
 				_payment.refund = false;
 				_payment.save((err, saved)=>{
 					err ? reject(err)
 						: resolve(saved);
+						console.log(saved);
 				});	
 
 				var paymentId = _payment._id;
@@ -745,12 +687,125 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 					.exec((err, updated) => {
 			      		err ? reject(err)
 			      			: resolve(updated);
+			      			console.log(updated);
 			      	});	
-			})
-		
+			})		
 	});
 });
 
+agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+
+		let body:any = data;
+		let type:any = body.type;
+
+	    Agreements
+			.findById(id, (err, agreement) => {
+				let loiData = agreement.letter_of_intent.data;			
+				
+				let gfd = loiData.gfd_amount;
+				let std = loiData.sd_amount;
+				let scd = loiData.security_deposit;
+				let paymentID = loiData.payment;
+
+				let paymentTotal = gfd + std ;
+				if (type == "letter_of_intent"){
+					agreement.tenancy_agreement.data.status = "landlord-confirmation";
+					paymentTotal = gfd + std;
+				}
+				if (type == "tenancy_agreement"){
+					agreement.tenancy_agreement.data.status = "landlord-confirmation";
+					paymentTotal = scd;
+				}
+				agreement.save();
+
+				let refund = null;
+				let fee_status = "";
+				let minus_payment = 0;
+				let refund_payment = 0;
+
+				if (paymentTotal == body.total_payment){
+					refund = false ;
+					fee_status = "paid";
+					minus_payment = 0;
+					refund_payment = 0;
+				}
+				if (paymentTotal <= body.total_payment){
+					refund = false;
+					fee_status = "unpaid";
+					minus_payment = paymentTotal - body.total_payment;
+					refund_payment = 0;
+				}
+				if (paymentTotal >= body.total_payment){
+					refund = true;
+					fee_status = "paid";
+					minus_payment = 0;
+					refund_payment = body.total_payment - paymentTotal;
+				}
+
+				Payments
+					.findByIdAndUpdate(paymentID, {
+						$set: {
+							"fee.$.status": fee_status,
+							"fee_payment": paymentTotal,
+							"total_payment": body.total_payment,
+							"minus_payment": minus_payment,
+							"refund_payment": refund_payment,
+							"refund": refund
+						}
+					})
+					.exec((err, updated) => {
+			      		err ? reject(err)
+			      			: resolve(updated);
+			      			console.log(updated);
+			      	});
+			})
+	});
+});
+
+agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+
+		let body:any = data;
+		let type:any = body.type;
+
+	    Agreements
+			.findById(id, (err, agreement) => {
+
+				if (type == "letter_of_intent"){
+					agreement.letter_of_intent.data.status = "rejected";
+				}
+				if (type == "tenancy_agreement"){
+					agreement.tenancy_agreement.data.status = "rejected";
+				}
+				agreement.save();
+
+				let paymentID = agreement.letter_of_intent.data.payment;
+
+				Payments
+					.findByIdAndUpdate(paymentID, {
+						$set: {
+							"remarks": body.remarks,
+							"refund": true
+						}
+					})
+					.exec((err, updated) => {
+			      		err ? reject(err)
+			      			: resolve(updated);
+			      			console.log(updated);
+			      	});
+			})
+	});
+});
+
+
+//notification
 agreementsSchema.static('notification', (id:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
