@@ -106,7 +106,7 @@ attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
-                  : resolve();
+                  : resolve({message: "delete success"});
           });
 
     });

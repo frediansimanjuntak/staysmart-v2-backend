@@ -88,15 +88,15 @@ var UsersSchema = new mongoose.Schema({
           }
         }
       ],
-			bank_account: {
-				bank: 
-				{
-					type: Schema.Types.ObjectId,
-					ref: 'Banks'
-				},
-				name: {type: String},
-				no: {type: Number}
-			}
+			bank_account: [{
+        bank:
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Banks'
+        },
+        name: {type: String},
+        no: {type: Number}
+      }]
 		},
 		histories: 
 		[{
