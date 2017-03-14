@@ -50,6 +50,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
               }
               reject({message: "Error uploading your images, file size to large"});
             }
+
             AWSService.upload(key, file).then(fileDetails => {
               var _attachment = new Attachments(attachments);
               _attachment.name = fileDetails.name;

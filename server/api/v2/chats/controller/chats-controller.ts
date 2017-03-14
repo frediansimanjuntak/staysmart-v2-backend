@@ -10,4 +10,13 @@ export class ChatsController {
 		.then(blogs => res.status(200).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static insertChatRoom(req: express.Request, res: express.Response):void {
+		let _users = req.body.user;
+		let _rooms = req.body.rooms;
+		ChatsDAO
+		['insertChatRoom'](_users, _rooms)
+		.then(blogs => res.status(200).json(blogs))
+		.catch(error => res.status(400).json(error));
+	}
 }

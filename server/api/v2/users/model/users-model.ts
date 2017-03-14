@@ -89,14 +89,14 @@ var UsersSchema = new mongoose.Schema({
         }
       ],
 			bank_account: [{
-        bank:
-        {
-          type: Schema.Types.ObjectId,
-          ref: 'Banks'
-        },
-        name: {type: String},
-        no: {type: Number}
-      }]
+				bank: 
+				{
+					type: Schema.Types.ObjectId,
+					ref: 'Banks'
+				},
+				name: {type: String},
+				no: {type: Number}
+			}]
 		},
 		histories: 
 		[{
@@ -163,6 +163,12 @@ var UsersSchema = new mongoose.Schema({
   shortlisted_property :[{
       type: Schema.Types.ObjectId,
       ref: 'Properties'
+  }],
+  services: [{
+    facebook: {
+      facebookId: {type: String},
+      facebookToken: {type: String}
+    }
   }],
   reset_password: {
     token: {type: String},
