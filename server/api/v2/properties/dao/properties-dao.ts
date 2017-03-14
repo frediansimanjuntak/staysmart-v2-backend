@@ -122,7 +122,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
       let propertyID:string = _properties._id;
       
       if(body.owned_type == 'company'){
-        if(body.companyData != null) {
+        if(body.companyData) {
           Users
             .findById(userId, (err, result) => {
               if(result.companies.length == 0){
@@ -138,23 +138,25 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
                         err ? reject(err)
                             : resolve(update);
                     });
-                  
-                  Properties
-                    .findById(propertyID, {
-                      $set: {
-                        "temp.shareholders": body.shareholders
-                      }
-                    })
-                    .exec((err, update) => {
-                        err ? reject(err)
-                            : resolve(update);
-                    });
+
+                  if(body.shareholders) {
+                    Properties
+                      .findById(propertyID, {
+                        $set: {
+                          "temp.shareholders": body.shareholders
+                        }
+                      })
+                      .exec((err, update) => {
+                          err ? reject(err)
+                              : resolve(update);
+                      });
+                  }
                 });
               }
             })  
         }
 
-        if(body.owner.company != null && body.shareholders != null) {
+        if(body.owner.company && body.shareholders) {
           Properties
             .findById(propertyID, {
               $set: {
@@ -168,11 +170,11 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
         }
       }
       else if(body.owned_type == 'individual'){
-        if(body.landlordData != null) {
+        if(body.landlordData) {
           var type = 'landlord';
           Users.updateUserData(userId, type, body.landlordData, userId);
         }
-        if(body.ownersData != null) {
+        if(body.ownersData) {
           Properties
             .findById(propertyID, {
               $set: {
