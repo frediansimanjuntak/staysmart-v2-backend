@@ -66,6 +66,14 @@ chatsSchema.static('requestPeer', (userId:string):Promise<any> => {
     });
 });
 
+chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.insertChatRoom(user, rooms).then(result => {
+        	resolve(result.res);
+        });
+    });
+});
+
 
 let Chats = mongoose.model('Chats', chatsSchema);
 

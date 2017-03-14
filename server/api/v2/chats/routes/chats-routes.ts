@@ -9,5 +9,9 @@ export class ChatsRoutes {
 		router
 			.route('/chats/request_token')
 			.get(auth.isAuthenticated(),ChatsController.requestToken)
+
+		router
+			.route('/chats/rooms/insert')
+			.post(auth.isAuthenticated(),ChatsController.insertChatRoom)
 	}
 }
