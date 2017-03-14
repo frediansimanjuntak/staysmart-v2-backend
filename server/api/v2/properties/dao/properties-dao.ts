@@ -64,7 +64,15 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           property.where('address.street_name', search.location);
         }
 
-        property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
+        property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+        property.populate({
+          path: 'owner.user',
+          populate: {
+            path: 'picture',
+            model: 'Attachments'
+          },
+          select: 'email picture landlord.data.name tenant.data.name'
+        })
         property.exec((err, properties) => {
           err ? reject(err)
               : resolve(properties);
@@ -76,7 +84,15 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .findById(id)
-          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.user owner.company owner.shareholder.$.identification_proof.front owner.shareholder.$.identification_proof.back confirmation.proof confirmation.by")
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+          .populate({
+            path: 'owner.user',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            },
+            select: 'email picture landlord.data.name tenant.data.name'
+          })
           .exec((err, properties) => {
               err ? reject(err)
                   : resolve(properties);
@@ -106,7 +122,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
       let propertyID:string = _properties._id;
       
       if(body.owned_type == 'company'){
-        if(body.companyData != null) {
+        if(body.companyData) {
           Users
             .findById(userId, (err, result) => {
               if(result.companies.length == 0){
@@ -122,23 +138,53 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
                         err ? reject(err)
                             : resolve(update);
                     });
+
+                  if(body.shareholders) {
+                    Properties
+                      .findById(propertyID, {
+                        $set: {
+                          "temp.shareholders": body.shareholders
+                        }
+                      })
+                      .exec((err, update) => {
+                          err ? reject(err)
+                              : resolve(update);
+                      });
+                  }
                 });
               }
             })  
         }
-        if(body.owner.company != null) {
-          if(body.shareholders != null) {
-            Companies.addCompaniesShareholders(body.companyId, body.shareholders, userId);
-          }
+
+        if(body.owner.company && body.shareholders) {
+          Properties
+            .findById(propertyID, {
+              $set: {
+                "temp.shareholders": body.shareholders
+              }
+            })
+            .exec((err, update) => {
+                err ? reject(err)
+                    : resolve(update);
+            });
         }
       }
       else if(body.owned_type == 'individual'){
-        if(body.landlordData != null) {
+        if(body.landlordData) {
           var type = 'landlord';
           Users.updateUserData(userId, type, body.landlordData, userId);
         }
-        if(body.ownersData != null) {
-          Users.updateUserDataOwners(userId, body.ownersData);
+        if(body.ownersData) {
+          Properties
+            .findById(propertyID, {
+              $set: {
+                "temp.owners": body.ownersData
+              }
+            })
+            .exec((err, update) => {
+                err ? reject(err)
+                    : resolve(update);
+            });
         }
       }
 
@@ -179,18 +225,45 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
     });
 });
 
-propertiesSchema.static('createPropertyHistory', (id:string, type:string):Promise<any> => {
+propertiesSchema.static('createPropertyHistory', (id:string, action:string, type:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
-          .findById(id, "development address details schedules amenities pictures owned_type owner publish confirmation status", (err, result) => {
+          .findById(id, "details schedules amenities pictures owned_type owner confirmation status", (err, result) => {
             var historyObj = {$push: {}};
-            historyObj.$push['histories'] = {"action": type, "date": Date.now, "data": result};
+            historyObj.$push['histories'] = {"action": action, "date": Date.now, "data": result};
             Properties
               .findByIdAndUpdate(id, historyObj)
               .exec((err, saved) => {
                 err ? reject(err)
                 : resolve(saved);
               });
+            if(type == 'data') {
+              Properties
+                .findById(id, {
+                  $unset: {
+                    "details": "",
+                    "schedules": "",
+                    "amenities": "",
+                    "pictures": "",
+                  }
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                  : resolve(update);
+                });
+            }
+            else if(type == 'confirmation'){
+              Properties
+                .findById(id, {
+                  $unset: {
+                    "confirmation": ""
+                  }
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                  : resolve(update);
+                }); 
+            }
           })
     });
 });
@@ -283,8 +356,30 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
       if(!_.isString(confirmation)) {
         return reject(new TypeError('Confirmation type is not a valid string.'));
       }
+      var action = 'update';
+      var type = 'confirmation';
+      Properties.createPropertyHistory(id, action, type);
+
       if(confirmation == 'approve') {
         var confirmation_result = 'approved';
+
+        Properties
+          .findById(id, (err, properties) => {
+            var shareholders = properties.temp.shareholders;
+            var owners = properties.temp.owners;
+            var companyId = properties.owner.company;
+
+            if(shareholders.length > 0) {
+              Companies.addCompaniesShareholders(companyId, shareholders, userId);
+              var type = 'shareholders';
+              Properties.unsetTemp(id, type);
+            }
+            if(owners.length > 0) {
+              Users.updateUserDataOwners(userId, owners);
+              var type = 'owners';
+              Properties.unsetTemp(id, type);
+            }
+          })
       }
       else if(confirmation == 'reject'){
         confirmation_result = 'rejected';
@@ -390,6 +485,20 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:string):Prom
           })    
         }
       })
+  });
+});
+
+propertiesSchema.static('unsetTemp', (propertyId:string, type:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      var unset = 'temp.'+type;
+      var unsetObj = {$unset:{}};
+      unsetObj.$unset[unset] = "";
+      Properties
+        .findByIdAndUpdate(propertyId, unsetObj)
+        .exec((err, update) => {
+          err ? reject(err)
+              : resolve(update);
+        });
   });
 });
 

@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import amenitiesSchema from '../model/amenities-model';
+import Attachments from '../../attachments/dao/attachments-dao'
 
 amenitiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -49,7 +50,14 @@ amenitiesSchema.static('deleteAmenities', (id:string):Promise<any> => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-
+        Amenities
+          .findById(id, (err, amenities) => {
+            Attachments.deleteAttachments(amenities.icon);
+          })
+          .exec((err, deleted) => {
+              err ? reject(err)
+                  : resolve();
+          });
         Amenities
           .findByIdAndRemove(id)
           .exec((err, deleted) => {

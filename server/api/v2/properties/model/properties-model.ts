@@ -21,7 +21,7 @@ var PropertiesSchema = new mongoose.Schema({
 			[
 				{type: String}
 			],
-		country: {type: String},
+		country: {type: String, default: 'Singapore'},
 		full_address: {type: String},
 		type: {type: String, default: "Point"}
 	},
@@ -34,7 +34,7 @@ var PropertiesSchema = new mongoose.Schema({
 		psqft: {type: Number},
 		psqm: {type: Number},
 		available: {type: Date},
-		furnishing: {type: String},
+		furnishing: {type: String, enum: ['fully','partially','unfurnished']},
 		description: {type: String},
 		type: {type: String},
 		sale_date: {type: Date},
@@ -117,7 +117,6 @@ var PropertiesSchema = new mongoose.Schema({
 			type: Schema.Types.ObjectId,
 			ref: 'Users'
 		},
-	publish: {type: Boolean},
 	confirmation: {
 		status: {type: String, enum:['approved','rejected','pending'], default: 'pending'},
 		proof: 
@@ -132,7 +131,47 @@ var PropertiesSchema = new mongoose.Schema({
 			},
 		date: {type: Date}
 	},
-	status: {type: String, enum:['initiated','published','rented','draft'], default: 'published'},
+	temp: {
+		owners: 
+		[
+	        {
+	          name: {type: String},
+	          identification_type: {type: String},
+	          identification_number: {type: String},
+	          identification_proof: 
+	          {
+	            front: {
+	              type: Schema.Types.ObjectId,
+	              ref: 'Attachments'
+	            },
+	            back: {
+	              type: Schema.Types.ObjectId,
+	              ref: 'Attachments'
+	            }
+	          }
+	        }
+	    ],
+		shareholders: 
+		[
+			{
+				name: {type: String},
+				identification_type: {type: String},
+				identification_number: {type: String},
+				identification_proof: 
+				{
+					front: {
+						type: Schema.Types.ObjectId,
+						ref: 'Attachments'
+					},
+					back: {
+						type: Schema.Types.ObjectId,
+						ref: 'Attachments'
+					}
+				}
+			}
+		],
+	},
+	status: {type: String, enum:['draft','published','initiated','rented'], default: 'published'},
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},
