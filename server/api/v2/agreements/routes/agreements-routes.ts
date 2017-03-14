@@ -23,6 +23,7 @@ export class AgreementsRoutes {
 		//Inventory List
 		router
 			.route('/inventorylist/:id')
+			.get(auth.isAuthenticated(), AgreementsController.getInventoryList)
 			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
 
 		router
@@ -31,7 +32,11 @@ export class AgreementsRoutes {
 
 		router
 			.route('/inventorylist/status/accepted/:id')
-			.post(auth.isAuthenticated(), AgreementsController.acceptInventoryList);
+			.post(auth.isAuthenticated(), AgreementsController.completedInventoryList);
+
+		router
+			.route('/inventorylist/tenantcheck/update/:id')
+			.post(auth.isAuthenticated(), AgreementsController.updateTenantCheck);
 		
 		//confirmation
 		router

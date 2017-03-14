@@ -195,10 +195,16 @@ export class AgreementsController {
 	}
 
 	//IL
+	static getInventoryList(req: express.Request, res: express.Response):void {
+		AgreementsDAO
+		['getInventoryList']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _agreement = req.body;
-		let _files = req["files"];
 
 		AgreementsDAO
 		['createInventoryList'](_id, _agreement)
@@ -209,7 +215,6 @@ export class AgreementsController {
 	static updateInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _agreement = req.body;
-		let _files = req["files"];
 
 		AgreementsDAO
 		['updateInventoryList'](_id, _agreement)
@@ -217,12 +222,23 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static acceptInventoryList(req: express.Request, res: express.Response):void {
+	static updateTenantCheck(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _files = req["files"];
+		let _agreement = req.body;
+
+		AgreementsDAO
+		['updateTenantCheck'](_id, _agreement)
+		.then(agreements => res.status (201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static completedInventoryList(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _data = req.body;
+		let _userId = req["user"]._id;
 				
 		AgreementsDAO
-		['acceptInventoryList'](_id, _files)
+		['completedInventoryList'](_id, _data, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
