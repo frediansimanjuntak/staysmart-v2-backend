@@ -3,7 +3,7 @@ var passportLocal = require('passport-local')
 
 var LocalStrategy = passportLocal.Strategy;
 
-function localAuthenticate(User, username, password, done) {
+function localAuthenticate(User, username, password, facebookId, facebookToken, done) {
   User.findOne({
     username: username.toLowerCase()
   }).exec()
@@ -31,8 +31,10 @@ function localAuthenticate(User, username, password, done) {
 export function setup(User/*, config*/) {
   passport.use(new LocalStrategy({
     usernameField: 'username',
-    passwordField: 'password' // this is the virtual field on the model
-  }, function(username, password, done) {
-    return localAuthenticate(User, username, password, done);
+    passwordField: 'password', // this is the virtual field on the model
+    facebookIdField: 'facebookId',
+    facebookTokenField: 'facebookToken'
+  }, function(username, password, facebookId, facebookToken, done) {
+    return localAuthenticate(User, username, password, facebookId, facebookToken, done);
   }));
 }
