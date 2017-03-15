@@ -17,7 +17,7 @@ router.post('/', function(req, res, next) {
       return res.status(404).json({message: 'Something went wrong, please try again.'});
     }
 
-    var token = signToken(user._id, user.role, user.username);
+    var token = signToken(user._id, user.role, user.service.facebook.id);
     res.json({ token });
   })(req, res, next);
 });

@@ -26,10 +26,11 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           else{
             radius = 1500;
           }
-          var latlng = search.latlng.split(",").map(function(val){
-            return Number(val)
-          });
-          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ latlng, radius/3963.2 ] } } });
+          var latlng = search.latlng.split(",");
+          var lnglat = [];
+          lnglat.push(Number(latlng[1]));
+          lnglat.push(Number(latlng[0]));
+          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/3963.2 ] } } });
         }
         if(search.pricemin != 'all') 
         {
