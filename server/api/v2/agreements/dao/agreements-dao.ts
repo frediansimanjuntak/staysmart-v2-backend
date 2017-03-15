@@ -468,6 +468,14 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object):Pr
     			err ? reject(err)
     				: resolve(updated);
     		});
+    var setlandlordcheck = {$set:{}};
+    	setlandlordcheck.$set['inventory_list.data.lists.0.items.$'] = {"landlord_check": true};
+    	Agreements
+    		.findByIdAndUpdate(id, setlandlordcheck)
+    		.exec((err,updated) => {
+    			err ? reject(err)
+    				: resolve(updated);
+    		})
 
     Agreements
     	.findByIdAndUpdate(id, agreements)
@@ -487,12 +495,16 @@ agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Pr
 		
 		let body:any = agreements;
 		let type = "inventory_list";
-		// let status = "completed";
+		let status = "pending";
 		Agreements.createHistory(id, type);
-		// Agreements.changeStatus(id, status, type);
-		// Agreements.confirmation(id, type);
-		
-
+    	var setStatusObj = {$set:{}};
+    	setStatusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
+    	Agreements
+    		.findByIdAndUpdate(id, setStatusObj)
+    		.exec((err,updated) => {
+    			err ? reject(err)
+    				: resolve(updated);
+    		});
 		for (var h = 0; h < body.lists.length; h++){
 			if (!body.lists[h].id){
 				Agreements
@@ -552,48 +564,71 @@ agreementsSchema.static('updateTenantCheck', (id:string, agreements:Object):Prom
 		}
 		let body:any = agreements;
 		for (var h = 0; h < body.lists.length; h++){
-			console.log(body.lists[h]);
-			for (var i = 0; i < body.items.length; i++){
-				Agreements
-				.update({"_id": id, "inventory_list.data.lists": {
-					$elemMatch: {
-						"_id": body.lists[h].id, 
-						"items": {
+			body.lists[h];
+				for (var i = 0; i < body.lists[h].items.length; i++){
+					body.lists[h].items[i];
+					console.log(body.lists[h]);
+					Agreements
+						.update({"_id":id, "inventory_list.data.lists": {
 							$elemMatch: {
-								"_id": body.items[i].id
+								"_id": body.lists[h].id,
+								"items": {
+									$elemMatch: {
+										"_id": body.lists[h].item[i].id
+									}
+								}
+							}
+						}},{
+							$set: {
+								"inventory_list.data.lists.0.items.$.tenant_check": body.lists[h].items[i].tenant_check
+							}
+						})
+						.exec((err,updated) => {
+							err ? reject(err)
+								: resolve(updated);
+						});
+				}
+		}
+		Agreements
+			.findById(id, (err, ilist) => {
+				for(var j = 0; j < ilist.inventory_list.data.lists.length; j++){
+					var list_arrayed = ilist.inventory_list.data.lists[j];
+					for(var k = 0; k < list_arrayed.items.length; k++){
+						var item_arrayed = list_arrayed.items[k];
+						var landlord_checks = item_arrayed.landlord_check;
+						var tenant_checks = item_arrayed.tenant_check;
+						var tenant_sign = ilist.inventory_list.data.confirmation.tenant.sign;
+
+						if(landlord_checks == true && tenant_checks == true){
+							if(tenant_sign){
+								let status = "completed";
+								var setStatusObj = {$set:{}};
+						    	setStatusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
+						    	Agreements
+						    		.findByIdAndUpdate(id, setStatusObj)
+						    		.exec((err,updated) => {
+						    			err ? reject(err)
+						    				: resolve(updated);
+						    		});
+							}
+							else{
+								let status = "pending";
+								var setStatusObj = {$set:{}};
+						    	setStatusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
+						    	Agreements
+						    		.findByIdAndUpdate(id, setStatusObj)
+						    		.exec((err,updated) => {
+						    			err ? reject(err)
+						    				: resolve(updated);
+						    		});
 							}
 						}
 					}
-				}}, {
-					$set: {
-						"inventory_list.data.lists.0.items.$.tenant_check":body.lists[h].body.items[i].tenant_check
-					}
-				})
-				.exec((err,updated) => {
-					err ? reject(err)
-						: resolve(updated);
-				});
-
-			}
-		}
+				}
+			});
 	});
 });
 
-agreementsSchema.static('completedInventoryList', (id:string, data:Object, _userId:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-		let type_notif = "completedInventoryList";
-		let type = "inventory_list";	
-		let status = "completed";
-
-		Agreements.confirmation(id, data, type);		
-		Agreements.changeStatus(id, status, type);		
-		Agreements.notification(id, type_notif);
-	});
-});
-  
 
 //change Status
 agreementsSchema.static('changeStatus', (id:string, status:string, type:string):Promise<any> => {
@@ -924,7 +959,7 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 							if(type == "completedInventoryList"){
 								message = "Inventory List completed for" + unit + " " + devResult.name;
 								type_notif = "completed_Inventory_List";
-								// user = landlordId;
+								user = landlordId;
 							}
 				            var notification = {
 				            	"user": user,
