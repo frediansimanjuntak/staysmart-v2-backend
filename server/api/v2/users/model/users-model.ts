@@ -8,9 +8,9 @@ var crypto = require('crypto')
 var Schema = mongoose.Schema;
 
 var UsersSchema = new mongoose.Schema({
-	username: {type: String, lowercase: true, unique: true, required: true, trim: true},
-	email: {type: String, lowercase: true, unique: true, required: true, trim: true},
-	password: {type: String, required: true},  
+	username: {type: String, lowercase: true, unique: true, trim: true},
+	email: {type: String, lowercase: true, unique: true, trim: true},
+	password: {type: String},  
 	salt: {type: String}, 
 	phone:{type: String, trim: true},
 	role: {type: String, enum: ['user','admin'], default: 'user'},
@@ -164,12 +164,12 @@ var UsersSchema = new mongoose.Schema({
       type: Schema.Types.ObjectId,
       ref: 'Properties'
   }],
-  services: [{
+  service: {
     facebook: {
-      facebookId: {type: String},
-      facebookToken: {type: String}
+      id: {type: String},
+      token: {type: String}
     }
-  }],
+  },
   reset_password: {
     token: {type: String},
     created_at: {type: Date},
