@@ -43,13 +43,13 @@
     "newrelic": "^1.18.2",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
+    "passport-facebook": "^2.1.1",
     "phantomjs": "^2.1.7",
     "sendmail": "^1.1.1",
     "serve-favicon": "^2.3.2",
     "slug": "^0.9.1"
   },
   "devDependencies": {
-    "@types/core-js": "^0.9.36",
     "@types/node": "^7.0.0",
     "aliv": "^1.6.0",
     "babili": "0.0.6",

@@ -8,7 +8,7 @@ export class AmenitiesRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/amenities')
-			.get(auth.isAuthenticated(),AmenitiesController.getAll)
+			.get(AmenitiesController.getAll)
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), AmenitiesController.createAmenities);
 
 		router
