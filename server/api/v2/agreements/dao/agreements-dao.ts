@@ -125,6 +125,16 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 
 				if (loi != null){
 					Agreements.createHistory(id, typeDataa);
+					Agreements
+						.findByIdAndUpdate(id, {
+							$unset: {
+								"letter_of_intent.data": ""
+							}
+						})
+						.exec((err, updated) => {
+							err ? reject(err)
+								: resolve(updated);
+						});
 				}
 
 				//put landlord
@@ -308,6 +318,16 @@ agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 				let ta = agreement.tenancy_agreement.data;
 				if (ta != null){
 					Agreements.createHistory(id, type);
+					Agreements
+						.findByIdAndUpdate(id, {
+							$unset: {
+								"tenancy_agreement.data": ""
+							}
+						})
+						.exec((err, updated) => {
+							err ? reject(err)
+								: resolve(updated);
+						});
 				}
 
 				Users
