@@ -9,6 +9,15 @@ import Companies from '../../companies/dao/companies-dao'
 import Developments from '../../developments/dao/developments-dao'
 import Notifications from '../../notifications/dao/notifications-dao'
 
+propertiesSchema.static('userLandlordProperty', (userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Users
+        .findById(userId).exec().then(user => {
+          reject(true);
+        })
+  });
+});
+
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
@@ -502,6 +511,8 @@ propertiesSchema.static('unsetTemp', (propertyId:string, type:string):Promise<an
         });
   });
 });
+
+
 
 let Properties = mongoose.model('Properties', propertiesSchema);
 
