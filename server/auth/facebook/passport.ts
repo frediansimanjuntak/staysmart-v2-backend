@@ -14,19 +14,23 @@ function facebookAuthenticate(User, id, accessToken, done) {
             _new_user.service.facebook.id = id;
             _new_user.service.facebook.token = accessToken;
             _new_user.save((err, saved)=>{
-                  err ? reject(err)
-                    : resolve(saved);
+              if(saved){
+                User
+                  .findById(saved._id, (err, userData) => {
+                    if(err) {
+                      return done(null, false, {
+                        message: 'Something went wrong, please try again.'
+                      });
+                    }
+                    return done(null, userData);    
+                  })          
+              }
+              else{
+                return done(null, false, {
+                  message: 'Something went wrong, please try again.'
                 });
-        var userId = _new_user._id;
-        User
-          .findById(userId, (err, userData) => {
-            if(err) {
-              return done(null, false, {
-                message: 'Something went wrong, please try again.'
-              });
-            }
-            return done(null, userData);    
-          })
+              }
+            });
       }
       else{
         return done(null, user);
