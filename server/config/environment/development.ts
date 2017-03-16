@@ -18,8 +18,8 @@ export default {
   },
 
   mailgun: {
-    apiKey: 'key-00a073dfc3fb82ee2f4bea2be2696715',
-    domain: 'sandbox024aadd07c004d32817a6f6fea399ca9.mailgun.org'
+    apiKey: 'key-68ca5d110c068a55cf53afd4025a7b00',
+    domain: 'sandbox2290d40ec2414e809fdd35fce8266c9b.mailgun.org'
   },
 
   // dreamTalk: 'https://dt.shrimpventures.com',

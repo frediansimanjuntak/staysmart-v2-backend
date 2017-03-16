@@ -154,11 +154,11 @@ export class DreamTalk{
 	    });
 	}
 
-	static requestPeer(uid) {
+	static requestPeer(uid, name) {
 		return new Promise((resolve:Function, reject:Function) => {
-			DreamTalk.doHTTP('GET', '/room', {uid, name: 'Peer Support'})
+			DreamTalk.doHTTP('GET', '/room', {uid, name})
 			.then(res => {
-				resolve(res)
+				resolve(JSON.parse(res.body))
 			})
 			.catch(err => {
 				reject(err)
@@ -190,7 +190,7 @@ export class DreamTalk{
 				name
 			})
 			.then(res => {
-				resolve(res)
+				resolve(JSON.parse(res.body))
 			})
 			.catch(err => {
 				reject(err)
@@ -204,7 +204,7 @@ export class DreamTalk{
 				name
 			})
 			.then(res => {
-				resolve(res)
+				resolve(JSON.parse(res.body))
 			})
 			.catch(err => {
 				reject(err)
@@ -218,7 +218,7 @@ export class DreamTalk{
 				roomId
 			})
 			.then(res => {
-				resolve(res)
+				resolve(JSON.parse(res.body))
 			})
 			.catch(err => {
 				reject(err)
@@ -233,10 +233,10 @@ export class DreamTalk{
 				uid
 			})
 			.then(res => {
-				resolve(res);
+				resolve({res});
 			})
 			.catch(err => {
-				reject(err);
+				reject({err});
 			});
 		});
 	}
@@ -247,7 +247,7 @@ export class DreamTalk{
 				id, uid, option
 			})
 			.then(res => {
-				resolve(res);
+				resolve(JSON.parse(res.body));
 			})
 			.catch(err => {
 				reject(err);
@@ -259,7 +259,7 @@ export class DreamTalk{
 		return new Promise((resolve:Function, reject:Function) => {
 			DreamTalk.doHTTP('POST', '/users/profile', data)
 			.then(res => {
-				resolve(res);
+				resolve(JSON.parse(res.body));
 			})
 			.catch(err => {
 				reject(err);
@@ -273,7 +273,7 @@ export class DreamTalk{
 				roomId, extra
 			})
 			.then(res => {
-				resolve(res);
+				resolve(JSON.parse(res.body));
 			})
 			.catch(err => {
 				reject(err);
