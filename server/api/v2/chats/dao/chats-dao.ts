@@ -7,7 +7,7 @@ import {DreamTalk} from '../../../../global/chat.service';
 
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-    	var user_id = userId.toString();
+
     	Users
     		.findById(userId)
     		.select({"dreamtalk": {$slice: -1}})
@@ -17,11 +17,11 @@ chatsSchema.static('requestToken', (userId:string, username:string):Promise<any>
     				var expire = last_dreamtalk_data[i].loginTokenExpires;
     				var today = new Date();
     				if(today > expire) {
-    					DreamTalk.requestToken(user_id, username).then(token => {
+    					DreamTalk.requestToken(userId, username).then(token => {
 				        	var res_token = JSON.parse(token);
 				        	var user_token = res_token.token;
 
-				        	Chats.login(user_token, user_id, username).then(res => {
+				        	Chats.login(user_token, userId, username).then(res => {
 				        		resolve(res);
 				        	});
 				        });
@@ -58,10 +58,10 @@ chatsSchema.static('login', (token:string, userId:string, username:string):Promi
     });
 });
 
-chatsSchema.static('requestPeer', (userId:string):Promise<any> => {
+chatsSchema.static('requestPeer', (userId:string, roomName:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        DreamTalk.requestPeer(userId).then(result => {
-        	console.log(result);
+        DreamTalk.requestPeer(userId, roomName).then(result => {
+        	resolve(result);
         });
     });
 });
@@ -74,6 +74,66 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
     });
 });
 
+chatsSchema.static('getUserRoom', (userId:string, roomName:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.getUserRoom(userId, roomName).then(result => {
+        	resolve(result);
+        });
+    });
+});
+
+chatsSchema.static('getSupportRooms', (roomName:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.getSupportRooms(roomName).then(result => {
+        	resolve(result);
+        });
+    });
+});
+
+chatsSchema.static('getMembers', (roomId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.getMembers(roomId).then(result => {
+        	resolve(result);
+        });
+    });
+});
+
+chatsSchema.static('postMembers', (roomId:string, memberId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.postMembers(roomId, memberId).then(result => {
+        	if(result.res.message){
+        		resolve({message: result.res.message});
+        	}
+        	else{
+        		resolve(JSON.parse(result.res.body));	
+        	}
+        });
+    });
+});
+//--
+chatsSchema.static('postAnswer', (id:string, userId:string, option:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.postAnswer(id, userId, option).then(result => {
+        	resolve(result);
+        });
+    });
+});
+
+chatsSchema.static('updateProfile', (data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.updateProfile(data).then(result => {
+        	resolve(result);
+        });
+    });
+});
+
+chatsSchema.static('updateRoom', (roomId:string, extra:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.updateRoom(roomId, extra).then(result => {
+        	resolve(result);
+        });
+    });
+});
 
 let Chats = mongoose.model('Chats', chatsSchema);
 

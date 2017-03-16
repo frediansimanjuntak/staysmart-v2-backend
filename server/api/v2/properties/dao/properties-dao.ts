@@ -149,7 +149,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
                             : resolve(update);
                     });
 
-                  if(body.shareholders) {
+                  if(body.shareholders != null) {
                     Properties
                       .findById(propertyID, {
                         $set: {
@@ -166,7 +166,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
             })  
         }
 
-        if(body.owner.company && body.shareholders) {
+        if(body.owner.company && body.shareholders != null) {
           Properties
             .findById(propertyID, {
               $set: {
@@ -184,7 +184,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
           var type = 'landlord';
           Users.updateUserData(userId, type, body.landlordData, userId);
         }
-        if(body.ownersData) {
+        if(body.ownersData != null) {
           Properties
             .findById(propertyID, {
               $set: {
