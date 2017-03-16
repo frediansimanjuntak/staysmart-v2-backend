@@ -467,7 +467,7 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object, fi
     let file:any = files;
     let type = "inventory_list";
     let status = "pending";
-    Agreements.confirmation(id, type);
+    
 
     var statusObj = {$set:{}};
     	statusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
@@ -484,9 +484,7 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object, fi
     		.exec((err,updated) => {
     			err ? reject(err)
     				: resolve(updated);
-    		})
-
-
+    		});
     Agreements
     	.findByIdAndUpdate(id, agreements)
     	.populate("property")
@@ -497,7 +495,7 @@ agreementsSchema.static('createInventoryList', (id:string, agreements:Object, fi
    	});
 }); 
 
-agreementsSchema.static('updateInventoryList', (id:string, agreements:Object, filesId:Object):Promise<any> => {
+agreementsSchema.static('updateInventoryList', (id:string, agreements:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if(!_.isObject(agreements)) {
 			return reject(new TypeError('Agreement is not a valid object.'));
@@ -517,7 +515,8 @@ agreementsSchema.static('updateInventoryList', (id:string, agreements:Object, fi
     		});
 
 		for (var h = 0; h < body.lists.length; h++){
-			if (!body.lists[h].id){
+			var listID = body.lists[h].id;
+			if (!listID){
 				Agreements
 					.update({"_id":id},{
 						$push: {
@@ -559,30 +558,33 @@ agreementsSchema.static('updateTenantCheck', (id:string, agreements:Object):Prom
 		}
 		let body:any = agreements;
 		for (var h = 0; h < body.lists.length; h++){
-			body.lists[h];
-				for (var i = 0; i < body.lists[h].items.length; i++){
-					body.lists[h].items[i];
-					console.log(body.lists[h]);
-					Agreements
-						.update({"_id":id, "inventory_list.data.lists": {
-							$elemMatch: {
-								"_id": body.lists[h].id,
-								"items": {
-									$elemMatch: {
-										"_id": body.lists[h].item[i].id
-									}
+			var listss = body.lists[h];
+			var listID = listss.id;
+			for (var i = 0; i < listss.items.length; i++){
+				var listss_itemss = listss.items[i];
+				var itemID = listss_itemss.id;
+				var tenantcheck = listss_itemss.tenant_check;
+				console.log(listss);
+				Agreements
+					.update({"_id":id, "inventory_list.data.lists": {
+						$elemMatch: {
+							"_id": listID,
+							"items": {
+								$elemMatch: {
+									"_id": itemID
 								}
 							}
-						}},{
-							$set: {
-								"inventory_list.data.lists.0.items.$.tenant_check": body.lists[h].items[i].tenant_check
-							}
-						})
-						.exec((err,updated) => {
-							err ? reject(err)
-								: resolve(updated);
-						});
-				}
+						}
+					}},{
+						$set: {
+							"inventory_list.data.lists.0.items.$.tenant_check": tenantcheck
+						}
+					})
+					.exec((err,updated) => {
+						err ? reject(err)
+							: resolve(updated);
+					});
+			}
 		}
 		// Agreements
 		// 	.findById(id, (err, ilist) => {
@@ -667,7 +669,7 @@ agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<a
             	data = result.tenancy_agreement.data;
             }
             if (typeDataa == "inventory_list"){
-            	data = result.tenancy_agreement.data;
+            	data = result.inventory_list.data;
             }
             
             var historyObj = {$push: {}};  

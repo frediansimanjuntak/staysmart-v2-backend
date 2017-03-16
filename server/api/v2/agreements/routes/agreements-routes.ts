@@ -8,7 +8,7 @@ export class AgreementsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/agreements')
-			.get(auth.isAuthenticated(), AgreementsController.getAll)
+			.get(AgreementsController.getAll)
 			.post(auth.isAuthenticated(), AgreementsController.createAgreements);
 
 		router
@@ -23,20 +23,16 @@ export class AgreementsRoutes {
 		//Inventory List
 		router
 			.route('/inventorylist/:id')
-			.get(auth.isAuthenticated(), AgreementsController.getInventoryList)
-			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
+			.get(AgreementsController.getInventoryList)
+			.post(AgreementsController.createInventoryList);
 
 		router
 			.route('/inventorylist/update/:id')
-			.post(auth.isAuthenticated(), AgreementsController.updateInventoryList);
-
-		router
-			.route('/inventorylist/status/accepted/:id')
-			.post(auth.isAuthenticated(), AgreementsController.completedInventoryList);
+			.post(AgreementsController.updateInventoryList);
 
 		router
 			.route('/inventorylist/tenantcheck/update/:id')
-			.post(auth.isAuthenticated(), AgreementsController.updateTenantCheck);
+			.post(AgreementsController.updateTenantCheck);
 		
 		//confirmation
 		router
