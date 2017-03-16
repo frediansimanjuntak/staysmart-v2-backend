@@ -503,8 +503,6 @@ agreementsSchema.static('updateInventoryList', (id:string, agreements:Object, fi
 			return reject(new TypeError('Agreement is not a valid object.'));
 		}
 
-		// let file:any = filesId;
-		// let type = "inventory_list";
 		let body:any = agreements;
 		let type = "inventory_list";
 		let status = "pending";
@@ -586,43 +584,43 @@ agreementsSchema.static('updateTenantCheck', (id:string, agreements:Object):Prom
 						});
 				}
 		}
-		Agreements
-			.findById(id, (err, ilist) => {
-				for(var j = 0; j < ilist.inventory_list.data.lists.length; j++){
-					var list_arrayed = ilist.inventory_list.data.lists[j];
-					for(var k = 0; k < list_arrayed.items.length; k++){
-						var item_arrayed = list_arrayed.items[k];
-						var landlord_checks = item_arrayed.landlord_check;
-						var tenant_checks = item_arrayed.tenant_check;
-						var tenant_sign = ilist.inventory_list.data.confirmation.tenant.sign;
+		// Agreements
+		// 	.findById(id, (err, ilist) => {
+		// 		for(var j = 0; j < ilist.inventory_list.data.lists.length; j++){
+		// 			var list_arrayed = ilist.inventory_list.data.lists[j];
+		// 			for(var k = 0; k < list_arrayed.items.length; k++){
+		// 				var item_arrayed = list_arrayed.items[k];
+		// 				var landlord_checks = item_arrayed.landlord_check;
+		// 				var tenant_checks = item_arrayed.tenant_check;
+		// 				var tenant_sign = ilist.inventory_list.data.confirmation.tenant.sign;
 
-						if(landlord_checks == true && tenant_checks == true){
-							if(tenant_sign){
-								let status = "completed";
-								var setStatusObj = {$set:{}};
-						    	setStatusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
-						    	Agreements
-						    		.findByIdAndUpdate(id, setStatusObj)
-						    		.exec((err,updated) => {
-						    			err ? reject(err)
-						    				: resolve(updated);
-						    		});
-							}
-							else{
-								let status = "pending";
-								var setStatusObj = {$set:{}};
-						    	setStatusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
-						    	Agreements
-						    		.findByIdAndUpdate(id, setStatusObj)
-						    		.exec((err,updated) => {
-						    			err ? reject(err)
-						    				: resolve(updated);
-						    		});
-							}
-						}
-					}
-				}
-			});
+		// 				if(landlord_checks == true && tenant_checks == true){
+		// 					if(tenant_sign){
+		// 						let status = "completed";
+		// 						var setStatusObj = {$set:{}};
+		// 				    	setStatusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
+		// 				    	Agreements
+		// 				    		.findByIdAndUpdate(id, setStatusObj)
+		// 				    		.exec((err,updated) => {
+		// 				    			err ? reject(err)
+		// 				    				: resolve(updated);
+		// 				    		});
+		// 					}
+		// 					else{
+		// 						let status = "pending";
+		// 						var setStatusObj = {$set:{}};
+		// 				    	setStatusObj.$set["inventory_list.data"] = {"status": status, "created_at": new Date()};
+		// 				    	Agreements
+		// 				    		.findByIdAndUpdate(id, setStatusObj)
+		// 				    		.exec((err,updated) => {
+		// 				    			err ? reject(err)
+		// 				    				: resolve(updated);
+		// 				    		});
+		// 					}
+		// 				}
+		// 			}
+		// 		}
+		// 	});
 	});
 });
 
@@ -953,17 +951,12 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 								type_notif = "accepted_LOI";
 								user = tenantId;
 							}
-<<<<<<< HEAD
+
 							if(type == "completedInventoryList"){
 								message = "Inventory List completed for" + unit + " " + devResult.name;
 								type_notif = "completed_Inventory_List";
 								user = landlordId;
-=======
-							if(type == "acceptInventoryList"){
-								message = "Inventory List accepted for" + unit + " " + devResult.name;
-								type_notif = "received_Inventory_List";
-								user = tenantId;
->>>>>>> upstream/development
+
 							}
 				            var notification = {
 				            	"user": user,
