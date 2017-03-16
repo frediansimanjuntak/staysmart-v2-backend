@@ -1,9 +1,10 @@
 var passport = require('passport')
 var passportLocal = require('passport-local')
+import * as Promise from 'bluebird';
 
 var LocalStrategy = passportLocal.Strategy;
 
-function localAuthenticate(User, username, password, done) {
+function facebookAuthenticate(User, username, password, done) {
   User.findOne({
     username: username.toLowerCase()
   }).exec()
@@ -29,10 +30,11 @@ function localAuthenticate(User, username, password, done) {
 }
 
 export function setup(User/*, config*/) {
-  passport.use(new LocalStrategy({
+  passport.use('local.normal', new LocalStrategy({
     usernameField: 'username',
-    passwordField: 'password', // this is the virtual field on the model
-  }, function(username, password, done) {
-    return localAuthenticate(User, username, password, done);
+    passReqToCallback: true
+  }, function(req, username, password, done) {
+    
+    return facebookAuthenticate(User, username, password, done);
   }));
 }

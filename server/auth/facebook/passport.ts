@@ -2,43 +2,45 @@ var passport = require('passport')
 var passportLocal = require('passport-local')
 import * as Promise from 'bluebird';
 
-var LocalStrategy = passportLocal.Strategy;
+var FacebookStrategy = passportLocal.Strategy;
 
 function facebookAuthenticate(User, id, accessToken, done) {
-  User.findOne({
+  return new Promise((resolve:Function, reject:Function) => {
+    User.findOne({
     "service.facebook.id": id
-  }).exec()
-    .then(user => {
-      if(!user) {
-        return new Promise((resolve:Function, reject:Function) => {
-          var _new_user = new User();
-              _new_user.service.facebook.id = id;
-              _new_user.service.facebook.token = accessToken;
-              _new_user.save((err, saved)=>{
-                    err ? reject(err)
-                      : resolve(saved);
-                  });
-          var userId = _new_user._id;
-          console.log('user id: '+userId);
-          User.findById(userId, (err, data) => {
-            return done(null, _new_user);
+    }, (err, user) => {
+      if(user == null) {
+        var _new_user = new User();
+            _new_user.service.facebook.id = id;
+            _new_user.service.facebook.token = accessToken;
+            _new_user.save((err, saved)=>{
+                  err ? reject(err)
+                    : resolve(saved);
+                });
+        var userId = _new_user._id;
+        User
+          .findById(userId, (err, userData) => {
+            if(err) {
+              return done(null, false, {
+                message: 'Something went wrong, please try again.'
+              });
+            }
+            return done(null, userData);    
           })
-        });
       }
       else{
-        console.log('user data exist: '+user);
         return done(null, user);
       }
-    })
-   
-    .catch(err => done(err));
+    })  
+  })
 }
 
 export function setup(User/*, config*/) {
-  passport.use(new LocalStrategy({
+  passport.use('local.facebook', new FacebookStrategy({
     usernameField: 'id',
     passwordField: 'accessToken',
-  }, function(id, accessToken, done) {
+    passReqToCallback: true
+  }, function(req, id, accessToken, done) {
     
     return facebookAuthenticate(User, id, accessToken, done);
   }));
