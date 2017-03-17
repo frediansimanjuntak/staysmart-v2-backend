@@ -62,4 +62,21 @@ export class ChatsController {
 		.then(blogs => res.status(200).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static updateRoom(req: express.Request, res: express.Response):void {
+		let _roomId = req.params.roomId;
+		let _extra = req.body;
+		ChatsDAO
+		['updateRoom'](_roomId, _extra)
+		.then(blogs => res.status(200).json(blogs))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static updateProfile(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		ChatsDAO
+		['updateProfile'](_data)
+		.then(blogs => res.status(200).json(blogs))
+		.catch(error => res.status(400).json(error));
+	}
 }

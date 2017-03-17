@@ -8,6 +8,7 @@ import Banks from '../../banks/dao/banks-dao'
 import Companies from '../../companies/dao/companies-dao'
 import Properties from '../../properties/dao/properties-dao'
 import {EmailService} from '../../../../global/email.service'
+import {SMS} from '../../../../global/sms.service'
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -67,18 +68,53 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
 		}	
-
+		let body:any = user;
 		let randomCode = Math.random().toString(36).substr(2, 6);
 
 		var _user = new Users(user);
-		_user.verification.code = randomCode;
+		if(body.role == 'admin') {
+			_user.verification.verified = true,
+			_user.verification.verified_date = new Date()
+		}
+		else{
+			_user.verification.code = randomCode;
+		}
 		_user.save((err, saved)=>{
-
-			err ? reject(err)
-				: resolve(saved);
+			if(err){
+				reject(err);
+			}
+			else if(saved){
+				resolve({userId: saved._id});
+			}
 		});
-		var userId = _user._id;
-		resolve({userId});
+	});
+});
+
+usersSchema.static('signUp', (user:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(user)) {
+			return reject(new TypeError('User is not a valid object.'));
+		}	
+
+		let randomCode = Math.random().toString(36).substr(2, 6);
+		let body:any = user;
+
+
+		var _user = new Users(user);
+		_user.verification.code = randomCode;
+		_user.username = body.username;
+		_user.email = body.email;
+		_user.password = body.password;
+		_user.phone = body.phone;
+		_user.role = 'user';
+		_user.save((err, saved)=>{
+			if(err){
+				reject(err);
+			}
+			else if(saved){
+				resolve({userId: saved._id});
+			}
+		});
 	});
 });
 
@@ -96,9 +132,19 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 					"verification.code": randomCode
 				}
 			})
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve();
+			.exec((err, update) => {
+				if(err){
+					reject(err);
+				}
+				else if(update){
+					Users
+						.findById(id, (err, user) => {
+							SMS.sendActivationCode(user.phone, randomCode).then(res => {
+								console.log(res);
+								resolve({res});
+							});
+						})
+				}
 			});
 	});
 });
