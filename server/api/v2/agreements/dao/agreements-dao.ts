@@ -197,7 +197,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 							    for(var param in body) {
 							    	loiObj.$set["letter_of_intent.data." + param] = body[param];
 							    }
-
+							    loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
 								loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
 							    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
 							    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
@@ -251,40 +251,25 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object):Promise<any> => {
 		let type = "letter_of_intent";	
 		let status = "accepted";
 
-		Agreements.confirmation(id, data, type);		
-		Agreements.changeStatus(id, status, type);		
-		Agreements.notification(id, type_notif);
+		Agreements.confirmation(id, data, type).then(res => {
+			Agreements.changeStatus(id, status, type).then(res => {
+				Agreements.notification(id, type_notif).then(res => {
+					resolve(res);
+				});
+			});
+		});		
+		
 	});
 });
 
 agreementsSchema.static('rejectLoi', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
-		let type_notif = "rejectLoi";
-
-		Agreements
-			.findById(id, (err, agreement) => {
-				let loiData = agreement.letter_of_intent.data;	
-				loiData.status = "rejected";
-				agreement.save();			
-				let paymentID = loiData.payment;
-
-				Payments
-					.findByIdAndUpdate(paymentID, {
-						$set: {
-							"refund": true
-						}
-					})
-					.exec((err, updated) => {
-			      		err ? reject(err)
-			      			: resolve(updated);
-			      			console.log(updated);
-			      	});
-			})
-		Agreements.notification(id, type_notif);
+		let data = {
+			"type": "letter_of_intent"
+		};
+		Agreements.rejectPayment(id, data).then(res =>{
+			resolve(res);
+		});
 	});
 });
 
@@ -420,7 +405,7 @@ agreementsSchema.static('acceptTA', (id:string):Promise<any> => {
 				agreement.tenancy_agreement.data.created_at = new Date();
 				agreement.save((err, saved)=>{
 					err ? reject(err)
-						: resolve();
+						: resolve({status: "TA "+saved.tenancy_agreement.data.status});
 				});
 			})			
 		Agreements.notification(id, type_notif);
@@ -433,28 +418,13 @@ agreementsSchema.static('rejectTA', (id:string):Promise<any> => {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 
-		let type_notif = "rejectTA";
+		let data = {
+			"type": "tenancy_agreement"
+		};
+		Agreements.rejectPayment(id, data).then(res =>{
+			resolve(res);
+		});
 
-		Agreements
-			.findById(id, (err, agreement) => {
-				let loiData = agreement.tenancy_agreement.data;	
-				loiData.status = "rejected";
-				agreement.save();			
-				let paymentID = loiData.payment;
-
-				Payments
-					.findByIdAndUpdate(paymentID, {
-						$set: {
-							"refund": true
-						}
-					})
-					.exec((err, updated) => {
-			      		err ? reject(err)
-			      			: resolve(updated);
-			      			console.log(updated);
-			      	});
-			})
-		Agreements.notification(id, type_notif);
 	});
 });
 
@@ -730,41 +700,42 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 
 				if(type == "letter_of_intent"){
 					paymentFee = [{
-						"code": "std",
+						"code_name": "std",
 						"name": "Stamp Duty",
 						"amount": std, 
-						"status": "unpaid", 
-						"refunded": false
+						"needed_refund": false, 
+						"refunded": false,
+						"created_at": new Date()
 					},
 					{
-						"code": "gfd",
+						"code_name": "gfd",
 						"name": "Good Faith Deposit",
 						"amount": gfd, 
-						"status": "unpaid", 
-						"refunded": false
+						"needed_refund": false, 
+						"refunded": false,
+						"created_at": new Date()
 					}];
 					paymentType = "loi";
 				}
 				else if (type ==  "tenancy_agreement"){
 					paymentFee = [{
-						"code": "scd",
+						"code_name": "scd",
 						"name": "Security Deposit",
 						"amount": scd, 
-						"status": "unpaid", 
-						"refunded": false
+						"needed_refund": false, 
+						"refunded": false,
+						"created_at": new Date()
 					}];
 					paymentType = "ta";
 				}
-
 				var _payment = new Payments();
 				_payment.type = paymentType;
 				_payment.fee = paymentFee;
-				_payment.attachment = body.attachment;
+				_payment.attachment.payment = body.attachment;
 				_payment.refund = false;
 				_payment.save((err, saved)=>{
 					err ? reject(err)
 						: resolve(saved);
-						console.log(saved);
 				});	
 
 				var paymentId = _payment._id;
@@ -781,9 +752,91 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 					.exec((err, updated) => {
 			      		err ? reject(err)
 			      			: resolve(updated);
-			      			console.log(updated);
+			      			console.log("update",updated);
 			      	});	
 			})		
+	});
+});
+
+agreementsSchema.static('feeUpdate', (data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		var ObjectID = mongoose.Types.ObjectId;	
+		var body:any = data;
+
+		if (body.typeInput == "loi"){
+			Payments
+				.update({"_id": body.paymentID, "fee": {$elemMatch: {"_id": new ObjectID(body.idStd)}}}, {
+					$set: {
+						"fee.$.received_amount": body.receivePaymentStd,
+						"fee.$.needed_refund": false,
+						"fee.$.refunded": false,
+						"fee.$.updated_at": new Date(),
+						"fee.attachment.payment_confirm": body.payment_confirm
+					}
+				})
+				.exec((err, updated) => {
+		      		err ? reject(err)
+		      			: resolve(updated);
+		      	});	
+
+			Payments
+				.update({"_id":body.paymentID, "fee": {$elemMatch: {"_id": new ObjectID(body.idGfd)}}}, {
+					$set: {
+						"fee.$.received_amount": body.receivePaymentGfd,
+						"fee.$.needed_refund": false,
+						"fee.$.refunded": false,
+						"fee.$.updated_at": new Date(),
+						"attachment.payment_confirm": body.payment_confirm
+					}
+				})
+				.exec((err, updated) => {
+		      		err ? reject(err)
+		      			: resolve(updated);
+		      	});
+		}
+		
+		if(body.typeInput == "ta"){
+			Payments
+				.update({"_id":body.paymentID, "fee": {$elemMatch: {"_id": new ObjectID(body.idScd)}}}, {
+					$set: {
+						"fee.$.received_amount": body.receivePaymentScd,
+						"fee.$.needed_refund": false,
+						"fee.$.refunded": false,
+						"fee.$.updated_at": new Date(),
+						"attachment.payment_confirm": body.payment_confirm
+					}
+				})
+				.exec((err, updated) => {
+		      		err ? reject(err)
+		      			: resolve(updated);
+		      	});
+		}	
+	    	
+	});
+});
+
+agreementsSchema.static('addRefund', (data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		var ObjectID = mongoose.Types.ObjectId;	
+		var body:any = data;
+
+		Payments
+			.update({"_id":body.paymentID}, {
+				$push: {
+					"fee":{
+						"code_name": "mmr",
+						"name": "refund",
+						"created_at": new Date(),
+						"received_amount": body.refundPayment,
+						"needed_refund": true,
+						"refunded": false
+					}
+				}
+			})
+			.exec((err, updated) => {
+	      		err ? reject(err)
+	      			: resolve(updated);
+	      	});
 	});
 });
 
@@ -792,70 +845,172 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
-
+		var ObjectID = mongoose.Types.ObjectId;
 		let body:any = data;
 		let type:any = body.type;
+		let receive_payment = parseInt(body.receive_payment);
+		let paymentID;
+		let feeStd;
+		let feeGfd;
+		let feeScd;
+		let idStd;
+		let idGfd;
+		let idScd;
+		let feeData;
+		let receivePaymentStd;
+		let receivePaymentGfd;
+		let receivePaymentScd;
+		let refundPayment;
+		let reducePaymentStd;
+		let reducePaymentGfd;
+		let reducePaymentScd;
+		let totalFee;
+		let totalReceive;
 
 	    Agreements
 			.findById(id, (err, agreement) => {
-				let loiData = agreement.letter_of_intent.data;			
-				
-				let gfd = loiData.gfd_amount;
-				let std = loiData.sd_amount;
-				let scd = loiData.security_deposit;
-				let paymentID = loiData.payment;
+				let loiData = agreement.letter_of_intent.data;
+				let taData = agreement.tenancy_agreement.data;
+				let gfd = parseInt(loiData.gfd_amount);
+				let std = parseInt(loiData.sd_amount);
+				let scd = parseInt(loiData.security_deposit);
 
-				let paymentTotal = gfd + std ;
 				if (type == "letter_of_intent"){
 					agreement.tenancy_agreement.data.status = "landlord-confirmation";
-					paymentTotal = gfd + std;
+					paymentID = loiData.payment;
+					totalFee = std + gfd;
+					totalReceive = receive_payment;
+					Payments
+						.findOne({"_id": paymentID})
+						.select({"fee": {$elemMatch: {"code_name": "std"}}})
+						.exec((err, payment) => {
+							if(payment){
+								let fee1 = [].concat(payment.fee);
+								for(var i = 0; i < fee1.length; i++ ){
+									let _fee1 = fee1[i];
+									feeStd = parseInt(_fee1.amount);
+									idStd = _fee1._id;
+								}
+							}
+							Payments
+								.findOne({"_id": paymentID})
+								.select({"fee": {$elemMatch: {"code_name": "gfd"}}})
+								.exec((err, paymentt) => {
+									if(paymentt){
+										let fee2 = [].concat(paymentt.fee);
+										for(var j = 0; j < fee2.length; j++ ){
+											let _fee2 = fee2[j];
+											feeGfd = parseInt(_fee2.amount);
+											idGfd = _fee2._id;
+										}
+									}
+									if (feeGfd <= feeStd){
+										receivePaymentGfd = feeGfd;
+										reducePaymentGfd = receive_payment - receivePaymentGfd;
+										reducePaymentStd = feeStd - reducePaymentGfd;
+										if (reducePaymentStd >= 1){
+											receivePaymentStd = feeStd;
+											refundPayment = reducePaymentGfd - receivePaymentStd;
+										}
+									}
+									else{
+										receivePaymentStd = feeStd;
+										reducePaymentStd = receive_payment - receivePaymentStd;
+										reducePaymentGfd = reducePaymentStd - feeGfd; 
+										if (reducePaymentGfd >= 1){
+											receivePaymentGfd = feeGfd;
+											refundPayment = reducePaymentStd - receivePaymentGfd;
+										}
+									}
+									var data ={
+										"paymentID": paymentID,
+										"idStd": idStd,
+										"idGfd": idGfd,									
+										"receivePaymentStd": receivePaymentStd,
+										"receivePaymentGfd": receivePaymentGfd,
+										"payment_confirm": body.payment_confirm,
+										"refundPayment": refundPayment,
+										"typeInput": "loi"
+									}					
+									if(totalReceive - totalFee == 0)
+									{	
+										Agreements.feeUpdate(data);									
+									}
+									if (totalReceive - totalFee >= 1){									
+										Agreements.feeUpdate(data);	
+										Agreements.addRefund(data);	
+									}
+								});															
+						});
 				}
 				if (type == "tenancy_agreement"){
 					agreement.tenancy_agreement.data.status = "landlord-confirmation";
-					paymentTotal = scd;
+					paymentID = taData.payment;
+					totalFee = scd;
+					totalReceive = receive_payment;
+					Payments
+						.findOne({"_id": paymentID})
+						.select({"fee": {$elemMatch: {"code_name": "scd"}}})
+						.exec((err, paymenttt) => {
+							let fee3 = [].concat(paymenttt.fee);
+							for(var k = 0; k < fee3.length; k++ ){
+								let _fee3 = fee3[k];
+								feeScd = parseInt(_fee3.amount);
+								idScd = _fee3._id;
+							}
+							if (feeScd != 0){
+								receivePaymentScd = feeScd;
+								reducePaymentScd = receive_payment - receivePaymentScd;
+								if (reducePaymentScd >= 1){
+									refundPayment = reducePaymentScd;
+								}
+							}
+							var data ={
+								"paymentID": paymentID,
+								"idScd": idScd,
+								"receivePaymentScd": receivePaymentScd,
+								"payment_confirm": body.payment_confirm,
+								"refundPayment": refundPayment,
+								"typeInput": "ta"
+							}					
+							if(totalReceive - totalFee == 0)
+							{	
+								Agreements.feeUpdate(data);									
+							}
+							if (totalReceive - totalFee >= 1){									
+								Agreements.feeUpdate(data);	
+								Agreements.addRefund(data);											
+							}
+						});	
 				}
-				agreement.save();
+				agreement.save((err, saved) => {
+		      		err ? reject(err)
+		      			: resolve(saved);
+		      	});				
+			})
+	});
+});
 
-				let refund = null;
-				let fee_status = "";
-				let minus_payment = 0;
-				let refund_payment = 0;
+agreementsSchema.static('feeNeededRefund', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
 
-				if (paymentTotal == body.total_payment){
-					refund = false ;
-					fee_status = "paid";
-					minus_payment = 0;
-					refund_payment = 0;
+		Payments
+			.findById(id, (err, payments) => {
+				if(payments) {
+					for(var i = 0; i < payments.fee.length; i++){
+						Payments
+							.update({"_id": id, "fee":{ $elemMatch: {"needed_refund": false}}}, {
+								$set: {
+									"fee.$.needed_refund": true,
+									"fee.$.updated_at": new Date()
+								},
+							}, {multi: true})
+							.exec((err, update) => {
+				              err ? reject(err)
+				            	  : resolve(update);
+				            });			
+					}
 				}
-				if (paymentTotal <= body.total_payment){
-					refund = false;
-					fee_status = "unpaid";
-					minus_payment = paymentTotal - body.total_payment;
-					refund_payment = 0;
-				}
-				if (paymentTotal >= body.total_payment){
-					refund = true;
-					fee_status = "paid";
-					minus_payment = 0;
-					refund_payment = body.total_payment - paymentTotal;
-				}
-
-				Payments
-					.findByIdAndUpdate(paymentID, {
-						$set: {
-							"fee.$.status": fee_status,
-							"fee_payment": paymentTotal,
-							"total_payment": body.total_payment,
-							"minus_payment": minus_payment,
-							"refund_payment": refund_payment,
-							"refund": refund
-						}
-					})
-					.exec((err, updated) => {
-			      		err ? reject(err)
-			      			: resolve(updated);
-			      			console.log(updated);
-			      	});
 			})
 	});
 });
@@ -865,39 +1020,102 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
-
 		let body:any = data;
 		let type:any = body.type;
-
+		let paymentID;
+		let type_notif = "rejectLoi";
+		Agreements.notification(id, type_notif);
 	    Agreements
 			.findById(id, (err, agreement) => {
+				let loiData = agreement.letter_of_intent.data;
+				let taData = agreement.tenancy_agreement.data;
 
 				if (type == "letter_of_intent"){
-					agreement.letter_of_intent.data.status = "rejected";
+					paymentID = loiData.payment.toString();					
+					Agreements.feeNeededRefund(paymentID).then(res =>{
+						console.log(res);
+						agreement.letter_of_intent.data.status = "rejected";
+						agreement.save((err, saved) => {
+				      		err ? reject(err)
+				      			: resolve({status: saved.letter_of_intent.data.status});
+				      	});	
+					});
 				}
 				if (type == "tenancy_agreement"){
 					agreement.tenancy_agreement.data.status = "rejected";
+					paymentID = taData.payment;
+					Agreements.feeNeededRefund(paymentID).then(res =>{
+						console.log(res);
+						agreement.letter_of_intent.data.status = "rejected";
+						agreement.save((err, saved) => {
+				      		err ? reject(err)
+				      			: resolve({status: saved.letter_of_intent.data.status});
+				      	});	
+					});
 				}
-				agreement.save();
+							
+			})
+		
+	});
+});
 
-				let paymentID = agreement.letter_of_intent.data.payment;
+agreementsSchema.static('getTotalRefundPayment', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		let totalFee = 0;
 
-				Payments
-					.findByIdAndUpdate(paymentID, {
-						$set: {
-							"remarks": body.remarks,
-							"refund": true
-						}
-					})
-					.exec((err, updated) => {
-			      		err ? reject(err)
-			      			: resolve(updated);
-			      			console.log(updated);
-			      	});
+		Payments
+			.findById(id, (err, payments) => {
+				if(payments) {
+					for(var i = 0; i < payments.fee.length; i++){
+						let refunded = payments.fee[i].refunded;
+						let fee = 0;
+						if (refunded == false){
+							fee = parseInt(payments.fee[i].received_amount);
+							totalFee = totalFee + fee;
+						}						
+					}
+					resolve({"total refund payment" : totalFee})
+				}
+				resolve({"refund payment" : "No Need Refund"})
 			})
 	});
 });
 
+agreementsSchema.static('refundPayment', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		let body:any = data;
+		let totalFee = 0;
+
+		Payments
+			.findById(id, (err, payments) => {
+				if(payments) {
+					for(var i = 0; i < payments.fee.length; i++){
+						let refunded = payments.fee[i].refunded;
+						Payments
+							.update({"_id": id, "fee":{ $elemMatch: {"needed_refund": false}}}, {
+								$set: {
+									"fee.$.refunded": true,
+									"fee.$.updated_at": new Date(),
+									"attachment.refund_confirm": body.refund_confirm
+								},
+							}, {multi: true})
+							.exec((err, update) => {
+				              err ? reject(err)
+				            	  : resolve(update);
+				            });									
+					}
+					resolve({"refund" : "success"})
+				}
+				resolve({"refund" : "no need refund"})
+			})
+	});
+});
 
 //notification
 agreementsSchema.static('notification', (id:string, type:string):Promise<any> => {

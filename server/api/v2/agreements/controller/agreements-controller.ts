@@ -89,6 +89,25 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getTotalRefundPayment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['getTotalRefundPayment'](_id, )
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static refundPayment(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['refundPayment'](_id, _data)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//LOI
 	static getLoi(req: express.Request, res: express.Response):void {
 		AgreementsDAO

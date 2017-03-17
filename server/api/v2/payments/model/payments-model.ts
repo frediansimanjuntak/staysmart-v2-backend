@@ -10,26 +10,30 @@ var PaymentsSchema = new mongoose.Schema({
 	fee: 
 	[
 		{
-			code: {type: String},
+			code_name: {type: String},
 			name: {type: String},
-			amount: {type: Number},
-			status: {type: String, enum:['paid','unpaid']},
-			refunded: {type: Boolean}
+			amount: {type: String},
+			received_amount: {type: String},
+			needed_refund: {type: Boolean},			
+			refunded: {type: Boolean},
+			created_at: {type: Date},
+			updated_at: {type: Date}
 		}
 	],
 	attachment: {
-		type: Schema.Types.ObjectId,
-		ref: 'Attachments'	
-	},
-	payment_confirmation: {
-		type: Schema.Types.ObjectId,
-		ref: 'Attachments'
-	},
-	fee_payment:{type: String},
-	total_payment: {type: String},
-	minus_payment: {type: String},
-	refund_payment: {type: String},
-	refund: {type: Boolean, default: false},
+		payment: {
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+		},
+		payment_confirm: {
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+		},
+		refund_confirm: {
+			type: Schema.Types.ObjectId,
+			ref: 'Attachments'
+		}
+	},		
 	remarks: {type: String}
 });
 

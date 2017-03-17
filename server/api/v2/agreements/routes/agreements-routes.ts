@@ -51,6 +51,11 @@ export class AgreementsRoutes {
 		router
 			.route('/agreement/payment/rejected/:id')
 			.post(auth.isAuthenticated(), AgreementsController.rejectPayment);
+
+		router
+			.route('/agreement/payment/refund/:id')
+			.get(auth.isAuthenticated(), AgreementsController.getTotalRefundPayment)
+			.post(auth.isAuthenticated(), AgreementsController.refundPayment);
 					
 		//LOI
 		router
