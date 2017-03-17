@@ -23,7 +23,7 @@ function facebookAuthenticate(User, id, accessToken, done) {
                       });
                     }
                     return done(null, userData);    
-                  })          
+                  })
               }
               else{
                 return done(null, false, {

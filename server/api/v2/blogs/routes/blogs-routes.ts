@@ -8,12 +8,12 @@ export class BlogsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/blogs')
-			.get(auth.isAuthenticated(),BlogsController.getAll)
+			.get(BlogsController.getAll)
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.createBlogs);
 
 		router
 			.route('/blogs/:slug')
-			.get(auth.isAuthenticated(),BlogsController.getById);
+			.get(BlogsController.getById);
 
 		router
 			.route('/blogs/:id')

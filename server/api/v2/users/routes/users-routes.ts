@@ -9,7 +9,11 @@ export class UserRoutes {
 		router
 			.route('/users')
 			.get(auth.isAuthenticated(),  UsersController.getAll)
-			.post(UsersController.createUser);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), UsersController.createUser);
+
+		router
+			.route('/signup')
+			.post(UsersController.signUp);
 
 		router
 			.route('/users/:id')
