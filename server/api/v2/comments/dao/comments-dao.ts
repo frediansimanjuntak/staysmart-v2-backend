@@ -85,26 +85,28 @@ commentsSchema.static('deleteReplies', (idComment:string, reply: Object, current
 			if(res.message) {
 				reject({message: res.message});
 			}
-		});
-		Comments
-			.update({"_id": idComment},
-				{
-					$pull: {
-						"replies": body.idReply
-					}	
-				}
-			)
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve(deleted);
-			});
+			else if(res == true){
+				Comments
+					.update({"_id": idComment},
+						{
+							$pull: {
+								"replies": body.idReply
+							}	
+						}
+					)
+					.exec((err, deleted) => {
+						err ? reject(err)
+						: resolve(deleted);
+					});
 
-		Comments
-			.findByIdAndRemove(body.idReply)
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve(deleted);
-			});
+				Comments
+					.findByIdAndRemove(body.idReply)
+					.exec((err, deleted) => {
+						err ? reject(err)
+						: resolve(deleted);
+					});
+			}
+		});
 	});
 });
 
@@ -117,34 +119,36 @@ commentsSchema.static('deleteComments', (idComment:string, currentUser:string):P
 			if(res.message) {
 				reject({message: res.message});
 			}
-		});
-		Comments
-			.findById(idComment, (err, commentt ) => {
-				if(commentt.replies != null) {
-					var ObjectID = mongoose.Types.ObjectId; 
-					var commentt_reply = [].concat(commentt.replies)
-					for (var i = 0; i < commentt_reply.length; i++) {
-						let reply = commentt_reply[i];
-						Comments
-							.findByIdAndRemove(reply)
-							.exec((err, deleted) => {
-								err ? reject(err)
-								: resolve(deleted);
-							});
-					}	
-				}
-			})
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve(deleted);
-			});
+			else if(res == true){
+				Comments
+					.findById(idComment, (err, commentt ) => {
+						if(commentt.replies != null) {
+							var ObjectID = mongoose.Types.ObjectId; 
+							var commentt_reply = [].concat(commentt.replies)
+							for (var i = 0; i < commentt_reply.length; i++) {
+								let reply = commentt_reply[i];
+								Comments
+									.findByIdAndRemove(reply)
+									.exec((err, deleted) => {
+										err ? reject(err)
+										: resolve(deleted);
+									});
+							}	
+						}
+					})
+					.exec((err, deleted) => {
+						err ? reject(err)
+						: resolve(deleted);
+					});
 
-		Comments
-			.findByIdAndRemove(idComment)
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve(deleted);
-			});
+				Comments
+					.findByIdAndRemove(idComment)
+					.exec((err, deleted) => {
+						err ? reject(err)
+						: resolve(deleted);
+					});
+			}
+		});
 	});
 });
 
@@ -157,13 +161,15 @@ commentsSchema.static('updateComments', (id:string, comments:Object, currentUser
 			if(res.message) {
 				reject({message: res.message});
 			}
+			else if(res == true){
+				Comments
+					.findByIdAndUpdate(id, comments)
+					.exec((err, update) => {
+						err ? reject(err)
+						: resolve(update);
+					});
+			}
 		});
-		Comments
-			.findByIdAndUpdate(id, comments)
-			.exec((err, update) => {
-				err ? reject(err)
-				: resolve(update);
-			});
 	});
 });
 
@@ -182,6 +188,9 @@ commentsSchema.static('validationComment', (userId:string, commentsId:string):Pr
 									.findById(userId, (err, user) => {
 										if(user.role != 'admin') {
 											resolve({message: "Forbidden"});
+										}
+										else{
+											resolve(true);
 										}
 									})
 							}
@@ -207,6 +216,9 @@ commentsSchema.static('validationReply', (userId:string, commentsId:string, repl
 												.findById(userId, (err, user) => {
 													if(user.role != 'admin') {
 														resolve({message: "Forbidden"});
+													}
+													else{
+														resolve(true);
 													}
 												})
 										}

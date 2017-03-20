@@ -182,13 +182,15 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 			if(res.message) {
 				reject({message: res.message});
 			}
+			else if(res == true){
+				Users
+					.findByIdAndRemove(id)
+					.exec((err, deleted) => {
+						err ? reject(err)
+						: resolve();
+					});
+			}
 		});
-		Users
-			.findByIdAndRemove(id)
-			.exec((err, deleted) => {
-				err ? reject(err)
-				: resolve();
-			});
 	});
 });
 
@@ -197,26 +199,30 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
 		}
+		console.log('test');
 		Users.validateUser(id, currentUser).then(res => {
+			console.log(res);
 			if(res.message) {
 				reject({message: res.message});
 			}
-		});
-		let body:any = user;
+			else if(res == true){
+				let body:any = user;
 
-		Users
-			.findById(id, (err, user)=>{
-				user.username = body.username;
-				user.email = body.email;
-				user.phone = body.phone;
-				if(body.password){
-					user.password = body.password;
-				}	            
-				user.save((err, saved) => {
-		        err ? reject(err)
-		            : resolve(saved);
-	    	    });
-			})
+				Users
+					.findById(id, (err, user)=>{
+						user.username = body.username;
+						user.email = body.email;
+						user.phone = body.phone;
+						if(body.password){
+							user.password = body.password;
+						}	            
+						user.save((err, saved) => {
+				        err ? reject(err)
+				            : resolve(saved);
+			    	    });
+					})
+			}
+		});
 	});
 });
 
@@ -229,23 +235,24 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, c
 			if(res.message) {
 				reject({message: res.message});
 			}
-		});
-		
-		var ObjectID = mongoose.Types.ObjectId;  
-		let userObj = {$set: {}};
-		
-		for(var param in userData) {
-			userObj.$set[type+'.data.'+param] = userData[param];
-		}
-		
-		Users.createHistory(id, type);
+			else if(res == true){
+				var ObjectID = mongoose.Types.ObjectId;  
+				let userObj = {$set: {}};
+				
+				for(var param in userData) {
+					userObj.$set[type+'.data.'+param] = userData[param];
+				}
+				
+				Users.createHistory(id, type);
 
-		Users
-			.findByIdAndUpdate(id, userObj)
-			.exec((err, update) => {
-				err ? reject(err)
-				: resolve(update);
-			});
+				Users
+					.findByIdAndUpdate(id, userObj)
+					.exec((err, update) => {
+						err ? reject(err)
+						: resolve(update);
+					});
+			}
+		});
 	});
 });
 
@@ -469,6 +476,9 @@ usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<
 				if(userId != currentUser) {
 					resolve({message: "Forbidden"});
 				}		
+				else{
+					resolve(true);
+				}
 			}
 		})
 	});
