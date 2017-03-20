@@ -77,20 +77,22 @@ companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Objec
           if(res.message) {
             reject({message: res.message});
           }
+          else if(res == true){
+            for (var i = 0; i < body.shareholders.length; i++) {
+              Companies
+                .findByIdAndUpdate(id, {
+                  $push: {
+                    "shareholders": body.shareholders[i]
+                  }
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                  : resolve(update);
+                });  
+            }
+          }
         });    
       })
-    for (var i = 0; i < body.shareholders.length; i++) {
-      Companies
-        .findByIdAndUpdate(id, {
-          $push: {
-            "shareholders": body.shareholders[i]
-          }
-        })
-        .exec((err, update) => {
-          err ? reject(err)
-          : resolve(update);
-        });  
-    }
   });
 });
 
@@ -105,38 +107,40 @@ companiesSchema.static('deleteCompanies', (id:string, currentUser:string):Promis
               if(res.message) {
                 reject({message: res.message});
               }
-            });
-            if(companies.documents != null) {
-                var ObjectID = mongoose.Types.ObjectId;
-                var companies_documents = [].concat(companies.documents)
-                    for (var i = 0; i < companies_documents.length; i++) {
-                        let document = companies_documents[i];
-                        Attachments
-                          .findByIdAndRemove(document)
-                          .exec((err, deleted) => {
-                              err ? reject(err)
-                                  : resolve(deleted);
-                          });
-                    }
-            }
-            Users
-              .findByIdAndUpdate(companies.created_by, {
-                $pull: {
-                  "companies": id
+              else if(res == true){
+                if(companies.documents != null) {
+                    var ObjectID = mongoose.Types.ObjectId;
+                    var companies_documents = [].concat(companies.documents)
+                        for (var i = 0; i < companies_documents.length; i++) {
+                            let document = companies_documents[i];
+                            Attachments
+                              .findByIdAndRemove(document)
+                              .exec((err, deleted) => {
+                                  err ? reject(err)
+                                      : resolve(deleted);
+                              });
+                        }
                 }
-              })
-              .exec((err, update) => {
-                    err ? reject(err)
-                        : resolve(update);
-                });
+                Users
+                  .findByIdAndUpdate(companies.created_by, {
+                    $pull: {
+                      "companies": id
+                    }
+                  })
+                  .exec((err, update) => {
+                        err ? reject(err)
+                            : resolve(update);
+                    });
+
+                Companies
+                  .findByIdAndRemove(id)
+                  .exec((err, deleted) => {
+                      err ? reject(err)
+                          : resolve(deleted);
+                  });
+              }
+            });
           })
-          
-        Companies
-          .findByIdAndRemove(id)
-          .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve(deleted);
-          });
     });
 });
 
@@ -151,14 +155,17 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object, currentU
               if(res.message) {
                 reject({message: res.message});
               }
+              else if(res == true){
+                Companies
+                  .findByIdAndUpdate(id, companies)
+                  .exec((err, update) => {
+                        err ? reject(err)
+                            : resolve(update);
+                  });
+              }
             });    
           })
-        Companies
-        .findByIdAndUpdate(id, companies)
-        .exec((err, update) => {
-              err ? reject(err)
-                  : resolve(update);
-          });
+        
     }); 
 });
 

@@ -223,15 +223,17 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
           if(res.message) {
             reject({message: res.message});
           }
+          else if(res == true){
+            var type = 'update';
+            Properties.createPropertyHistory(id, type);
+            Properties
+              .findByIdAndUpdate(id, properties)
+              .exec((err, update) => {
+                    err ? reject(err)
+                        : resolve(update);
+                });
+          }
         });
-        var type = 'update';
-        Properties.createPropertyHistory(id, type);
-        Properties
-          .findByIdAndUpdate(id, properties)
-          .exec((err, update) => {
-                err ? reject(err)
-                    : resolve(update);
-            });
     });
 });
 
@@ -287,68 +289,68 @@ propertiesSchema.static('deleteProperties', (id:string, userId:string):Promise<a
           if(res.message) {
             reject({message: res.message});
           }
+          else if(res == true){
+            Properties.findById(id, (err, result) => {
+              for(var i = 0; i < result.pictures.living.length; i++){
+                Attachments
+                  .findByIdAndRemove(result.pictures.living[i])
+                  .exec((err, deleted) => {
+                      err ? reject(err)
+                          : resolve(deleted);
+                  });
+              }
+              for(var i = 0; i < result.pictures.dining.length; i++){
+                Attachments
+                  .findByIdAndRemove(result.pictures.dining[i])
+                  .exec((err, deleted) => {
+                      err ? reject(err)
+                          : resolve(deleted);
+                  });
+              }
+              for(var i = 0; i < result.pictures.bed.length; i++){
+                Attachments
+                  .findByIdAndRemove(result.pictures.bed[i])
+                  .exec((err, deleted) => {
+                      err ? reject(err)
+                          : resolve(deleted);
+                  });
+              }
+              for(var i = 0; i < result.pictures.toilet.length; i++){
+                Attachments
+                  .findByIdAndRemove(result.pictures.toilet[i])
+                  .exec((err, deleted) => {
+                      err ? reject(err)
+                          : resolve(deleted);
+                  });
+              }
+              for(var i = 0; i < result.pictures.kitchen.length; i++){
+                Attachments
+                  .findByIdAndRemove(result.pictures.kitchen[i])
+                  .exec((err, deleted) => {
+                      err ? reject(err)
+                          : resolve(deleted);
+                  });
+              }
+            })
+            Users
+              .findByIdAndUpdate(userId, {
+                $pull: {
+                  "owned_properties": id
+                }
+              })
+              .exec((err, deleted) => {
+                  err ? reject(err)
+                      : resolve(deleted);
+              });
+
+            Properties
+              .findByIdAndRemove(id)
+              .exec((err, deleted) => {
+                  err ? reject(err)
+                      : resolve(deleted);
+              });
+          }
         });
-
-        Properties.findById(id, (err, result) => {
-          for(var i = 0; i < result.pictures.living.length; i++){
-            Attachments
-              .findByIdAndRemove(result.pictures.living[i])
-              .exec((err, deleted) => {
-                  err ? reject(err)
-                      : resolve(deleted);
-              });
-          }
-          for(var i = 0; i < result.pictures.dining.length; i++){
-            Attachments
-              .findByIdAndRemove(result.pictures.dining[i])
-              .exec((err, deleted) => {
-                  err ? reject(err)
-                      : resolve(deleted);
-              });
-          }
-          for(var i = 0; i < result.pictures.bed.length; i++){
-            Attachments
-              .findByIdAndRemove(result.pictures.bed[i])
-              .exec((err, deleted) => {
-                  err ? reject(err)
-                      : resolve(deleted);
-              });
-          }
-          for(var i = 0; i < result.pictures.toilet.length; i++){
-            Attachments
-              .findByIdAndRemove(result.pictures.toilet[i])
-              .exec((err, deleted) => {
-                  err ? reject(err)
-                      : resolve(deleted);
-              });
-          }
-          for(var i = 0; i < result.pictures.kitchen.length; i++){
-            Attachments
-              .findByIdAndRemove(result.pictures.kitchen[i])
-              .exec((err, deleted) => {
-                  err ? reject(err)
-                      : resolve(deleted);
-              });
-          }
-        })
-        Users
-          .findByIdAndUpdate(userId, {
-            $pull: {
-              "owned_properties": id
-            }
-          })
-          .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve(deleted);
-          });
-
-        Properties
-          .findByIdAndRemove(id)
-          .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve(deleted);
-          });
-        
     });
 });
 
@@ -491,6 +493,9 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:string):Prom
           Properties.findById(propertyId, (err, result) => {
             if(result.owner.user != userId) {
               resolve({message: "Forbidden"});
+            }
+            else{
+              resolve(true);
             }
           })    
         }
