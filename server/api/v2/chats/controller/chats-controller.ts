@@ -23,9 +23,8 @@ export class ChatsController {
 	static createRoom(req: express.Request, res: express.Response):void {
 		let _uid = req["user"]._id;
 		let _name = req.body.name;
-		let _members = req.body.members;
 		ChatsDAO
-		['createRoom'](_uid, _name, _members)
+		['createRoom'](_uid, _name)
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
