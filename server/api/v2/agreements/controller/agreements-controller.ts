@@ -215,8 +215,10 @@ export class AgreementsController {
 
 	//IL
 	static getInventoryList(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;		
+
 		AgreementsDAO
-		['getInventoryList']()
+		['getInventoryList'](_id)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -224,30 +226,42 @@ export class AgreementsController {
 	static createInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _agreement = req.body;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['createInventoryList'](_id, _agreement)
+		['createInventoryList'](_id, _agreement, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updateInventoryList(req: express.Request, res: express.Response):void {
+	static tenantCheckInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _agreement = req.body;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['updateInventoryList'](_id, _agreement)
+		['tenantCheckInventoryList'](_id, _agreement, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updateTenantCheck(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _agreement = req.body;
+	// static updateInventoryList(req: express.Request, res: express.Response):void {
+	// 	let _id = req.params.id;
+	// 	let _agreement = req.body;
 
-		AgreementsDAO
-		['updateTenantCheck'](_id, _agreement)
-		.then(agreements => res.status (201).json(agreements))
-		.catch(error => res.status(400).json(error));
-	}
+	// 	AgreementsDAO
+	// 	['updateInventoryList'](_id, _agreement)
+	// 	.then(agreements => res.status(201).json(agreements))
+	// 	.catch(error => res.status(400).json(error));
+	// }
+
+	// static updateTenantCheck(req: express.Request, res: express.Response):void {
+	// 	let _id = req.params.id;
+	// 	let _agreement = req.body;
+
+	// 	AgreementsDAO
+	// 	['updateTenantCheck'](_id, _agreement)
+	// 	.then(agreements => res.status (201).json(agreements))
+	// 	.catch(error => res.status(400).json(error));
+	// }
 }

@@ -175,6 +175,7 @@ var AgreementsSchema = new mongoose.Schema({
 				enum: ['pending', 'completed']
 			},
 			created_at: {type: Date},
+			property: {type:String},
 			lists: [{
 				name: {type: String},
 				items: [{

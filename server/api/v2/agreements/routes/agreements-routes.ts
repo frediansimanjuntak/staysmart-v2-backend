@@ -8,7 +8,7 @@ export class AgreementsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/agreements')
-			.get(AgreementsController.getAll)
+			.get(auth.isAuthenticated(), AgreementsController.getAll)
 			.post(auth.isAuthenticated(), AgreementsController.createAgreements);
 
 		router
@@ -23,16 +23,20 @@ export class AgreementsRoutes {
 		//Inventory List
 		router
 			.route('/inventorylist/:id')
-			.get(AgreementsController.getInventoryList)
-			.post(AgreementsController.createInventoryList);
+			.get(auth.isAuthenticated(), AgreementsController.getInventoryList)
+			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
 
 		router
-			.route('/inventorylist/update/:id')
-			.post(AgreementsController.updateInventoryList);
+			.route('/inventorylist/tenant_checked/:id')
+			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
 
-		router
-			.route('/inventorylist/tenantcheck/update/:id')
-			.post(AgreementsController.updateTenantCheck);
+		// router
+		// 	.route('/inventorylist/update/:id')
+		// 	.post(auth.isAuthenticated(), AgreementsController.updateInventoryList);
+
+		// router
+		// 	.route('/inventorylist/tenantcheck/update/:id')
+		// 	.post(auth.isAuthenticated(), AgreementsController.updateTenantCheck);
 		
 		//confirmation
 		router
@@ -46,16 +50,16 @@ export class AgreementsRoutes {
 
 		router
 			.route('/agreement/payment/accepted/:id')
-			.post(auth.isAuthenticated(), AgreementsController.acceptPayment);
+			.post(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.acceptPayment);
 
 		router
 			.route('/agreement/payment/rejected/:id')
-			.post(auth.isAuthenticated(), AgreementsController.rejectPayment);
+			.post(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.rejectPayment);
 
 		router
 			.route('/agreement/payment/refund/:id')
-			.get(auth.isAuthenticated(), AgreementsController.getTotalRefundPayment)
-			.post(auth.isAuthenticated(), AgreementsController.refundPayment);
+			.get(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.getTotalRefundPayment)
+			.post(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.refundPayment);
 					
 		//LOI
 		router
@@ -82,19 +86,19 @@ export class AgreementsRoutes {
 		//TA
 		router
 			.route('/ta/:id')
-			.get(AgreementsController.getTA)
-			.post(AgreementsController.createTA);
+			.get(auth.isAuthenticated(), AgreementsController.getTA)
+			.post(auth.isAuthenticated(), AgreementsController.createTA);
 
 		router
 			.route('/ta/status/acccepted/:id')
-			.post(AgreementsController.acceptTA);
+			.post(auth.isAuthenticated(), AgreementsController.acceptTA);
 
 		router
 			.route('/ta/status/rejected/:id')
-			.post(AgreementsController.rejectTA);
+			.post(auth.isAuthenticated(), AgreementsController.rejectTA);
 
 		router
 			.route('/ta/status/admin_confirm/:id')
-			.post(AgreementsController.adminConfirmationTA);
+			.post(auth.isAuthenticated(), AgreementsController.adminConfirmationTA);
 	}
 }
