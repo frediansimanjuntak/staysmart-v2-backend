@@ -76,51 +76,59 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
 
 chatsSchema.static('createRoom', (uid:Object, name:string, members:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        DreamTalk.createRoom(uid, name, members).then(result => {
-        	if(result.res.message){
-        		resolve(result.res);
-        	}
-        	else{
-        		let room = JSON.parse(result.res.body);
-        		var _chat_rooms = new ChatRooms();
-        			_chat_rooms.room_id = room._id;
-                    _chat_rooms.propertyId = name;
-                    _chat_rooms.landlord = members;
-                    _chat_rooms.tenant = uid;
-                    _chat_rooms.save((err, saved)=>{
-                        if(err){
-                            reject(err);
-                        }
-                        else if(saved){
-                            console.log(saved);
-                            Users
-                                .findByIdAndUpdate(uid, {
-                                    $push: {
-                                        "tenant.chat_rooms": saved._id
-                                    }
-                                })
-                                .exec((err, users) => {
-                                    err ? reject(err)
-                                        : resolve(users);
-                                });
-                            let memberId:any = members;
-                            for(var i = 0; i < memberId.length; i++){
-                            	console.log(memberId[i]);
-	                            Users
-	                                .findByIdAndUpdate(memberId[i], {
-	                                    $push: {
-	                                        "landlord.chat_rooms": saved._id
-	                                    }
-	                                })
-	                                .exec((err, users) => {
-	                                    err ? reject(err)
-	                                        : resolve(users);
-	                                });
-                            }
-                        }
-                    });
-        	}
-        });
+    	ChatRooms
+    		.findOne({"tenant": uid, "propertyId": name}, (err, result) => {
+    			if(!result){
+    				DreamTalk.createRoom(uid, name, members).then(result => {
+			        	if(result.res.message){
+			        		resolve(result.res);
+			        	}
+			        	else{
+			        		let room = JSON.parse(result.res.body);
+			        		var _chat_rooms = new ChatRooms();
+			        			_chat_rooms.room_id = room._id;
+			                    _chat_rooms.propertyId = name;
+			                    _chat_rooms.landlord = members;
+			                    _chat_rooms.tenant = uid;
+			                    _chat_rooms.save((err, saved)=>{
+			                        if(err){
+			                            reject(err);
+			                        }
+			                        else if(saved){
+			                            console.log(saved);
+			                            Users
+			                                .findByIdAndUpdate(uid, {
+			                                    $push: {
+			                                        "tenant.chat_rooms": saved._id
+			                                    }
+			                                })
+			                                .exec((err, users) => {
+			                                    err ? reject(err)
+			                                        : resolve(users);
+			                                });
+			                            let memberId:any = members;
+			                            for(var i = 0; i < memberId.length; i++){
+			                            	console.log(memberId[i]);
+				                            Users
+				                                .findByIdAndUpdate(memberId[i], {
+				                                    $push: {
+				                                        "landlord.chat_rooms": saved._id
+				                                    }
+				                                })
+				                                .exec((err, users) => {
+				                                    err ? reject(err)
+				                                        : resolve(users);
+				                                });
+			                            }
+			                        }
+			                    });
+			        	}
+			        });
+    			}
+    			else{
+    				resolve(result);
+    			}
+    		})
     });
 });
 
