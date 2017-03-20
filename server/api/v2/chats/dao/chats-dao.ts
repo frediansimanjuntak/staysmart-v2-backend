@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import chatsSchema from '../model/chats-model';
 import Users from '../../users/dao/users-dao'
+import Properties from '../../properties/dao/properties-dao'
 import {DreamTalk} from '../../../../global/chat.service';
 
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
@@ -74,61 +75,85 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
     });
 });
 
-chatsSchema.static('createRoom', (uid:Object, name:string, members:Object):Promise<any> => {
+chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-    	ChatRooms
-    		.findOne({"tenant": uid, "propertyId": name}, (err, result) => {
-    			if(!result){
-    				DreamTalk.createRoom(uid, name, members).then(result => {
-			        	if(result.res.message){
-			        		resolve(result.res);
-			        	}
-			        	else{
-			        		let room = JSON.parse(result.res.body);
-			        		var _chat_rooms = new ChatRooms();
-			        			_chat_rooms.room_id = room._id;
-			                    _chat_rooms.propertyId = name;
-			                    _chat_rooms.landlord = members;
-			                    _chat_rooms.tenant = uid;
-			                    _chat_rooms.save((err, saved)=>{
-			                        if(err){
-			                            reject(err);
-			                        }
-			                        else if(saved){
-			                            console.log(saved);
-			                            Users
-			                                .findByIdAndUpdate(uid, {
-			                                    $push: {
-			                                        "tenant.chat_rooms": saved._id
-			                                    }
-			                                })
-			                                .exec((err, users) => {
-			                                    err ? reject(err)
-			                                        : resolve(users);
-			                                });
-			                            let memberId:any = members;
-			                            for(var i = 0; i < memberId.length; i++){
-			                            	console.log(memberId[i]);
-				                            Users
-				                                .findByIdAndUpdate(memberId[i], {
-				                                    $push: {
-				                                        "landlord.chat_rooms": saved._id
-				                                    }
-				                                })
-				                                .exec((err, users) => {
-				                                    err ? reject(err)
-				                                        : resolve(users);
-				                                });
-			                            }
-			                        }
-			                    });
-			        	}
-			        });
+    	Properties
+    		.findById(name, (err, property) => {
+    			var members = [];
+    			members.push(property.owner.user);
+    			if(property.manager){
+    				members.push(property.manager);	
     			}
-    			else{
-    				resolve(result);
-    			}
-    		})
+    			console.log(members);
+    		
+		    	ChatRooms
+		    		.findOne({"tenant": uid, "propertyId": name}, (err, result) => {
+		    			if(!result){
+		    				DreamTalk.createRoom(uid, name, members).then(result => {
+					        	if(result.res.message){
+					        		resolve(result.res);
+					        	}
+					        	else{
+					        		let room = JSON.parse(result.res.body);
+					        		var _chat_rooms = new ChatRooms();
+					        			_chat_rooms.room_id = room._id;
+					                    _chat_rooms.propertyId = name;
+					                    _chat_rooms.landlord = members;
+					                    _chat_rooms.tenant = uid;
+					                    _chat_rooms.save((err, saved)=>{
+					                        if(err){
+					                            reject(err);
+					                        }
+					                        else if(saved){
+					                            console.log(saved);
+					                            Users
+					                                .findByIdAndUpdate(uid, {
+					                                    $push: {
+					                                        "tenant.chat_rooms": saved._id
+					                                    }
+					                                })
+					                                .exec((err, users) => {
+					                                    err ? reject(err)
+					                                        : resolve(users);
+					                                });
+					                            let memberId:any = members;
+					                            for(var i = 0; i < memberId.length; i++){
+					                            	console.log(memberId[i]);
+					                            	if(i == 0) {
+					                            		Users
+							                                .findByIdAndUpdate(memberId[i], {
+							                                    $push: {
+							                                        "landlord.chat_rooms": saved._id
+							                                    }
+							                                })
+							                                .exec((err, users) => {
+							                                    err ? reject(err)
+							                                        : resolve(users);
+							                                });	
+					                            	}
+					                            	else{
+					                            		Users
+							                                .findByIdAndUpdate(memberId[i], {
+							                                    $push: {
+							                                        "managed_chat_rooms": saved._id
+							                                    }
+							                                })
+							                                .exec((err, users) => {
+							                                    err ? reject(err)
+							                                        : resolve(users);
+							                                });
+					                            	}
+					                            }
+					                        }
+					                    });
+					        	}
+					        });
+		    			}
+		    			else{
+		    				resolve(result);
+		    			}
+		    		})
+	    	})
     });
 });
 
