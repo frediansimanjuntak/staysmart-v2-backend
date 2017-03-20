@@ -6,7 +6,20 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 var ChatsSchema = new mongoose.Schema({
-	
+	room_id: {type: String},
+	propertyId: {
+		type: Schema.Types.ObjectId,
+		ref: 'Properties'
+	},
+	landlord: {
+		type: Schema.Types.ObjectId,
+		ref: 'Users'
+	},
+	tenant: {
+		type: Schema.Types.ObjectId,
+		ref: 'Users'
+	},
+	created_at: {type: Date, default: Date.now},
 });
 
 export default ChatsSchema;

@@ -16,9 +16,15 @@ router.post('/', function(req, res, next) {
     if(!user) {
       return res.status(404).json({message: 'Something went wrong, please try again.'});
     }
+    if(!user.username){
+      var data = false;
+    }
+    else{
+      data = true;
+    }
 
     var token = signToken(user._id, user.role, user.service.facebook.id);
-    res.json({ token });
+    res.json({ token, userId: user._id, data});
   })(req, res, next);
 });
 
