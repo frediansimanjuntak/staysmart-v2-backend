@@ -166,6 +166,24 @@ export class DreamTalk{
 		});
 	}
 
+	static createRoom(uid, name, members) {
+		console.log('chat room created');
+		return new Promise((resolve:Function, reject:Function) => {
+			DreamTalk.doHTTP('POST', '/rooms', {
+				uid,
+				name, 
+				members
+			})
+			.then(res => {
+				console.log('create chat room success');
+				resolve({res})
+			})
+			.catch(err => {
+				reject(err)
+			})
+		});
+	}
+
 	static insertChatRoom(user, rooms) {
 		console.log('insert to chat room');
 		return new Promise((resolve:Function, reject:Function) => {
@@ -247,7 +265,7 @@ export class DreamTalk{
 				id, uid, option
 			})
 			.then(res => {
-				resolve(JSON.parse(res.body));
+				resolve(res);
 			})
 			.catch(err => {
 				reject(err);

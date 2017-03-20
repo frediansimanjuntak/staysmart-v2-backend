@@ -7,7 +7,7 @@ export class ChatsController {
 		let _username = req["user"].username;
 		ChatsDAO
 		['requestToken'](_userId, _username)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -16,7 +16,17 @@ export class ChatsController {
 		let _rooms = req.body.rooms;
 		ChatsDAO
 		['insertChatRoom'](_users, _rooms)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static createRoom(req: express.Request, res: express.Response):void {
+		let _uid = req["user"]._id;
+		let _name = req.body.name;
+		let _members = req.body.members;
+		ChatsDAO
+		['createRoom'](_uid, _name, _members)
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -25,7 +35,7 @@ export class ChatsController {
 		let _userId = req["user"]._id.toString();
 		ChatsDAO
 		['requestPeer'](_userId, _roomName)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -34,7 +44,7 @@ export class ChatsController {
 		let _userId = req["user"]._id.toString();
 		ChatsDAO
 		['getUserRoom'](_userId, _roomName)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -42,7 +52,7 @@ export class ChatsController {
 		let _roomName = req.params.roomName;
 		ChatsDAO
 		['getSupportRooms'](_roomName)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -50,7 +60,7 @@ export class ChatsController {
 		let _roomId = req.params.roomId;
 		ChatsDAO
 		['getMembers'](_roomId)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -59,7 +69,7 @@ export class ChatsController {
 		let _memberId = req.params.memberId;
 		ChatsDAO
 		['postMembers'](_roomId, _memberId)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -68,7 +78,7 @@ export class ChatsController {
 		let _extra = req.body;
 		ChatsDAO
 		['updateRoom'](_roomId, _extra)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -76,7 +86,17 @@ export class ChatsController {
 		let _data = req.body;
 		ChatsDAO
 		['updateProfile'](_data)
-		.then(blogs => res.status(200).json(blogs))
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static postAnswer(req: express.Request, res: express.Response):void {
+		let _option = req.params.option;
+		let _id = req.params.id;
+		let _uid = req["user"]._id;
+		ChatsDAO
+		['postAnswer'](_id, _uid, _option)
+		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
 }

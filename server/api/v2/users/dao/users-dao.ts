@@ -40,6 +40,30 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 		Users
 			.findOne({_id:userId}, '-salt -password')
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
+			.populate({
+	          path: 'tenant.chat_rooms',
+	          populate: [{
+	            path: 'propertyId',
+	            model: 'Properties',
+	            select: 'address'
+	          },{
+	            path: 'landlord',
+	            model: 'Users',
+	            select: 'landlord.data'
+	          }],
+	        })
+	        .populate({
+	          path: 'landlord.chat_rooms',
+	          populate: [{
+	            path: 'propertyId',
+	            model: 'Properties',
+	            select: 'address'
+	          },{
+	            path: 'tenant',
+	            model: 'Users',
+	            select: 'tenant.data'
+	          }],
+	        })
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);

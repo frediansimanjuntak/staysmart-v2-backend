@@ -53,7 +53,12 @@ var UsersSchema = new mongoose.Schema({
 		[{
 			date: {type: Date},
 			data: {}
-		}]
+		}],
+    chat_rooms: 
+    [{
+      type: Schema.Types.ObjectId,
+      ref: 'ChatRooms'
+    }]
 	},
 	landlord: {
 		data: {
@@ -102,7 +107,12 @@ var UsersSchema = new mongoose.Schema({
 		[{
 			date: {type: Date},
 			data: {}
-		}]
+		}],
+    chat_rooms: 
+    [{
+      type: Schema.Types.ObjectId,
+      ref: 'ChatRooms'
+    }]
 	},
 	owned_properties: 
 	[

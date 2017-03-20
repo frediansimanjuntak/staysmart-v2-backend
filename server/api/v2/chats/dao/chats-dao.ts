@@ -21,7 +21,7 @@ chatsSchema.static('requestToken', (userId:string, username:string):Promise<any>
 				        	var res_token = JSON.parse(token);
 				        	var user_token = res_token.token;
 
-				        	Chats.login(user_token, userId, username).then(res => {
+				        	ChatRooms.login(user_token, userId, username).then(res => {
 				        		resolve(res);
 				        	});
 				        });
@@ -52,7 +52,7 @@ chatsSchema.static('login', (token:string, userId:string, username:string):Promi
 	        	resolve({'loginId': id, 'loginToken': token, 'loginTokenExpires': tokenExpires});
         	}
         	else{
-        		Chats.requestToken(userId, username);
+        		ChatRooms.requestToken(userId, username);
         	}
         });
     });
@@ -70,6 +70,56 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.insertChatRoom(user, rooms).then(result => {
         	resolve(result.res);
+        });
+    });
+});
+
+chatsSchema.static('createRoom', (uid:Object, name:string, members:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        DreamTalk.createRoom(uid, name, members).then(result => {
+        	if(result.res.message){
+        		resolve(result.res);
+        	}
+        	else{
+        		let room = JSON.parse(result.res.body);
+        		var _chat_rooms = new ChatRooms();
+        			_chat_rooms.room_id = room._id;
+                    _chat_rooms.propertyId = name;
+                    _chat_rooms.landlord = members;
+                    _chat_rooms.tenant = uid;
+                    _chat_rooms.save((err, saved)=>{
+                        if(err){
+                            reject(err);
+                        }
+                        else if(saved){
+                            console.log(saved);
+                            Users
+                                .findByIdAndUpdate(uid, {
+                                    $push: {
+                                        "tenant.chat_rooms": saved._id
+                                    }
+                                })
+                                .exec((err, users) => {
+                                    err ? reject(err)
+                                        : resolve(users);
+                                });
+                            let memberId:any = members;
+                            for(var i = 0; i < memberId.length; i++){
+                            	console.log(memberId[i]);
+	                            Users
+	                                .findByIdAndUpdate(memberId[i], {
+	                                    $push: {
+	                                        "landlord.chat_rooms": saved._id
+	                                    }
+	                                })
+	                                .exec((err, users) => {
+	                                    err ? reject(err)
+	                                        : resolve(users);
+	                                });
+                            }
+                        }
+                    });
+        	}
         });
     });
 });
@@ -111,7 +161,7 @@ chatsSchema.static('postMembers', (roomId:string, memberId:string):Promise<any> 
     });
 });
 //--
-chatsSchema.static('postAnswer', (id:string, userId:string, option:Object):Promise<any> => {
+chatsSchema.static('postAnswer', (id:string, userId:string, option:number):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.postAnswer(id, userId, option).then(result => {
         	resolve(result);
@@ -135,6 +185,6 @@ chatsSchema.static('updateRoom', (roomId:string, extra:Object):Promise<any> => {
     });
 });
 
-let Chats = mongoose.model('Chats', chatsSchema);
+let ChatRooms = mongoose.model('ChatRooms', chatsSchema);
 
-export default Chats;
+export default ChatRooms;

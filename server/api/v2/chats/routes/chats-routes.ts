@@ -35,11 +35,19 @@ export class ChatsRoutes {
 			.post(auth.isAuthenticated(),ChatsController.insertChatRoom)
 
 		router
+			.route('/chats/room/create')
+			.post(auth.isAuthenticated(),ChatsController.createRoom)
+
+		router
 			.route('/chats/rooms/update/:roomId')
 			.put(auth.isAuthenticated(),ChatsController.updateRoom)
 
 		router
 			.route('/chats/profile/update')
 			.put(auth.isAuthenticated(),ChatsController.updateProfile)
+
+		router
+			.route('/chats/answer/:id/:option')
+			.post(auth.isAuthenticated(),ChatsController.postAnswer)
 	}
 }
