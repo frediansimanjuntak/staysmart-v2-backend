@@ -10,6 +10,7 @@ amenitiesSchema.static('getAll', ():Promise<any> => {
 
         Amenities
           .find(_query)
+          .populate("icon")
           .exec((err, amenities) => {
               err ? reject(err)
                   : resolve(amenities);
@@ -22,6 +23,7 @@ amenitiesSchema.static('getById', (id:string):Promise<any> => {
 
         Amenities
           .findById(id)
+          .populate("icon")
           .exec((err, amenities) => {
               err ? reject(err)
                   : resolve(amenities);
