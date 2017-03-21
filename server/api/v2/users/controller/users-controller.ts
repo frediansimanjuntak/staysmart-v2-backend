@@ -44,6 +44,24 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static searchUser(req: express.Request, res: express.Response):void {
+		let _search = req.params.search;
+
+		UsersDAO
+		['searchUser'](_search)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getPropertyNonManager(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		UsersDAO
+		['getPropertyNonManager'](_id)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static signUp(req: express.Request, res: express.Response):void {
 		let _user = req.body;
 
