@@ -88,6 +88,49 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 	});
 });
 
+usersSchema.static('searchUser', (search:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users
+		.findOne({"username": search})
+		.exec((err, users)=>{	
+			console.log(users);
+			let userData ={
+				"username": users.username,
+				"_id": users._id,
+			}
+			console.log(userData);
+			err ? reject(err)
+              	: resolve(userData);
+		})
+	});
+});
+
+usersSchema.static('getPropertyNonManager', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Users
+			.findById(id, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
+			.populate("owned_properties")
+			.exec((err, users) => {
+				let ownProperty = [].concat(users.owned_properties);
+				let managerProperty = users.owned_properties.manager;
+				let property = [];
+
+				for (var i = 0; i < ownProperty.length; i++){
+					let own = ownProperty[i];
+					let managerProperty = own.manager;
+					if (!managerProperty){
+						property.push(own);
+					}	
+				}
+				console.log(property);
+				resolve(property);
+			});
+	});
+});
+
 usersSchema.static('createUser', (user:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {

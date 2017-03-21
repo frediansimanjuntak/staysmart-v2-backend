@@ -198,6 +198,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 								loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
 							    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
 							    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
+							    loiObj.$set["letter_of_intent.data.tenant.bank_account"] = body.bank_account;
 							    loiObj.$set["letter_of_intent.data.status"] = "admin-confirmation";
 							    loiObj.$set["letter_of_intent.data.created_at"] = new Date();
 
@@ -310,7 +311,6 @@ agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 								: resolve(updated);
 						});
 				}
-
 				Users
 					.findOne({"_id": lanlordId, "landlord.data.bank_account.no": bankNo}, (err, user) => {
 						if (user == null){
@@ -330,7 +330,10 @@ agreementsSchema.static('createTA', (id:string, data:Object):Promise<any> => {
 										console.log(updated);
 								});
 						}
-					})						
+					})				
+				agreement.letter_of_intent.data.landlord.bank_account.no = body.no;
+				agreement.letter_of_intent.data.landlord.bank_account.name = body.name;
+				agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank;	
 				agreement.tenancy_agreement.data.status = "admin-confirmation";
 				agreement.tenancy_agreement.data.created_at = new Date();
 				agreement.save((err, saved)=>{

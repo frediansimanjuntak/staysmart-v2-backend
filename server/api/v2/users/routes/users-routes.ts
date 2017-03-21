@@ -64,5 +64,13 @@ export class UserRoutes {
 			.route('/reset_password/:token')
 			.post(UsersController.resetPassword);
 
+		router
+			.route('/user/search/:search')
+			.get(UsersController.searchUser);
+
+		router
+			.route('/user/property/nonmanager/:id')
+			.get(UsersController.getPropertyNonManager);
+
 	}
 }
