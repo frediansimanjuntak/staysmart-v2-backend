@@ -3,8 +3,11 @@ import AgreementsDAO from '../dao/agreements-dao';
 
 export class AgreementsController {
 	static getAll(req: express.Request, res: express.Response):void {
+		
+		let _userId = req["user"]._id;
+
 		AgreementsDAO
-		['getAll']()
+		['getAll'](_userId)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -244,24 +247,4 @@ export class AgreementsController {
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
-
-	// static updateInventoryList(req: express.Request, res: express.Response):void {
-	// 	let _id = req.params.id;
-	// 	let _agreement = req.body;
-
-	// 	AgreementsDAO
-	// 	['updateInventoryList'](_id, _agreement)
-	// 	.then(agreements => res.status(201).json(agreements))
-	// 	.catch(error => res.status(400).json(error));
-	// }
-
-	// static updateTenantCheck(req: express.Request, res: express.Response):void {
-	// 	let _id = req.params.id;
-	// 	let _agreement = req.body;
-
-	// 	AgreementsDAO
-	// 	['updateTenantCheck'](_id, _agreement)
-	// 	.then(agreements => res.status (201).json(agreements))
-	// 	.catch(error => res.status(400).json(error));
-	// }
 }

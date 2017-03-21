@@ -29,14 +29,6 @@ export class AgreementsRoutes {
 		router
 			.route('/inventorylist/tenant_checked/:id')
 			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
-
-		// router
-		// 	.route('/inventorylist/update/:id')
-		// 	.post(auth.isAuthenticated(), AgreementsController.updateInventoryList);
-
-		// router
-		// 	.route('/inventorylist/tenantcheck/update/:id')
-		// 	.post(auth.isAuthenticated(), AgreementsController.updateTenantCheck);
 		
 		//confirmation
 		router
