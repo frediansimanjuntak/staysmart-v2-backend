@@ -32,7 +32,8 @@ var DevelopmentsSchema = new mongoose.Schema({
 	    country: {type: String},
 	    full_address: {type: String},
 	    type: {type: String} //default to Point
-	}
+	},
+	description: {type: String}
 });
 
 export default DevelopmentsSchema;
