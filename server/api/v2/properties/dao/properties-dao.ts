@@ -126,88 +126,91 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
           _properties.owner.user = userId;
           _properties.confirmation.status = 'pending';
           _properties.save((err, saved)=>{
-            err ? reject(err)
-                : resolve(saved);
-          });
-      let propertyID:string = _properties._id;
+            if(err) {
+              reject(err);
+            }
+            else if(saved){
+              let propertyID = _properties._id;
       
-      if(body.owned_type == 'company'){
-        if(body.companyData) {
-          Users
-            .findById(userId, (err, result) => {
-              if(result.companies.length == 0){
-                Companies.createCompanies(body.companyData, userId).then(res => {
-                  var companyId = res.companiesId;
+              if(body.owned_type == 'company'){
+                if(body.companyData) {
+                  Users
+                    .findById(userId, (err, result) => {
+                      if(result.companies.length == 0){
+                        Companies.createCompanies(body.companyData, userId).then(res => {
+                          var companyId = res.companiesId;
+                          Properties
+                            .findByIdAndUpdate(propertyID, {
+                              $set: {
+                                "owner.company": companyId
+                              }
+                            })
+                            .exec((err, update) => {
+                                err ? reject(err)
+                                    : resolve(update);
+                            });
+
+                          if(body.shareholders != null) {
+                            Properties
+                              .findByIdAndUpdate(propertyID, {
+                                $set: {
+                                  "temp.shareholders": body.shareholders
+                                }
+                              })
+                              .exec((err, update) => {
+                                  err ? reject(err)
+                                      : resolve(update);
+                              });
+                          }
+                        });
+                      }
+                    })  
+                }
+
+                if(body.owner.company && body.shareholders != null) {
                   Properties
                     .findByIdAndUpdate(propertyID, {
                       $set: {
-                        "owner.company": companyId
+                        "temp.shareholders": body.shareholders
                       }
                     })
                     .exec((err, update) => {
                         err ? reject(err)
                             : resolve(update);
                     });
+                }
+              }
+              else if(body.owned_type == 'individual'){
+                if(body.landlordData) {
+                  var type = 'landlord';
+                  Users.updateUserData(userId, type, body.landlordData, userId);
+                }
+                if(body.ownersData != null) {
+                  Properties
+                    .findByIdAndUpdate(propertyID, {
+                      $set: {
+                        "temp.owners": body.ownersData
+                      }
+                    })
+                    .exec((err, update) => {
+                        err ? reject(err)
+                            : resolve(update);
+                    });
+                }
+              }
 
-                  if(body.shareholders != null) {
-                    Properties
-                      .findById(propertyID, {
-                        $set: {
-                          "temp.shareholders": body.shareholders
-                        }
-                      })
-                      .exec((err, update) => {
-                          err ? reject(err)
-                              : resolve(update);
-                      });
+              Users
+                .update({"_id":userId}, {
+                  $push: {
+                    "owned_properties": propertyID
                   }
+                })
+                .exec((err, saved) => {
+                    err ? reject(err)
+                        : resolve(saved);
                 });
-              }
-            })  
-        }
-
-        if(body.owner.company && body.shareholders != null) {
-          Properties
-            .findById(propertyID, {
-              $set: {
-                "temp.shareholders": body.shareholders
-              }
-            })
-            .exec((err, update) => {
-                err ? reject(err)
-                    : resolve(update);
-            });
-        }
-      }
-      else if(body.owned_type == 'individual'){
-        if(body.landlordData) {
-          var type = 'landlord';
-          Users.updateUserData(userId, type, body.landlordData, userId);
-        }
-        if(body.ownersData != null) {
-          Properties
-            .findById(propertyID, {
-              $set: {
-                "temp.owners": body.ownersData
-              }
-            })
-            .exec((err, update) => {
-                err ? reject(err)
-                    : resolve(update);
-            });
-        }
-      }
-
-      Users
-        .update({"_id":userId}, {
-          $push: {
-            "owned_properties": propertyID
-          }
-        })
-        .exec((err, saved) => {
-            err ? reject(err)
-                : resolve(saved);
-        });
+            }
+          });
     });
 });
 

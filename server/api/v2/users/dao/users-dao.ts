@@ -10,6 +10,7 @@ import Properties from '../../properties/dao/properties-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
+import {mail} from '../../../../email/reset_password';
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -253,15 +254,32 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 
 				Users
 					.findById(id, (err, user)=>{
-						user.username = body.username;
-						user.email = body.email;
-						user.phone = body.phone;
-						if(body.password){
-							user.password = body.password;
-						}	            
+						if(body.username) {
+							user.username = body.username;
+						}
+						if(body.email) {
+							user.email = body.email;
+						}
+						if(body.phone) {
+							user.phone = body.phone;
+						}
+						if(body.oldpassword) {
+							if(user.password == user.encryptPassword(body.oldpassword)){
+								if(body.newpassword){
+									user.password = body.newpassword;
+								}
+								else{
+									reject({message: 'no password'})
+								}
+							}
+							else if(user.password != user.encryptPassword(body.oldpassword)){
+								reject({message: 'wrong password'});
+							}
+						}
+							            
 						user.save((err, saved) => {
 				        err ? reject(err)
-				            : resolve(saved);
+				            : resolve({message: 'data updated'});
 			    	    });
 					})
 			}
@@ -466,8 +484,20 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 				}
 			})
 			.exec((err, update) => {
-				err ? reject(err)
-					: resolve(update);
+				if(err) {
+					reject(err);
+				}
+				else if(update) {
+					Users
+						.findOne({email: email}, (err, result) => {
+							var fullname = result.username;
+							var from = 'Staysmart';
+							var url = 'https://localhost:5000/api/v2/reset_password/'+randomToken;
+							mail.resetPassword(email, fullname, url, from).then(res => {
+								resolve(res);
+							})
+						})
+				}
 			});
 	});
 });
