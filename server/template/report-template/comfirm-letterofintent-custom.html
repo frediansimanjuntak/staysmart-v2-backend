@@ -1,0 +1,95 @@
+<!-- <!DOCTYPE html> -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+		body {
+			text-align: justify;
+			counter-reset: increament alpha;
+			zoom: {{zoomLevel}};
+		}
+
+		.text-center {
+			text-align: center;
+		}
+		.b {
+			font-weight: bold;
+		}
+		.i {
+			font-style: italic;
+		}
+		.u {
+			text-decoration: underline;
+		}
+		.blue {
+			color: #4F81BD;
+		}
+
+		ol {
+			/*counter-reset: increament;*/
+			-webkit-padding-start: 2em;
+		}
+		ol li {
+			list-style: none;
+	    position: relative;
+		}
+		ol > li:before {
+	    position: absolute;
+	    left: -2em;
+	    counter-increment: increament;
+	    content: counter(increament)". ";
+		}
+
+		ol.alpha.reset {
+		  counter-reset: alpha;
+		}
+		ol.alpha > li:before {
+	    counter-increment: alpha;
+	    content:"(" counter(alpha, lower-alpha)") ";
+		}
+
+		.page {
+			page-break-after: always;
+		}
+
+		.box {
+			padding: 8px;
+			border: 1px solid;
+		}
+		.header-letter img {
+		    height: 45px;
+		    outline: 0px;
+		}
+		.header-letter {
+			text-align: center;
+		}
+		.font-style-staysmart {
+		    color: #333;
+		    font-size: 22px;
+		    letter-spacing: 2px;
+		    font-weight: 600;
+		    padding: 0;
+		    padding-top: 5px;
+		    padding-bottom: 5px;
+    		height: 60px;
+    		top: 6px;
+    		position: relative;
+		}
+		.lg-green {
+			color: #20bb55;
+		}
+	</style>
+</head>
+<body>
+
+	<div class="page">
+		<p class="text-center blue b i">ACCEPTANCE</p>
+		<p>I, the undersigned Landlord(s) of the above mentioned premises hereby <span contenteditable="false"><span class="do-remove" field="form_data.status_sign"></span></span>
+			the offer by the Tenant to lease the premises based on the terms and conditions mentioned
+			in the Letter Of Intent and acknowledge receipt of the good faith deposit.</p>
+		<p class="text-center b"><span contenteditable="false"><span class="do-remove" field="form_data.confirmation_date"></span></span></p>
+	</div>
+
+</body>
+</html>

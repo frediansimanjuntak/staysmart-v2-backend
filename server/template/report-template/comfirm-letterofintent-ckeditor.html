@@ -1,0 +1,178 @@
+<!-- <!DOCTYPE html> --><meta charset="utf-8">
+<style type="text/css">body {
+			text-align: justify;
+			counter-reset: increament alpha;
+			zoom: {{zoomLevel}};
+		}
+
+		.text-center {
+			text-align: center;
+		}
+		.b {
+			font-weight: bold;
+		}
+		.i {
+			font-style: italic;
+		}
+		.u {
+			text-decoration: underline;
+		}
+		.blue {
+			color: #4F81BD;
+		}
+
+		ol {
+			/*counter-reset: increament;*/
+			-webkit-padding-start: 2em;
+		}
+		ol li {
+			list-style: none;
+	    position: relative;
+		}
+		ol > li:before {
+	    position: absolute;
+	    left: -2em;
+	    counter-increment: increament;
+	    content: counter(increament)". ";
+		}
+
+		ol.alpha.reset {
+		  counter-reset: alpha;
+		}
+		ol.alpha > li:before {
+	    counter-increment: alpha;
+	    content:"(" counter(alpha, lower-alpha)") ";
+		}
+
+		.page {
+			page-break-after: always;
+		}
+
+		.box {
+			padding: 8px;
+			border: 1px solid;
+		}
+		.header-letter img {
+		    height: 45px;
+		    outline: 0px;
+		}
+		.header-letter {
+			text-align: center;
+		}
+		.font-style-staysmart {
+		    color: #333;
+		    font-size: 22px;
+		    letter-spacing: 2px;
+		    font-weight: 600;
+		    padding: 0;
+		    padding-top: 5px;
+		    padding-bottom: 5px;
+    		height: 60px;
+    		top: 6px;
+    		position: relative;
+		}
+		.lg-green {
+			color: #20bb55;
+		}
+		.f-15 {
+			font-size: 15px;
+		}
+</style>
+<div class="page">
+<div class="header">
+<p class="f-15">LOI(Condo/Apt) - <span contenteditable="false">Oct'16</span></p>
+</div>
+
+<div class="blue b i">
+<p>Date : <span contenteditable="false"><span class="do-remove" field="convertDate form_data.created_at 'DD MMMM YYYY'"></span></span></p>
+
+<p>To : <span contenteditable="false"><span class="do-remove" field="form_data.landlord.full_name"></span></span></p>
+<br />
+&nbsp;</div>
+
+<div>
+<p>Dear Sir / Madam</p>
+
+<p>Property known as : <span class="b"> <span contenteditable="false"><span class="do-remove" field="property.address.block_no"></span> <span class="do-remove" field="property.address.street_name"></span>, #<span class="do-remove" field="property.address.unit_no"></span>-<span class="do-remove" field="property.address.unit_no_2"></span> <span class="do-remove" field="devName property.development"></span>, <span class="do-remove" field="property.address.country"></span> <span class="do-remove" field="property.address.postal_code"></span></span> </span></p>
+
+<p>I, the undersigned Tenant(s) hereby offer to lease the above mentioned premises based on the following terms and conditions:</p>
+
+<ol>
+	<li><span class="b">Monthly Rental:</span> <span class="b">S$<span contenteditable="false"><span class="do-remove" field="toCurrency form_data.monthly_rental"></span></span></span> inclusive of maintenance charges on a <span contenteditable="false"><span class="do-remove" field="property.details.furnishing"></span></span> basis.</li>
+	<li><span class="b">Terms of Lease :</span> <span class="b"><span contenteditable="false"><span class="do-remove" field="form_data.term_lease"></span></span></span> months with an option to extend for another <span class="b"><span contenteditable="false"><span class="do-remove" field="form_data.term_lease_extend"></span></span></span> months at the prevailing market rate thereof, to be mutually agreed upon.</li>
+	<li><span class="b">Date Of Commencement :</span> The lease shall commence on the <span class="b"><span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_commencement 'Do'"></span></span></span> day of <span class="b"><span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_commencement 'MMMM YYYY'"></span></span></span>.</li>
+	<li><span class="b">Terms Of Payment :</span> <span class="b"><span contenteditable="false"><span class="do-remove" field="form_data.term_payment"></span></span></span> month's rental deposit and <span class="b">ONE (01)</span> month's rental in advance.</li>
+	<li><span class="b">Good Faith Deposit and Stamp Duty Amount :</span> Attached please find a screenshot the amount of Singapore Dollars <span class="b"><span class="u"><span class="do-remove" field="toWords form_data.gfd_amount"></span> ONLY</span> (S$<span contenteditable="false"><span class="do-remove" field="toCurrency form_data.gfd_amount"></span></span>)</span> being payment of the good faith deposit, inclusive of stamp duty amount of <span class="b"><span class="u"><span class="do-remove" field="toWords form_data.sd_amount"></span> ONLY</span> (S$<span contenteditable="false"><span class="do-remove" field="toCurrency form_data.sd_amount"></span></span>)</span> transferred to Staysmart’s bank account [100-904130-7] with [DBS] Bank.</li>
+	<li><span class="b">Security Deposit :</span> Equivalent to <span class="b"><span class="u"><span class="do-remove" field="toWords form_data.security_deposit"></span> ONLY</span> (S$<span contenteditable="false"><span class="do-remove" field="toCurrency form_data.security_deposit"></span></span>)</span> month's rental to be paid upon the completion of the Tenancy Agreement.</li>
+	<li><span class="b">Diplomatic Clause :</span> After the expiration of the first TWELVE (12) months of the lease, the Tenant upon being ceased to be employed in Singapore can give the Landlord TWO (02) month's written notice to terminate the lease.</li>
+	<li><span class="b">Due Diligence :</span> Prior to the execution of the Tenancy Agreement, the Tenant shall produce all relevant documents to verify that the Tenants/Permitted Occupiers are not prohibited immigrants under the provisions of the Immigration Act.</li>
+	<li><span class="b">Lapse Of Offer :</span> This offer shall lapse within <span class="b"><span contenteditable="false"><span class="do-remove" field="form_data.lapse_offer"></span></span></span> days from the date hereof. In the event this offer is not accepted by the stipulated date, any deposit or monies received by the Landlord shall be returned to the Tenant immediately and thereafter neither party shall have any claims against the other.</li>
+	<li><span class="b">Legal Cost :</span> Each party shall near its own legal cost for the preparation of the tenancy agreement.</li>
+	<li><span class="b">Air-Conditioning system :</span> The <i>Tenant</i> shall carry out the servicing for the air-conditioning units.</li>
+	<li><span class="b">Stamp Duty :</span> The stamp duty of <span class="b"><span class="u"><span class="do-remove" field="toWords form_data.sd_amount"></span> ONLY</span> (S$<span contenteditable="false"><span class="do-remove" field="toCurrency form_data.sd_amount"></span></span>)</span> shall be borne by the <i>Tenant</i>.</li>
+	<li><span class="b">Utilities :</span> The tenant will bear any and all costs related to water, electricity, gas supply and telecommunications services such as Internet, broadband, telephone line, cable television etc.</li>
+	<li><span class="b">Minor Repairs :</span> The Tenant will be responsible to maintain the premises at a good condition. Any cost to repair or replace of items or parts due to wear and tear that falls below $200 shall be borne by the tenant whilst the portion of the cost beyond shall be borne by the landlord. Damage due to negligence shall be fully borne by the tenant.</li>
+	<li><span class="b">30-day problem free period :</span> The Tenant will have 30 days, from the commencement of the lease, to bring to the attention of the landlord any defects in the apartment. The tenant shall not be liable to any cost related with the repair or replacements of the identified defects within the 30-day period.</li>
+</ol>
+
+<p><span class="b">Tenants Requirements :</span> The following are a list of my requirements:</p>
+
+<ol class="do-remove alpha blue b i" contenteditable="false" field="form_data.requirements">
+</ol>
+
+<p>The parties hereto agree that if for any reason the Tenancy Agreement is not agreed upon and signed by both the prospective Tenant and the Landlord within the aforesaid SEVEN (07) days, the good faith deposit shall be refunded to the Tenant without any interest or deductions within THREE (03) days. Thereon and thereafter, neither party shall have any claim against the other.</p>
+
+<p>Upon signing of the Tenancy Agreement on such terms as may be mutually agreed to by both parties, this good faith deposit shall be treated as security deposit or the first rental payable under the agreement.</p>
+</div>
+</div>
+
+<div class="page">
+<p>Yours faithfully,</p>
+
+<p>Agreed by the Tenant</p>
+
+<table class="blue b">
+	<tbody>
+		<tr>
+			<td class="i" width="200pt">Signature</td>
+			<td style="vertical-align:middle">: <span contenteditable="false"><span class="do-remove" field="form_data.tenant_sign"></span></span></td>
+		</tr>
+		<tr>
+			<td class="i">Name</td>
+			<td>: <span contenteditable="false"><span class="do-remove" field="form_data.tenant.name"></span></span></td>
+		</tr>
+		<tr>
+			<td class="i">NRIC No</td>
+			<td>: <span contenteditable="false"><span class="do-remove" field="form_data.tenant.id_no"></span></span></td>
+		</tr>
+		<tr>
+			<td class="i">Co Name (if Co lease)</td>
+			<td>: <span contenteditable="false"><span class="do-remove" field="form_data.tenant.company_name"></span></span></td>
+		</tr>
+	</tbody>
+</table>
+<br />
+<span contenteditable="false"><span class="do-remove" field="form_data.status"></span></span>
+
+<p class="text-center b"><span contenteditable="false"><span class="do-remove" field="form_data.confirmation_date"></span></span></p>
+&nbsp;
+
+<p>Agreed by the Landlord</p>
+
+<table class="blue b">
+	<tbody>
+		<tr>
+			<td class="i" width="200pt">Signature</td>
+			<td style="vertical-align:middle">: <span contenteditable="false"><span class="do-remove" field="form_data.landlord_sign"></span></span></td>
+		</tr>
+		<tr>
+			<td class="i">Name</td>
+			<td>: <span contenteditable="false"><span class="do-remove" field="form_data.landlord.full_name"></span></span></td>
+		</tr>
+		<tr>
+			<td class="i">NRIC No</td>
+			<td>: <span contenteditable="false"><span class="do-remove" field="form_data.landlord.id_number"></span></span></td>
+		</tr>
+	</tbody>
+</table>
+</div>

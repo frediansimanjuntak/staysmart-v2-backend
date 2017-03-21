@@ -1,0 +1,1045 @@
+<!-- <!DOCTYPE html> -->
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+		body {
+			font-family: sans-serif;
+			text-align: justify;
+			counter-reset: increament alpha roman;
+			zoom: {{zoomLevel}};
+		}
+
+		.text-center {
+			text-align: center;
+		}
+		.b {
+			font-weight: bold;
+		}
+		.i {
+			font-style: italic;
+		}
+		.u {
+			text-decoration: underline;
+		}
+		.ucase {
+    	text-transform: uppercase;
+		}
+		.sup {
+    	vertical-align: super;
+    	font-size: 80%;
+		}
+
+		ol {
+			/*counter-reset: increament;*/
+			-webkit-padding-start: 2em;
+		}
+		ol li {
+	    list-style: none;
+	    position: relative;
+		}
+		ol > li:before {
+	    position: absolute;
+	    left: -2em;
+	    counter-increment: increament;
+	    content: counter(increament)". ";
+		}
+
+		/*ol.reset {
+		  counter-reset: increament;
+		}*/
+		ol.alpha.reset {
+		  counter-reset: alpha;
+		}
+		ol.roman.reset{
+    	counter-reset: roman;
+		}
+		ol.alpha > li:before {
+	    counter-increment: alpha;
+	    content:"(" counter(alpha, lower-alpha)") ";
+		}
+		ol.alpha > li.star:before {
+	    counter-increment: alpha;
+	    content:"*(" counter(alpha, lower-alpha)") ";
+		}
+		ol.roman > li:before {
+	    counter-increment: roman;
+	    content:"(" counter(roman, lower-roman)") ";
+		}
+
+		.border {
+    	border: 1px solid black;
+		}
+
+		.page {
+			page-break-after: always;
+		}
+		.header {
+			display: block;
+      /*position: fixed;*/
+      top: 0;
+      /*counter-increment: page;
+      content: "Page " counter(page) " of " counter(pages);*/
+    }
+    .content {
+			display: block;
+    }
+		.footer {
+			display: block;
+      position: relative;
+      bottom: 0;
+      /*counter-increment: page;
+      content: "Page " counter(page) " of " counter(pages);*/
+    }
+
+    .box {
+			padding: 8px;
+			border: 1px solid;
+		}
+	.no-border {
+		border: 0px;
+	}
+	table {
+		border: 0px;
+	}
+	.detail-content {
+			vertical-align: top;
+	    padding-left: 15px;
+	    color: #2C8CFE;
+	    font-weight: bold;
+	}
+	.detail-content p {
+		text-align: left;
+	}
+	.cke_show_borders  table.cke_show_border, .cke_show_borders  table.cke_show_border > tr > td, .cke_show_borders  table.cke_show_border > tr > th, .cke_show_borders  table.cke_show_border > tbody > tr > td, .cke_show_borders  table.cke_show_border > tbody > tr > th, .cke_show_borders  table.cke_show_border > thead > tr > td, .cke_show_borders  table.cke_show_border > thead > tr > th, .cke_show_borders  table.cke_show_border > tfoot > tr > td, .cke_show_borders  table.cke_show_border > tfoot > tr > th {
+		border: 0px;
+	}
+	.warning-content {
+		background-color: red;
+	}
+	.warning-content.detail {
+		color: black;
+	}
+	.reset-a ol.alpha.reset {
+		counter-reset: alpha 0;
+	}
+	.reset-b ol.alpha.reset {
+		counter-reset: alpha 1;
+	}
+	.reset-c ol.alpha.reset {
+		counter-reset: alpha 2;
+	}
+	.reset-d ol.alpha.reset {
+		counter-reset: alpha 3;
+	}
+	.reset-e ol.alpha.reset {
+		counter-reset: alpha 4;
+	}
+	ol.alpha.page-three > li:before {
+	    counter-increment: alpha 4;
+	    content: "(" counter(alpha, lower-alpha)") ";
+	}
+	ol.alpha.page-four > li:before {
+	    counter-increment: alpha;
+	    content: "(" counter(alpha, lower-alpha)") ";
+	}
+	.reset-roman ol.roman.reset {
+	    counter-reset: roman 0;
+	}
+	.li-sub {
+		margin-left: 35px;
+	}
+	.li-sub.two {
+   		margin-left: 60px !important;
+	}
+	.header-letter img {
+	    height: 45px;
+	    outline: 0px;
+	}
+	.header-letter {
+		text-align: center;
+	}
+	.font-style-staysmart {
+	    color: #333;
+	    font-size: 22px;
+	    letter-spacing: 2px;
+	    font-weight: 600;
+	    padding: 0;
+	    padding-top: 5px;
+	    padding-bottom: 5px;
+		height: 60px;
+		top: -15px;
+		position: relative;
+	}
+	.lg-green {
+		color: #20bb55;
+	}
+	.rent {
+		position: relative;
+    	top: 65px;
+	}
+	.page_header_about {
+	    margin-top:0px;
+	    margin-bottom:40px;
+	    text-align:center;
+	    border-bottom:0px;
+	    font-size: 24px;
+	}
+	.is_absolute {
+			position: absolute;
+			margin-top: 38px;
+		}
+	</style>
+</head>
+<body>
+	<div class="page">
+		<div class="header-letter">
+      <a href="/" class=""><span contenteditable="false"><span class="do-remove" field="form_data.logo"></span></span></a>
+      <a class="font-style-staysmart"><span class="lg-green">STAY</span>SMART</a>
+    </div>
+    <h3 class="page-header page_header_about">TENANCY AGREEMENT</h3><br>
+		<div class="header">
+			<p>TA(Condo/Apt) - <span contenteditable="false">Oct'16</span></p>
+		</div>
+
+		<h3 class="text-center">(Condominium / Apartment)</h3>
+
+		<p><span class="b">THIS AGREEMENT</span> is made on the <span class="b u">
+			<span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_ta 'D'"></span></span>
+			<span class="ucase sup"><span contenteditable="false"><span class="do-remove" field="ordinal form_data.date_ta 'Do'"></span></span></span></span> day of
+			<span class="b u ucase"><span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_ta 'MMMM YYYY'"></span></span></span></p>
+
+		<table style="border: 0px">
+		<tr>
+			<td><p>BETWEEN</p></td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+				<p>
+					<span class="b u ucase">
+						<span contenteditable="false"><span class="do-remove" field="form_data.landlord.full_name"></span> (<span class="do-remove" field="form_data.landlord.id_number"></span>) OF <span class="do-remove" field="form_data.property.address.block_no"></span> <span class="do-remove" field="form_data.property.address.street_name"></span> #<span class="do-remove" field="form_data.property.address.unit_no"></span>-<span class="do-remove" field="form_data.property.address.unit_no_2"></span>, <span class="do-remove" field="form_data.property.address.country"></span> <span class="do-remove" field="form_data.property.address.postal_code"></span></span>
+					</span><br>
+					(hereinafter called "the Landlord" which expression shall where the context so admits include the person
+					entitled for the time being to the reversion immediately expectant on the term hereby created) of the one
+					part.
+				</p>
+			</td>
+
+			<td class="detail-content">
+				<p>LANDLORD</p>
+			</td>
+		</tr>
+		<tr>
+			<td><p>AND</p></td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+				<p>
+					<span class="b u ucase">
+						<span contenteditable="false"><span class="do-remove" field="form_data.tenant.name"></span> (<span class="do-remove" field="form_data.tenant.id_no"></span>) OF <span class="do-remove" field="form_data.property.address.block_no"></span> <span class="do-remove" field="form_data.property.address.street_name"></span> #<span class="do-remove" field="form_data.property.address.unit_no"></span>-<span class="do-remove" field="form_data.property.address.unit_no_2"></span>, <span class="do-remove" field="form_data.property.address.country"></span> <span class="do-remove" field="form_data.property.address.postal_code"></span></span>
+					</span><br>
+					(hereinafter called "the Tenant" which expression shall where the context so admits include the Tenant's
+					successors and assigns) of the other part.
+				</p>
+			</td>
+
+			<td class="detail-content">
+				<p>TENANT</p>
+			</td>
+		</tr>
+		<tr>
+			<td><p><span class="b">NOW IT IS HEREBY AGREED</span> as follows:</p></td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+				<p>
+					1.  The Landlord agrees to let and the Tenant agrees to take all that property known as
+					<span class="b u">
+							<span contenteditable="false"><span class="do-remove" field="form_data.property.address.block_no"></span> <span class="do-remove" field="form_data.property.address.street_name"></span> #<span class="do-remove" field="form_data.property.address.unit_no"></span>-<span class="do-remove" field="form_data.property.address.unit_no_2"></span>, <span class="do-remove" field="form_data.property.address.country"></span> <span class="do-remove" field="form_data.property.address.postal_code"></span></span>
+					</span><br>
+				</p>
+			</td>
+			<td class="detail-content">
+				<p>PROPERTY ADDRESS</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+				<p>
+					(hereinafter called "the said premises") together with the furniture, fixtures and fittings therein belonging
+					to the Landlord as specified in the Schedule annexed hereto (hereinafter called "the furniture") and
+					TO HOLD unto the Tenant for a term of <span class="b u"><span class="do-remove" field="toWords form_data.term_lease"></span> (<span contenteditable="false"><span class="do-remove" field="form_data.term_lease"></span></span>)</span>
+					months, commencing on the <span class="b u"><span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_commencement 'D'"></span></span><span class="ucase sup"><span contenteditable="false"><span class="do-remove" field="ordinal form_data.date_commencement 'Do'"></span></span></span></span> day of
+					<span class="b u ucase"><span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_commencement 'MMMM YYYY'"></span></span></span> and expiring on the
+					<span class="b u"><span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_expired 'D'"></span></span><span class="ucase sup"><span contenteditable="false"><span class="do-remove" field="ordinal form_data.date_expired 'Do'"></span></span></span></span> day of
+					<span class="b u ucase"><span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_expired 'MMMM YYYY'"></span></span></span>, at the rent of Singapore Dollars
+					<span class="b u"><span class="do-remove" field="toWords form_data.monthly_rental"></span> ONLY	<span contenteditable="false">(S$<span class="do-remove" field="toCurrency form_data.monthly_rental"></span>)</span></span> per month.
+				</p>
+			</td>
+			<td class="detail-content">
+				LEASE PERIOD<br><br><br><span class="rent">RENT</span>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+				<p>The first payment of rent is payable upon the signing of this Agreement and subsequent payment of rent shall
+					be payable monthly in advance without any deduction whatsoever on the
+					<span class="b u">	<span contenteditable="false"><span class="do-remove" field="convertDate form_data.date_commencement 'D'"></span></span>
+					<span class="ucase sup">	<span contenteditable="false"><span class="do-remove" field="ordinal form_data.date_commencement 'Do'"></span></span></span></span> day of each month.
+				</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+				<p>2.   <span class="b">The Tenant hereby agrees with the Landlord</span> as follows:</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To pay the said rent at the times and in manner aforesaid to the following Bank account,</p>
+						<p>
+							Account Name: <span class="b ucase">	<span contenteditable="false"><span class="do-remove" field="form_data.landlord_account.name"></span></span></span><br>
+							Account Number: <span class="b">	<span contenteditable="false"><span class="do-remove" field="form_data.landlord_account.no"></span></span></span><br>
+							Bank: <span class="b">	<span contenteditable="false"><span class="do-remove" field="form_data.landlord_account.bank"></span></span></span><br>
+							Bank Code: <span class="b">	<span contenteditable="false"><span class="do-remove" field="form_data.landlord_account.bank_code"></span></span></span><br>
+						</p>
+				</li>
+			</ol>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					To pay a deposit of Singapore Dollars <span class="b u"><span class="do-remove" field="toWords form_data.security_deposit"></span> ONLY	<span contenteditable="false">(S$<span class="do-remove" field="toCurrency form_data.security_deposit"></span>)</span></span>
+					being equal to <span class="b u">TWO (2)</span> months rent upon the signing of this Agreement
+					(the receipt whereof the Landlord hereby acknowledges) as security for the due performance and observance
+					by the Tenant of all covenants, conditions and stipulations on the part of the Tenant herein contained,
+					failing which the Tenant shall forfeit to the Landlord the said deposit or such part thereof as may be
+					necessary to remedy any such default. PROVIDED ALWAYS that if the Tenant shall duly perform the said covenants,
+					conditions and stipulations as aforesaid, up to and including the date of expiration of the term hereby
+					created, the Landlord shall repay the said deposit within <span class="b u">FOURTEEN (14)</span> days from the date of such
+					expiration without any interest. This deposit shall not be utilised as set-off for any rent due and payable
+					during the currency of this Agreement.
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>SECURITY DEPOSIT</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To pay all charges including any tax and/or fee thereon, for the usage of any telecommunication
+						 and any other such equipment installed at the said premises.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>TELEPHONE CHARGES</p>
+			</td>
+		</tr>
+		</table>
+
+		<table>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To pay all charges including any tax thereon, for the supply of water, electricity, gas and any
+						water borne sewerage system installed and/or used at the said premises.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>UTILITY CHARGES</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To keep the interior of the said premises including the sanitary and water apparatus, furniture,
+						doors and windows thereof in good and tenantable repair and condition throughout this tenancy
+						(fair wear and tear and damage by any act beyond the control of the Tenant excepted).</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>MAINTENANCE   OF FIXTURES & FITTINGS</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To permit the Landlord and its agents, surveyors and workmen with all necessary appliances to enter
+						upon the said premises at all reasonable times, by prior appointment, to view the condition thereof or
+						for doing such works and things as may be required for any repairs, alterations or improvements whether
+						at the said premises or at any parts of any building to which the said premises may form a part of or
+						adjoin.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>ACCESS TO PREMISES</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To be responsible for all minor repairs and replacement of parts(inclusive of all white goods) and
+						 other expendable items at its own expense up to Singapore Dollars
+						 <span class="b u"><span class="do-remove" field="toWords form_data.minor_repair_cost"></span> ONLY (S$<span class="do-remove" field="toCurrency form_data.minor_repair_cost"></span>)</span> per item.
+						 In the event such expenditure exceeds <span class="b u">S$<span class="do-remove" field="toCurrency form_data.minor_repair_cost"></span></span>,
+						 the Tenant shall bear the first <span class="b u">S$<span class="do-remove" field="toCurrency form_data.minor_repair_cost"></span></span> and
+						 any excess thereof shall be borne by the Landlord. For avoidance of doubt this clause does not apply
+						 to any expenses incurred by the Landlord in the repair and replacement of parts mentioned in
+						 clause 3(c) of this Agreement, save for the provisos of the said clause.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>MINOR REPAIRS</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To yield up the said premises at the expiration or sooner determination of this tenancy in such good
+						and tenantable repair and condition (fair wear and tear excepted), including the dry cleaning of curtains
+						provided (if any), as shall be in accordance with the conditions, covenants and stipulations herein contained,
+						with all locks, keys and furniture therein belonging to the Landlord.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>YIELD UP PREMISES</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To comply with all such rules, regulations, terms and conditions as may be imposed from time to time on
+						occupiers of the building by the Management Corporation or other bodies (where applicable) for the proper
+						management of the same.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>COMPLY WITH MANAGEMENT CORPORATION</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To take up a service contract with a qualified air-conditioning contractor to service and maintain the
+						air-conditioning units and including the topping-up of gas, installed at the said premises, at least once
+						every <span class="b u">THREE (3)</span> months at the expense of the Tenant and to keep them in good and
+						tenantable repair and condition, throughout the term of this agreement. A copy of the service contract shall
+						be forwarded to the Landlord.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>MAINTANENCE OF AIR-CON</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>During the <span class="b u">TWO (2)</span> months immediately preceding the expiration of the tenancy
+						herein, to permit the Landlord and/or the Landlord's representatives at all reasonable times and by prior
+						appointment to bring interested parties to view the said premises, for the purpose of letting the same.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>VIEWING OF PREMISES</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>During the currency of this tenancy, to allow the Landlord and/or the Landlord's representatives,
+						at all reasonable times and by prior appointment to bring any interested parties to view the said premises
+						in the event of a prospective sale thereof. The said premises shall be sold subject to this tenancy.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>SALE WITH TENANCY</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>Not to make or permit to be made any structural alterations to the said premises.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>NO ALTER</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>To use the said premises strictly as a private residence only and shall not use the said premises for
+						any unlawful or immoral purposes.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>USE OF PREMISES</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>Not to do or permit to be done upon the said premises, any act or thing which may be or may become a
+						nuisance or annoyance to or in any way interfere, with the quiet or comfort of any other adjoining occupiers
+						or to give them reasonable cause for complaint.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>NO NUISSANCE</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>Not to assign sublet or part with the possession of the said premises or any part thereof without the
+						written consent of the Landlord, which consent shall not be unreasonably withheld in the case of a
+						respectable and responsible tenant. This prohibition shall not apply to the occupation of the said premises
+						or any part thereof by any person or persons employed or engaged by the Tenant or members of the Tenant's
+						family where applicable.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>NO SUBLET</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>Not to keep or permit to be kept on the said premises or any part thereof any materials of a dangerous or
+						explosive nature or the keeping of which may contravene any statute or subsidiary legislation.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>NO UNAUTHORISED STORAGE</p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 85%">
+			<ol class="alpha">
+				<li>
+					<p>Not to do or permit to be done anything whereby the policy or policies of insurance on the said premises
+						against damage by fire may become void or voidable or whereby the premium thereon may be increased.</p>
+				</li>
+			</ol>
+			</td>
+			<td class="detail-content">
+				<p>VOID OF INSURANCE</p>
+			</td>
+		</tr>
+		</table>
+
+		<table>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>To ensure that during the currency of this Agreement the Tenant and/or permitted occupants comply with
+							all the rules and regulations relating to the Immigration Act and the Employment of Foreign Workers Act
+							(if applicable) and any other law in the Republic of Singapore which relates to foreign residents.
+							The Tenant undertakes to provide the Landlord upon request for physical inspection, all immigration
+							and employment documents and passes and proof of employment, of all non-local occupants and to provide
+							the Landlord with certified true copies of the same. The Tenant shall also authorise, permit and co-operate
+							with the Landlord to make such enquiries with relevant government departments and/or employers to verify the
+							same. The particulars of the Tenant and/or permitted occupants are:</p>
+							<ol class="do-remove roman" field="form_data.tenant" contenteditable="false">
+							</ol>
+							<ol class="do-remove roman" field="form_data.occupants" contenteditable="false">
+							</ol>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>NO UNAUTHORISED OCCUPANTS</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>To ensure that during the currency of this Agreement the Tenant and/or permitted occupants are lawfully
+							resident and/or employed in the Republic of Singapore and if the immigration and/or employment passes of
+							the Tenant and/or permitted occupants are cancelled or about to be cancelled, to inform the Landlord in
+							writing no less than <span class="b u">FOURTEEN (14)</span> days prior to such cancellation or if such
+							change cannot be anticipated, to inform the Landlord immediately upon receipt of such notice.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>COMPLY WITH IMMIGRATION AUTHORITY</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>To indemnify and keep indemnified the Landlord (against any fines, summons, convictions etc.) to the
+							fullest extent as allowed by the laws of the Republic of Singapore, for any violation or non-conformance
+							by the Tenant and/or permitted occupants, of the Immigration Act and/or the Employment of Foreign Workers Act.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>INDEMNIFY LANDLORD</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+					<p>3.	<span class="b">The Landlord hereby agrees with the Tenant</span> as follows:</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-a">
+				<ol class="alpha reset">
+					<li>
+						<p>To pay all rates, taxes, maintenance charges, assessments and outgoings
+							(except as otherwise provided in this Agreement) which are or may hereafter be imposed on
+							the said premises, including any surcharges payable thereon.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>TAXES</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-b">
+				<ol class="alpha reset">
+					<li>
+						<p>To insure the said premises against loss and/or damage by fire and to pay all premium thereon.
+							For avoidance of doubt such insurance coverage shall be for the loss and/or damage of the Landlord's
+							property and shall not cover any loss and/or damage of the Tenant's property.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>INSURANCE</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-c">
+				<ol class="alpha reset">
+					<li>
+						<p>To be responsible for the repair and replacement of parts in respect of the air-conditioning units
+							installed at the said premises save where the same are caused by any act, default, neglect or omission
+							on the part of the Tenant or any of its servants, agents, occupiers, contractors, guests or visitors.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>REPAIR OF AIR-CON</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-d">
+				<ol class="alpha reset">
+					<li>
+						<p>To maintain the said premises in good and tenantable repair and condition, and to warrant all fixtures
+							and fittings including but not limited to sanitary items and electrical appliances provided (if any)
+							in the premises for <span class="b u">ONE (1)</span> month from the commencement of the lease.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>WARRANTY</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-e">
+				<ol class="alpha reset">
+					<li>
+						<p>That the Tenant paying the rent hereby reserved and observing and performing the several conditions,
+							covenants and stipulations on the Tenant's part herein contained shall peaceably hold and enjoy the said
+							premises during this tenancy without any interruption by the Landlord or any person rightfully claiming
+							under or in trust for the Landlord.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>QUIET ENJOYMENT</p>
+				</td>
+			</tr>
+			</ol>
+			<tr>
+				<td style="width: 85%">
+					<p>4.    <span class="b">Provided always and it is expressly agreed</span> as follows:</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-a">
+				<ol class="alpha reset">
+					<li>
+						<p>If the rent hereby reserved shall remain unpaid for <span class="b u">SEVEN (7)</span> days after its due or if there shall
+							be a breach of any of the conditions, covenants or stipulations on the part of the Tenant herein
+							contained, the Landlord shall be entitled to re-enter upon the said premises and thereupon this tenancy
+							shall be absolutely determined forthwith, but without prejudice to any right of action of the Landlord
+							for damage or otherwise in respect of any such breach or any antecedent breach.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>RIGHT OF RE-ENTRY</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-b">
+				<ol class="alpha reset">
+					<li>
+						<p>In the event the rent shall remain unpaid <span class="b u">SEVEN (7)</span> days after becoming
+							payable (whether formally demanded or not), it shall be lawful for the Landlord to claim interest at
+							<span class="b u">TEN PERCENT (10%)</span> per annum on the amount unpaid calculated from after the
+							date due to the date of actual payment.</p>
+					</li>
+				</ol>
+				</td>
+				<td class="detail-content">
+					<p>DEFAULT IN RENT</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%" class="reset-c">
+				<ol class="alpha reset">
+					<li>
+						<p>The Landlord shall not be liable to the Tenant or the Tenant's servants, agents or other persons
+							lawfully entering the said premises, for any personal injury or death, damage to or loss of any property
+							at the said premises, whether caused by accident or neglect.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>EXCLUSION OF LIABILTY</p>
+				</td>
+			</tr>
+		</table>
+
+		<table class="reset-d">
+		<ol class="alpha reset">
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha page-three">
+					<li>
+						<p>In case the said premises or any part thereof shall at any time during this tenancy be destroyed or
+							damaged by fire, lightning, riot, explosion or any other cause beyond the control of the parties
+							hereto so as to be unfit for occupation and use, then and in every such case (unless the insurance
+							money shall be wholly or partially irrecoverable by reason solely or in part of any act, default, neglect
+							or omission of the Tenant or any of their servants agents occupiers guests or visitors), the rent hereby
+							reserved or a just and fair proportion thereof according to the nature and extent of the destruction or
+							damage sustained shall be suspended and cease to be payable in respect of any period while the said premises
+							shall continue to be unfit for occupation and use by reason of such destruction or damage.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>PREMISES DAMAGED OF DESTROYED</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha ">
+					<li>
+						<p>In case the said premises shall be destroyed or damaged as aforesaid, either party shall be at liberty by
+							notice in writing to the other determine this tenancy, and upon such notice being given, this tenancy or
+							the balance thereof shall absolutely cease and determine and the deposit paid hereunder together with a
+							reasonable proportion of such advance rent as has been paid hereunder, where applicable, shall be refunded
+							to the Tenant forthwith but without prejudice to any right of action of either party in respect of any
+							antecedent breach of this Agreement by the other.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>RIGHT TO TERMINATE</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha ">
+					<li class="star">
+						<ol class="roman reset">
+						<li class="li-sub">
+							<p>Notwithstanding anything herein contained, if at any time after the expiration of <span class="b u">TWELVE (12)</span> months
+								from the date of the commencement of this tenancy,  the Tenant/immediate occupant of the said premises,
+								shall be transferred out of the Republic of Singapore permanently by his firm, ceased to be employed by
+								his firm or if for any cause whatsoever shall be ordered to leave the Republic of Singapore, then and in
+								such a case, it shall be lawful for the Tenant to determine this tenancy by giving not less than
+								<span class="b u">TWO (2)</span> months' advance notice (this is in addition to the
+								<span class="b u">TWELVE (12)</span> months aforesaid) in writing to the Landlord or by paying
+								<span class="b u">TWO (2)</span> months' rent in lieu of such notice. Documentary evidence of such transfer,
+								cessation or order shall be required and such notice shall be deemed to have commenced on such date as
+								the Landlord shall have actually received such evidence.</p>
+						</li>
+						</ol>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>DIPLOMATIC CLAUSE</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha ">
+					<li class="star">
+						<p>The Landlord shall on the written request of the Tenant made not less than <span class="b u">TWO (2)</span>
+							months before the date of expiry of this tenancy, and if there shall not at the time of such request be
+							any existing breach or any non-observance of any of the conditions, covenants or stipulations on the part
+							of the Tenant herein contained, at the expense of the Tenant, grant to the Tenant a tenancy of the said
+							premises for a further term of <span class="b u">ONE (1)</span> years from the date of expiry of this
+							tenancy at a rent to be mutually agreed between the parties but otherwise containing the like conditions,
+							covenants and stipulations as are herein contained with the exception of this option for renewal.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>
+						OPTION TO RENEW
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha ">
+					<li>
+						<p>Notwithstanding anything herein contained, if at any time during the term of this Agreement, any prohibited
+							immigrant is found on the said premises or if the immigration and/or employment passes of the Tenant and/or
+							permitted occupants are cancelled and the Tenant and/or permitted occupants is/are no longer allowed to
+							reside in the Republic of Singapore, this Agreement shall immediately be terminated and the security deposit
+							forfeited to the Landlord without prejudice to any right of action of the Landlord in respect of any
+							antecedent breach of this Agreement by the Tenant.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>LANDLORD'S RIGHT TO TERMINATE</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha ">
+					<li>
+						<p>Should the said premises be affected by En-bloc Redevelopment, it shall be lawful for the Landlord to
+							determine this tenancy by giving not less than <span class="b u">TWO (2)</span> months' advance notice in
+							writing to the Tenant and to refund the security deposit (free from interest) to the Tenant without
+							prejudice to any right of action of the Landlord in respect of any breach of this Agreement by the Tenant.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>EN-BLOC NOTICE</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha ">
+					<li>
+						<p>The Landlord warrants that where the premises is mortgaged or charged or subjected to other such encumbrances,
+							the Landlord has obtained the prior written consent of the financial institutions for the lease of the said
+							premises.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>APPROVAL BY MORTGAGEE</p>
+				</td>
+			</tr>
+				<!-- <ol class="roman reset"> -->
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha ">
+					<li>
+						<ol class="roman reset">
+							<li class="li-sub">
+								<p>This lease agreement is for a fixed term. In the event any party decides to terminate this agreement
+									before its expiry for any reasons other than as provided for in this Agreement ("defaulting party"),
+									then the other party ("innocent party") shall be entitled to enforce the terms of this Agreement for
+									Specific Performance, Damages (to recover any losses suffered) or otherwise as the case may be, in
+									accordance with the prevailing Laws of Singapore.</p>
+							</li>
+						</ol>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>FIXED TERM LEASE</p>
+				</td>
+			</tr>
+		</ol>
+		</table>
+
+		<table>
+		<!-- <ol class="alpha"> -->
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha page-four">
+					<li>
+						<p>The waiver by either party of a breach or default of any of the provisions in this Agreement shall
+							not be construed as a waiver of any succeeding breach of the same or other provisions nor any delay or
+							omission on the part of either party to exercise or avail itself of any right that it has or may have
+							herein, operates as a waiver of any breach or default of the other party.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>WAIVER</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>Any notice served under or in any way in connection with this Agreement shall be sufficiently served
+							on the Tenant if left at the said premises or delivered to the Tenant personally or sent to the Tenant
+							at the said premises by registered post and shall be sufficiently served on the Landlord if delivered
+							to the Landlord personally or sent to the abovementioned address by registered post.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>SERVICE OF NOTICE</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>The stamp duty for stamping this Agreement and administrative charges payable for such stamping shall
+							be borne by the Tenant and shall be paid forthwith, upon execution of this Agreement.</p>
+					</li>
+					</ol>
+				</td>
+				<td class="detail-content">
+					<p>STAMP DUTY</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>This Agreement shall be subject to the laws of the Republic of Singapore and the parties herein submit
+							themselves to the jurisdiction of the Singapore Courts.</p>
+					</li></ol>
+				</td>
+				<td class="detail-content">
+					<p>GOVERNING LAW</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>The marginal notes appearing in this Agreement are inserted only as a matter of convenience and in no
+							way define, limit, construe or describe the scope or intent of the sections or clauses of this Agreement
+							nor in any way affect this Agreement.</p>
+					</li>
+				</td>
+				<td class="detail-content">
+					<p>MARGINAL NOTES</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="width: 85%">
+				<ol class="alpha">
+					<li>
+						<p>The Landlord warrants that where the premise is under multiple ownerships, the Landlord has obtained
+							prior written consent from all owners to rent out the premise.  And/or The Landlord warrants that he/she
+							is authorised by all joint-owners of the premise to rent out the premise.</p>
+					</li></ol>
+				</td>
+				<td class="detail-content">
+					<p>AUTHORIZATION</p>
+				</td>
+			</tr>
+		</ol>
+		<tr>
+			<td style="width: 85%">
+			<!-- <ol class="alpha"> -->
+				<p><span class="b">IN WITNESS WHEREOF</span> the parties have hereunto set their hands the day and year first
+					above written.</p>
+			</td>
+		</tr>
+		<!-- </ol> -->
+		</table>
+		<table>
+			<tr>
+				<td width="200pt" class="i">SIGNED by the Landlord</td>
+				<td><p class="is_absolute">:</p>
+					<span contenteditable="false"><span class="do-remove" field="form_data.landlord_sign"></span> </span>
+				</td>
+			</tr>
+			<tr>
+				<td class="i">Name</td>
+				<td>:
+					<span contenteditable="false"><span class="do-remove" field="form_data.landlord.full_name"></span> </span>
+				</td>
+			</tr>
+			<tr>
+				<td class="i">NRIC No</td>
+				<td>: <span contenteditable="false"><span class="do-remove" field="form_data.landlord.id_number"></span></span></td>
+			</tr>
+		</table>
+		<br>
+		<table>
+			<tr>
+				<td width="200pt" class="i">SIGNED by the Tenant</td>
+				<td><p class="is_absolute">:</p>
+					<span contenteditable="false"><span class="do-remove" field="form_data.tenant_sign"></span> </span>
+				</td>
+			</tr>
+			<tr>
+				<td class="i">Name</td>
+				<td>:
+					<span contenteditable="false"><span class="do-remove" field="form_data.tenant.name"></span> </span>
+				</td>
+			</tr>
+			<tr>
+				<td class="i">NRIC No</td>
+				<td>: <span contenteditable="false"><span class="do-remove" field="form_data.tenant.id_no"></span></span></td>
+			</tr>
+		</table>
+		<br>
+		<div class="text-center">
+			<p><span class="b">SCHEDULE</span></p>
+			<p>(List of furniture, fixtures and fittings)</p>
+		</div>
+
+	</div>
+		<p>Attached screenshot for Security Deposit Payment of <span class="b"><span class="u"><span class="do-remove" field="toWords form_data.security_deposit"></span> ONLY</span> (S$<span contenteditable="false"><span class="do-remove" field="toCurrency form_data.security_deposit"></span></span>)</span></p>
+    <span contenteditable="false"><span class="do-remove" field="form_data.second_payment_proof"></span></span>
+
+</body>
+</html>

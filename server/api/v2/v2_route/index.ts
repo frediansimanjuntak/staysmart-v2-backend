@@ -16,6 +16,7 @@ import {PropertiesRoutes} from "../properties/routes/properties-routes";
 import {AppointmentsRoutes} from "../appointments/routes/appointments-routes";
 import {AgreementsRoutes} from "../agreements/routes/agreements-routes";
 import {ManagersRoutes} from "../managers/routes/managers-routes";
+import {ReportRoutes} from "../report/routes/report-routes";
 
 var router = express.Router();
 
@@ -25,6 +26,7 @@ FaqsRoutes.init(router);
 BlogsRoutes.init(router);
 BanksRoutes.init(router);
 ChatsRoutes.init(router);
+ReportRoutes.init(router);
 PaymentsRoutes.init(router);
 CommentsRoutes.init(router);
 ManagersRoutes.init(router);
