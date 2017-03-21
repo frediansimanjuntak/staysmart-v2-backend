@@ -19,6 +19,7 @@ import {GlobalService} from './global/global.service';
 import {RoutesConfig} from "./config/routes.conf";
 import {DBConfig} from "./config/db.conf";
 import {Routes} from "./routes/index";
+import {Cron} from "./cron/index";
 
 var PORT = process.env.PORT || 5000;
 const app = express();
@@ -32,6 +33,7 @@ GlobalService.init();
 GlobalService.initGlobalFunction();
 AWSConfig.init();
 DreamTalk.init();
+Cron.init();
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
