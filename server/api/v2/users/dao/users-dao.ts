@@ -9,6 +9,7 @@ import Companies from '../../companies/dao/companies-dao'
 import Properties from '../../properties/dao/properties-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
+import {signToken} from '../../../../auth/auth-service';
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -125,20 +126,21 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 
 
 		var _user = new Users(user);
-		_user.verification.code = randomCode;
-		_user.username = body.username;
-		_user.email = body.email;
-		_user.password = body.password;
-		_user.phone = body.phone;
-		_user.role = 'user';
-		_user.save((err, saved)=>{
-			if(err){
-				reject(err);
-			}
-			else if(saved){
-				resolve({userId: saved._id});
-			}
-		});
+			_user.verification.code = randomCode;
+			_user.username = body.username;
+			_user.email = body.email;
+			_user.password = body.password;
+			_user.phone = body.phone;
+			_user.role = 'user';
+			_user.save((err, saved)=>{
+				if(err){
+					reject(err);
+				}
+				else if(saved){
+				 	var token = signToken(_user._id, _user.role, _user.username);
+					resolve({userId: saved._id, token});
+				}
+			});
 	});
 });
 

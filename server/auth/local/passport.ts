@@ -4,7 +4,7 @@ import * as Promise from 'bluebird';
 
 var LocalStrategy = passportLocal.Strategy;
 
-function facebookAuthenticate(User, username, password, done) {
+function localAuthenticate(User, username, password, done) {
   User.findOne({
     username: username.toLowerCase()
   }).exec()
@@ -35,6 +35,6 @@ export function setup(User/*, config*/) {
     passReqToCallback: true
   }, function(req, username, password, done) {
     
-    return facebookAuthenticate(User, username, password, done);
+    return localAuthenticate(User, username, password, done);
   }));
 }
