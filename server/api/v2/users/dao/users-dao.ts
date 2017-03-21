@@ -166,8 +166,7 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 					Users
 						.findById(id, (err, user) => {
 							SMS.sendActivationCode(user.phone, randomCode).then(res => {
-								console.log(res);
-								resolve({res});
+								resolve({message: "code sent"});
 							});
 						})
 				}
