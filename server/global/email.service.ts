@@ -22,7 +22,7 @@ export class EmailService {
         from: 'Staysmart Revamp <noreply@mcst.com.sg>',
         to: emailTo,
         subject: emailSubject,
-        text: emailText
+        html: emailText
       };
 
       mailgun.messages().send(data, function (error, body) {
