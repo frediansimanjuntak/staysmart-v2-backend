@@ -41,28 +41,35 @@ appointmentsSchema.static('createAppointments', (appointments:Object):Promise<an
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = appointments;
-      
-      var _appointments = new Appointments(appointments);
-          _appointments.save((err, saved)=>{
-            err ? reject(err)
-                : resolve(saved); 
-          });
-      var appointmentId = _appointments._id;
-      Properties
-        .findById(body.property, (err, result) => {
-          var devID = result.development;
-          var unit = '#'+result.address.floor+'-'+result.address.unit;
-          Developments
-            .findById(devID, (error, devResult) => {
-              var notification = {
-                "user": body.landlord,
-                "message": "Appointment proposed for "+unit+" "+devResult.name+" at "+body.choosen_time.date+" from "+body.choosen_time.from+" to "+body.choosen_time.to,
-                "type": "appointment_proposed",
-                "ref_id": appointmentId
-              };
-              Notifications.createNotifications(notification);  
-            })
-          })
+      for(var i = 0; i < body.from.length; i++){
+        var _appointments = new Appointments(appointments);
+            _appointments.chosen_time.date = body.date;
+            _appointments.chosen_time.from = body.from[i];
+            _appointments.chosen_time.to = body.to[i];
+            _appointments.save((err, saved)=>{
+              if(err) {
+                reject(err);
+              }
+              else if(saved){
+                var appointmentId = _appointments._id;
+                Properties
+                  .findById(body.property, (err, result) => {
+                    var devID = result.development;
+                    var unit = '#'+result.address.floor+'-'+result.address.unit;
+                    Developments
+                      .findById(devID, (error, devResult) => {
+                        var notification = {
+                          "user": body.landlord,
+                          "message": "Appointment proposed for "+unit+" "+devResult.name+" at "+body.date+" from "+body.from[i]+" to "+body.to[i],
+                          "type": "appointment_proposed",
+                          "ref_id": appointmentId
+                        };
+                        Notifications.createNotifications(notification);  
+                      })
+                    })          
+              }
+            });
+      }
     });
 });
 
