@@ -9,10 +9,10 @@ export class BlogsController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static getById(req: express.Request, res: express.Response):void {
+	static getBySlug(req: express.Request, res: express.Response):void {
 		let _slug = req.params.slug;
 		BlogsDAO
-		['getById'](_slug)
+		['getBySlug'](_slug)
 		.then(blogs => res.status(200).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}

@@ -22,7 +22,7 @@ blogsSchema.static('getAll', ():Promise<any> => {
     });
 });
 
-blogsSchema.static('getById', (slug:string):Promise<any> => {
+blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Blogs

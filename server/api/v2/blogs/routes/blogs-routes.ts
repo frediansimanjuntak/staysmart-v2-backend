@@ -13,7 +13,7 @@ export class BlogsRoutes {
 
 		router
 			.route('/blogs/:slug')
-			.get(BlogsController.getById);
+			.get(BlogsController.getBySlug);
 
 		router
 			.route('/blogs/:id')
