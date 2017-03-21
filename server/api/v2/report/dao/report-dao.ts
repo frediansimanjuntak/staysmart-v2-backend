@@ -7,11 +7,11 @@ import Properties from '../../properties/dao/properties-dao';
 import Agreements from '../../agreements/dao/agreements-dao';
 import Developments from '../../developments/dao/developments-dao';
 import Users from '../../users/dao/users-dao';
+import * as juice from 'juice';
 
 export class reportDAO{
 	static reportLOI(id: string){
 		return new Promise((resolve:Function, reject:Function) => {
-
 			Agreements
 				.findById(id, (err, agreement) =>{
 					let loi = agreement.letter_of_intent.data;
@@ -19,12 +19,17 @@ export class reportDAO{
 					console.log(loiStatus);
 					if (loiStatus == "admin-confirmation" || loiStatus == "landlord-confirmation") {
 						reportDAO.reportLOIPending(id).then(res => {
-							resolve (res);
+
+							let result = juice(res);
+							resolve(result);
+							
 						});
 					}
 					else if (loiStatus == "accepted") {
 						reportDAO.reportLOIPrint(id).then(res => {
-							resolve (res);
+
+							let result = juice(res);
+							resolve(result)
 						});
 					}
 				})
@@ -145,24 +150,6 @@ export class reportDAO{
 					let property = agreement.property;
 					let landlord = agreement.landlord;
 					let tenant = agreement.tenant;
-					let statusSignLandlord;
-					let statusSignTenant;
-
-					if (loi.confirmation.landlord.sign != null){
-						statusSignLandlord = "signed";
-					}
-					else if (loi.confirmation.landlord.sign == null){
-						statusSignLandlord = "not sign";
-					}
-
-					if (loi.confirmation.tenant.sign != null){
-						statusSignTenant = "signed";
-					}
-					else if (loi.confirmation.tenant.sign == null){
-						statusSignTenant = "not sign";
-					}
-
-					console.log (agreement);
 					let data = {
 						"form_data": {
 							"created_at": loi.created_at,
@@ -190,14 +177,14 @@ export class reportDAO{
 									"furnishing": property.details.furnishing
 								}
 							},
-							"tenant_sign": statusSignTenant,
+							"tenant_sign": loi.confirmation.tenant.sign,
 							"tenant": {
 								"name": tenant.tenant.data.name,
 								"id_no": tenant.tenant.data.identification_number,
 								"company_name": tenant.companies
 							},
 
-							"landlord_sign": statusSignLandlord,
+							"landlord_sign": loi.confirmation.landlord.sign,
 							"landlord": {
 								"full_name": landlord.landlord.data.name,
 								"id_no": landlord.landlord.data.identification_number,
@@ -223,15 +210,16 @@ export class reportDAO{
 				.findById(id, (err, agreement) =>{
 					let ta = agreement.tenancy_agreement.data;
 					let taStatus = ta.status;
-					console.log(taStatus);
 					if (taStatus == "admin-confirmation" || taStatus == "landlord-confirmation") {
 						reportDAO.reportTAPending(id).then(res => {
-							resolve (res);
+							let result = juice(res);
+							resolve(result);
 						});
 					}
 					else if (taStatus == "accepted") {
 						reportDAO.reportTAPrint(id).then(res => {
-							resolve (res);
+							let result = juice(res);
+							resolve(result);
 						});
 					}
 				})
@@ -343,27 +331,12 @@ export class reportDAO{
 					let property = agreement.property;
 					let landlord = agreement.landlord;
 					let tenant = agreement.tenant;
-					let statusSignLandlord;
-					let statusSignTenant;
 					
 					let createdAtTa = ta.created_at;
 					let dateExpire = createdAtTa.setDate(createdAtTa.getDate() + 7);			
 
 					console.log(createdAtTa);
 					console.log(dateExpire);
-					if (loi.confirmation.landlord.sign != null){
-						statusSignLandlord = "signed";
-					}
-					else if (loi.confirmation.landlord.sign == null){
-						statusSignLandlord = "not sign";
-					}
-
-					if (loi.confirmation.tenant.sign != null){
-						statusSignTenant = "signed";
-					}
-					else if (loi.confirmation.tenant.sign == null){
-						statusSignTenant = "not sign";
-					}
 
 
 					console.log (agreement);
