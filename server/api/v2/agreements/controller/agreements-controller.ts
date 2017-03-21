@@ -113,8 +113,10 @@ export class AgreementsController {
 
 	//LOI
 	static getLoi(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
 		AgreementsDAO
-		['getLoi']()
+		['getLoi'](_id)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -170,8 +172,10 @@ export class AgreementsController {
 
 	//TA
 	static getTA(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
 		AgreementsDAO
-		['getTA']()
+		['getTA'](_id)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

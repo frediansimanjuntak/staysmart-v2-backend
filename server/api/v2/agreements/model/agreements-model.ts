@@ -47,7 +47,16 @@ var AgreementsSchema = new mongoose.Schema({
 					  type: Schema.Types.ObjectId,
 					  ref: 'Attachments'
 					}
-				}
+				},
+				bank_account: {
+			        bank:
+			        {
+			          type: Schema.Types.ObjectId,
+			          ref: 'Banks'
+			        },
+			        name: {type: String},
+			        no: {type: Number}
+			    }
 			},
 			tenant: {
 				name: {type: String},
@@ -62,7 +71,16 @@ var AgreementsSchema = new mongoose.Schema({
 					  type: Schema.Types.ObjectId,
 					  ref: 'Attachments'
 					}
-				}
+				},
+				bank_account: {
+			        bank:
+			        {
+			          type: Schema.Types.ObjectId,
+			          ref: 'Banks'
+			        },
+			        name: {type: String},
+			        no: {type: Number}
+			    }
 			},
 			occupiers: {
 				name: {type: String},

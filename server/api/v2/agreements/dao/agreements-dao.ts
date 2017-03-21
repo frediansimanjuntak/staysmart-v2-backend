@@ -95,7 +95,7 @@ agreementsSchema.static('getLoi', (id:string):Promise<any> => {
 			.select("letter_of_intent.data")
 			.exec((err, agreements) => {
 				err ? reject(err)
-					: resolve(agreements);
+					: resolve(agreements.letter_of_intent.data);
 			});
 	});
 });
@@ -279,7 +279,7 @@ agreementsSchema.static('getTA', (id:string):Promise<any> => {
 			.select("tenancy_agreement.data")
 			.exec((err, agreements) => {
 				err ? reject(err)
-					: resolve(agreements);
+					: resolve(agreements.tenancy_agreement.data);
 			});
 	});
 });
@@ -366,11 +366,12 @@ agreementsSchema.static('acceptTA', (id:string):Promise<any> => {
 			.findById(id, (err, agreement)=>{
 				let propertyId = agreement.property;
 				let tenantID = agreement.tenant;
-				let termLease = agreement.letter_of_intent.data.term_lease;
-				let termLeaseExtend = agreement.letter_of_intent.data.term_lease_extend;
+				let termLeaseExtend = parseInt(agreement.letter_of_intent.data.term_lease_extend);
 				let dateCommencement = agreement.letter_of_intent.data.date_commencement;
+				let termLease = parseInt(agreement.letter_of_intent.data.term_lease);
+				
 				let longTerm = termLease + termLeaseExtend;
-				let until = dateCommencement + (dateCommencement + longTerm * 30 * 24 * 60 * 60 * 1000) ;
+				let until = dateCommencement.setDate(dateCommencement.getMonth() + (longTerm));
 				Properties
 					.findByIdAndUpdate(propertyId, {
 						$set: {
@@ -379,7 +380,7 @@ agreementsSchema.static('acceptTA', (id:string):Promise<any> => {
 					})
 					.exec((err, updated) => {
 						err ? reject(err)
-							: resolve();
+							: resolve({message: "Success"});
 					});
 				Users
 					.findByIdAndUpdate(tenantID, {
@@ -393,14 +394,14 @@ agreementsSchema.static('acceptTA', (id:string):Promise<any> => {
 					})
 					.exec((err, updated) => {
 						err ? reject(err)
-							: resolve();
+							: resolve({message: "Success"});
 					});
 
 				agreement.tenancy_agreement.data.status = "accepted";
 				agreement.tenancy_agreement.data.created_at = new Date();
 				agreement.save((err, saved)=>{
 					err ? reject(err)
-						: resolve({status: "TA "+saved.tenancy_agreement.data.status});
+						: resolve({status: "TA "+ saved.tenancy_agreement.data.status});
 				});
 			})			
 		Agreements.notification(id, type_notif);
