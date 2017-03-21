@@ -10,6 +10,8 @@ import Properties from '../../properties/dao/properties-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
+var DateDiff = require('date-diff');
+
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -77,7 +79,6 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-
 		Users
 			.findById(id, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
