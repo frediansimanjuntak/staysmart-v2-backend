@@ -10,8 +10,6 @@ import Properties from '../../properties/dao/properties-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
-var DateDiff = require('date-diff');
-
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
