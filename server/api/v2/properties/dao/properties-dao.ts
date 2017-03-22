@@ -8,6 +8,8 @@ import Users from '../../users/dao/users-dao'
 import Companies from '../../companies/dao/companies-dao'
 import Developments from '../../developments/dao/developments-dao'
 import Notifications from '../../notifications/dao/notifications-dao'
+import {mail} from '../../../../email/mail';
+import config from '../../../../config/environment/index';
 
 propertiesSchema.static('userLandlordProperty', (userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
@@ -110,7 +112,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (property:Object, userId:Object):Promise<any> => {
+propertiesSchema.static('createProperties', (property:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(property)) {
         return reject(new TypeError('Property not a valid object.'));
@@ -209,6 +211,12 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object):Pro
                     err ? reject(err)
                         : resolve(saved);
                 });
+
+              var full_address = body.address.full_address;
+              var from = 'Staysmart';
+              mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
+                resolve(res);
+              })
             }
           });
     });
@@ -379,7 +387,9 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
         var confirmation_result = 'approved';
 
         Properties
-          .findById(id, (err, properties) => {
+          .findById(id)
+          .populate("owner.user")
+          .exec((err, properties) => {
             var shareholders = properties.temp.shareholders;
             var owners = properties.temp.owners;
             var companyId = properties.owner.company;
@@ -394,10 +404,34 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
               var type = 'owners';
               Properties.unsetTemp(id, type);
             }
+
+            var emailTo = properties.owner.user.email;
+            var full_name = properties.owner.user.username;
+            var full_address = properties.address.full_address;
+            var url = config.url.approveProperty;
+            var from = 'Staysmart';
+
+            mail.approveProperty(emailTo, full_name, full_address, url, from).then(res => {
+              resolve(res);
+            })
           })
       }
       else if(confirmation == 'reject'){
         confirmation_result = 'rejected';
+
+        Properties
+          .findById(id)
+          .populate("owner.user")
+          .exec((err, properties) => {
+            var emailTo = properties.owner.user.email;
+            var full_name = properties.owner.user.username;
+            var full_address = properties.address.full_address;
+            var from = 'Staysmart';
+
+            mail.rejectProperty(emailTo, full_name, full_address, from).then(res => {
+              resolve(res);
+            })
+          });
       }
       let body:any = proof;
       Properties

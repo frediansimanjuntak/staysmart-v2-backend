@@ -21,8 +21,10 @@ export class PropertiesController {
 	static createProperties(req: express.Request, res: express.Response):void {
 		let _properties = req.body;
 		let _userId = req["user"]._id;
+		let _userEmail = req["user"].email;
+		let _userFullname = req["user"].username;
 		PropertiesDAO
-		['createProperties'](_properties, _userId)
+		['createProperties'](_properties, _userId, _userEmail, _userFullname)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
