@@ -30,7 +30,7 @@ export default {
   url:{
     reset_password: '',
     blog_comment: '',
-
+    approveProperty: '',
   },
 
   // dreamTalk: 'https://dt.shrimpventures.com',

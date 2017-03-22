@@ -35,39 +35,57 @@ appointmentsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-appointmentsSchema.static('createAppointments', (appointments:Object):Promise<any> => {
+appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(appointments)) {
         return reject(new TypeError('Appointment is not a valid object.'));
       }
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = appointments;
-      for(var i = 0; i < body.from.length; i++){
+      console.log(appointments);
+      for(var i = 0; i < body.time.length; i++){
         var _appointments = new Appointments(appointments);
+            _appointments.tenant = tenant;
             _appointments.chosen_time.date = body.date;
-            _appointments.chosen_time.from = body.from[i];
-            _appointments.chosen_time.to = body.to[i];
+            _appointments.chosen_time.from = body.time[i];
+            _appointments.chosen_time.to = body.time2[i];
             _appointments.save((err, saved)=>{
               if(err) {
                 reject(err);
               }
               else if(saved){
                 var appointmentId = _appointments._id;
-                Properties
-                  .findById(body.property, (err, result) => {
-                    var devID = result.development;
-                    var unit = '#'+result.address.floor+'-'+result.address.unit;
-                    Developments
-                      .findById(devID, (error, devResult) => {
-                        var notification = {
-                          "user": body.landlord,
-                          "message": "Appointment proposed for "+unit+" "+devResult.name+" at "+body.date+" from "+body.from[i]+" to "+body.to[i],
-                          "type": "appointment_proposed",
-                          "ref_id": appointmentId
-                        };
-                        Notifications.createNotifications(notification);  
-                      })
-                    })          
+                Appointments
+                  .findById(appointmentId)
+                  .populate("landlord tenant")
+                  .populate({
+                    path: 'property',
+                    populate: {
+                      path: 'development',
+                      model: 'Developments',
+                    },
+                  })
+                  .exec((err, appointment) => {
+                    var devID = appointment.property.development;
+                    var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+                    
+                    var notification = {
+                      "user": body.landlord,
+                      "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
+                      "type": "appointment_proposed",
+                      "ref_id": appointmentId
+                    };
+                    Notifications.createNotifications(notification);  
+                    var emailTo = appointment.landlord.email;
+                    var fullname = appointment.landlord.username;
+                    var tenant_username = appointment.tenant.username;                    
+                    var full_address = appointment.property.address.full_address;
+                    var from = 'Staysmart';
+
+                    mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from).then(res => {
+                      resolve(res);
+                    })
+                  })
               }
             });
       }
