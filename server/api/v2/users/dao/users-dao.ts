@@ -300,6 +300,8 @@ usersSchema.static('updateUserData', (id:string, type:string, userData:Object, c
 		if(!_.isString(id) && !_.isObject(userData)) {
 			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
 		}
+		console.log(id);
+		console.log(currentUser);
 		Users.validateUser(id, currentUser).then(res => {
 			if(res.message) {
 				reject({message: res.message});
@@ -553,6 +555,7 @@ usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<
 			return reject(new TypeError('Id user is not a valid string.'));
 		}
 		Users.findById(currentUser, (err, result) => {
+			console.log(result);
 			if(result.role != 'admin'){
 				if(userId != currentUser) {
 					resolve({message: "Forbidden"});

@@ -8,12 +8,11 @@ import Notifications from '../../notifications/dao/notifications-dao'
 import Developments from '../../developments/dao/developments-dao'
 import {mail} from '../../../../email/mail';
 
-appointmentsSchema.static('getAll', ():Promise<any> => {
+appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        let _query = {};
 
         Appointments
-          .find(_query)
+          .find({ $or: [ { "landlord": userId }, { "tenant": userId } ] })
           .populate("landlord tenant property")
           .exec((err, appointments) => {
               err ? reject(err)

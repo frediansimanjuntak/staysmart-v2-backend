@@ -25,7 +25,7 @@ var AppointmentsSchema = new mongoose.Schema({
 		type: String
 	},
 	chosen_time: {
-		date: {type: Date},
+		date: {type: String},
 		from: {type: String},
 		to: {type: String}
 	},
