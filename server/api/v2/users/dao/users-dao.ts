@@ -11,6 +11,7 @@ import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
 import {mail} from '../../../../email/mail';
+import config from '../../../../config/environment/index';
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -499,7 +500,7 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 						.findOne({email: email}, (err, result) => {
 							var fullname = result.username;
 							var from = 'Staysmart';
-							var url = 'https://localhost:5000/api/v2/reset_password/'+randomToken;
+							var url = config.url.reset_password+randomToken;
 							mail.resetPassword(email, fullname, url, from).then(res => {
 								resolve(res);
 							})

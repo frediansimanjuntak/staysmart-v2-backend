@@ -22,6 +22,19 @@ blogsSchema.static('getAll', ():Promise<any> => {
     });
 });
 
+blogsSchema.static('getById', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        Blogs
+          .findById(id)
+          .populate("cover category comments created_by")
+          .exec((err, blogs) => {
+              err ? reject(err)
+                  : resolve(blogs);
+          });
+    });
+});
+
 blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
