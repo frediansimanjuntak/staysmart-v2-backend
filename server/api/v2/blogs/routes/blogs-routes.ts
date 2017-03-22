@@ -12,7 +12,11 @@ export class BlogsRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.createBlogs);
 
 		router
-			.route('/blogs/:slug')
+			.route('/blogs/:id')
+			.get(BlogsController.getById);
+
+		router
+			.route('/blogs/slug/:slug')
 			.get(BlogsController.getBySlug);
 
 		router

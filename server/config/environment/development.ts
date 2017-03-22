@@ -27,6 +27,12 @@ export default {
     domain: 'sandbox2290d40ec2414e809fdd35fce8266c9b.mailgun.org'
   },
 
+  url:{
+    reset_password: '',
+    blog_comment: '',
+
+  },
+
   // dreamTalk: 'https://dt.shrimpventures.com',
 
   // Seed database on startup

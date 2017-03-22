@@ -4,6 +4,8 @@ import * as _ from 'lodash';
 import commentsSchema from '../model/comments-model';
 import Blogs from '../../blogs/dao/blogs-dao';
 import Users from '../../users/dao/users-dao';
+import {mail} from '../../../../email/mail';
+import config from '../../../../config/environment/index';
 
 commentsSchema.static('getAll', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -32,7 +34,7 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 	});
 });
 
-commentsSchema.static('createComments', (comments:Object):Promise<any> => {
+commentsSchema.static('createComments', (comments:Object, user:Object, userEmail:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(comments)) {
 			return reject(new TypeError('Comment is not a valid object.'));
@@ -41,37 +43,46 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		let body:any = comments;
 
 		var _comments = new Comments(comments);
+			_comments.user = user;
 			_comments.save((err, saved)=>{
-				err ? reject(err)
-				: resolve(saved);
+				if(err) {
+					reject(err);
+				}
+				else if(saved) {
+					Blogs
+						.findById(body.blog, (err, blog) => {
+							var email = userEmail;
+							var blogTitle = blog.title;
+							var url = config.url.blog_comment+_comments._id;
+							mail.blogComment(email, blogTitle, url).then(res => {
+								if(body.commentID) {
+									Comments
+										.findByIdAndUpdate(body.commentID, {
+											$push: {
+												"replies": _comments._id
+											}
+										})
+										.exec((err, update) => {
+											err ? reject(err)
+											: resolve({res, update});
+										});						
+								}
+								else{
+									Blogs
+										.findByIdAndUpdate(body.blog, {
+											$push: {
+												"comments": _comments._id
+											}
+										})
+										.exec((err, update) => {
+											err ? reject(err)
+											: resolve({res, update});
+										});	
+								}
+							})
+						})
+				}
 			});
-
-		var commentId = _comments._id; 
-
-		if(body.commentID) {
-			Comments
-				.findByIdAndUpdate(body.commentID, {
-					$push: {
-						"replies": commentId
-					}
-				})
-				.exec((err, update) => {
-					err ? reject(err)
-					: resolve(update);
-				});						
-		}
-		else{
-			Blogs
-				.findByIdAndUpdate(body.blog, {
-					$push: {
-						"comments": commentId
-					}
-				})
-				.exec((err, update) => {
-					err ? reject(err)
-					: resolve(update);
-				});	
-		}
 	});
 });
 
