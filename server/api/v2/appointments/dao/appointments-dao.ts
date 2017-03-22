@@ -6,6 +6,7 @@ import Users from '../../users/dao/users-dao'
 import Properties from '../../properties/dao/properties-dao'
 import Notifications from '../../notifications/dao/notifications-dao'
 import Developments from '../../developments/dao/developments-dao'
+import {mail} from '../../../../email/mail';
 
 appointmentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -101,34 +102,54 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
           }
         })
         .exec((err, update) => {
-            err ? reject(err)
-                : resolve(update);
-        });
-        if(status == 'accepted' || status == 'rejected')
-        {
-          Appointments
-            .findById(id, (err, result) => {
-              Properties
-                .findById(result.property, (err, result) => {
-                  var devID = result.development;
-                  var unit = '#'+result.address.floor+'-'+result.address.unit;
-                  Developments
-                    .findById(devID, (err, devResult) => {
-                      var notification = {
-                        "user": result.tenant,
-                        "message": "Appointment "+status+" for "+unit+" "+devResult.name+" at "+result.choosen_time.date+" from "+result.choosen_time.from+" to "+result.choosen_time.to,
-                        "type": "appointment_proposed",
-                        "ref_id": id
-                      };
-                      Notifications.createNotifications(notification);  
-                    })
-                    .exec((err, update) => {
-                      err ? reject(err)
-                          : resolve(update);
-                    });
+            if(err) {
+              reject(err);
+            }
+            else if(update) {
+              if(status == 'accepted' || status == 'rejected')
+              {
+                Appointments
+                  .findById(id)
+                  .populate("landlord tenant")
+                  .populate({
+                    path: 'property',
+                    populate: {
+                      path: 'development',
+                      model: 'Developments',
+                    },
                   })
-            })
-        }
+                  .exec((err, appointment) => {
+                    var devID = appointment.property.development;
+                    var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+                    
+                    var notification = {
+                      "user": appointment.property.tenant,
+                      "message": "Appointment "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.property.choosen_time.date+" from "+appointment.property.choosen_time.from+" to "+appointment.property.choosen_time.to,
+                      "type": "appointment_proposed",
+                      "ref_id": id
+                    };
+                    Notifications.createNotifications(notification);  
+
+                    var emailTo = appointment.tenant.email;
+                    var fullname = appointment.tenant.username;
+                    var full_address = appointment.property.address.full_address;
+                    var landlord_username = appointment.landlord.username;
+                    var from = 'Staysmart';
+
+                    if(status == 'accepted') {
+                      mail.confirmAppointment(emailTo, fullname, full_address, landlord_username, from).then(res => {
+                        resolve(res);
+                      })
+                    }
+                    else if(status == 'rejected') {
+                      mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from).then(res => {
+                        resolve(res);
+                      })
+                    }
+                  })
+              }
+            }
+        });
     });
 });
 
