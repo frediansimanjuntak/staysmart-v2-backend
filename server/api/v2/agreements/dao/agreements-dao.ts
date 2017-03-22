@@ -446,6 +446,7 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 		}
 		let body:any = data;
 		let type_notif = "initiateIL";
+		let IDUser = userId.toString();
 
 		Agreements
 			.findById(id, (err, agreement) => {
@@ -455,10 +456,10 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 				let il = agreement.inventory_list.data;
 				let typeDataa = "inventory_list";
 
-				if (userId != landlordId){
+				if (IDUser != landlordId){
 					reject ({message: "sorry you can not create this Inventory List"})
 				}
-				else if(userId == landlordId){
+				else if(IDUser == landlordId){
 					if (il != null){
 					Agreements.createHistory(id, typeDataa);
 					Agreements
@@ -488,7 +489,6 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 							err ? reject(err)
 								: resolve({message: "success"});
 						});
-
 					Agreements.notification(id, type_notif);
 				}				
 			})
@@ -504,6 +504,7 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 		let lists = body.lists;
 		let ObjectID = mongoose.Types.ObjectId;
 		let type_notif = "confirmedIL";
+		let IDUser = userId.toString();
 
 		Agreements
 			.findById(id, (err, agreement) => {
@@ -513,10 +514,10 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 				let il = agreement.inventory_list.data;
 				let typeDataa = "inventory_list";
 
-				if (userId != tenantId){
-					reject ({message: "sorry you can not create this Inventory List"})
+				if (IDUser != tenantId){
+					reject ({message: "sorry you can not check this Inventory List"})
 				}
-				else if(userId == tenantId){
+				else if(IDUser == tenantId){
 					agreement.inventory_list.data.confirmation.tenant.sign = body.confirmation.tenant.sign;
 					agreement.inventory_list.data.confirmation.tenant.date = new Date();
 					agreement.inventory_list.data.status = "complete";
@@ -756,14 +757,13 @@ agreementsSchema.static('feeUpdate', (data:Object):Promise<any> => {
 		      		err ? reject(err)
 		      			: resolve(updated);
 		      	});
-		}	
-	    	
+		}		    	
 	});
 });
 
 agreementsSchema.static('addRefund', (data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		var ObjectID = mongoose.Types.ObjectId;	
+			
 		var body:any = data;
 
 		Payments
