@@ -263,6 +263,9 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 						if(body.phone) {
 							user.phone = body.phone;
 						}
+						if(body.picture) {
+							user.picture = body.picture;
+						}
 						if(body.oldpassword) {
 							if(user.password == user.encryptPassword(body.oldpassword)){
 								if(body.newpassword){
