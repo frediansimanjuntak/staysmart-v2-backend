@@ -86,10 +86,9 @@ export class UsersController {
 		let _id = req.params.id;
 		let _type = req.params.type;
 		let _userData = req.body;
-		let _files = req["files"];
 		let _currentUser = req["user"]._id;
 		UsersDAO
-		['updateUserData'](_id, _type, _userData, _files)
+		['updateUserData'](_id, _type, _userData, _currentUser)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}

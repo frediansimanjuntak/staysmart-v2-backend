@@ -43,22 +43,24 @@ companiesSchema.static('createCompanies', (companies:Object, created_by:string):
       var _companies = new Companies(companies);
           _companies.created_by = created_by;
           _companies.save((err, saved)=>{
-            err ? reject(err)
-                : resolve(saved);
-            });
-
-      var companiesId=_companies._id;
-      Users
-        .findByIdAndUpdate(created_by, {
-          $push: {
-            "companies": companiesId
-          }
-        })
-        .exec((err, update) => {
-            err ? reject(err)
-                : resolve(update);
-        });
-      resolve({companiesId});
+            if(err) {
+              reject(err);
+            }
+            else if(saved) {
+              var companiesId=_companies._id;
+              Users
+                .findByIdAndUpdate(created_by, {
+                  $push: {
+                    "companies": companiesId
+                  }
+                })
+                .exec((err, update) => {
+                    err ? reject(err)
+                        : resolve(update);
+                });
+              resolve({companiesId});        
+            }
+          });
     });
 });
 
