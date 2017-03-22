@@ -2,8 +2,7 @@ import * as express from 'express';
 import AgreementsDAO from '../dao/agreements-dao';
 
 export class AgreementsController {
-	static getAll(req: express.Request, res: express.Response):void {
-		
+	static getAll(req: express.Request, res: express.Response):void {		
 		let _userId = req["user"]._id;
 
 		AgreementsDAO
@@ -14,9 +13,10 @@ export class AgreementsController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['getById'](_id)
+		['getById'](_id, _userId)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -114,9 +114,10 @@ export class AgreementsController {
 	//LOI
 	static getLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['getLoi'](_id)
+		['getLoi'](_id, _userId)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -134,6 +135,7 @@ export class AgreementsController {
 
 	static sendLoi(req: express.Request, res: express.Response):void {		
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
 		['createLoi'](_id)
@@ -144,18 +146,20 @@ export class AgreementsController {
 	static acceptLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _data = req.body;
+		let _userId = req["user"]._id;
 				
 		AgreementsDAO
-		['acceptLoi'](_id, _data)
+		['acceptLoi'](_id, _data, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static rejectLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['rejectLoi'](_id)
+		['rejectLoi'](_id, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -173,9 +177,10 @@ export class AgreementsController {
 	//TA
 	static getTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['getTA'](_id)
+		['getTA'](_id, _userId)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -183,28 +188,30 @@ export class AgreementsController {
 	static createTA(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 		
 		AgreementsDAO
-		['createTA'](_id, _data)
+		['createTA'](_id, _data, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static acceptTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _files = req["files"];
+		let _userId = req["user"]._id;
 				
 		AgreementsDAO
-		['acceptTA'](_id, _files)
+		['acceptTA'](_id, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static rejectTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['rejectTA'](_id)
+		['rejectTA'](_id, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -212,20 +219,20 @@ export class AgreementsController {
 	static adminConfirmationTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _agreements = req.body;
-		let _files = req["files"];
 		
 		AgreementsDAO
-		['adminConfirmationTA'](_id, _agreements, _files)
+		['adminConfirmationTA'](_id, _agreements)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
 	//IL
 	static getInventoryList(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;		
+		let _id = req.params.id;	
+		let _userId = req["user"]._id;	
 
 		AgreementsDAO
-		['getInventoryList'](_id)
+		['getInventoryList'](_id, _userId)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
