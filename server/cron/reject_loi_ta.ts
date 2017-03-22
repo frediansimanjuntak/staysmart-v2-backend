@@ -9,37 +9,22 @@ var DateDiff = require('date-diff');
 export class AutoReject {
   static autoRejectLetterOfIntent():void{
     return new Promise((resolve:Function, reject:Function) => {
-      new CronJob('32 14 1-31 * * *', function() {
+      new CronJob('00 08 1-31 * * *', function() {
         /* runs once at the specified date. */
-        console.log('oi');
-        let today = new Date();
+        let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
         Agreements
-          .find({})
-          .exec((err, result) => {
-            if(result.length > 0) {
-              for(var i = 0; i < result.length; i++){
-                if(result[i].letter_of_intent.created_at){
-                  var loi_created_at = result[i].letter_of_intent.created_at;
-                  var loi_diff = new DateDiff(today, loi_created_at);
-                  if(result[i].letter_of_intent.status == 'pending' || result[i].letter_of_intent.status == 'landlord-confirmation' || result[i].letter_of_intent.status == 'admin-confirmation'){
-                    if(loi_diff.days() >= 7){
-                      Agreements
-                        .findByIdAndUpdate(result[i]._id, {
-                          $set: {
-                            "letter_of_intent.status": "expired"
-                          }
-                        })
-                        .exec((err, update) => {
-                          if(update) {
-                            console.log(update);
-                            resolve(update);
-                            Agreements.notification(result[i]._id, 'rejectLOI');
-                          }
-                        });
-                    }
-                  }
-                }
-              }
+          .update({}, {
+            $set: {"letter_of_intent.status": "expired"}
+          })
+          .where("letter_of_intent.status").in(['pending', 'landlord-confirmation', 'admin-confirmation'])
+          .where("letter_of_intent.created_at").lte(oneWeeksAgo)
+          .exec((err, res) => {
+            if(err){
+              console.log('error');
+            } 
+            else
+            {
+              console.log(res);
             }
           })
         }, function () {
@@ -54,34 +39,22 @@ export class AutoReject {
 
   static autoRejectTenancyAgreement():void{
     return new Promise((resolve:Function, reject:Function) => {
-      new CronJob('* * * * * *', function() {
+      new CronJob('00 08 1-31 * * *', function() {
         /* runs once at the specified date. */
-        let today = new Date();
+        let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
         Agreements
-          .find({})
-          .exec((err, result) => {
-            if(result.length > 0) {
-              for(var i = 0; i < result.length; i++){
-                if(result[i].tenancy_agreement.created_at){
-                  var ta_created_at = result[i].tenancy_agreement.created_at;
-                  var ta_diff = new DateDiff(today, ta_created_at);
-                  if(result[i].tenancy_agreement.status == 'pending' || result[i].tenancy_agreement.status == 'tenant-confirmation' || result[i].tenancy_agreement.status == 'admin-confirmation'){
-                    if(ta_diff.days() >= 7){
-                      Agreements
-                        .findByIdAndUpdate(result[i]._id, {
-                          $set: {
-                            "tenancy_agreement.status": "expired"
-                          }
-                        })
-                        .exec((err, update) => {
-                          if(update) {
-                            Agreements.notification(result[i]._id, 'rejectTA');
-                          }
-                        });
-                    }  
-                  }
-                }
-              }
+          .update({}, {
+            $set: {"tenancy_agreement.status": "expired"}
+          })
+          .where("tenancy_agreement.status").in(['pending', 'tenant-confirmation', 'admin-confirmation'])
+          .where("tenancy_agreement.created_at").lte(oneWeeksAgo)
+          .exec((err, res) => {
+            if(err){
+              console.log('error');
+            } 
+            else
+            {
+              console.log(res);
             }
           })
         }, function () {
