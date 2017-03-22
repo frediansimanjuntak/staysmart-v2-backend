@@ -10,7 +10,7 @@ import Properties from '../../properties/dao/properties-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
-import {mail} from '../../../../email/reset_password';
+import {mail} from '../../../../email/mail';
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -181,7 +181,11 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 				}
 				else if(saved){
 				 	var token = signToken(_user._id, _user.role, _user.username);
-					resolve({userId: saved._id, token});
+					var fullname = _user.username;
+					var from = 'Staysmart';
+					mail.signUp(_user.email, fullname, from).then(res => {
+						resolve({res, userId: saved._id, token});
+					})
 				}
 			});
 	});
