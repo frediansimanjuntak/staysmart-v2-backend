@@ -34,4 +34,24 @@ export class mail{
 			});	
 		})
 	}
+
+	static confirmAppointment(emailTo, fullname, full_address, landlord_username, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Confirm Appointment';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+fullname+',<br><br><p style="align:justify;">Your appointment request for the property situated at '+full_address+' has been confirmed by '+landlord_username+'.</p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the appointment.</p><p style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br>Staysmart Team</body></html>';
+			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
+				resolve(res);
+			});	
+		})
+	}
+
+	static rejectAppointment(emailTo, fullname, full_address, landlord_username, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Reject Appointment';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+fullname+',<br><br><p style="align:justify;">Your appointment request for the property situated at '+full_address+' has been rejected by '+landlord_username+'.</p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the appointment.</p><p style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br>Staysmart Team</body></html>';
+			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
+				resolve(res);
+			});	
+		})
+	}
 }
