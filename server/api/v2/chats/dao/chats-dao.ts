@@ -77,6 +77,7 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
 
 chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+        name.toString();
     	Properties
     		.findById(name, (err, property) => {
     			var members = [];
