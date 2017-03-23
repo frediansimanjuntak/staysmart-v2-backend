@@ -112,6 +112,17 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
+propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Properties
+          .find({"owner.user": userId, "status": "draft"})
+          .exec((err, result) => {
+            err ? reject(err)
+                : resolve(result);
+          });
+    });
+});
+
 propertiesSchema.static('createProperties', (property:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(property)) {

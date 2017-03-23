@@ -250,11 +250,11 @@ export class AgreementsController {
 
 	static tenantCheckInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _agreement = req.body;
+		let _data = req.body;
 		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['tenantCheckInventoryList'](_id, _agreement, _userId)
+		['tenantCheckInventoryList'](_id, _data, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
