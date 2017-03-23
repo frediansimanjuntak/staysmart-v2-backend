@@ -530,22 +530,16 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 					reject ({message: "sorry you can not check this Inventory List"})
 				}
 				else if(IDUser == tenantId){
-					var updateSuccess = 0;
-					var totalItems = 0;
 					for(var i = 0; i < body.lists.length; i++){
 						for(var j = 0; j < agreement.inventory_list.data.lists.length; j++){
 							if(agreement.inventory_list.data.lists[j]._id == body.lists[i].idList) {
 								for(var k = 0; k < body.lists[i].idItems.length; k++){
-									totalItems = totalItems + 1;
 									for(var l = 0; l < agreement.inventory_list.data.lists[j].items.length; l++){
 										if(body.lists[i].idItems[k] == agreement.inventory_list.data.lists[j].items[l]._id) {
 											agreement.inventory_list.data.lists[j].items[l].tenant_check = "true";
 											agreement.save((err, result) => {
 												if(err) {
 													reject(err);
-												}
-												else if(result) {
-													updateSuccess = updateSuccess + 1;
 												}
 											});	
 										}
@@ -554,23 +548,19 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 							}
 						}
 					}
-					if(updateSuccess != totalItems) {
-						reject({message: 'Something is wrong. Please try again.'});
-					}
-					else{
-						agreement.inventory_list.data.confirmation.tenant.sign = body.confirmation.tenant.sign;
-						agreement.inventory_list.data.confirmation.tenant.date = new Date();
-						agreement.inventory_list.data.status = "completed";
-						agreement.save((err, update) => {
-							if(err) {
-								reject(err);
-							}
-							else if(update) {
-								
-							}
-						});
-						Agreements.notification(id, type_notif);
-					}
+					agreement.inventory_list.data.confirmation.tenant.sign = body.confirmation.tenant.sign;
+					agreement.inventory_list.data.confirmation.tenant.date = new Date();
+					agreement.inventory_list.data.status = "completed";
+					agreement.save((err, update) => {
+						if(err) {
+							reject(err);
+						}
+						else if(update) {
+							Agreements.notification(id, type_notif).then(res => {
+								resolve({message: 'success'});
+							});		
+						}
+					});
 				}							
 			})
 	});
