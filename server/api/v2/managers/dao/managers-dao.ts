@@ -114,7 +114,7 @@ managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> 
         Managers
           .update({"_id": id, "data.manager": {$not: userId}}, {
             $set: {
-              "data.$.status": "rejected"
+              "data.$.status": status
             }
           })
           .exec((err, update) => {

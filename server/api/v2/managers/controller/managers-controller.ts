@@ -29,11 +29,11 @@ export class ManagersController {
 	}
 
 	static createManagers(req: express.Request, res: express.Response):void {
-		let _notifications = req.body;
+		let _manager = req.body;
 		let _userId = req["user"]._id;
 
 		ManagersDAO
-		['createManagers'](_userId, _notifications)
+		['createManagers'](_userId, _manager)
 		.then(notifications => res.status(201).json(notifications))
 		.catch(error => res.status(400).json(error));
 	}
