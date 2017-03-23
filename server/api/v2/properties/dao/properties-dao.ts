@@ -53,11 +53,21 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         }
         if(search.bedroom != 'all') 
         {
-          property.where('details.bedroom', search.bedroom);
+          if(search.bedroom == '5+') {
+            property.where('details.bedroom').gte(5);  
+          }
+          else{
+            property.where('details.bedroom', search.bedroom);  
+          }
         }
         if(search.bathroom != 'all') 
         {
-          property.where('details.bathroom', search.bathroom);
+          if(search.bathroom == '5+') {
+            property.where('details.bathroom').gte(5);  
+          }
+          else{
+            property.where('details.bathroom', search.bathroom);
+          }
         }
         if(search.available != 'all') 
         {
@@ -185,14 +195,10 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                             let propertyID = _properties._id;
                     
                             if(body.owned_type == 'company'){
-                              console.log(body.companyData);
                               if(body.companyData) {
-                                console.log('oi');
                                 Users
                                   .findById(userId, (err, result) => {
-                                    console.log(result);
                                     Companies.createCompanies(body.companyData, userId).then(res => {
-                                      console.log(res);
                                       var companyId = res.companiesId;
                                       Properties
                                         .findByIdAndUpdate(propertyID, {

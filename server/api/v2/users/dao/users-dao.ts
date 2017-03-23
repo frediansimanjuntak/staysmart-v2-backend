@@ -94,12 +94,10 @@ usersSchema.static('searchUser', (search:string):Promise<any> => {
 		Users
 		.findOne({"username": search})
 		.exec((err, users)=>{	
-			console.log(users);
 			let userData ={
 				"username": users.username,
 				"_id": users._id,
 			}
-			console.log(userData);
 			err ? reject(err)
               	: resolve(userData);
 		})
@@ -126,7 +124,6 @@ usersSchema.static('getPropertyNonManager', (id:string):Promise<any> => {
 						property.push(own);
 					}	
 				}
-				console.log(property);
 				resolve(property);
 			});
 	});
@@ -248,9 +245,7 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
 		}
-		console.log('test');
 		Users.validateUser(id, currentUser).then(res => {
-			console.log(res);
 			if(res.message) {
 				reject({message: res.message});
 			}
@@ -297,11 +292,7 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 
 usersSchema.static('updateUserData', (id:string, type:string, userData:Object, currentUser:string):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
-		if(!_.isString(id) && !_.isObject(userData)) {
-			return reject(new TypeError('User data is not a valid object or id is not a valid string.'));
-		}
-		console.log(id);
-		console.log(currentUser);
+		
 		Users.validateUser(id, currentUser).then(res => {
 			if(res.message) {
 				reject({message: res.message});
@@ -548,14 +539,12 @@ usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<a
 	});
 });
 
-
 usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(userId)) {
 			return reject(new TypeError('Id user is not a valid string.'));
 		}
 		Users.findById(currentUser, (err, result) => {
-			console.log(result);
 			if(result.role != 'admin'){
 				if(userId != currentUser) {
 					resolve({message: "Forbidden"});
