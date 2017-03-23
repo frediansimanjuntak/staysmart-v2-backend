@@ -85,7 +85,6 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
     			if(property.manager){
     				members.push(property.manager);	
     			}
-    			console.log(members);
     		
 		    	ChatRooms
 		    		.findOne({"tenant": uid, "propertyId": name}, (err, result) => {
@@ -117,10 +116,24 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					                                    }
 					                                })
 					                                .exec((err, users) => {
-					                                    err ? reject(err)
-					                                        : resolve(users);
+					                                    if(err) {
+                                                            reject(err);
+                                                        }
 					                                });
-				                            
+
+				                                if(members.length > 1) {
+                                                    Users
+                                                        .findByIdAndUpdate(property.manager, {
+                                                            $push: {
+                                                                "chat_rooms": saved._id
+                                                            }
+                                                        })
+                                                        .exec((err, users) => {
+                                                            if(err) {
+                                                                reject(err);
+                                                            }
+                                                        });
+                                                }
 			                            		Users
 					                                .findByIdAndUpdate(property.owner.user, {
 					                                    $push: {
@@ -131,18 +144,7 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					                                    err ? reject(err)
 					                                        : resolve(users);
 					                                });	
-			                            	    if(members.length > 1) {
-                                                    Users
-                                                        .findByIdAndUpdate(property.manager, {
-                                                            $push: {
-                                                                "chat_rooms": saved._id
-                                                            }
-                                                        })
-                                                        .exec((err, users) => {
-                                                            err ? reject(err)
-                                                                : resolve(users);
-                                                        });
-                                                }
+			                            	    
                                             }
 					                    });
 					        	}

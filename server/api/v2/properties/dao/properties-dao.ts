@@ -134,113 +134,137 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
       
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = property;
-      console.log(userId);
-      var _properties = new Properties(property);
-          _properties.owner.user = userId;
-          _properties.confirmation.status = 'pending';
-          _properties.save((err, saved)=>{
-            if(err) {
-              reject(err);
-            }
-            else if(saved){
-              let propertyID = _properties._id;
-      
-              if(body.owned_type == 'company'){
-                console.log(body.companyData);
-                if(body.companyData) {
-                  console.log('oi');
-                  Users
-                    .findById(userId, (err, result) => {
-                      console.log(result);
-                      Companies.createCompanies(body.companyData, userId).then(res => {
-                        console.log(res);
-                        var companyId = res.companiesId;
-                        Properties
-                          .findByIdAndUpdate(propertyID, {
-                            $set: {
-                              "owner.company": companyId
-                            }
-                          })
-                          .exec((err, update) => {
-                              if(err) {
-                                reject(err);
-                              }
-                          });
-
-                        if(body.shareholders != null) {
-                          Properties
-                            .findByIdAndUpdate(propertyID, {
-                              $set: {
-                                "temp.shareholders": body.shareholders
-                              }
-                            })
-                            .exec((err, update) => {
-                                if(err) {
-                                  reject(err);
-                                }
-                            });
-                        }
-                      });
-                    })  
+      Developments
+        .findById(body.development)
+        .exec((err, development) => {
+          if(err) {
+            reject(err);
+          }
+          else if(development) {
+            Properties
+              .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
+              .exec((err, properties) => {
+                if(err) {
+                  reject(err);
                 }
-                else if(body.owner && body.owner.company && body.shareholders != null) {
-                  Properties
-                    .findByIdAndUpdate(propertyID, {
-                      $set: {
-                        "temp.shareholders": body.shareholders
-                      }
-                    })
-                    .exec((err, update) => {
-                      if(err) {
-                        reject(err);
-                      }  
-                    });
-                }
-              }
-              else if(body.owned_type == 'individual'){
-                if(body.landlordData) {
-                  var type = 'landlord';
-                  Users.updateUserData(userId, type, body.landlordData, userId);
-                }
-                if(body.ownersData != null) {
-                  Properties
-                    .findByIdAndUpdate(propertyID, {
-                      $set: {
-                        "temp.owners": body.ownersData
-                      }
-                    })
-                    .exec((err, update) => {
-                        if(err) {
-                          reject(err);
-                        }
-                    });
-                }
-              }
-
-              Users
-                .update({"_id":userId}, {
-                  $push: {
-                    "owned_properties": propertyID
+                else if(properties) {
+                  if(properties.length > 0) {
+                    reject({message: 'property for this floor and unit in this development already exist.'});
                   }
-                })
-                .exec((err, saved) => {
-                    if(err) {
-                      reject(err);
-                    }
-                });
+                  else{
+                    let slug = '#'+body.address.floor+'-'+body.address.unit+' '+development.name;
+                    var _properties = new Properties(property);
+                        _properties.slug = slug;
+                        _properties.owner.user = userId;
+                        _properties.confirmation.status = 'pending';
+                        _properties.save((err, saved)=>{
+                          if(err) {
+                            reject(err);
+                          }
+                          else if(saved){
+                            let propertyID = _properties._id;
+                    
+                            if(body.owned_type == 'company'){
+                              console.log(body.companyData);
+                              if(body.companyData) {
+                                console.log('oi');
+                                Users
+                                  .findById(userId, (err, result) => {
+                                    console.log(result);
+                                    Companies.createCompanies(body.companyData, userId).then(res => {
+                                      console.log(res);
+                                      var companyId = res.companiesId;
+                                      Properties
+                                        .findByIdAndUpdate(propertyID, {
+                                          $set: {
+                                            "owner.company": companyId
+                                          }
+                                        })
+                                        .exec((err, update) => {
+                                            if(err) {
+                                              reject(err);
+                                            }
+                                        });
 
-              if(!body.address.full_address) {
-                reject({message:'no full address'});
-              }
-              else{
-                var full_address = body.address.full_address;
-                var from = 'Staysmart';
-                mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                  resolve({message: 'property created'});
-                })  
-              }
-            }
-          });
+                                      if(body.shareholders != null) {
+                                        Properties
+                                          .findByIdAndUpdate(propertyID, {
+                                            $set: {
+                                              "temp.shareholders": body.shareholders
+                                            }
+                                          })
+                                          .exec((err, update) => {
+                                              if(err) {
+                                                reject(err);
+                                              }
+                                          });
+                                      }
+                                    });
+                                  })  
+                              }
+                              else if(body.owner && body.owner.company && body.shareholders != null) {
+                                Properties
+                                  .findByIdAndUpdate(propertyID, {
+                                    $set: {
+                                      "temp.shareholders": body.shareholders
+                                    }
+                                  })
+                                  .exec((err, update) => {
+                                    if(err) {
+                                      reject(err);
+                                    }  
+                                  });
+                              }
+                            }
+                            else if(body.owned_type == 'individual'){
+                              if(body.landlordData) {
+                                var type = 'landlord';
+                                Users.updateUserData(userId, type, body.landlordData, userId);
+                              }
+                              if(body.ownersData != null) {
+                                Properties
+                                  .findByIdAndUpdate(propertyID, {
+                                    $set: {
+                                      "temp.owners": body.ownersData
+                                    }
+                                  })
+                                  .exec((err, update) => {
+                                      if(err) {
+                                        reject(err);
+                                      }
+                                  });
+                              }
+                            }
+
+                            Users
+                              .update({"_id":userId}, {
+                                $push: {
+                                  "owned_properties": propertyID
+                                }
+                              })
+                              .exec((err, saved) => {
+                                  if(err) {
+                                    reject(err);
+                                  }
+                              });
+
+                            if(!body.address.full_address) {
+                              reject({message:'no full address'});
+                            }
+                            else{
+                              var full_address = body.address.full_address;
+                              var from = 'Staysmart';
+                              mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
+                                resolve({message: 'property created'});
+                              })  
+                            }
+                          }
+                        });
+                  }
+                }
+              })
+          }
+        })
     });
 });
 
