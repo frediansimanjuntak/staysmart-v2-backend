@@ -18,6 +18,14 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getBySlug(req: express.Request, res: express.Response):void {
+		let _slug = req.params.slug;
+		PropertiesDAO
+		['getBySlug'](_slug)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getDraft(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		console.log(_userId);
