@@ -5,6 +5,7 @@ import managersSchema from '../model/managers-model';
 import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import Developments from '../../developments/dao/developments-dao';
+import ChatRooms from '../../chats/dao/chats-dao';
 import Users from '../../users/dao/users-dao';
 
 managersSchema.static('getAll', ():Promise<any> => {
@@ -117,7 +118,7 @@ managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> 
             }
           })
           .exec((err, update) => {
-            err ? reject(err)
+             err ? reject(err)
                 : resolve(update);
           });        
     });
@@ -163,8 +164,23 @@ managersSchema.static('changeStatusManagers', (id:string, status:string, userId:
                   }
                 })
                 .exec((err, update) => {
-                  err ? reject(err)
-                      : resolve(update);
+                  if(err) {
+                    reject(err);
+                  }
+                  else if(update) {
+                      ChatRooms
+                        .find({"property_id":propertyId})
+                        .exec((err, chat_room) => {
+                          if(err) {
+                            reject(err);
+                          }
+                          else if(chat_room) {
+                            for(var i = 0; i < chat_room.length; i++){
+                              ChatRooms.postMembers(chat_room[i].room_id, userId); 
+                            }
+                          }
+                        })
+                  }
                 });
 
               Users
