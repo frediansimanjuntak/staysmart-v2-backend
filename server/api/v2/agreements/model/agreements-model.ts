@@ -103,7 +103,7 @@ var AgreementsSchema = new mongoose.Schema({
 			term_payment: {type: String},
 			minor_repair_cost: {type: String},
 			lapse_offer: {type: String},
-			term_lease_extend: {type: String},
+			term_lease_extend: {type: String, default: "0"},
 			appointment: {
 				type: Schema.Types.ObjectId,
 				ref: 'Appoinments'
