@@ -347,6 +347,7 @@ usersSchema.static('updateUserDataOwners', (id:string, ownerData:Object):Promise
 usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let userOldData = type+'.data';
+		
 		Users
 			.findById(id, userOldData, (err, usersData) => {
 				let datas:any = usersData;
@@ -369,7 +370,10 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 						});
 
 					var unsetObj = {$unset: {}};
-					unsetObj.$unset[userOldData] = "";
+					unsetObj.$unset[userOldData+'.name'] = "";
+					unsetObj.$unset[userOldData+'.identification_type'] = "";
+					unsetObj.$unset[userOldData+'.identification_number'] = "";
+					unsetObj.$unset[userOldData+'.identification_proof'] = "";
 					Users
 						.findByIdAndUpdate(id, unsetObj)
 						.exec((err, update) => {
