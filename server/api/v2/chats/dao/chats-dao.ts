@@ -5,6 +5,7 @@ import chatsSchema from '../model/chats-model';
 import Users from '../../users/dao/users-dao'
 import Properties from '../../properties/dao/properties-dao'
 import {DreamTalk} from '../../../../global/chat.service';
+var slice = require('array-slice');
 
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -97,8 +98,11 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					        		let room = JSON.parse(result.res.body);
 					        		var _chat_rooms = new ChatRooms();
 					        			_chat_rooms.room_id = room._id;
-					                    _chat_rooms.propertyId = name;
-					                    _chat_rooms.landlord = members;
+					                    _chat_rooms.property_id = name;
+					                    _chat_rooms.landlord = property.owner.user;
+                                        if(members.length > 1) {
+                                            _chat_rooms.manager = property.manager;    
+                                        }
 					                    _chat_rooms.tenant = uid;
 					                    _chat_rooms.save((err, saved)=>{
 					                        if(err){
@@ -116,35 +120,30 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					                                    err ? reject(err)
 					                                        : resolve(users);
 					                                });
-					                            let memberId:any = members;
-					                            for(var i = 0; i < memberId.length; i++){
-					                            	console.log(memberId[i]);
-					                            	if(i == 0) {
-					                            		Users
-							                                .findByIdAndUpdate(memberId[i], {
-							                                    $push: {
-							                                        "chat_rooms": saved._id
-							                                    }
-							                                })
-							                                .exec((err, users) => {
-							                                    err ? reject(err)
-							                                        : resolve(users);
-							                                });	
-					                            	}
-					                            	else{
-					                            		Users
-							                                .findByIdAndUpdate(memberId[i], {
-							                                    $push: {
-							                                        "chat_rooms": saved._id
-							                                    }
-							                                })
-							                                .exec((err, users) => {
-							                                    err ? reject(err)
-							                                        : resolve(users);
-							                                });
-					                            	}
-					                            }
-					                        }
+				                            
+			                            		Users
+					                                .findByIdAndUpdate(property.owner.user, {
+					                                    $push: {
+					                                        "chat_rooms": saved._id
+					                                    }
+					                                })
+					                                .exec((err, users) => {
+					                                    err ? reject(err)
+					                                        : resolve(users);
+					                                });	
+			                            	    if(members.length > 1) {
+                                                    Users
+                                                        .findByIdAndUpdate(property.manager, {
+                                                            $push: {
+                                                                "chat_rooms": saved._id
+                                                            }
+                                                        })
+                                                        .exec((err, users) => {
+                                                            err ? reject(err)
+                                                                : resolve(users);
+                                                        });
+                                                }
+                                            }
 					                    });
 					        	}
 					        });

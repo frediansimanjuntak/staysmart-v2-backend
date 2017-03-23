@@ -7,7 +7,7 @@ var Schema = mongoose.Schema;
 
 var ChatsSchema = new mongoose.Schema({
 	room_id: {type: String},
-	propertyId: {
+	property_id: {
 		type: Schema.Types.ObjectId,
 		ref: 'Properties'
 	},
