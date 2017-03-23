@@ -10,6 +10,7 @@ import Developments from '../../developments/dao/developments-dao'
 import Notifications from '../../notifications/dao/notifications-dao'
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
+var split = require('split-string');
 
 propertiesSchema.static('userLandlordProperty', (userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
@@ -51,22 +52,28 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         {
           property.where('details.price').lte(search.pricemax);
         }
-        if(search.bedroom != 'all') 
+        if(search.bedroomCount != 'all') 
         {
-          if(search.bedroom == '5+') {
-            property.where('details.bedroom').gte(5);  
-          }
-          else{
-            property.where('details.bedroom', search.bedroom);  
+          var bedroom = split(search.bedroomCount, {sep: ','});
+          for(var i = 0; i < bedroom.length; i++){
+            if(bedroom[i] == 5) {
+                property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}, {'details.bedroom': { $gte: bedroom[i]}}]); 
+            }  
+            else{
+              property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}]);  
+            }
           }
         }
-        if(search.bathroom != 'all') 
+        if(search.bathroomCount != 'all') 
         {
-          if(search.bathroom == '5+') {
-            property.where('details.bathroom').gte(5);  
-          }
-          else{
-            property.where('details.bathroom', search.bathroom);
+          var bathroom = split(search.bathroomCount, {sep: ','});
+          for(var i = 0; i < bathroom.length; i++){
+            if(bathroom[i] == 5) {
+                property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}, {'details.bathroom': { $gte: bathroom[i]}}]);  
+            }  
+            else{
+              property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}]);  ;  
+            }
           }
         }
         if(search.available != 'all') 

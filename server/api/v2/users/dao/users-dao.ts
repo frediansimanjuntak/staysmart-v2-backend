@@ -290,9 +290,8 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 	});
 });
 
-usersSchema.static('updateUserData', (id:string, type:string, userData:Object, currentUser:string):Promise<any> =>{
+usersSchema.static('updateUserData', (id:Object, type:string, userData:Object, currentUser:string):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
-		
 		Users.validateUser(id, currentUser).then(res => {
 			if(res.message) {
 				reject({message: res.message});
@@ -541,9 +540,6 @@ usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<a
 
 usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(userId)) {
-			return reject(new TypeError('Id user is not a valid string.'));
-		}
 		Users.findById(currentUser, (err, result) => {
 			if(result.role != 'admin'){
 				if(userId != currentUser) {
