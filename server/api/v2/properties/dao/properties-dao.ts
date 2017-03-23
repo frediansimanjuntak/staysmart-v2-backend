@@ -229,7 +229,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                     }
                 });
 
-              if(!full_address) {
+              if(!body.address.full_address) {
                 reject({message:'no full address'});
               }
               else{
