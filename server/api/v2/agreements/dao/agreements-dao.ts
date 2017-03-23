@@ -15,8 +15,7 @@ agreementsSchema.static('getAll', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		
 		Agreements
-			.find({})
-			.where({$or: [{"tenant": userId},{"landlord":userId}] })
+			.find({$or: [{"tenant": userId},{"landlord":userId}] })
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
@@ -453,19 +452,6 @@ agreementsSchema.static('rejectTA', (id:string):Promise<any> => {
 });
 
 //inventory list
-agreementsSchema.static('getInventoryList', (id:string, userId:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-
-		Agreements
-				.findById(id)
-				.select("inventory_list.data")
-				.exec((err, agreements) => {
-					err ? reject(err)
-						: resolve(agreements);
-				});				
-	});
-});
-
 agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -484,21 +470,21 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 				let typeDataa = "inventory_list";
 
 				if (IDUser != landlordId){
-					reject ({message: "sorry you can not create this Inventory List"})
+					reject ({message: "sorry you can not create this Inventory List"});
 				}
 				else if(IDUser == landlordId){
 					if (il != null){
-					Agreements.createHistory(id, typeDataa);
-					Agreements
-						.findByIdAndUpdate(id, {
-							$unset: {
-								"inventory_list.data": ""
-							}
-						})
-						.exec((err, updated) => {
-							err ? reject(err)
-								: resolve(updated);
-						});
+						Agreements.createHistory(id, typeDataa);
+						Agreements
+							.findByIdAndUpdate(id, {
+								$unset: {
+									"inventory_list.data": ""
+								}
+							})
+							.exec((err, updated) => {
+								err ? reject(err)
+									: resolve(updated);
+							});
 					}
 
 					Agreements
@@ -512,12 +498,16 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 								"inventory_list.data.lists": body.lists					
 							}	
 						})
-						.exec((err, updated) => {
-							err ? reject(err)
-								: resolve({message: "success"});
+						.exec((err, update) => {
+							if(err) {
+								reject(err);
+							}
+							else if(update) {
+								Agreements.notification(id, type_notif);
+								resolve({message: 'update success'});
+							}
 						});
-					Agreements.notification(id, type_notif);
-				}				
+				}
 			})
 	});
 });
@@ -528,49 +518,59 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 		let body:any = data;
-		let lists = body.lists;
 		let ObjectID = mongoose.Types.ObjectId;
 		let type_notif = "confirmedIL";
 		let IDUser = userId.toString();
 
 		Agreements
 			.findById(id, (err, agreement) => {
-				let landlordId = agreement.landlord;
 				let tenantId = agreement.tenant;
-				let propertyId = agreement.property;
-				let il = agreement.inventory_list.data;
-				let typeDataa = "inventory_list";
 
 				if (IDUser != tenantId){
 					reject ({message: "sorry you can not check this Inventory List"})
 				}
 				else if(IDUser == tenantId){
-					agreement.inventory_list.data.confirmation.tenant.sign = body.confirmation.tenant.sign;
-					agreement.inventory_list.data.confirmation.tenant.date = new Date();
-					agreement.inventory_list.data.status = "completed";
-					agreement.save();
-
-					for(var i = 0; i < lists.length; i++){
-						let listId = lists[i].idList;
-						let itemId = lists[i].idItem;
-						console.log(listId);
-						console.log(itemId);
-						Agreements
-								.update({},{
-							// .update({"_id": id, "inventory_list.data.lists.items._id": {$in: itemId}},{
-								$set: {
-									"inventory_list.data.lists.items.$.tenant_check": true
+					var updateSuccess = 0;
+					var totalItems = 0;
+					for(var i = 0; i < body.lists.length; i++){
+						for(var j = 0; j < agreement.inventory_list.data.lists.length; j++){
+							if(agreement.inventory_list.data.lists[j]._id == body.lists[i].idList) {
+								for(var k = 0; k < body.lists[i].idItems.length; k++){
+									totalItems = totalItems + 1;
+									for(var l = 0; l < agreement.inventory_list.data.lists[j].items.length; l++){
+										if(body.lists[i].idItems[k] == agreement.inventory_list.data.lists[j].items[l]._id) {
+											agreement.inventory_list.data.lists[j].items[l].tenant_check = "true";
+											agreement.save((err, result) => {
+												if(err) {
+													reject(err);
+												}
+												else if(result) {
+													updateSuccess = updateSuccess + 1;
+												}
+											});	
+										}
+									}
 								}
-							}, {multi: true})
-							.where("inventory_list.data.lists._id").equals(listId)
-							.where("inventory_list.data.lists.items._id").in(itemId)
-							.exec((err, updated) => {
-								err ? reject(err)							
-									: resolve({message: "success"});
-									console.log(updated);
-							});
-					}	
-					Agreements.notification(id, type_notif);
+							}
+						}
+					}
+					if(updateSuccess != totalItems) {
+						reject({message: 'Something is wrong. Please try again.'});
+					}
+					else{
+						agreement.inventory_list.data.confirmation.tenant.sign = body.confirmation.tenant.sign;
+						agreement.inventory_list.data.confirmation.tenant.date = new Date();
+						agreement.inventory_list.data.status = "completed";
+						agreement.save((err, update) => {
+							if(err) {
+								reject(err);
+							}
+							else if(update) {
+								
+							}
+						});
+						Agreements.notification(id, type_notif);
+					}
 				}							
 			})
 	});

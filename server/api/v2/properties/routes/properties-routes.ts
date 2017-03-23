@@ -15,10 +15,14 @@ export class PropertiesRoutes {
 			.get(PropertiesController.searchProperties);
 
 		router
+			.route('/properties/draft')
+			.get(auth.isAuthenticated(),PropertiesController.getDraft);
+
+		router
 			.route('/properties/:id')
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
-
+			
 		router
 			.route('/properties/update/:id')
 			.put(auth.isAuthenticated(),PropertiesController.updateProperties);
