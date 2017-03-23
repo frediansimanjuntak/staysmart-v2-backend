@@ -186,7 +186,22 @@ chatsSchema.static('postMembers', (roomId:string, memberId:string):Promise<any> 
         		resolve({message: result.res.message});
         	}
         	else{
-        		resolve(JSON.parse(result.res.body));	
+                ChatRooms
+                    .find({"room_id": roomId})
+                    .exec((err, chat_room) => {
+                        if(err) {
+                            reject(err);
+                        }
+                        else if(chat_room) {
+                            for(var i = 0; i < chat_room.length; i++){
+                                chat_room[i].manager = memberId;
+                                chat_room[i].save((err, result) => {
+                                    err ? reject(err)
+                                        : resolve(result);
+                                });
+                            }
+                        }
+                    })
         	}
         });
     });
