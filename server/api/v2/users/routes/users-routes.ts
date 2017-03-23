@@ -65,12 +65,12 @@ export class UserRoutes {
 			.post(UsersController.resetPassword);
 
 		router
-			.route('/user/search/:search')
-			.get(UsersController.searchUser);
+			.route('/users/search/:search')
+			.get(auth.isAuthenticated(), UsersController.searchUser);
 
 		router
-			.route('/user/property/nonmanager/:id')
-			.get(UsersController.getPropertyNonManager);
+			.route('/users/property/nonmanager')
+			.get(auth.isAuthenticated(), UsersController.getPropertyNonManager);
 
 	}
 }

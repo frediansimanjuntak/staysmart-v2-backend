@@ -104,22 +104,28 @@ usersSchema.static('searchUser', (search:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('getPropertyNonManager', (id:string):Promise<any> => {
+usersSchema.static('getPropertyNonManager', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
 		Users
-			.findById(id, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
+			.findById(userId, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
 			.populate("owned_properties")
+			.populate({
+				path: 'owned_properties',
+					populate: {
+						path: 'pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen',
+						model: 'Attachments',
+						select: 'key'
+					}
+			})
 			.exec((err, users) => {
 				let ownProperty = [].concat(users.owned_properties);
-				let managerProperty = users.owned_properties.manager;
+				// let managerProperty = users.owned_properties.manager;
 				let property = [];
 
 				for (var i = 0; i < ownProperty.length; i++){
 					let own = ownProperty[i];
 					let managerProperty = own.manager;
+					console.log(managerProperty);
 					if (!managerProperty){
 						property.push(own);
 					}	

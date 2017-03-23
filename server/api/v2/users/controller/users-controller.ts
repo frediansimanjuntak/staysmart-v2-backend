@@ -54,10 +54,10 @@ export class UsersController {
 	}
 
 	static getPropertyNonManager(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-
+		let _userId = req["user"]._id;
+		
 		UsersDAO
-		['getPropertyNonManager'](_id)
+		['getPropertyNonManager'](_userId)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
