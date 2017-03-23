@@ -50,19 +50,16 @@ export class reportDAO{
 						model: 'Developments',
 						select: 'name'
 					}
-				})
+				})				
 				.exec((err, agreement) => {
 					let loi = agreement.letter_of_intent.data;
 					let property = agreement.property;
 					let landlord = agreement.landlord;
 					let tenant = agreement.tenant;
-					let statusSignTenant;
+					let tenant_sign;
 
-					if (loi.confirmation.tenant.sign != null){
-						statusSignTenant = "signed";
-					}
-					else if (loi.confirmation.tenant.sign == null){
-						statusSignTenant = "not sign";
+					if (loi.confirmation.tenant.sign){
+						tenant_sign = loi.confirmation.tenant.sign;
 					}
 					let data = {
 						"form_data": {
@@ -90,13 +87,14 @@ export class reportDAO{
 								"details": {
 									"furnishing": property.details.furnishing
 								}
-							},
-							"tenant_sign": statusSignTenant,
+							},		
+							"tenant_sign": tenant_sign,					
 							"tenant": {
 								"name": tenant.tenant.data.name,
 								"id_no": tenant.tenant.data.identification_number,
 								"company_name": tenant.companies
 							},
+							// "payment_proof": payment
 							"status": loi.status,
 							"confirmation_date": loi.created_at
 						}										
@@ -108,6 +106,7 @@ export class reportDAO{
 				})			
 		})		
 	}
+	
 	static reportLOIComfirm(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
 			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/comfirm-letterofintent-custom.html'
@@ -145,11 +144,20 @@ export class reportDAO{
 						select: 'name'
 					}
 				})
+				.populate({
+					path: 'letter_of_intent.data.payment',
+					populate: {
+						path: 'attachment.payment',
+						model: 'Attachments',
+						select: 'key'
+					}
+				})
 				.exec((err, agreement) => {
 					let loi = agreement.letter_of_intent.data;
 					let property = agreement.property;
 					let landlord = agreement.landlord;
 					let tenant = agreement.tenant;
+					let payment_proof = agreement.letter_of_intent.data.payment.attachment.payment.key
 					let data = {
 						"form_data": {
 							"created_at": loi.created_at,
@@ -190,6 +198,7 @@ export class reportDAO{
 								"id_no": landlord.landlord.data.identification_number,
 								"company_name": landlord.companies
 							},
+							"payment_proof": payment_proof,
 							"status": loi.status,
 							"confirmation_date": loi.created_at
 						}										
@@ -293,14 +302,13 @@ export class reportDAO{
 							"landlord_account": {
 								"name": loi.landlord.bank_account.name,
 								"no": loi.landlord.bank_account.no,
-								"bank": loi.landlord.bank_account.bank.name,
+								"bank": loi.landlord.bank_account.bank,
 								"bank_code": loi.landlord.bank_account.bank.code
 							},
 							"status": loi.status,
 							"confirmation_date": loi.created_at
 						}										
 					};
-
 					report.replaceCode(htmlString, data).then(res =>{
 						resolve(res);
 					});
