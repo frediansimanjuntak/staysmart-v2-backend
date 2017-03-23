@@ -191,8 +191,9 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                       }
                     })
                     .exec((err, update) => {
-                        err ? reject(err)
-                            : resolve(update);
+                      if(err) {
+                        reject(err);
+                      }  
                     });
                 }
               }
@@ -209,8 +210,9 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                       }
                     })
                     .exec((err, update) => {
-                        err ? reject(err)
-                            : resolve(update);
+                        if(err) {
+                          reject(err);
+                        }
                     });
                 }
               }
@@ -222,8 +224,9 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                   }
                 })
                 .exec((err, saved) => {
-                    err ? reject(err)
-                        : resolve(saved);
+                    if(err) {
+                      reject(err);
+                    }
                 });
 
               if(!full_address) {
@@ -233,7 +236,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                 var full_address = body.address.full_address;
                 var from = 'Staysmart';
                 mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                  resolve(res);
+                  resolve({message: 'property created'});
                 })  
               }
             }

@@ -109,7 +109,7 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					                            Users
 					                                .findByIdAndUpdate(uid, {
 					                                    $push: {
-					                                        "tenant.chat_rooms": saved._id
+					                                        "chat_rooms": saved._id
 					                                    }
 					                                })
 					                                .exec((err, users) => {
@@ -123,7 +123,7 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					                            		Users
 							                                .findByIdAndUpdate(memberId[i], {
 							                                    $push: {
-							                                        "landlord.chat_rooms": saved._id
+							                                        "chat_rooms": saved._id
 							                                    }
 							                                })
 							                                .exec((err, users) => {
@@ -135,7 +135,7 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					                            		Users
 							                                .findByIdAndUpdate(memberId[i], {
 							                                    $push: {
-							                                        "managed_chat_rooms": saved._id
+							                                        "chat_rooms": saved._id
 							                                    }
 							                                })
 							                                .exec((err, users) => {
