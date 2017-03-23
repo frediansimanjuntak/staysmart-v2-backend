@@ -112,6 +112,26 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
+propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Properties
+          .findOne({"slug": slug})
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+          .populate({
+            path: 'owner.user',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            },
+            select: 'email picture landlord.data.name tenant.data.name'
+          })
+          .exec((err, properties) => {
+              err ? reject(err)
+                  : resolve(properties);
+          });
+    });
+});
+
 propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
@@ -152,7 +172,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                     reject({message: 'property for this floor and unit in this development already exist.'});
                   }
                   else{
-                    let slug = '#'+body.address.floor+'-'+body.address.unit+' '+development.name;
+                    let slug = '#'+body.address.floor+' - '+body.address.unit+' '+development.name;
                     var _properties = new Properties(property);
                         _properties.slug = slug;
                         _properties.owner.user = userId;

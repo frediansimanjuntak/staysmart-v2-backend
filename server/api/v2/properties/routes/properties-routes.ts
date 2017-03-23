@@ -22,6 +22,10 @@ export class PropertiesRoutes {
 			.route('/properties/:id')
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
+
+		router
+			.route('/properties/slug/:slug')
+			.get(PropertiesController.getBySlug)
 			
 		router
 			.route('/properties/update/:id')
