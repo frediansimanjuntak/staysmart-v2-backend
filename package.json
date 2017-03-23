@@ -51,7 +51,8 @@
     "phantomjs": "^2.1.7",
     "sendmail": "^1.1.1",
     "serve-favicon": "^2.3.2",
-    "slug": "^0.9.1"
+    "slug": "^0.9.1",
+    "split-string": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^7.0.0",
