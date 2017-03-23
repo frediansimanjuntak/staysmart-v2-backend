@@ -5,7 +5,6 @@ import chatsSchema from '../model/chats-model';
 import Users from '../../users/dao/users-dao'
 import Properties from '../../properties/dao/properties-dao'
 import {DreamTalk} from '../../../../global/chat.service';
-var slice = require('array-slice');
 
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
