@@ -17,16 +17,16 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/draft')
 			.get(auth.isAuthenticated(),PropertiesController.getDraft);
+		
+		router
+			.route('/properties/slug/:slug')
+			.get(PropertiesController.getBySlug);
 
 		router
 			.route('/properties/:id')
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
 
-		router
-			.route('/properties/slug/:slug')
-			.get(PropertiesController.getBySlug)
-			
 		router
 			.route('/properties/update/:id')
 			.put(auth.isAuthenticated(),PropertiesController.updateProperties);

@@ -172,7 +172,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                     reject({message: 'property for this floor and unit in this development already exist.'});
                   }
                   else{
-                    let slug = '#'+body.address.floor+' - '+body.address.unit+' '+development.name;
+                    let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
                     var _properties = new Properties(property);
                         _properties.slug = slug;
                         _properties.owner.user = userId;
