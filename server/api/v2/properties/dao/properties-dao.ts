@@ -134,7 +134,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
       
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = property;
-
+      console.log(userId);
       var _properties = new Properties(property);
           _properties.owner.user = userId;
           _properties.confirmation.status = 'pending';
@@ -146,41 +146,44 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
               let propertyID = _properties._id;
       
               if(body.owned_type == 'company'){
+                console.log(body.companyData);
                 if(body.companyData) {
+                  console.log('oi');
                   Users
                     .findById(userId, (err, result) => {
-                      if(result.companies.length == 0){
-                        Companies.createCompanies(body.companyData, userId).then(res => {
-                          var companyId = res.companiesId;
+                      console.log(result);
+                      Companies.createCompanies(body.companyData, userId).then(res => {
+                        console.log(res);
+                        var companyId = res.companiesId;
+                        Properties
+                          .findByIdAndUpdate(propertyID, {
+                            $set: {
+                              "owner.company": companyId
+                            }
+                          })
+                          .exec((err, update) => {
+                              if(err) {
+                                reject(err);
+                              }
+                          });
+
+                        if(body.shareholders != null) {
                           Properties
                             .findByIdAndUpdate(propertyID, {
                               $set: {
-                                "owner.company": companyId
+                                "temp.shareholders": body.shareholders
                               }
                             })
                             .exec((err, update) => {
-                                err ? reject(err)
-                                    : resolve(update);
-                            });
-
-                          if(body.shareholders != null) {
-                            Properties
-                              .findByIdAndUpdate(propertyID, {
-                                $set: {
-                                  "temp.shareholders": body.shareholders
+                                if(err) {
+                                  reject(err);
                                 }
-                              })
-                              .exec((err, update) => {
-                                  err ? reject(err)
-                                      : resolve(update);
-                              });
-                          }
-                        });
-                      }
+                            });
+                        }
+                      });
                     })  
                 }
-
-                if(body.owner.company && body.shareholders != null) {
+                else if(body.owner && body.owner.company && body.shareholders != null) {
                   Properties
                     .findByIdAndUpdate(propertyID, {
                       $set: {

@@ -47,7 +47,7 @@ companiesSchema.static('createCompanies', (companies:Object, created_by:string):
               reject(err);
             }
             else if(saved) {
-              var companiesId=_companies._id;
+              var companiesId = _companies._id;
               Users
                 .findByIdAndUpdate(created_by, {
                   $push: {
