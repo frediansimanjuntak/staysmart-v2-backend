@@ -211,4 +211,24 @@ export class mail{
 			});	
 		})
 	}
+
+	static createInventory(emailTo, tenant_username, landlord_username, full_address, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Receive Inventory List';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+tenant_username+',<br><br><p style="align:justify;"> Congratulations! You have received a Inventory List from '+landlord_username+' for the property situated at '+full_address+'.</p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the Inventory List for your acceptance.</p><br><br><p style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br> Staysmart Team</body></html>';
+			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
+				resolve(res);
+			});	
+		})
+	}
+
+	static confirmInventory(emailTo, tenant_username, landlord_username, full_address, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Confirmation Inventory List';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+landlord_username+',<br><br><p style="align:justify;">Congratulations! Your Inventory List for the property situated at '+full_address+' has been accepted by '+tenant_username+'.</p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the Inventory List for your acceptance.</p><br><br><p style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br> Staysmart Team</body></html>';
+			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
+				resolve(res);
+			});	
+		})
+	}
 }
