@@ -226,11 +226,16 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                         : resolve(saved);
                 });
 
-              var full_address = body.address.full_address;
-              var from = 'Staysmart';
-              mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                resolve(res);
-              })
+              if(!full_address) {
+                reject({message:'no full address'});
+              }
+              else{
+                var full_address = body.address.full_address;
+                var from = 'Staysmart';
+                mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
+                  resolve(res);
+                })  
+              }
             }
           });
     });
