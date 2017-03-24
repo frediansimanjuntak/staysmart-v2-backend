@@ -111,14 +111,14 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
 
-		console.log(body)
+		console.log(body);
 		Agreements
 			.findById(id, (err, agreement) =>{
 				let propertyId = agreement.property;
 				let landlordId = agreement.landlord;
 				let tenantId = agreement.tenant;
 				let loi = agreement.letter_of_intent.data;
-
+				console.log('agreement '+agreement);
 				if (tenantId != IDUser){
 					resolve({message: "sorry you can not create this Letter of Intent"});
 				}

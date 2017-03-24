@@ -20,6 +20,7 @@ var ManagersSchema = new mongoose.Schema({
 				type: Schema.Types.ObjectId,
 				ref: 'Users'
 			},
+			chat: {type: Boolean, default: false},
 			status: {type: String, enum:['pending', 'accepted', 'rejected']},
 			created_at: {type: Date, default: Date.now}
 		}],

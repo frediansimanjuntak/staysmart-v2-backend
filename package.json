@@ -51,6 +51,7 @@
     "phantomjs": "^2.1.7",
     "sendmail": "^1.1.1",
     "serve-favicon": "^2.3.2",
+    "sha256": "^0.2.0",
     "slug": "^0.9.1",
     "split-string": "^1.0.0"
   },

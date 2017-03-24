@@ -12,6 +12,7 @@ import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
+import {GlobalService} from '../../../../global/global.service';
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -190,6 +191,7 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 				 	var token = signToken(_user._id, _user.role, _user.username);
 					var fullname = _user.username;
 					var from = 'Staysmart';
+					SMS.sendActivationCode(body.phone, randomCode);
 					mail.signUp(_user.email, fullname, from).then(res => {
 						resolve({res, userId: saved._id, token});
 					})
@@ -488,30 +490,36 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 			return reject(new TypeError('Email is not a valid string.'));
 		}
 		var randomToken = Math.random().toString(36).substr(2, 30);
-		Users
-			.update({"email": email}, {
-				$set: {
-					"reset_password.token": randomToken,
-					"reset_password.created_at": new Date(),
-					"reset_password.expired_at": new Date(+new Date() + 24*60*60*1000)
-				}
-			})
-			.exec((err, update) => {
-				if(err) {
-					reject(err);
-				}
-				else if(update) {
-					Users
-						.findOne({email: email}, (err, result) => {
-							var fullname = result.username;
-							var from = 'Staysmart';
-							var url = config.url.reset_password+randomToken;
-							mail.resetPassword(email, fullname, url, from).then(res => {
-								resolve(res);
+		var validateEmail = GlobalService.validateEmail(email);
+		if(validateEmail == true) {
+			Users
+				.update({"email": email}, {
+					$set: {
+						"reset_password.token": randomToken,
+						"reset_password.created_at": new Date(),
+						"reset_password.expired_at": new Date(+new Date() + 24*60*60*1000)
+					}
+				})
+				.exec((err, update) => {
+					if(err) {
+						reject(err);
+					}
+					else if(update) {
+						Users
+							.findOne({email: email}, (err, result) => {
+								var fullname = result.username;
+								var from = 'Staysmart';
+								var url = config.url.reset_password+randomToken;
+								mail.resetPassword(email, fullname, url, from).then(res => {
+									resolve(res);
+								})
 							})
-						})
-				}
-			});
+					}
+				});
+		}
+		else{
+			reject({message: 'Email not valid.'});
+		}
 	});
 });
 
