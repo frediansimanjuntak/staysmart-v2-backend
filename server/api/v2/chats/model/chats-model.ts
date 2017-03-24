@@ -19,6 +19,12 @@ var ChatsSchema = new mongoose.Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Users'
 	},
+	status: {
+		type: String, 
+		enum: ['enquiries', 'pending', 'rented'],
+		default: 'enquiries'
+	},
+	archived: {type: Boolean, default: false},
 	created_at: {type: Date, default: Date.now},
 });
 

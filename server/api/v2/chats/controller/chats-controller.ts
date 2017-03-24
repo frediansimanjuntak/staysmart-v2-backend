@@ -29,6 +29,14 @@ export class ChatsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static archivedRoom(req: express.Request, res: express.Response):void {
+		let _roomId = req.params.roomId;
+		ChatsDAO
+		['archivedRoom'](_roomId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static requestPeer(req: express.Request, res: express.Response):void {
 		let _roomName = req.params.roomName;
 		let _userId = req["user"]._id.toString();
@@ -74,9 +82,9 @@ export class ChatsController {
 
 	static updateRoom(req: express.Request, res: express.Response):void {
 		let _roomId = req.params.roomId;
-		let _extra = req.body;
+		let _status = req.params.status;
 		ChatsDAO
-		['updateRoom'](_roomId, _extra)
+		['updateRoom'](_roomId, _status)
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}

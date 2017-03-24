@@ -16,9 +16,13 @@ router.post('/', function(req, res, next) {
     if(!user) {
       return res.status(404).json({message: 'Something went wrong, please try again.'});
     }
-
-    var token = signToken(user._id, user.role, user.username);
-    res.json({ token });
+    if(user._id && user.role && user.username) {
+      var token = signToken(user._id, user.role, user.username);
+      res.json({ token });
+    }
+    else{
+      res.json({message: 'please login first.'});
+    }
   })(req, res, next);
 });
 
