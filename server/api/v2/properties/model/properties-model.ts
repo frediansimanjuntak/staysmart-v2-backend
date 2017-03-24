@@ -49,6 +49,7 @@ var PropertiesSchema = new mongoose.Schema({
 	schedules: 
 	[
 		{
+			backup_id: {type: String},
 			day: {type: String},
 			start_date: {type: Date},
 			time_from: {type: String},

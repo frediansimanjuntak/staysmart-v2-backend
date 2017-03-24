@@ -67,8 +67,8 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
           .findOne({"property": property}, (err, data)=>{
             if (data == null){
               var _managers = new Managers();
-              _managers.property = property;
-              _managers.save();
+                  _managers.property = property;
+                  _managers.save();
             }
 
             let propertyId = property;
@@ -79,26 +79,30 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
                 if (result != null){
                   console.log("maaf sudah pernah input")
                 }
-                Managers
-                  .update({"property": propertyId}, {
-                    $push: {
-                      "data": {
-                        "manager": managerId,
-                        "owner": userId,
-                        "status": status,
+                else{
+                  Managers
+                    .update({"property": propertyId}, {
+                      $push: {
+                        "data": {
+                          "manager": managerId,
+                          "chat": body.chat,
+                          "owner": userId,
+                          "status": status,
+                        }
                       }
-                    }
-                  })
-                  .exec((err, update) => {
-                    err ? reject(err)
-                        : resolve(update);
-                  });        
-                Managers.notificationManager(propertyId, status, managerId);
-
+                    })
+                    .exec((err, update) => {
+                      if(err) {
+                        reject(err);
+                      }
+                      else{
+                        Managers.notificationManager(propertyId, status, managerId);      
+                      }
+                    });        
+                }
               })  
            }) 
         }    
-       
     });
 });
 
@@ -152,9 +156,10 @@ managersSchema.static('changeStatusManagers', (id:string, status:string, userId:
                 }
               })
               .exec((err, update) => {
-                      err ? reject(err)
-                          : resolve(update);
-                    });   
+                if(err) {
+                  reject(err);
+                }
+              });   
 
             if(status == "accepted"){
               Properties
@@ -168,16 +173,24 @@ managersSchema.static('changeStatusManagers', (id:string, status:string, userId:
                     reject(err);
                   }
                   else if(update) {
-                      ChatRooms
-                        .find({"property_id":propertyId})
-                        .exec((err, chat_room) => {
+                      Managers
+                        .findOne({"_id": id, "data": {$elemMatch: {"manager": userId, "chat": true}}}, (err, managerData) => {
                           if(err) {
                             reject(err);
                           }
-                          else if(chat_room) {
-                            for(var i = 0; i < chat_room.length; i++){
-                              ChatRooms.postMembers(chat_room[i].room_id, userId); 
-                            }
+                          else{
+                            ChatRooms
+                              .find({"property_id":propertyId})
+                              .exec((err, chat_room) => {
+                                if(err) {
+                                  reject(err);
+                                }
+                                else if(chat_room) {
+                                  for(var i = 0; i < chat_room.length; i++){
+                                    ChatRooms.postMembers(chat_room[i].room_id, userId); 
+                                  }
+                                }
+                              })
                           }
                         })
                   }

@@ -28,7 +28,7 @@ export default {
   },
 
   url:{
-    reset_password: '',
+    reset_password: 'http://localhost:3000/reset-password-email/',
     blog_comment: '',
     approveProperty: '',
   },
