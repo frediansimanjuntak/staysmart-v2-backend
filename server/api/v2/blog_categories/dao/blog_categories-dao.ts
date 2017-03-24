@@ -9,7 +9,10 @@ blogCategoriesSchema.static('getAll', ():Promise<any> => {
 
         BlogCategories
           .find(_query)
-          .populate("created_by")
+          .populate({
+            path: 'created_by',
+            select: 'username'
+          })
           .exec((err, blog_categories) => {
               err ? reject(err)
                   : resolve(blog_categories);
@@ -22,7 +25,10 @@ blogCategoriesSchema.static('getById', (id:string):Promise<any> => {
 
         BlogCategories
           .findById(id)
-          .populate("created_by")
+          .populate({
+            path: 'created_by',
+            select: 'username'
+          })
           .exec((err, blog_categories) => {
               err ? reject(err)
                   : resolve(blog_categories);

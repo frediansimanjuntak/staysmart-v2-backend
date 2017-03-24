@@ -279,18 +279,19 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                   if(err) {
                                     reject(err);
                                   }
+                                  else if(saved) {
+                                    if(!body.address.full_address) {
+                                      reject({message:'no full address'});
+                                    }
+                                    else{
+                                      var full_address = body.address.full_address;
+                                      var from = 'Staysmart';
+                                      mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
+                                        resolve({res, message: 'property created'});
+                                      })  
+                                    }
+                                  }
                               });
-
-                            if(!body.address.full_address) {
-                              reject({message:'no full address'});
-                            }
-                            else{
-                              var full_address = body.address.full_address;
-                              var from = 'Staysmart';
-                              mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                                resolve({message: 'property created'});
-                              })  
-                            }
                           }
                         });
                   }

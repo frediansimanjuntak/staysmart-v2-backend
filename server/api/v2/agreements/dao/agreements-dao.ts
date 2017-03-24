@@ -496,29 +496,36 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 									"inventory_list.data": ""
 								}
 							})
-							.exec((err, updated) => {
-								err ? reject(err)
-									: resolve(updated);
+							.exec((err, update) => {
+								if(err) {
+									reject(err);
+								}
+								else if(update) {
+									let type = "updateInventory";
+									Agreements.email(id, type);
+									resolve({message: 'update inventory list success'});
+								}
 							});
 					}
-
-					agreement.inventory_list.data.confirmation.landlord.sign = body.confirmation.landlord.sign;
-					agreement.inventory_list.data.confirmation.landlord.date = new Date();
-					agreement.inventory_list.data.status = "pending";
-					agreement.inventory_list.data.created_at = new Date();
-					agreement.inventory_list.data.property = propertyId;
-					agreement.inventory_list.data.lists = body.lists;
-					agreement.save((err, saved) => {
-						if(err) {
-							reject(err);
-						}
-						else if(saved) {
-							Agreements.notification(id, type_notif);
-							let type = "createInventory";
-							Agreements.email(id, type);
-							resolve({message: 'update success'});
-						}
-					})	
+					else{
+						agreement.inventory_list.data.confirmation.landlord.sign = body.confirmation.landlord.sign;
+						agreement.inventory_list.data.confirmation.landlord.date = new Date();
+						agreement.inventory_list.data.status = "pending";
+						agreement.inventory_list.data.created_at = new Date();
+						agreement.inventory_list.data.property = propertyId;
+						agreement.inventory_list.data.lists = body.lists;
+						agreement.save((err, saved) => {
+							if(err) {
+								reject(err);
+							}
+							else if(saved) {
+								Agreements.notification(id, type_notif);
+								let type = "createInventory";
+								Agreements.email(id, type);
+								resolve({message: 'create inventory list success'});
+							}
+						})
+					}
 				}
 			})
 	});
@@ -1268,6 +1275,9 @@ agreementsSchema.static('email', (idAgreement:string, type:string):Promise<any> 
 				}
 				if(type == 'createInventory'){
 					mail.createInventory(tenantEmail, tenantUsername, landlordUsername, fulladdress, from);
+				}
+				if(type == 'updateInventory'){
+					mail.updateInventory(tenantEmail, tenantUsername, landlordUsername, fulladdress, from);
 				}
 				if(type == 'confirmInventory'){
 					mail.confirmInventory(landlordEmail, tenantUsername, landlordUsername, fulladdress, from);

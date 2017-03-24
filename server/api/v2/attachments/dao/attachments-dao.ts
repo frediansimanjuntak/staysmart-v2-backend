@@ -50,42 +50,43 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
               }
               reject({message: "Error uploading your images, file size to large"});
             }
+            else{
+              AWSService.upload(key, file).then(fileDetails => {
+                var _attachment = new Attachments(attachments);
+                _attachment.name = fileDetails.name;
+                _attachment.type = fileDetails.type;
+                _attachment.key = fileDetails.url;
+                _attachment.size = files[i].size;    
+                _attachment.save((err, saved) => {
+                  if(err != null) 
+                  {
+                    errAtt = errAtt + 1;
+                    for(var j =0; j < idAtt.length; j++){
+                      Attachments.deleteAttachments(idAtt[j]);
+                    }
+                    reject({message: "Error uploading your images"});
+                  }                
+                });
 
-            AWSService.upload(key, file).then(fileDetails => {
-              var _attachment = new Attachments(attachments);
-              _attachment.name = fileDetails.name;
-              _attachment.type = fileDetails.type;
-              _attachment.key = fileDetails.url;
-              _attachment.size = files[i].size;    
-              _attachment.save((err, saved) => {
-                if(err != null) 
-                {
-                  errAtt = errAtt + 1;
-                  for(var j =0; j < idAtt.length; j++){
-                    Attachments.deleteAttachments(idAtt[j]);
+                let idattach = _attachment.id;  
+                idAtt.push(idattach);
+                 
+                if (i >= files.length - 1){
+                  if(errAtt == 0) {
+                    resolve({idAtt, errAtt});  
                   }
-                  reject({message: "Error uploading your images"});
-                }                
-              });
-
-              let idattach = _attachment.id;  
-              idAtt.push(idattach);
-               
-              if (i >= files.length - 1){
-                if(errAtt == 0) {
-                  resolve({idAtt, errAtt});  
+                  else{
+                    resolve({errAtt});
+                  }
                 }
-                else{
-                  resolve({errAtt});
-                }
-              }
-              else {
-                i++;
-                if(errAtt == 0) {
-                  attachmentfile();
-                }
-              }              
-            })
+                else {
+                  i++;
+                  if(errAtt == 0) {
+                    attachmentfile();
+                  }
+                }              
+              })
+            }
           }
           if(errAtt == 0) {
             attachmentfile();
