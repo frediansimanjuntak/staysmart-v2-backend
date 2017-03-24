@@ -39,7 +39,11 @@ export class ChatsRoutes {
 			.post(auth.isAuthenticated(),ChatsController.createRoom)
 
 		router
-			.route('/chats/rooms/update/:roomId')
+			.route('/chats/room/archived/:roomId')
+			.post(auth.isAuthenticated(),ChatsController.archivedRoom)
+
+		router
+			.route('/chats/rooms/update/:roomId/:status')
 			.put(auth.isAuthenticated(),ChatsController.updateRoom)
 
 		router

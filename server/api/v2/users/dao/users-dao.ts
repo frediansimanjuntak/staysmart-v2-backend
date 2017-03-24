@@ -108,7 +108,6 @@ usersSchema.static('getPropertyNonManager', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
 			.findById(userId, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
-			.populate("owned_properties")
 			.populate({
 				path: 'owned_properties',
 					populate: {
@@ -118,19 +117,23 @@ usersSchema.static('getPropertyNonManager', (userId:string):Promise<any> => {
 					}
 			})
 			.exec((err, users) => {
-				let ownProperty = [].concat(users.owned_properties);
-				// let managerProperty = users.owned_properties.manager;
-				let property = [];
-
-				for (var i = 0; i < ownProperty.length; i++){
-					let own = ownProperty[i];
-					let managerProperty = own.manager;
-					console.log(managerProperty);
-					if (!managerProperty){
-						property.push(own);
-					}	
+				if(err) {
+					reject(err);
 				}
-				resolve(property);
+				else if(users) {
+					let ownProperty = [].concat(users.owned_properties);
+					// let managerProperty = users.owned_properties.manager;
+					let property = [];
+
+					for (var i = 0; i < ownProperty.length; i++){
+						let own = ownProperty[i];
+						let managerProperty = own.manager;
+						if (!managerProperty){
+							property.push(own);
+						}	
+					}
+					resolve(property);
+				}
 			});
 	});
 });
@@ -310,14 +313,14 @@ usersSchema.static('updateUserData', (id:Object, type:string, userData:Object, c
 					userObj.$set[type+'.data.'+param] = userData[param];
 				}
 				
-				Users.createHistory(id, type);
-
-				Users
-					.findByIdAndUpdate(id, userObj)
-					.exec((err, update) => {
-						err ? reject(err)
-						: resolve(update);
-					});
+				Users.createHistory(id, type).then(res => {
+					Users
+						.findByIdAndUpdate(id, userObj)
+						.exec((err, update) => {
+							err ? reject(err)
+							: resolve({message: 'data updated.'});
+						});
+				});
 			}
 		});
 	});

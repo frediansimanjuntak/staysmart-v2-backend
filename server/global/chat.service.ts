@@ -169,10 +169,12 @@ export class DreamTalk{
 	static createRoom(uid, name, members) {
 		console.log('chat room created');
 		return new Promise((resolve:Function, reject:Function) => {
+			var extra = {status: 'enquiries'};
 			DreamTalk.doHTTP('POST', '/rooms', {
 				uid,
 				name, 
-				members
+				members,
+				extra
 			})
 			.then(res => {
 				console.log('create chat room success');

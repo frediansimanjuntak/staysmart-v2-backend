@@ -99,6 +99,7 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 					        			_chat_rooms.room_id = room._id;
 					                    _chat_rooms.property_id = name;
 					                    _chat_rooms.landlord = property.owner.user;
+                                        _chat_rooms.status = 'enquiries';
                                         if(members.length > 1) {
                                             _chat_rooms.manager = property.manager;    
                                         }
@@ -155,6 +156,21 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
 		    			}
 		    		})
 	    	})
+    });
+});
+
+chatsSchema.static('archivedRoom', (roomId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        ChatRooms
+            .findByIdAndUpdate(roomId, {
+                $set: {
+                    archived: true
+                }
+            })
+            .exec((err, chat_rooms) => {
+                err ? reject(err)
+                    : resolve({message: 'room updated'});
+            })
     });
 });
 
@@ -226,11 +242,24 @@ chatsSchema.static('updateProfile', (data:Object):Promise<any> => {
     });
 });
 
-chatsSchema.static('updateRoom', (roomId:string, extra:Object):Promise<any> => {
+chatsSchema.static('updateRoom', (roomId:string, status:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        DreamTalk.updateRoom(roomId, extra).then(result => {
-        	resolve(result);
-        });
+        var extra = {status: status};
+        ChatRooms
+            .findByIdAndUpdate(roomId, {
+                $set: {
+                    status: status
+                }
+            })
+            .exec((err, chat_rooms) => {
+                if(err) {
+                    reject(err);
+                }
+                else if(chat_rooms) {
+                    DreamTalk.updateRoom(roomId, extra);
+                    resolve({message: 'room updated'});
+                }
+            })
     });
 });
 

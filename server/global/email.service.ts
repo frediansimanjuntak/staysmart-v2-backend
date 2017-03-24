@@ -19,7 +19,7 @@ export class EmailService {
       if (!GlobalService.validateEmail(emailTo))
         reject(new TypeError('Destination email is not a valid email.'))
       var data = {
-        from: 'Staysmart Revamp <noreply@mcst.com.sg>',
+        from: 'Staysmart Revamp <noreply@staysmart.com.sg>',
         to: emailTo,
         subject: emailSubject,
         html: emailText

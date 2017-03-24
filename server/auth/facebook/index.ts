@@ -22,9 +22,13 @@ router.post('/', function(req, res, next) {
     else{
       data = true;
     }
-
-    var token = signToken(user._id, user.role, user.service.facebook.id);
-    res.json({ token, userId: user._id, data});
+    if(user._id && user.role && user.service.facebook.id) {
+      var token = signToken(user._id, user.role, user.service.facebook.id);
+      res.json({ token, userId: user._id, data});
+    }
+    else{
+      res.json({message: 'please login first.'});
+    }
   })(req, res, next);
 });
 
