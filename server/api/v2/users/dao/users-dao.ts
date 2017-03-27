@@ -175,9 +175,9 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 		let randomCode = Math.random().toString(36).substr(2, 6);
 		let body:any = user;
 
-
 		var _user = new Users(user);
 			_user.verification.code = randomCode;
+			_user.verification.expires = new Date(+new Date() + 5*60*1000);
 			_user.username = body.username;
 			_user.email = body.email;
 			_user.password = body.password;
@@ -211,6 +211,7 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 		Users
 			.update({"_id": id}, {
 				$set: {
+					"verification.expires" : new Date(+new Date() + 5*60*1000),
 					"verification.code": randomCode
 				}
 			})
@@ -244,7 +245,7 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 					.findByIdAndRemove(id)
 					.exec((err, deleted) => {
 						err ? reject(err)
-						: resolve();
+						: resolve({message: 'user deleted'});
 					});
 			}
 		});
@@ -406,20 +407,25 @@ usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 		Users
 			.findById(id, (err,user)=>{
 				var code = user.verification.code;
-
+					
 				if (code == body.code){
-					Users
-						.update({"_id": id},{
-							$set:
-							{
-								"verification.verified": true, 
-								"verification.verified_date": new Date()
-							}
-						})
-						.exec((err, update) => {
-							err ? reject(err)
-									: resolve(update);
-						});
+					if(user.verification.expires > new Date()) {
+						Users
+							.update({"_id": id},{
+								$set:
+								{
+									"verification.verified": true, 
+									"verification.verified_date": new Date()
+								}
+							})
+							.exec((err, update) => {
+								err ? reject(err)
+										: resolve({message: 'user verified.'});
+							});
+					}
+					else{
+						reject({message: 'Your code has expired.'});
+					}	
 				}
 			})
 		});
