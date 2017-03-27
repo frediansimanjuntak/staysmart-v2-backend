@@ -13,7 +13,14 @@ commentsSchema.static('getAll', ():Promise<any> => {
 
 		Comments
 			.find(_query)
-			.populate("user blog replies")
+			.populate("blog replies")
+			.populate({
+				path: 'user',
+				populate: {
+					path: 'picture',
+					model: 'Attachments'
+				}
+			})
 			.exec((err, comments) => {
 				err ? reject(err)
 				: resolve(comments);
@@ -26,7 +33,14 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 
 		Comments
 			.findById(id)
-			.populate("user blog replies")
+			.populate("blog replies")
+			.populate({
+				path: 'user',
+				populate: {
+					path: 'picture',
+					model: 'Attachments'
+				}
+			})
 			.exec((err, comments) => {
 				err ? reject(err)
 				: resolve(comments);
