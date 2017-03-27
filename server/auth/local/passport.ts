@@ -5,8 +5,11 @@ import * as Promise from 'bluebird';
 var LocalStrategy = passportLocal.Strategy;
 
 function localAuthenticate(User, username, password, done) {
-  User.findOne({
-    username: username.toLowerCase()
+  User.findOne({ 
+    $or: [
+      {username: username.toLowerCase()}, 
+      {email: username.toLowerCase()}
+    ]
   }).exec()
     .then(user => {
       if(!user) {
