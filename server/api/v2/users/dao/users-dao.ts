@@ -529,33 +529,38 @@ usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<a
 			return reject(new TypeError('Link is not a valid string.'));
 		}
 		let body:any = newPassword;
-		Users
-			.findOne({"reset_password.token": token}, (err, result) => {
-				if(result == null) {
-					reject({message: 'You already reset your password.'});
-				}
-				else{
-				 	var dateNow = new Date();
-				 	if(dateNow < result.reset_password.expired_at) {
-				 		result.password = body.password;
-				 		result.save((err, saved)=>{
-		        			err ? reject(err)
-		        				: resolve(saved);
-		        		})
-		        		Users
-		        			.update({"reset_password.token": token}, {
-		        				$unset: {"reset_password": ""}
-		        			})
-		        			.exec((err, update) => {
-								err ? reject(err)
-									: resolve(update);
-							});
-				 	}
-				 	else{
-				 		reject({message: "Your link has expired."});
-				 	}
-				}
-		 	})
+		if(body.password === body.repassword){
+			Users
+				.findOne({"reset_password.token": token}, (err, result) => {
+					if(result == null) {
+						reject({message: 'You already reset your password.'});
+					}
+					else{
+					 	var dateNow = new Date();
+					 	if(dateNow < result.reset_password.expired_at) {
+					 		result.password = body.password;
+					 		result.save((err, saved)=>{
+			        			err ? reject(err)
+			        				: resolve(saved);
+			        		})
+			        		Users
+			        			.update({"reset_password.token": token}, {
+			        				$unset: {"reset_password": ""}
+			        			})
+			        			.exec((err, update) => {
+									err ? reject(err)
+										: resolve(update);
+								});
+					 	}
+					 	else{
+					 		reject({message: "Your link has expired."});
+					 	}
+					}
+			 	})
+		}
+		else{
+			reject({message: "Your password and repassword didn't match."});
+		}
 	});
 });
 
