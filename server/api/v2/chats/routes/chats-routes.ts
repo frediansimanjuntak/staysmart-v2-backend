@@ -39,6 +39,10 @@ export class ChatsRoutes {
 			.post(auth.isAuthenticated(),ChatsController.createRoom)
 
 		router
+			.route('/chats/rooms/delete/:roomId')
+			.post(auth.isAuthenticated(),ChatsController.deleteRoom)
+
+		router
 			.route('/chats/room/archived/:roomId')
 			.post(auth.isAuthenticated(),ChatsController.archivedRoom)
 

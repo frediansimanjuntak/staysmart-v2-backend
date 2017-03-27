@@ -19,6 +19,10 @@ var ChatsSchema = new mongoose.Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Users'
 	},
+	manager: {
+		type: Schema.Types.ObjectId,
+		ref: 'Users'
+	},
 	status: {
 		type: String, 
 		enum: ['enquiries', 'pending', 'rented'],

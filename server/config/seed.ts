@@ -14,7 +14,7 @@ User
           username: 'master',
           password: 'master',
           email: 'master@master.com',
-          role: 'user',
+          role: 'admin',
         })
     .then(() => {
       console.log('finished populating users');
