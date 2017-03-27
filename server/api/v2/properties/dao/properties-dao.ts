@@ -412,6 +412,9 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                             }
                           })
                       }
+                      else{
+                        resolve({message: 'Properties updated.'});
+                      }
                     }
                 });
           }
