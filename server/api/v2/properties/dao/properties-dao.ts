@@ -367,7 +367,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
     });
 });
 
-propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:string):Promise<any> => {
+propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
           return reject(new TypeError('Id is not a valid string.'));
@@ -462,7 +462,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
     });
 });
 
-propertiesSchema.static('deleteProperties', (id:string, userId:string):Promise<any> => {
+propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
@@ -679,16 +679,17 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
   });
 });
 
-propertiesSchema.static('ownerProperty', (propertyId:string, userId:string):Promise<any> => {
+propertiesSchema.static('ownerProperty', (propertyId:string, userId:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       Users.findById(userId, (err, user) => {
         if(user.role != 'admin') {
           Properties.findById(propertyId, (err, result) => {
-            if(result.owner.user != userId) {
-              resolve({message: "Forbidden"});
+            let user_id = userId.toString();
+            if(result.owner.user == user_id) {
+              resolve(true);
             }
             else{
-              resolve(true);
+              resolve({message: "Forbidden"});
             }
           })    
         }
