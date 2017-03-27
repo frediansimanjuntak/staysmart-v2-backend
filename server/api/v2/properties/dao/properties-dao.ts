@@ -218,35 +218,65 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                               reject(err);
                                             }
                                         });
-
+                                        
                                       if(body.shareholders != null) {
-                                        Properties
-                                          .findByIdAndUpdate(propertyID, {
-                                            $set: {
-                                              "temp.shareholders": body.shareholders
-                                            }
-                                          })
-                                          .exec((err, update) => {
-                                              if(err) {
-                                                reject(err);
+                                        if(body.status == 'draft') {
+                                          Properties
+                                            .findByIdAndUpdate(propertyID, {
+                                              $set: {
+                                                "temp.shareholders": body.shareholders
                                               }
-                                          });
+                                            })
+                                            .exec((err, update) => {
+                                                if(err) {
+                                                  reject(err);
+                                                }
+                                            });
+                                        }
+                                        else{
+                                          Companies
+                                            .findByIdAndUpdate(companyId, {
+                                              $set: {
+                                                "shareholders": body.shareholders
+                                              }
+                                            })
+                                            .exec((err, update) => {
+                                                if(err) {
+                                                  reject(err);
+                                                }
+                                            });
+                                        }
                                       }
                                     });
                                   })  
                               }
                               else if(body.owner && body.owner.company && body.shareholders != null) {
-                                Properties
-                                  .findByIdAndUpdate(propertyID, {
-                                    $set: {
-                                      "temp.shareholders": body.shareholders
-                                    }
-                                  })
-                                  .exec((err, update) => {
-                                    if(err) {
-                                      reject(err);
-                                    }  
-                                  });
+                                if(body.status == 'draft') {
+                                  Properties
+                                    .findByIdAndUpdate(propertyID, {
+                                      $set: {
+                                        "temp.shareholders": body.shareholders
+                                      }
+                                    })
+                                    .exec((err, update) => {
+                                      if(err) {
+                                        reject(err);
+                                      }  
+                                    });
+                                }
+                                else{
+                                  Companies
+                                    .findByIdAndUpdate(body.owner.company, {
+                                      $set: {
+                                        "shareholders": body.shareholders
+                                      }
+                                    })
+                                    .exec((err, update) => {
+                                        if(err) {
+                                          reject(err);
+                                        }
+                                    });
+                                }
                               }
                             }
                             else if(body.owned_type == 'individual'){
@@ -255,17 +285,32 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                 Users.updateUserData(userId, type, body.landlordData, userId);
                               }
                               if(body.ownersData != null) {
-                                Properties
-                                  .findByIdAndUpdate(propertyID, {
-                                    $set: {
-                                      "temp.owners": body.ownersData
-                                    }
-                                  })
-                                  .exec((err, update) => {
-                                      if(err) {
-                                        reject(err);
+                                if(body.status == 'draft') {
+                                  Properties
+                                    .findByIdAndUpdate(propertyID, {
+                                      $set: {
+                                        "temp.owners": body.ownersData
                                       }
-                                  });
+                                    })
+                                    .exec((err, update) => {
+                                        if(err) {
+                                          reject(err);
+                                        }
+                                    });
+                                }
+                                else{
+                                  Users
+                                    .findByIdAndUpdate(userId, {
+                                      $set: {
+                                        "landlord.data.owners": body.ownersData
+                                      }
+                                    })
+                                    .exec((err, update) => {
+                                        if(err) {
+                                          reject(err);
+                                        }
+                                    });
+                                }
                               }
                             }
 
@@ -310,6 +355,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
         if (!_.isObject(properties)) {
           return reject(new TypeError('Property is not a valid object.'));
         }
+        let body:any = properties;
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
             reject({message: res.message});
@@ -320,8 +366,33 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
             Properties
               .findByIdAndUpdate(id, properties)
               .exec((err, update) => {
-                    err ? reject(err)
-                        : resolve(update);
+                    if(err) {
+                      reject(err);
+                    }
+                    else{
+                      if(body.status != 'draft') {
+                        Properties
+                          .findById(id)
+                          .exec((err, property) => {
+                            if(property.temp) {
+                              var shareholders = property.temp.shareholders;
+                              var owners = property.temp.owners;
+                              var companyId = property.owner.company;
+
+                              if(shareholders.length > 0) {
+                                Companies.addCompaniesShareholders(companyId, shareholders, userId);
+                                var type = 'shareholders';
+                                Properties.unsetTemp(id, type);
+                              }
+                              if(owners.length > 0) {
+                                Users.updateUserDataOwners(userId, owners);
+                                var type = 'owners';
+                                Properties.unsetTemp(id, type);
+                              }
+                            }
+                          })
+                      }
+                    }
                 });
           }
         });
@@ -470,21 +541,6 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
           .findById(id)
           .populate("owner.user")
           .exec((err, properties) => {
-            var shareholders = properties.temp.shareholders;
-            var owners = properties.temp.owners;
-            var companyId = properties.owner.company;
-
-            if(shareholders.length > 0) {
-              Companies.addCompaniesShareholders(companyId, shareholders, userId);
-              var type = 'shareholders';
-              Properties.unsetTemp(id, type);
-            }
-            if(owners.length > 0) {
-              Users.updateUserDataOwners(userId, owners);
-              var type = 'owners';
-              Properties.unsetTemp(id, type);
-            }
-
             var emailTo = properties.owner.user.email;
             var full_name = properties.owner.user.username;
             var full_address = properties.address.full_address;

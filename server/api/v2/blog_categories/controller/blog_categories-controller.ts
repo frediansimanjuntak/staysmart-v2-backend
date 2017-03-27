@@ -17,6 +17,14 @@ export class BlogCategoriesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getBlogByCategory(req: express.Request, res: express.Response):void {
+		let _categoryName = req.params.categoryName;
+		BlogCategoriesDAO
+		['getBlogByCategory'](_categoryName)
+		.then(blog_categories => res.status(200).json(blog_categories))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createBlogCategories(req: express.Request, res: express.Response):void {
 		let _blog_categories = req.body;
 		let _created_by = req["user"]._id;

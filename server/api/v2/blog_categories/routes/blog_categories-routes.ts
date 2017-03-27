@@ -17,6 +17,10 @@ export class BlogCategoriesRoutes {
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), BlogCategoriesController.deleteBlogCategories);
 
 		router
+			.route('/blog/category/:categoryName')
+			.get(BlogCategoriesController.getBlogByCategory)
+
+		router
 			.route('/blog-categories/update/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), BlogCategoriesController.updateBlogCategories);
 	}

@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import blogCategoriesSchema from '../model/blog_categories-model';
+import Blogs from '../../blogs/model/blogs-model';
 
 blogCategoriesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -33,6 +34,33 @@ blogCategoriesSchema.static('getById', (id:string):Promise<any> => {
               err ? reject(err)
                   : resolve(blog_categories);
           });
+    });
+});
+
+blogCategoriesSchema.static('getBlogByCategory', (categoryName:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      BlogCategories
+        .findOne({"name":categoryName})
+        .exec((err, category) => {
+          if(err) {
+            reject(err);
+          }
+          else{
+            Blogs
+              .find({"category": category._id})
+              .populate({
+                path: 'cover',
+                select: 'key'
+              },{
+                path: 'category',
+                select: 'name'
+              })
+              .exec((err, blog_categories) => {
+                  err ? reject(err)
+                      : resolve(blog_categories);
+              });
+          }
+        })
     });
 });
 
