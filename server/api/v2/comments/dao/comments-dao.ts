@@ -41,9 +41,16 @@ commentsSchema.static('createComments', (comments:Object, user:Object, userEmail
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
 		let body:any = comments;
-
+		var type;
+		if(body.commendId) {
+			type = 'reply/';
+		}
+		else{
+			type = 'comment/';	
+		}
 		var _comments = new Comments(comments);
 			_comments.user = user;
+			_comments.type = type;
 			_comments.save((err, saved)=>{
 				if(err) {
 					reject(err);
@@ -51,35 +58,40 @@ commentsSchema.static('createComments', (comments:Object, user:Object, userEmail
 				else if(saved) {
 					Blogs
 						.findById(body.blog, (err, blog) => {
-							var email = userEmail;
-							var blogTitle = blog.title;
-							var url = config.url.blog_comment+_comments._id;
-							mail.blogComment(email, blogTitle, url).then(res => {
-								if(body.commentID) {
-									Comments
-										.findByIdAndUpdate(body.commentID, {
-											$push: {
-												"replies": _comments._id
-											}
-										})
-										.exec((err, update) => {
-											err ? reject(err)
-											: resolve({res, update});
-										});						
-								}
-								else{
-									Blogs
-										.findByIdAndUpdate(body.blog, {
-											$push: {
-												"comments": _comments._id
-											}
-										})
-										.exec((err, update) => {
-											err ? reject(err)
-											: resolve({res, update});
-										});	
-								}
-							})
+							if(err) {
+								reject(err);
+							}
+							else{
+								var email = userEmail;
+								var blogTitle = blog.title;
+								var url = config.url.blog_comment+saved._id;
+								mail.blogComment(email, blogTitle, url).then(res => {
+									if(body.commentID) {
+										Comments
+											.findByIdAndUpdate(body.commentID, {
+												$push: {
+													"replies": saved._id
+												}
+											})
+											.exec((err, update) => {
+												err ? reject(err)
+												: resolve({res, update});
+											});						
+									}
+									else{
+										Blogs
+											.findByIdAndUpdate(body.blog, {
+												$push: {
+													"comments": saved._id
+												}
+											})
+											.exec((err, update) => {
+												err ? reject(err)
+												: resolve({res, update});
+											});	
+									}
+								})
+							}
 						})
 				}
 			});
