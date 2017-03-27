@@ -11,6 +11,7 @@ import Notifications from '../../notifications/dao/notifications-dao'
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 var split = require('split-string');
+var slice = require('array-slice');
 
 propertiesSchema.static('userLandlordProperty', (userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
@@ -230,23 +231,33 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                         
                                       if(body.shareholders != null) {
                                         if(body.status == 'draft') {
-                                          Properties
-                                            .findByIdAndUpdate(propertyID, {
-                                              $set: {
-                                                "temp.shareholders": body.shareholders
-                                              }
-                                            })
-                                            .exec((err, update) => {
-                                                if(err) {
-                                                  reject(err);
+                                          if(body.shareholders.length > 0) {
+                                            var owner_data = slice(body.shareholder, 0, 1);
+                                            var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
+                                            var type = 'landlord';
+                                            Users.updateUserData(userId, type, owner_data, userId);
+                                            Properties
+                                              .findByIdAndUpdate(propertyID, {
+                                                $set: {
+                                                  "temp.shareholders": shareholder_data
                                                 }
-                                            });
+                                              })
+                                              .exec((err, update) => {
+                                                  if(err) {
+                                                    reject(err);
+                                                  }
+                                              });
+                                          }
                                         }
                                         else{
+                                          var owner_data = slice(body.shareholder, 0, 1);
+                                          var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
+                                          var type = 'landlord';
+                                          Users.updateUserData(userId, type, owner_data, userId);
                                           Companies
                                             .findByIdAndUpdate(companyId, {
                                               $set: {
-                                                "shareholders": body.shareholders
+                                                "shareholders": shareholder_data
                                               }
                                             })
                                             .exec((err, update) => {

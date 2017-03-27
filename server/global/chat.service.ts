@@ -300,6 +300,20 @@ export class DreamTalk{
 			})
 		});
 	}
+
+	static deleteRoom(roomId, uid) {
+		return new Promise((resolve:Function, reject:Function) => {
+			DreamTalk.doHTTP('DELETE', '/rooms/members', {
+				roomId, uid
+			})
+			.then(res => {
+				resolve(JSON.parse(res.body));
+			})
+			.catch(err => {
+				reject(err);
+			})
+		});
+	}
 }
 
 export default DreamTalk;
