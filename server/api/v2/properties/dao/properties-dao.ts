@@ -153,6 +153,15 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({"owner.user": userId, "status": "draft"})
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by temp.owners.$.identification_proof.front temp.owners.$.identification_proof.back temp.shareholders.$.identification_proof.front temp.shareholders.$.identification_proof.back")
+          .populate({
+            path: 'owner.user',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            },
+            select: 'email picture landlord.data.name tenant.data.name'
+          })
           .exec((err, result) => {
             err ? reject(err)
                 : resolve(result);
@@ -171,6 +180,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
       
       var ObjectID = mongoose.Types.ObjectId;  
       let body:any = property;
+
       Developments
         .findById(body.development)
         .exec((err, development) => {
@@ -178,6 +188,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
             reject(err);
           }
           else if(development) {
+            let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
             Properties
               .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
               .exec((err, properties) => {
@@ -189,7 +200,6 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                     reject({message: 'property for this floor and unit in this development already exist.'});
                   }
                   else{
-                    let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
                     var _properties = new Properties(property);
                         _properties.slug = slug;
                         _properties.owner.user = userId;
@@ -199,8 +209,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                             reject(err);
                           }
                           else if(saved){
-                            let propertyID = _properties._id;
-                    
+                            let propertyID = saved._id;
                             if(body.owned_type == 'company'){
                               if(body.companyData) {
                                 Users
