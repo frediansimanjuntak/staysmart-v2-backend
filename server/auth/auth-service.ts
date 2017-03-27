@@ -29,7 +29,6 @@ export function isAuthenticated() {
      
       validateJwt(req, res, function(err, validate){
         if(err) {
-          console.log(err);
           return res.status(err.status).send({message: err.message});
         }
         else{
