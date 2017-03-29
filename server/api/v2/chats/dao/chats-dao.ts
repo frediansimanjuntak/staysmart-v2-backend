@@ -14,23 +14,36 @@ chatsSchema.static('requestToken', (userId:string, username:string):Promise<any>
     		.select({"dreamtalk": {$slice: -1}})
     		.exec((err, res) => {
     			var last_dreamtalk_data = res.dreamtalk;
-    			for(var i = 0; i < last_dreamtalk_data.length; i++){
-    				var expire = last_dreamtalk_data[i].loginTokenExpires;
-    				var today = new Date();
-    				if(today > expire) {
-    					DreamTalk.requestToken(userId, username).then(token => {
-				        	var res_token = JSON.parse(token);
-				        	var user_token = res_token.token;
+                console.log(last_dreamtalk_data.length);
+                if(last_dreamtalk_data.length > 0) {
+                    for(var i = 0; i < last_dreamtalk_data.length; i++){
+                        var expire = last_dreamtalk_data[i].loginTokenExpires;
+                        var today = new Date();
+                        if(today > expire) {
+                            DreamTalk.requestToken(userId, username).then(token => {
+                                var res_token = JSON.parse(token);
+                                var user_token = res_token.token;
 
-				        	ChatRooms.login(user_token, userId, username).then(res => {
-				        		resolve(res);
-				        	});
-				        });
-    				}
-    				else{
-    					resolve(last_dreamtalk_data[i]);
-    				}
-    			}
+                                ChatRooms.login(user_token, userId, username).then(res => {
+                                    resolve(res);
+                                });
+                            });
+                        }
+                        else{
+                            resolve(last_dreamtalk_data[i]);
+                        }
+                    }
+                }
+        		else{
+                    DreamTalk.requestToken(userId, username).then(token => {
+                        var res_token = JSON.parse(token);
+                        var user_token = res_token.token;
+
+                        ChatRooms.login(user_token, userId, username).then(res => {
+                            resolve(res);
+                        });
+                    });
+                }	
     		})
     });
 });

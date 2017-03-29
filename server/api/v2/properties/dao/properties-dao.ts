@@ -360,17 +360,15 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                       var full_address = body.address.full_address;
                                       var from = 'Staysmart';
                                       if(body.status && body.status != 'draft') {
-                                        mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                                          resolve({res, message: 'property created'});
-                                        })    
+                                        mail.submitProperty(userEmail, userFullname, full_address, from);
+                                        resolve({message: 'property created'});    
                                       }
                                       else if(body.status && body.status == 'draft'){
                                         resolve({message: 'property draft created'});
                                       }
                                       else{
-                                         mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                                          resolve({res, message: 'property created'});
-                                        })  
+                                        mail.submitProperty(userEmail, userFullname, full_address, from);
+                                        resolve({message: 'property created'});
                                       }
                                     }
                                   }
@@ -573,9 +571,8 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                       var full_address = body.address.full_address;
                                       var from = 'Staysmart';
                                       if(body.status && body.status != 'draft') {
-                                        mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                                          resolve({res, message: 'property created'});
-                                        })    
+                                        mail.submitProperty(userEmail, userFullname, full_address, from);
+                                        resolve({res, message: 'property created'});
                                       }
                                     }
                                   })
@@ -752,9 +749,8 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
             var url = config.url.approveProperty;
             var from = 'Staysmart';
 
-            mail.approveProperty(emailTo, full_name, full_address, url, from).then(res => {
-              resolve(res);
-            })
+            mail.approveProperty(emailTo, full_name, full_address, url, from);
+            resolve({message: 'updated'});
           })
       }
       else if(confirmation == 'reject'){
@@ -769,9 +765,8 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
             var full_address = properties.address.full_address;
             var from = 'Staysmart';
 
-            mail.rejectProperty(emailTo, full_name, full_address, from).then(res => {
-              resolve(res);
-            })
+            mail.rejectProperty(emailTo, full_name, full_address, from);
+            resolve({message: 'updated'});
           });
       }
       let body:any = proof;

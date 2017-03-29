@@ -84,32 +84,31 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 										var email = body.email;
 										var blogTitle = blog.title;
 										var url = config.url.blog_comment+saved._id;
-										mail.blogComment(email, blogTitle, url).then(res => {
-											if(body.commentID) {
-												Comments
-													.findByIdAndUpdate(body.commentID, {
-														$push: {
-															"replies": saved._id
-														}
-													})
-													.exec((err, update) => {
-														err ? reject(err)
-														: resolve({res, update});
-													});						
-											}
-											else{
-												Blogs
-													.findByIdAndUpdate(body.blog, {
-														$push: {
-															"comments": saved._id
-														}
-													})
-													.exec((err, update) => {
-														err ? reject(err)
-														: resolve({res, update});
-													});	
-											}
-										})
+										mail.blogComment(email, blogTitle, url);
+										if(body.commentID) {
+											Comments
+												.findByIdAndUpdate(body.commentID, {
+													$push: {
+														"replies": saved._id
+													}
+												})
+												.exec((err, update) => {
+													err ? reject(err)
+													: resolve({message: 'updated'});;
+												});						
+										}
+										else{
+											Blogs
+												.findByIdAndUpdate(body.blog, {
+													$push: {
+														"comments": saved._id
+													}
+												})
+												.exec((err, update) => {
+													err ? reject(err)
+													: resolve({message: 'updated'});
+												});	
+										}
 									}
 								})
 						}

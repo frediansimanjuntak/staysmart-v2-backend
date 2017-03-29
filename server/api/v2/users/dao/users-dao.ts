@@ -517,9 +517,8 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 									var fullname = result.username;
 									var from = 'Staysmart';
 									var url = config.url.reset_password+randomToken;
-									mail.resetPassword(email, fullname, url, from).then(res => {
-										resolve(res);
-									});
+									mail.resetPassword(email, fullname, url, from);
+									resolve({message: 'mail sent'});
 								}
 								else{
 									resolve({message: 'no user registered with that email.'});

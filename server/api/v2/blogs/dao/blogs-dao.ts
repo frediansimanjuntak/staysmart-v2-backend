@@ -15,7 +15,24 @@ blogsSchema.static('getAll', ():Promise<any> => {
 
         Blogs
           .find(_query)
-          .populate("cover category comments created_by")
+          .populate("cover category")
+          .populate([{
+            path: 'comments',
+            populate: {
+              path: 'user',
+              model: 'Users',
+              populate: {
+                path: 'picture',
+                model: 'Attachments'
+              }
+            }
+          },{
+            path: 'created_by',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            }
+          }])
           .exec((err, blogs) => {
               err ? reject(err)
                   : resolve(blogs);
@@ -28,7 +45,24 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
 
         Blogs
           .findById(id)
-          .populate("cover category comments created_by")
+          .populate("cover category")
+          .populate([{
+            path: 'comments',
+            populate: {
+              path: 'user',
+              model: 'Users',
+              populate: {
+                path: 'picture',
+                model: 'Attachments'
+              }
+            }
+          },{
+            path: 'created_by',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            }
+          }])
           .exec((err, blogs) => {
               err ? reject(err)
                   : resolve(blogs);
@@ -138,9 +172,8 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promi
                     var emailTo = blog.created_by.email;
                     var blogTitle = blog.title;
                     
-                    mail.blogUpdate(emailTo, blogTitle).then(res => {
-                      resolve(res);
-                    })
+                    mail.blogUpdate(emailTo, blogTitle);
+                    resolve({message: 'blog updated'});
                   }
                 })
              }
