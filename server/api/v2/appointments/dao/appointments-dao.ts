@@ -81,9 +81,8 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
                     var full_address = appointment.property.address.full_address;
                     var from = 'Staysmart';
 
-                    mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from).then(res => {
-                      resolve(res);
-                    })
+                    mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
+                    resolve({message: 'appoinment proposed'});
                   })
               }
             });
@@ -154,15 +153,12 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                     var from = 'Staysmart';
 
                     if(status == 'accepted') {
-                      mail.confirmAppointment(emailTo, fullname, full_address, landlord_username, from).then(res => {
-                        resolve(res);
-                      })
+                      mail.confirmAppointment(emailTo, fullname, full_address, landlord_username, from);
                     }
                     else if(status == 'rejected') {
-                      mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from).then(res => {
-                        resolve(res);
-                      })
+                      mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from);
                     }
+                    resolve({message: 'appoinment updated'});
                   })
               }
             }

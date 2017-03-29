@@ -22,7 +22,7 @@ developmentsSchema.static('getAll', ():Promise<any> => {
 developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
-        var development = Developments.find(_query);
+        var property = Properties.find(_query);
 
         let search:any = searchComponent;
         if(search.latlng != 'all') 
@@ -37,106 +37,90 @@ developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<a
           var lnglat = [];
           lnglat.push(Number(latlng[1]));
           lnglat.push(Number(latlng[0]));
-          development.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/3963.2 ] } } });
+          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/3963.2 ] } } });
+        }
+        if(search.pricemin != 'all') 
+        {
+          property.where('details.price').gte(search.pricemin);
+        }
+        if(search.pricemax != 'all') 
+        {
+          property.where('details.price').lte(search.pricemax);
+        }
+        if(search.bedroomCount != 'all') 
+        {
+          var bedroom = split(search.bedroomCount, {sep: ','});
+          for(var i = 0; i < bedroom.length; i++){
+            if(bedroom[i] == 5) {
+                property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}, {'details.bedroom': { $gte: bedroom[i]}}]); 
+            }  
+            else{
+              property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}]);  
+            }
+          }
+        }
+        if(search.bathroomCount != 'all') 
+        {
+          var bathroom = split(search.bathroomCount, {sep: ','});
+          for(var i = 0; i < bathroom.length; i++){
+            if(bathroom[i] == 5) {
+                property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}, {'details.bathroom': { $gte: bathroom[i]}}]);  
+            }  
+            else{
+              property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}]);  ;  
+            }
+          }
+        }
+        if(search.available != 'all') 
+        {
+          property.where('details.available').gte(search.available);
+        }
+        if(search.sizemin != 'all') 
+        {
+          property.where('details.size_sqf').gte(search.sizemin);
+        }
+        if(search.sizemax != 'all') 
+        {
+          property.where('details.size_sqf').lte(search.sizemax);
         }
         if(search.location != 'all') 
         {
-          development.where('address.street_name', search.location);
+          property.where('address.street_name', search.location);
         }
-        development.populate("properties")
-        development.exec((err, result) => {
-          var dev = [];
-          for(var i = 0; i < result.length; i++){
-            var countDev = 0;
-            for(var p = 0; p < result[i].properties.length; p++){
-              if(search.pricemin != 'all') {
-                if(result[i].properties[p].details.price >= search.pricemin){
-                  countDev += 1;
-                }
-              }
-              else{
-                countDev += 1;
-              }
-              if(search.pricemax != 'all') {
-                if(result[i].properties[p].details.price <= search.pricemax){
-                  countDev += 1;
-                }
-              }
-              else{
-                countDev += 1;
-              }
-              if(search.bedroomCount != 'all') 
-              {
-                var bedroom = split(search.bedroomCount, {sep: ','});
-                for(var j = 0; j < bedroom.length; j++){
-                  if(bedroom[j] == 5) {
-                    if(result[i].properties[p].details.bedroom >= bedroom[j]) {
-                      countDev += 1;
-                    }
-                  }  
-                  else{
-                    if(result[i].properties[p].details.bedroom == bedroom[j]) {
-                      countDev += 1;
-                    }  
-                  }
-                }
-              }
-              else{
-                countDev += 1;
-              }
-              if(search.bathroomCount != 'all') 
-              {
-                var bathroom = split(search.bathroomCount, {sep: ','});
-                for(var j = 0; j < bathroom.length; j++){
-                  if(bathroom[j] == 5) {
-                    if(result[i].properties[p].details.bathroom >= bathroom[j]) {
-                      countDev += 1;
-                    }
-                  }  
-                  else{
-                    if(result[i].properties[p].details.bathroom == bathroom[j]) {
-                      countDev += 1;
-                    }  
-                  }
-                }
-              }
-              else{
-                countDev += 1;
-              }
-              if(search.available != 'all') 
-              {
-                if(result[i].properties[p].details.available >= search.available){
-                  countDev += 1;
-                }
-              }
-              else{
-                countDev += 1;
-              }
-              if(search.sizemin != 'all') 
-              {
-                if(result[i].properties[p].details.size_sqf >= search.sizemin){
-                  countDev += 1;
-                }
-              }
-              else{
-                countDev += 1;
-              }
-              if(search.sizemax != 'all') 
-              {
-                if(result[i].properties[p].details.size_sqf <= search.sizemax){
-                  countDev += 1;
-                }
-              }
-              else{
-                countDev += 1;
-              }
-            }
-            if(countDev > 0) {
-              dev.push(result[i]);
-            }
-          }
-          resolve(dev);
+        property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+        property.populate({
+          path: 'owner.user',
+          populate: {
+            path: 'picture',
+            model: 'Attachments'
+          },
+          select: 'email picture landlord.data.name tenant.data.name'
         })
+        property.exec((err, properties) => {
+          if(err) {
+            reject(err);
+          }
+          else{
+            var dev = [];
+            for(var i = 0; i < properties.length; i++){
+              let dev_data = properties[i].development;
+              if(dev.length > 0) {
+                for(var j = 0; j < dev.length; j++){
+                  if(dev[j].development._id === dev_data._id) {
+                    dev[j].count += 1;
+                  }
+                  else{
+                    dev.push({'development': dev_data, 'count': 1});    
+                  }
+                }
+              }
+              else{
+                dev.push({'development': dev_data, 'count': 1});
+              }
+            }
+            resolve(dev);
+          }
+        });
     });
 });
 
