@@ -12,6 +12,10 @@ export class DevelopmentsRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.createDevelopments);
 
 		router
+			.route('/developments/browse/:latlng/:pricemin/:pricemax/:bedroomCount/:bathroomCount/:available/:sizemin/:sizemax/:location/:radius')
+			.get(DevelopmentsController.developmentsMap);
+
+		router
 			.route('/developments/filter/:number_of_units')
 			.get(DevelopmentsController.getDevelopment)
 

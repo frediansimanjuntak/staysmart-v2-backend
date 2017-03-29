@@ -9,7 +9,7 @@ export class CommentsRoutes {
 		router
 			.route('/comments')
 			.get(CommentsController.getAll)
-			.post(auth.isAuthenticated(),CommentsController.createComments);
+			.post(CommentsController.createComments);
 
 		router
 			.route('/comments/:id')

@@ -9,6 +9,14 @@ export class DevelopmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static developmentsMap(req: express.Request, res: express.Response):void {
+		let _searchComponent = req.params;
+		DevelopmentsDAO
+		['developmentsMap'](_searchComponent)
+		.then(developments => res.status(200).json(developments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		DevelopmentsDAO

@@ -513,12 +513,17 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 					else if(update) {
 						Users
 							.findOne({email: email}, (err, result) => {
-								var fullname = result.username;
-								var from = 'Staysmart';
-								var url = config.url.reset_password+randomToken;
-								mail.resetPassword(email, fullname, url, from).then(res => {
-									resolve(res);
-								})
+								if(result) {
+									var fullname = result.username;
+									var from = 'Staysmart';
+									var url = config.url.reset_password+randomToken;
+									mail.resetPassword(email, fullname, url, from).then(res => {
+										resolve(res);
+									});
+								}
+								else{
+									resolve({message: 'no user registered with that email.'});
+								}
 							})
 					}
 				});

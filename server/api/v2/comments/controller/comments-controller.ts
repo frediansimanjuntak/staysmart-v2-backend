@@ -19,10 +19,8 @@ export class CommentsController {
 
 	static createComments(req: express.Request, res: express.Response):void {
 		let _comments = req.body;
-		let _user = req["user"]._id;
-		let _userEmail = req["user"].email;
 		CommentsDAO
-		['createComments'](_comments, _user, _userEmail)
+		['createComments'](_comments)
 		.then(comments => res.status(201).json(comments))
 		.catch(error => res.status(400).json(error));
 	}
