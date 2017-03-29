@@ -16,5 +16,13 @@ export class ReportController{
 		reportDAO.reportTA(_id)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
-	}	
+	}
+
+	static printReport(req: express.Request, res: express.Response):void{
+		let _data = req.body;
+
+		reportDAO.printReport(_data)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}		
 }

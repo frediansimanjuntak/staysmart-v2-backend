@@ -13,5 +13,9 @@ export class ReportRoutes{
 		router
 			.route('/report/ta/:id/')
 			.get(ReportController.reportTA);
+
+		router
+			.route('/report/print/')
+			.post(ReportController.printReport);
 	}
 }

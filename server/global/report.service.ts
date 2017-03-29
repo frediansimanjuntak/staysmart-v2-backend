@@ -7,6 +7,9 @@ var base64 = require('base-64');
 import Developments from '../api/v2/developments/dao/developments-dao';
 import Payments from '../api/v2/payments/dao/payments-dao';
 
+var fs      = require('fs');
+var pdf2img = require('pdf2img');
+
 export class numberToWords{
 	static toWords(s){
 		var th = ['','thousand','million', 'billion','trillion'];
@@ -160,7 +163,7 @@ export class report {
 						//   modifiedData += "\n</ol>";
 						// }
 						});
-					}
+					} 
 					getData = modifiedData;
 				break;
 			case 'form_data.tenant':
@@ -213,10 +216,38 @@ export class report {
 				getData = '<img src=' + getData + ' alt="" width="100px" height="100px"> ';
 			break;
 			case 'form_data.payment_proof':
-			  let paymentProof = objectFunction['payment'](getData);
+			  // let paymentProof = objectFunction['payment'](getData);
+			  let paymentProof = getData;
 			  if(paymentProof) {
-			    let fileType = paymentProof.original.type;
-			    let subType = fileType.substring('0', '5');
+			  	let fileType = paymentProof.type; 
+				let url = paymentProof.key;
+				let subType = fileType.substring(0, 5);
+				if(subType == 'image'){
+					getData = '<img src="' + url + '" height="500px" /> ';
+				}
+				else if(fileType == 'application/pdf'){
+					// getData = '<embed src="' + url + '" type="application/pdf"/>';
+					// getData = '<iframe src="' + url + '" type="application/pdf"></iframe>';
+					// getData = '<a href="' + url + '"></a>';
+					// app.get(/(.*\.pdf)\/([0-9]+).png$/i, function (req, res) {
+					var input   = url;
+					console.log(input);
+					pdf2img.setOptions({
+						type: 'png',                      // png or jpeg, default png 
+						size: 1024,                       // default 1024 
+						density: 600,                     // default 600 
+						outputdir: '../../../../template/report-template/lib', // mandatory, outputdir must be absolute path 
+						targetname: 'test'                // the prefix for the generated files, optional 
+					});
+
+					pdf2img.convert(input, function(err, info) {
+						if (err) console.log(err)
+						else console.log(info);
+					});
+				} 
+
+			    // let fileType = paymentProof.original.type;
+			    // let subType = fileType.substring('0', '5');
 			    // if(subType == 'image') {
 			    //   let base64 = waitBase64(paymentProof.url());
 			    //   getData = '<img src="' + base64 + '" height="500px" /> ';
@@ -234,10 +265,21 @@ export class report {
 			  }
 			  break;
 			case 'form_data.second_payment_proof':
-			  let secPaymentProof = objectFunction['payment'](getData);
+			  // let secPaymentProof = objectFunction['payment'](getData);
+			  let secPaymentProof = getData;
 			  if(secPaymentProof) {
-			    let fileType = secPaymentProof.original.type;
-			    let subType = fileType.substring('0', '5');
+				let fileType = secPaymentProof.type;
+				let url = secPaymentProof.key;
+				let subType = fileType.substring(0, 5);
+				if(subType == 'image'){
+					getData = '<img src="' + url + '" height="500px" /> ';
+				}
+				else if(fileType == 'application/pdf'){
+					getData = '<embed src="' + url + '" width="800px" height="2100px" />'
+				} 
+
+			    // let fileType = secPaymentProof.original.type;
+			    // let subType = fileType.substring('0', '5');
 			    // let base64 = waitBase64(secPaymentProof.url());
 			    // if(subType == 'image') {
 			    //   getData = '<img src="' + base64 + '" height="500px" /> ';
@@ -324,13 +366,12 @@ export class report {
 					getData = '';
 				break;
 				case 'form_data.logo' :
-				  // getData = '<img src="' + Meteor.absoluteUrl() + 'lib/img/logo.png" alt="" /> ';
+				  getData = '<img src="https://staysmart.sg/lib/img/logo.png" alt="logo" /> ';
 				break;
 			}
 		}
 		replaced = submatch.replace(/<(?:(span|ol|))(.*)>([\s\S]*?)<\/(?:(span|ol|))>/, '<$1 $2>$3' + getData + '</$4>');
 		string = string.replace(submatch, replaced);
-		console.log(replaced);
 		});
 		
 		// if(callback) { callback(null, string); }
