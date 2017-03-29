@@ -48,7 +48,7 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 	});
 });
 
-commentsSchema.static('createComments', (comments:Object, user:Object, userEmail:string):Promise<any> => {
+commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(comments)) {
 			return reject(new TypeError('Comment is not a valid object.'));
@@ -62,53 +62,59 @@ commentsSchema.static('createComments', (comments:Object, user:Object, userEmail
 		else{
 			type = 'comment/';	
 		}
-		var _comments = new Comments(comments);
-			_comments.user = user;
-			_comments.type = type;
-			_comments.save((err, saved)=>{
-				if(err) {
-					reject(err);
-				}
-				else if(saved) {
-					Blogs
-						.findById(body.blog, (err, blog) => {
-							if(err) {
-								reject(err);
-							}
-							else{
-								var email = userEmail;
-								var blogTitle = blog.title;
-								var url = config.url.blog_comment+saved._id;
-								mail.blogComment(email, blogTitle, url).then(res => {
-									if(body.commentID) {
-										Comments
-											.findByIdAndUpdate(body.commentID, {
-												$push: {
-													"replies": saved._id
-												}
-											})
-											.exec((err, update) => {
-												err ? reject(err)
-												: resolve({res, update});
-											});						
+		Users
+			.findOne({"email": body.email})
+			.exec((err, user) => {
+				var _comments = new Comments(comments);
+					if(user) {
+						_comments.user = user._id;	
+					}
+					_comments.type = type;
+					_comments.save((err, saved)=>{
+						if(err) {
+							reject(err);
+						}
+						else if(saved) {
+							Blogs
+								.findById(body.blog, (err, blog) => {
+									if(err) {
+										reject(err);
 									}
 									else{
-										Blogs
-											.findByIdAndUpdate(body.blog, {
-												$push: {
-													"comments": saved._id
-												}
-											})
-											.exec((err, update) => {
-												err ? reject(err)
-												: resolve({res, update});
-											});	
+										var email = body.email;
+										var blogTitle = blog.title;
+										var url = config.url.blog_comment+saved._id;
+										mail.blogComment(email, blogTitle, url).then(res => {
+											if(body.commentID) {
+												Comments
+													.findByIdAndUpdate(body.commentID, {
+														$push: {
+															"replies": saved._id
+														}
+													})
+													.exec((err, update) => {
+														err ? reject(err)
+														: resolve({res, update});
+													});						
+											}
+											else{
+												Blogs
+													.findByIdAndUpdate(body.blog, {
+														$push: {
+															"comments": saved._id
+														}
+													})
+													.exec((err, update) => {
+														err ? reject(err)
+														: resolve({res, update});
+													});	
+											}
+										})
 									}
 								})
-							}
-						})
-				}
-			});
+						}
+					});
+			})
 	});
 });
 

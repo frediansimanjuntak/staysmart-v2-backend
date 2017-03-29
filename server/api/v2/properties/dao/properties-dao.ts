@@ -28,9 +28,6 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
-        if(search.development != 'all') {
-          property.where('development', search.development);
-        }
         if(search.latlng != 'all') 
         {
           if(search.radius != 'all') {
@@ -93,7 +90,6 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         {
           property.where('address.street_name', search.location);
         }
-
         property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
         property.populate({
           path: 'owner.user',
@@ -214,7 +210,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                             if(body.owned_type == 'company'){
                               if(body.companyData) {
                                 Users
-                                  .findById(userId, (err, result) => {
+                                  .findById(userId, (err, result) => {                                    
                                     Companies.createCompanies(body.companyData, userId).then(res => {
                                       var companyId = res.companiesId;
                                       Properties
@@ -232,10 +228,16 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                       if(body.shareholders != null) {
                                         if(body.status == 'draft') {
                                           if(body.shareholders.length > 0) {
-                                            var owner_data = slice(body.shareholder, 0, 1);
-                                            var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
-                                            var type = 'landlord';
-                                            Users.updateUserData(userId, type, owner_data, userId);
+                                            if(result.landlord.data.name) {
+                                              var shareholder_data = body.shareholder;
+                                            }
+                                            else{
+                                              var owner_data = slice(body.shareholder, 0, 1);
+                                              var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
+                                              var type = 'landlord';
+                                              Users.updateUserData(userId, type, owner_data, userId);
+                                            }
+                                            
                                             Properties
                                               .findByIdAndUpdate(propertyID, {
                                                 $set: {
@@ -250,10 +252,16 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                           }
                                         }
                                         else{
-                                          var owner_data = slice(body.shareholder, 0, 1);
-                                          var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
-                                          var type = 'landlord';
-                                          Users.updateUserData(userId, type, owner_data, userId);
+                                          if(result.landlord.data.name) {
+                                            var shareholder_data = body.shareholder;
+                                          }
+                                          else{
+                                            var owner_data = slice(body.shareholder, 0, 1);
+                                            var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
+                                            var type = 'landlord';
+                                            Users.updateUserData(userId, type, owner_data, userId);
+                                          }
+                                          
                                           Companies
                                             .findByIdAndUpdate(companyId, {
                                               $set: {
@@ -351,9 +359,19 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                                     else{
                                       var full_address = body.address.full_address;
                                       var from = 'Staysmart';
-                                      mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
-                                        resolve({res, message: 'property created'});
-                                      })  
+                                      if(body.status && body.status != 'draft') {
+                                        mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
+                                          resolve({res, message: 'property created'});
+                                        })    
+                                      }
+                                      else if(body.status && body.status == 'draft'){
+                                        resolve({message: 'property draft created'});
+                                      }
+                                      else{
+                                         mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
+                                          resolve({res, message: 'property created'});
+                                        })  
+                                      }
                                     }
                                   }
                               });
@@ -367,7 +385,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
     });
 });
 
-propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object):Promise<any> => {
+propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
           return reject(new TypeError('Id is not a valid string.'));
@@ -381,42 +399,196 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
             reject({message: res.message});
           }
           else if(res == true){
-            var type = 'update';
-            Properties.createPropertyHistory(id, type);
             Properties
-              .findByIdAndUpdate(id, properties)
-              .exec((err, update) => {
-                    if(err) {
-                      reject(err);
-                    }
-                    else{
-                      if(body.status != 'draft') {
-                        Properties
-                          .findById(id)
-                          .exec((err, property) => {
-                            if(property.temp) {
-                              var shareholders = property.temp.shareholders;
-                              var owners = property.temp.owners;
-                              var companyId = property.owner.company;
-
-                              if(shareholders.length > 0) {
-                                Companies.addCompaniesShareholders(companyId, shareholders, userId);
-                                var type = 'shareholders';
-                                Properties.unsetTemp(id, type);
+              .findById(id)
+              .exec((err, res) => {
+                if(err) {
+                  reject(err);
+                }
+                else{
+                  let old_status = res.status;
+                  var action = 'update';
+                  var type = 'data';
+                  Properties.createPropertyHistory(id, action, type).then(res => {
+                    if(body.owned_type == 'company'){
+                      if(body.companyData) {
+                        Users
+                          .findById(userId, (err, result) => {                                    
+                            Companies.createCompanies(body.companyData, userId).then(res => {
+                              var companyId = res.companiesId;
+                              Properties
+                                .findByIdAndUpdate(id, {
+                                  $set: {
+                                    "owner.company": companyId
+                                  }
+                                })
+                                .exec((err, update) => {
+                                    if(err) {
+                                      reject(err);
+                                    }
+                                });
+                                
+                              if(body.shareholders != null) {
+                                if(body.status == 'draft') {
+                                  if(body.shareholders.length > 0) {
+                                    if(result.landlord.data.name) {
+                                      var shareholder_data = body.shareholder;
+                                    }
+                                    else{
+                                      var owner_data = slice(body.shareholder, 0, 1);
+                                      var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
+                                      var type = 'landlord';
+                                      Users.updateUserData(userId, type, owner_data, userId);
+                                    }
+                                    
+                                    Properties
+                                      .findByIdAndUpdate(id, {
+                                        $set: {
+                                          "temp.shareholders": shareholder_data
+                                        }
+                                      })
+                                      .exec((err, update) => {
+                                          if(err) {
+                                            reject(err);
+                                          }
+                                      });
+                                  }
+                                }
+                                else{
+                                  if(result.landlord.data.name) {
+                                    var shareholder_data = body.shareholder;
+                                  }
+                                  else{
+                                    var owner_data = slice(body.shareholder, 0, 1);
+                                    var shareholder_data = slice(body.shareholder, 1, body.shareholders.length);
+                                    var type = 'landlord';
+                                    Users.updateUserData(userId, type, owner_data, userId);
+                                  }
+                                  
+                                  Companies
+                                    .findByIdAndUpdate(companyId, {
+                                      $set: {
+                                        "shareholders": shareholder_data
+                                      }
+                                    })
+                                    .exec((err, update) => {
+                                        if(err) {
+                                          reject(err);
+                                        }
+                                    });
+                                }
                               }
-                              if(owners.length > 0) {
-                                Users.updateUserDataOwners(userId, owners);
-                                var type = 'owners';
-                                Properties.unsetTemp(id, type);
+                            });
+                          })  
+                      }
+                      else if(body.owner && body.owner.company && body.shareholders != null) {
+                        if(body.status == 'draft') {
+                          Properties
+                            .findByIdAndUpdate(id, {
+                              $set: {
+                                "temp.shareholders": body.shareholders
+                              }
+                            })
+                            .exec((err, update) => {
+                              if(err) {
+                                reject(err);
+                              }  
+                            });
+                        }
+                        else{
+                          Companies
+                            .findByIdAndUpdate(body.owner.company, {
+                              $set: {
+                                "shareholders": body.shareholders
+                              }
+                            })
+                            .exec((err, update) => {
+                                if(err) {
+                                  reject(err);
+                                }
+                            });
+                        }
+                      }
+                    }
+                    else if(body.owned_type == 'individual'){
+                      if(body.landlordData) {
+                        var type = 'landlord';
+                        Users.updateUserData(userId, type, body.landlordData, userId);
+                      }
+                      if(body.ownersData != null) {
+                        if(body.status == 'draft') {
+                          Properties
+                            .findByIdAndUpdate(id, {
+                              $set: {
+                                "temp.owners": body.ownersData
+                              }
+                            })
+                            .exec((err, update) => {
+                                if(err) {
+                                  reject(err);
+                                }
+                            });
+                        }
+                        else{
+                          Users
+                            .findByIdAndUpdate(userId, {
+                              $set: {
+                                "landlord.data.owners": body.ownersData
+                              }
+                            })
+                            .exec((err, update) => {
+                                if(err) {
+                                  reject(err);
+                                }
+                            });
+                        }
+                      }
+                    }
+                    Properties
+                      .findByIdAndUpdate(id, properties)
+                      .exec((err, update) => {
+                            if(err) {
+                              reject(err);
+                            }
+                            else{
+                              if(body.status && body.status != 'draft') {
+                                Properties
+                                  .findById(id)
+                                  .exec((err, property) => {
+                                    if(property.temp) {
+                                      var shareholders = property.temp.shareholders;
+                                      var owners = property.temp.owners;
+                                      var companyId = property.owner.company;
+
+                                      if(shareholders.length > 0) {
+                                        Companies.addCompaniesShareholders(companyId, shareholders, userId);
+                                        var type = 'shareholders';
+                                        Properties.unsetTemp(id, type);
+                                      }
+                                      if(owners.length > 0) {
+                                        Users.updateUserDataOwners(userId, owners);
+                                        var type = 'owners';
+                                        Properties.unsetTemp(id, type);
+                                      }
+                                      var full_address = body.address.full_address;
+                                      var from = 'Staysmart';
+                                      if(body.status && body.status != 'draft') {
+                                        mail.submitProperty(userEmail, userFullname, full_address, from).then(res => {
+                                          resolve({res, message: 'property created'});
+                                        })    
+                                      }
+                                    }
+                                  })
+                              }
+                              else{
+                                resolve({message: 'Properties updated.'});
                               }
                             }
-                          })
-                      }
-                      else{
-                        resolve({message: 'Properties updated.'});
-                      }
-                    }
-                });
+                        });
+                  });
+                }
+              })
+              
           }
         });
     });
@@ -424,43 +596,53 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
 
 propertiesSchema.static('createPropertyHistory', (id:string, action:string, type:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+        var ObjectID = mongoose.Types.ObjectId;
         Properties
-          .findById(id, "details schedules amenities pictures owned_type owner confirmation status", (err, result) => {
-            var historyObj = {$push: {}};
-            historyObj.$push['histories'] = {"action": action, "date": Date.now, "data": result};
+          .findById(id, "-_id details schedules amenities pictures owned_type owner confirmation status", (err, result) => {
             Properties
-              .findByIdAndUpdate(id, historyObj)
+              .findByIdAndUpdate(id, {
+                $push: {
+                  "histories": {
+                    "action": action,
+                    "date": new Date(),
+                    "data": result  
+                  }
+                }
+              })
               .exec((err, saved) => {
-                err ? reject(err)
-                : resolve(saved);
+                if(err) {
+                  reject(err);
+                }
+                else if(saved) {
+                  if(type == 'data') {
+                    Properties
+                      .findByIdAndUpdate(id, {
+                        $unset: {
+                          "details": "",
+                          "schedules": "",
+                          "amenities": "",
+                          "pictures": "",
+                        }
+                      })
+                      .exec((err, update) => {
+                        err ? reject(err)
+                        : resolve({message: 'updated'});
+                      });
+                  }
+                  else if(type == 'confirmation'){
+                    Properties
+                      .findByIdAndUpdate(id, {
+                        $unset: {
+                          "confirmation": ""
+                        }
+                      })
+                      .exec((err, update) => {
+                        err ? reject(err)
+                        : resolve({message: 'updated'});
+                      }); 
+                  }
+                }
               });
-            if(type == 'data') {
-              Properties
-                .findById(id, {
-                  $unset: {
-                    "details": "",
-                    "schedules": "",
-                    "amenities": "",
-                    "pictures": "",
-                  }
-                })
-                .exec((err, update) => {
-                  err ? reject(err)
-                  : resolve(update);
-                });
-            }
-            else if(type == 'confirmation'){
-              Properties
-                .findById(id, {
-                  $unset: {
-                    "confirmation": ""
-                  }
-                })
-                .exec((err, update) => {
-                  err ? reject(err)
-                  : resolve(update);
-                }); 
-            }
           })
     });
 });

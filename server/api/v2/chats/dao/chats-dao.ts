@@ -78,6 +78,7 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
 chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         name.toString();
+        console.log(name);
     	Properties
     		.findById(name, (err, property) => {
     			var members = [];
@@ -85,12 +86,13 @@ chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
     			if(property.manager){
     				members.push(property.manager);	
     			}
-    		
+    		    console.log(name);
 		    	ChatRooms
 		    		.findOne({"tenant": uid, "propertyId": name}, (err, result) => {
 		    			if(!result){
 		    				DreamTalk.createRoom(uid, name, members).then(result => {
 					        	if(result.res.message){
+                                    console.log('message: '+result.res.message);
 					        		resolve(result.res);
 					        	}
 					        	else{

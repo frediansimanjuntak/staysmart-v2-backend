@@ -50,8 +50,10 @@ export class PropertiesController {
 		let _id = req.params.id;
 		let _properties = req.body;
 		let _userId = req["user"]._id;
+		let _userEmail = req["user"].email;
+		let _userFullname = req["user"].username;
 		PropertiesDAO
-		['updateProperties'](_id, _properties, _userId)
+		['updateProperties'](_id, _properties, _userId, _userEmail, _userFullname)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
