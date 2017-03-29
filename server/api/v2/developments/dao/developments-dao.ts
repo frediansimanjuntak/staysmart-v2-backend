@@ -21,106 +21,26 @@ developmentsSchema.static('getAll', ():Promise<any> => {
 
 developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        let _query = {};
-        var property = Properties.find(_query);
-
-        let search:any = searchComponent;
-        if(search.latlng != 'all') 
-        {
-          if(search.radius != 'all') {
-            var radius = search.radius;
-          }
-          else{
-            radius = 1500;
-          }
-          var latlng = search.latlng.split(",");
-          var lnglat = [];
-          lnglat.push(Number(latlng[1]));
-          lnglat.push(Number(latlng[0]));
-          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/3963.2 ] } } });
-        }
-        if(search.pricemin != 'all') 
-        {
-          property.where('details.price').gte(search.pricemin);
-        }
-        if(search.pricemax != 'all') 
-        {
-          property.where('details.price').lte(search.pricemax);
-        }
-        if(search.bedroomCount != 'all') 
-        {
-          var bedroom = split(search.bedroomCount, {sep: ','});
-          for(var i = 0; i < bedroom.length; i++){
-            if(bedroom[i] == 5) {
-                property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}, {'details.bedroom': { $gte: bedroom[i]}}]); 
-            }  
-            else{
-              property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}]);  
-            }
-          }
-        }
-        if(search.bathroomCount != 'all') 
-        {
-          var bathroom = split(search.bathroomCount, {sep: ','});
-          for(var i = 0; i < bathroom.length; i++){
-            if(bathroom[i] == 5) {
-                property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}, {'details.bathroom': { $gte: bathroom[i]}}]);  
-            }  
-            else{
-              property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}]);  ;  
-            }
-          }
-        }
-        if(search.available != 'all') 
-        {
-          property.where('details.available').gte(search.available);
-        }
-        if(search.sizemin != 'all') 
-        {
-          property.where('details.size_sqf').gte(search.sizemin);
-        }
-        if(search.sizemax != 'all') 
-        {
-          property.where('details.size_sqf').lte(search.sizemax);
-        }
-        if(search.location != 'all') 
-        {
-          property.where('address.street_name', search.location);
-        }
-        property.populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
-        property.populate({
-          path: 'owner.user',
-          populate: {
-            path: 'picture',
-            model: 'Attachments'
-          },
-          select: 'email picture landlord.data.name tenant.data.name'
-        })
-        property.exec((err, properties) => {
-          if(err) {
-            reject(err);
-          }
-          else{
-            var dev = [];
-            for(var i = 0; i < properties.length; i++){
-              let dev_data = properties[i].development;
-              if(dev.length > 0) {
-                for(var j = 0; j < dev.length; j++){
-                  if(dev[j].development._id === dev_data._id) {
-                    dev[j].count += 1;
-                  }
-                  else{
-                    dev.push({'development': dev_data, 'count': 1});    
-                  }
+        Properties.searchProperties(searchComponent).then(properties => {
+          var dev = [];
+          for(var i = 0; i < properties.length; i++){
+            let dev_data = properties[i].development;
+            if(dev.length > 0) {
+              for(var j = 0; j < dev.length; j++){
+                if(dev[j].development._id === dev_data._id) {
+                  dev[j].count += 1;
+                }
+                else{
+                  dev.push({'development': dev_data, 'count': 1});    
                 }
               }
-              else{
-                dev.push({'development': dev_data, 'count': 1});
-              }
             }
-            resolve(dev);
+            else{
+              dev.push({'development': dev_data, 'count': 1});
+            }
           }
-        });
+          resolve(dev);
+        })
     });
 });
 
