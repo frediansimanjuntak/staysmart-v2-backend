@@ -12,8 +12,8 @@ var PaymentsSchema = new mongoose.Schema({
 		{
 			code_name: {type: String},
 			name: {type: String},
-			amount: {type: String},
-			received_amount: {type: String},
+			amount: {type: Number},
+			received_amount: {type: Number},
 			needed_refund: {type: Boolean},			
 			refunded: {type: Boolean},
 			created_at: {type: Date},
@@ -33,7 +33,8 @@ var PaymentsSchema = new mongoose.Schema({
 			type: Schema.Types.ObjectId,
 			ref: 'Attachments'
 		}
-	},		
+	},	
+	status: {type: String, enum: ['pending', 'accepted', 'rejected']},
 	remarks: {type: String}
 });
 

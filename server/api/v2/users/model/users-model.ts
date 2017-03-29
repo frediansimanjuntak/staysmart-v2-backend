@@ -39,7 +39,7 @@ var UsersSchema = new mongoose.Schema({
           ref: 'Attachments'
         }
       },
-			bank_account: [{
+			bank_account: {
         bank:
         {
           type: Schema.Types.ObjectId,
@@ -47,7 +47,7 @@ var UsersSchema = new mongoose.Schema({
         },
         name: {type: String},
         no: {type: Number}
-      }]
+      }
 		},
 		histories: 
 		[{
@@ -88,7 +88,7 @@ var UsersSchema = new mongoose.Schema({
           }
         }
       ],
-			bank_account: [{
+			bank_account: {
 				bank: 
 				{
 					type: Schema.Types.ObjectId,
@@ -96,7 +96,7 @@ var UsersSchema = new mongoose.Schema({
 				},
 				name: {type: String},
 				no: {type: Number, unique: true}
-			}]
+			}
 		},
 		histories: 
 		[{

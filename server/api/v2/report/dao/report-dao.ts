@@ -37,38 +37,42 @@ export class reportDAO{
 					}
 				})
 				.exec((err, agreement) => {
-					// console.log(agreement)
 					let property = agreement.property;
 					let landlord = agreement.landlord;
 					let tenant = agreement.tenant;
 					let loi = agreement.letter_of_intent.data;
 					let ta = agreement.tenancy_agreement.data;
 					let payment_proof;
-					console.log(payment_proof);
 					let tenant_sign;
 					let landlord_sign;
 					let status;
 					let confirmation_date;
 					let date_expired;
 					let created_at;
+					let created_day;
 					if (type == "loi"){
 						tenant_sign = loi.confirmation.tenant.sign;
 						landlord_sign = loi.confirmation.landlord.sign;
 						status = loi.status;
 						confirmation_date = loi.confirmation.landlord.date;
+						created_day = loi.created_at;
 						created_at = new Date(loi.created_at);
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
-						payment_proof = loi.payment.attachment.payment;
-
+						if(loi.payment){
+							payment_proof = loi.payment.attachment.payment;
+						}
 					}
 					else if (type == "ta"){
 						tenant_sign = ta.confirmation.tenant.sign;
 						landlord_sign = ta.confirmation.landlord.sign;
 						status = ta.status;
 						confirmation_date = ta.confirmation.landlord.date;
-						created_at = new Date(loi.created_at);
+						created_day = ta.created_at;
+						created_at = new Date(ta.created_at);
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
-						payment_proof = ta.payment.attachment.payment;
+						if(ta.payment){
+							payment_proof = ta.payment.attachment.payment;
+						}						
 					}				
 
 					var data = {
@@ -125,7 +129,8 @@ export class reportDAO{
 								"bank_code": loi.landlord.bank_account.bank.code
 							},
 							"date_ta": ta.created_at,
-							"date_expired": date_expired
+							"date_expired": date_expired,
+							"created_at":created_day
 						}
 					}
 					if(err){
@@ -142,21 +147,27 @@ export class reportDAO{
 		return new Promise((resolve:Function, reject:Function) => {
 			Agreements
 				.findById(id, (err, agreement) =>{
-					let loi = agreement.letter_of_intent.data;
-					let loiStatus = loi.status;
-					console.log(loiStatus);
-					if (loiStatus == "admin-confirmation" || loiStatus == "landlord-confirmation") {
-						reportDAO.reportLOIPending(id).then(res => {
-							let result = juice(res);
-							resolve(res);
-							
-						});
+					if(agreement){
+						let loi = agreement.letter_of_intent.data;
+						let loiStatus = loi.status;
+						console.log(loiStatus);
+						if (loiStatus == "pending" ||loiStatus == "admin-confirmation" || loiStatus == "landlord-confirmation") {
+							reportDAO.reportLOIPending(id).then(res => {
+								let result = juice(res);
+								resolve(res);
+								
+							});
+						}
+						else if (loiStatus == "accepted") {
+							reportDAO.reportLOIPrint(id).then(res => {
+								let result = juice(res);
+								resolve(res)
+							});
+						}
 					}
-					else if (loiStatus == "accepted") {
-						reportDAO.reportLOIPrint(id).then(res => {
-							let result = juice(res);
-							resolve(res)
-						});
+					
+					else if(err){
+						reject(err);
 					}
 				})
 		})
@@ -212,20 +223,25 @@ export class reportDAO{
 
 			Agreements
 				.findById(id, (err, agreement) =>{
-					let ta = agreement.tenancy_agreement.data;
-					let taStatus = ta.status;
-					if (taStatus == "admin-confirmation" || taStatus == "landlord-confirmation") {
-						reportDAO.reportTAPending(id).then(res => {
-							let result = juice(res);
-							resolve(res);
-						});
+					if(agreement){
+						let ta = agreement.tenancy_agreement.data;
+						let taStatus = ta.status;
+						if (taStatus == "admin-confirmation" || taStatus == "landlord-confirmation") {
+							reportDAO.reportTAPending(id).then(res => {
+								let result = juice(res);
+								resolve(res);
+							});
+						}
+						else if (taStatus == "accepted") {
+							reportDAO.reportTAPrint(id).then(res => {
+								let result = juice(res);
+								resolve(res);
+							});
+						}
 					}
-					else if (taStatus == "accepted") {
-						reportDAO.reportTAPrint(id).then(res => {
-							let result = juice(res);
-							resolve(res);
-						});
-					}
+					else if(err){
+						reject(err);
+					}					
 				})
 		})
 	}
