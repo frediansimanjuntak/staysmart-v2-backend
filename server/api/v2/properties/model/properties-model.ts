@@ -133,25 +133,23 @@ var PropertiesSchema = new mongoose.Schema({
 		date: {type: Date}
 	},
 	temp: {
-		owners: 
-		[
-	        {
-	          name: {type: String},
-	          identification_type: {type: String},
-	          identification_number: {type: String},
-	          identification_proof: 
-	          {
-	            front: {
-	              type: Schema.Types.ObjectId,
-	              ref: 'Attachments'
-	            },
-	            back: {
-	              type: Schema.Types.ObjectId,
-	              ref: 'Attachments'
-	            }
-	          }
-	        }
-	    ],
+		owner: 
+        {
+          name: {type: String},
+          identification_type: {type: String},
+          identification_number: {type: String},
+          identification_proof: 
+          {
+            front: {
+              type: Schema.Types.ObjectId,
+              ref: 'Attachments'
+            },
+            back: {
+              type: Schema.Types.ObjectId,
+              ref: 'Attachments'
+            }
+          }
+        },
 		shareholders: 
 		[
 			{
