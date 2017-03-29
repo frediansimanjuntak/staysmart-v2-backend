@@ -82,7 +82,7 @@ var AgreementsSchema = new mongoose.Schema({
 			        no: {type: Number}
 			    }
 			},
-			occupiers: {
+			occupiers: [{
 				name: {type: String},
 				identification_type: {type: String},
 				identification_number: {type: String},
@@ -96,14 +96,14 @@ var AgreementsSchema = new mongoose.Schema({
 					  ref: 'Attachments'
 					}
 				}
-			},
-			gfd_amount: {type: String},
-			sd_amount: {type: String},
-			security_deposit: {type: String},
-			term_payment: {type: String},
-			minor_repair_cost: {type: String},
-			lapse_offer: {type: String},
-			term_lease_extend: {type: String, default: "0"},
+			}],
+			gfd_amount: {type: Number},
+			sd_amount: {type: Number},
+			security_deposit: {type: Number},
+			term_payment: {type: Number},
+			minor_repair_cost: {type: Number},
+			lapse_offer: {type: Number},
+			term_lease_extend: {type: Number},
 			appointment: {
 				type: Schema.Types.ObjectId,
 				ref: 'Appoinments'
@@ -130,7 +130,7 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String, 
-				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation', 'rejected']
+				enum: ['draft', 'pending', 'payment-confirmed', 'accepted', 'rejected', 'expired']
 			},
 			created_at: {type: Date}
 		},
@@ -160,7 +160,7 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String, 
-				enum: ['pending', 'accepted', 'expired', 'landlord-confirmation', 'admin-confirmation', 'rejected']
+				enum: ['pending', 'accepted', 'expired', 'admin-confirmation', 'rejected']
 			},
 			stamp_certificate: {
 				type: Schema.Types.ObjectId,

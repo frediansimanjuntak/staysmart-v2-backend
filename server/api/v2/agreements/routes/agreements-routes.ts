@@ -92,5 +92,9 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/status/admin_confirm/:id')
 			.post(auth.isAuthenticated(), AgreementsController.adminConfirmationTA);
+
+		router
+			.route('/ta/stamp_certificate/:id')
+			.post(auth.isAuthenticated(), AgreementsController.stampCertificateTA);
 	}
 }

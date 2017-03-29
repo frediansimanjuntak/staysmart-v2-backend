@@ -138,7 +138,7 @@ export class AgreementsController {
 		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['createLoi'](_id)
+		['sendLoi'](_id, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -222,6 +222,16 @@ export class AgreementsController {
 		
 		AgreementsDAO
 		['adminConfirmationTA'](_id, _agreements)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static stampCertificateTA(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _agreements = req.body;
+		
+		AgreementsDAO
+		['stampCertificateTA'](_id, _agreements)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
