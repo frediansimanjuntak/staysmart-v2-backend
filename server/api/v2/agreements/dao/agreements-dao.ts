@@ -25,6 +25,9 @@ agreementsSchema.static('getAll', (userId:string):Promise<any> => {
 
 agreementsSchema.static('getById', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
 		Agreements
 			.findById(id)
 			.populate("landlord tenant property")
@@ -91,6 +94,9 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 //LOI
 agreementsSchema.static('getLoi', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
 		Agreements
 			.findById(id)
 			.select("letter_of_intent.data")
@@ -110,20 +116,24 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
+		let inputBankNo = body.tenant.bank_account.no;
 
-		console.log(body);
 		Agreements
-			.findById(id, (err, agreement) =>{
-				let propertyId = agreement.property;
-				let landlordId = agreement.landlord;
-				let tenantId = agreement.tenant;
+			.findById(id)
+			.populate ("landlord tenant property appointment")
+			.exec((err, agreement) => {
+				let propertyID = agreement.property._id;
+				let landlordID = agreement.landlord._id;
+				let landlordData = agreement.landlord.landlord.data;
+				let tenantID = agreement.tenant._id;
+				let tenantData = agreement.tenant.tenant.data;
+				let appointmentID = agreement.appointment._id;
 				let loi = agreement.letter_of_intent.data;
-				console.log('agreement '+agreement);
-				if (tenantId != IDUser){
+				if (tenantID != IDUser){
 					resolve({message: "sorry you can not create this Letter of Intent"});
 				}
-				if (tenantId == IDUser){
-					if (loi != null){
+				if (tenantID == IDUser){
+					if(loi.created_at){
 						Agreements.createHistory(id, typeDataa);
 						Agreements
 							.findByIdAndUpdate(id, {
@@ -132,91 +142,79 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 								}
 							})
 							.exec((err, updated) => {
+								if(err){
+									reject(err);
+								}
+							});
+						if(!tenantData.name){
+							Users
+								.findByIdAndUpdate(userId, {
+									$set: {
+										"tenant.data": body.tenant
+									}
+								})
+								.exec((err, updated) => {
+									if(err){
+										reject(err);
+									}
+								});
+						}
+						Users
+							.findOne({"_id": tenantID, "tenant.data.bank_account.no": inputBankNo}, (err, user) => {
+								if (user == null){
+									Users
+										.update({"_id": id}, {
+											$push:{
+												"tenant.data.bank_account": {
+													"no": body.tenant.bank_account.no,
+													"name": body.tenant.bank_account.name,
+													"bank": body.tenant.bank_account.bank
+												}
+											}
+										})
+										.exec((err, updated) => {
+											if(err){
+												reject(err);
+											}
+										});
+								}
+							})
+						let monthly_rental = body.monthly_rental;
+						let term_lease = body.term_lease;
+						let security_deposit = 0;
+						let gfd_amount = monthly_rental;
+						let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
+						let remark = body.remark_payment;
+
+						if (term_lease <= 12){
+							security_deposit = gfd_amount;
+						}
+						else if(term_lease > 12 && term_lease <= 24){
+							security_deposit = gfd_amount * 2;
+						}
+
+						let _query = {"_id": id};
+						let loiObj = {$set: {}};
+					    for(var param in body) {
+					    	loiObj.$set["letter_of_intent.data." + param] = body[param];
+					    }
+					    loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
+						loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
+					    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
+					    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
+					    loiObj.$set["letter_of_intent.data.status"] = "pending";
+					    loiObj.$set["letter_of_intent.data.created_at"] = new Date();
+
+					    console.log(loiObj);
+						Agreements
+							.update(_query, loiObj)
+							.exec((err, updated) => {
 								err ? reject(err)
 									: resolve(updated);
 							});
-					}
-
-					//put landlord
-					Users
-						.findById(landlordId, (err, landlorUser) => {
-							let landlordData = landlorUser.landlord.data;
-							Users
-								.findById(userId, (err, tenantUser) => {
-									let tenantData = tenantUser.tenant.data;
-									if(!tenantData.name){
-										Users
-											.findByIdAndUpdate(userId, {
-												$set: {
-													"tenant.data": body.tenant
-												}
-											})
-											.exec((err, updated) => {
-												err ? reject(err)
-													: resolve(updated);
-											});
-									}
-
-									let inputBankNo = body.tenant.bank_account.no;
-									Users
-										.findOne({"_id": tenantId, "tenant.data.bank_account.no": inputBankNo}, (err, user) => {
-											if (user == null){
-												Users
-													.update({"_id": id}, {
-														$push:{
-															"tenant.data.bank_account": {
-																"no": body.tenant.bank_account.no,
-																"name": body.tenant.bank_account.name,
-																"bank": body.tenant.bank_account.bank
-															}
-														}
-													})
-													.exec((err, updated) => {
-														err ? reject(err)
-															: resolve(updated);
-													});
-											}
-										})
-
-									let monthly_rental = body.monthly_rental;
-									let term_lease = body.term_lease;
-									let security_deposit = 0;
-									let gfd_amount = monthly_rental;
-									let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
-									let remark = body.remark_payment;
-
-									if (term_lease <= 12){
-										security_deposit = gfd_amount;
-									}
-									else if(term_lease > 12 && term_lease <= 24){
-										security_deposit = gfd_amount * 2;
-									}
-
-									let _query = {"_id": id};
-									let loiObj = {$set: {}};
-								    for(var param in body) {
-								    	loiObj.$set["letter_of_intent.data." + param] = body[param];
-								    }
-								    loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
-									loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
-								    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
-								    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
-								    // loiObj.$set["letter_of_intent.data.tenant.bank_account"] = body.bank_account;
-								    loiObj.$set["letter_of_intent.data.status"] = "admin-confirmation";
-								    loiObj.$set["letter_of_intent.data.created_at"] = new Date();
-
-								    console.log(loiObj);
-									Agreements
-										.update(_query, loiObj)
-										.exec((err, updated) => {
-											err ? reject(err)
-												: resolve(updated);
-												console.log(updated);
-										});	
-								})
-						})
-				}				
-			})
+					}					
+				}
+			})		
 	});
 });
 
@@ -227,9 +225,10 @@ agreementsSchema.static('sendLoi', (id:string):Promise<any> => {
 		}
 		Agreements
 			.findById(id, (err, agreement) => {
+				agreement.letter_of_intent.data.status = "admin-confirmation";
+				agreement.save();
 				let propertyId = agreement.landlord;
-				let type = "initiateLoi";
-				Agreements.notifications(id, type);
+				let type = "initiateLoi";				
 
 				Properties
 					.findByIdAndUpdate(propertyId, {
@@ -240,6 +239,7 @@ agreementsSchema.static('sendLoi', (id:string):Promise<any> => {
 					.exec((err, updated) => {						
 						let typeMail = "initiateLoi";
 						Agreements.email(id, typeMail)
+						Agreements.notifications(id, type);
 						err ? reject(err)
 							: resolve(updated);
 					});	
@@ -254,7 +254,6 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 		}
 		let type_notif = "acceptLoi";
 		let type = "letter_of_intent";	
-		// let status = "accepted";
 		let IDUser = userId.toString();
 
 		Agreements

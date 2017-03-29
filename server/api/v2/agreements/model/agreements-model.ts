@@ -22,7 +22,7 @@ var AgreementsSchema = new mongoose.Schema({
 	},
 	appointment: {
 		type: Schema.Types.ObjectId,
-		ref: 'Appoinments'
+		ref: 'Appointments'
 	},
 	letter_of_intent: {
 		data: {
