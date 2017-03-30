@@ -87,7 +87,15 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
 			.findOne({_id:userId}, '-salt -password')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements")
+			.populate("landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back")
+			.populate({
+				path: 'companies',
+				populate: {
+					path: 'documents',
+					model: 'Attachments'
+				}
+			})
 			.populate({
 	          path: 'tenant.chat_rooms',
 	          populate: [{
