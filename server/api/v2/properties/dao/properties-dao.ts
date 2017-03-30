@@ -318,7 +318,6 @@ propertiesSchema.static('updateProperties', (id:string, propertiesObject:Object,
                   });
                 }
               })
-              
           }
         });
     });
@@ -456,109 +455,98 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
       var action = 'update';
       var type = 'confirmation';
       Properties.createPropertyHistory(id, action, type).then(res => {
-        if(confirmation == 'approve') {
-          var confirmation_result = 'approved';
-
-          Properties
-            .findById(id)
-            .populate("owner.user")
-            .exec((err, properties) => {
-              if(err) {
-                reject(err);
-              }
-              else{
+        Properties
+          .findById(id)
+          .populate("owner.user")  
+          .exec((err, properties) => {
+            if(err) {
+              reject(err);
+            }
+            else{
+              if(properties.status != 'draft') {
                 var emailTo = properties.owner.user.email;
                 var full_name = properties.owner.user.username;
                 var full_address = properties.address.full_address;
                 var url = config.url.approveProperty;
                 var from = 'Staysmart';
 
-                mail.approveProperty(emailTo, full_name, full_address, url, from);  
-              }
-            })
-        }
-        else if(confirmation == 'reject'){
-          confirmation_result = 'rejected';
+                if(confirmation == 'approve') {
+                  var confirmation_result = 'approved';
+                  mail.approveProperty(emailTo, full_name, full_address, url, from);
+                }
+                else if(confirmation == 'reject'){
+                  confirmation_result = 'rejected';
+                  mail.rejectProperty(emailTo, full_name, full_address, from);
+                }
+                let body:any = proof;
+                Properties
+                  .update({"_id": id}, {
+                    $set: {
+                      "confirmation.status": confirmation_result,
+                      "confirmation.proof": body.proofId,
+                      "confirmation.by": userId,
+                      "confirmation.date": new Date()
+                    }
+                  })
+                  .exec((err, update) => {
+                    if(err) {
+                      reject(err);
+                    }
+                    else{
+                      Properties
+                        .findById(id, (err, result) => {
+                          var devID = result.development;
+                          var unit = '#'+result.address.floor+'-'+result.address.unit;
+                          if(result.status != 'draft' && confirmation == 'approve') {
+                            Developments
+                              .update({"_id":result.development}, {
+                                $push: {
+                                  "properties": id
+                                },
+                                $inc:{
+                                  "number_of_units": 1
+                                }
+                              })
+                              .exec((err, update) => {
+                                  if(err) {
+                                    reject(err);
+                                  }
+                                  else{
+                                    Developments
+                                      .findById(devID)
+                                      .exec((err, data) => {
+                                        if(err) {
+                                          reject(err);
+                                        }
+                                        else{
+                                          var notification = {
+                                            "user": result.owner.user,
+                                            "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
+                                            "type": confirmation_result+"_property",
+                                            "ref_id": id
+                                          };
 
-          Properties
-            .findById(id)
-            .populate("owner.user")
-            .exec((err, properties) => {
-              if(err) {
-                reject(err);
-              }
-              else{
-                var emailTo = properties.owner.user.email;
-                var full_name = properties.owner.user.username;
-                var full_address = properties.address.full_address;
-                var from = 'Staysmart';
-
-                mail.rejectProperty(emailTo, full_name, full_address, from);
-              }
-            });
-        }
-        let body:any = proof;
-        Properties
-          .update({"_id": id}, {
-            $set: {
-              "confirmation.status": confirmation_result,
-              "confirmation.proof": body.proofId,
-              "confirmation.by": userId,
-              "confirmation.date": new Date()
-            }
-          })
-          .exec((err, update) => {
-            if(err) {
-              reject(err);
-            }
-            else{
-              Properties
-                .findById(id, (err, result) => {
-                  var devID = result.development;
-                  var unit = '#'+result.address.floor+'-'+result.address.unit;
-                  if(result.status != 'draft' && confirmation == 'approve') {
-                    Developments
-                      .update({"_id":result.development}, {
-                        $push: {
-                          "properties": id
-                        },
-                        $inc:{
-                          "number_of_units": 1
-                        }
-                      })
-                      .exec((err, update) => {
-                          if(err) {
-                            reject(err);
+                                          Notifications.createNotifications(notification);
+                                        }
+                                      });
+                                    console.log('aaaa');
+                                    resolve({message: 'confirmation updated'});
+                                  }
+                              });
                           }
                           else{
-                            Developments
-                              .findById(devID)
-                              .exec((err, data) => {
-                                if(err) {
-                                  reject(err);
-                                }
-                                else{
-                                  var notification = {
-                                    "user": result.owner.user,
-                                    "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
-                                    "type": confirmation_result+"_property",
-                                    "ref_id": id
-                                  };
-
-                                  Notifications.createNotifications(notification);
-                                }
-                              });
-                            console.log('aaaa');
-                            resolve({message: 'confirmation updated'});
+                            resolve({message: 'property status is draft.'});
                           }
-                      });
-                  }
-                  else{
-                    resolve({message: 'property status is draft.'});
-                  }
-                })
+                        })
+                    }
+                  });
+              }
+              else{
+                resolve({message: 'property status is draft.'});
+              }
             }
-          });
+          })
+        
       });
   });
 });
@@ -601,19 +589,21 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
 
 propertiesSchema.static('ownerProperty', (propertyId:string, userId:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
-      Users.findById(userId, (err, user) => {
-        if(user.role != 'admin') {
-          Properties.findById(propertyId, (err, result) => {
-            let user_id = userId.toString();
-            if(result.owner.user == user_id) {
-              resolve(true);
-            }
-            else{
-              resolve({message: "Forbidden"});
-            }
-          })    
-        }
-      })
+      Users
+        .findById(userId)
+        .exec((err, user) => {
+          if(user.role != 'admin') {
+            Properties.findById(propertyId, (err, result) => {
+              let user_id = userId.toString();
+              if(result.owner.user == user_id) {
+                resolve(true);
+              }
+              else{
+                resolve({message: "Forbidden"});
+              }
+            })    
+          }
+        })
   });
 });
 
