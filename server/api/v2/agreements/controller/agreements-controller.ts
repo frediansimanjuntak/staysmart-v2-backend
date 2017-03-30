@@ -157,9 +157,10 @@ export class AgreementsController {
 	static rejectLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['rejectLoi'](_id, _userId)
+		['rejectLoi'](_id, _userId, _role)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -196,12 +197,24 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static sendTA(req: express.Request, res: express.Response):void {		
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		let _data = req.body;
+
+		AgreementsDAO
+		['sendTA'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static acceptTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _data = req.body;
 				
 		AgreementsDAO
-		['acceptTA'](_id, _userId)
+		['acceptTA'](_id, _data, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

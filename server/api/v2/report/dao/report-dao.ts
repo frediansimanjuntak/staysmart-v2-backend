@@ -20,7 +20,7 @@ export class reportDAO{
 			}
 			Agreements
 				.findById(id)
-				.populate("landlord tenant appointment letter_of_intent.data.landlord.bank_account.bank")
+				.populate("landlord tenant appointment letter_of_intent.data.tenant.bank_account.bank letter_of_intent.data.landlord.bank_account.bank")
 				.populate({
 					path: 'property',
 					populate: {
@@ -36,7 +36,15 @@ export class reportDAO{
 						model: 'Attachments'
 					}
 				})
+				.populate({
+					path: 'tenancy_agreement.data.payment',
+					populate: {
+						path: 'attachment.payment',
+						model: 'Attachments'
+					}
+				})
 				.exec((err, agreement) => {
+					console.log(agreement.letter_of_intent.data.landlord.bank_account);
 					let property = agreement.property;
 					let landlord = agreement.landlord;
 					let tenant = agreement.tenant;
@@ -151,10 +159,10 @@ export class reportDAO{
 						let loi = agreement.letter_of_intent.data;
 						let loiStatus = loi.status;
 						console.log(loiStatus);
-						if (loiStatus == "pending" ||loiStatus == "admin-confirmation" || loiStatus == "landlord-confirmation") {
+						if (loiStatus == "pending" ||loiStatus == "draft" || loiStatus == "payment-confirmed") {
 							reportDAO.reportLOIPending(id).then(res => {
 								let result = juice(res);
-								resolve(res);
+								resolve(res);	
 								
 							});
 						}
@@ -164,8 +172,7 @@ export class reportDAO{
 								resolve(res)
 							});
 						}
-					}
-					
+					}					
 					else if(err){
 						reject(err);
 					}
@@ -226,13 +233,13 @@ export class reportDAO{
 					if(agreement){
 						let ta = agreement.tenancy_agreement.data;
 						let taStatus = ta.status;
-						if (taStatus == "admin-confirmation" || taStatus == "landlord-confirmation") {
+						if (taStatus == "pending") {
 							reportDAO.reportTAPending(id).then(res => {
 								let result = juice(res);
 								resolve(res);
 							});
 						}
-						else if (taStatus == "accepted") {
+						else if (taStatus == "accepted" || taStatus == "admin-confirmation") {
 							reportDAO.reportTAPrint(id).then(res => {
 								let result = juice(res);
 								resolve(res);
@@ -282,7 +289,7 @@ export class reportDAO{
 			let report = body.report;
 			let pdfName = body.pdf_name;
 			// let htmlcode = 'c:/repositories/staysmart-v2-backend/server/template/report-template/pending-tenancyagreement-custom.html'
-			// var html = fs.readFileSync(htmlcode, 'utf8');
+			// var html = fs.readFileSync(htmlcode, 'utf8');	
 			let html = report;
 			var options = { 
 				"format": "A4",

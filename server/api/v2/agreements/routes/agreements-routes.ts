@@ -82,6 +82,10 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.createTA);
 
 		router
+			.route('/ta/send/:id')
+			.post(auth.isAuthenticated(), AgreementsController.sendTA);
+
+		router
 			.route('/ta/status/acccepted/:id')
 			.post(auth.isAuthenticated(), AgreementsController.acceptTA);
 

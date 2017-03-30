@@ -26,8 +26,8 @@ var AgreementsSchema = new mongoose.Schema({
 	},
 	letter_of_intent: {
 		data: {
-			monthly_rental: {type: String},
-			term_lease: {type: String},
+			monthly_rental: {type: Number},
+			term_lease: {type: Number},
 			date_commencement: {type: Date},
 			requirements: 
 			[
