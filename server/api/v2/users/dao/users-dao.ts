@@ -105,6 +105,26 @@ usersSchema.static('searchUser', (search:string):Promise<any> => {
 	});
 });
 
+usersSchema.static('checkUserData', (search:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users
+		.findOne({ $or: [{"username": search}, {"email": search}, {"phone": search}]})
+		.exec((err, users)=>{	
+			if(err) {
+				reject(err);
+			}
+			else{
+				if(users) {
+					resolve({message: true});
+				}
+				else{
+					resolve({message: false});
+				}
+			}
+		})
+	});
+});
+
 usersSchema.static('getPropertyNonManager', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users

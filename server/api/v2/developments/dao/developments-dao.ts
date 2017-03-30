@@ -106,32 +106,34 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
         }
         Developments
           .findById(id, (err,developments) => {
-              if(developments.properties != null){
-                  var ObjectID = mongoose.Types.ObjectId;
-                  var developments_properties =  [].concat(developments.properties)
-                      for  (var i=0; i < developments_properties.length; i++) {
-                            let properties = developments_properties[i];
-                            Properties
-                                .findByIdAndRemove(properties)
-                                .exec((err, deleted) => {
-                                    err ? reject(err)
-                                        : resolve(deleted);
-                                });
-                      }
+            if(developments.properties != null){
+              var ObjectID = mongoose.Types.ObjectId;
+              var developments_properties =  [].concat(developments.properties)
+              for  (var i=0; i < developments_properties.length; i++) {
+                let properties = developments_properties[i];
+                Properties
+                  .findByIdAndRemove(properties)
+                  .exec((err, deleted) => {
+                    if(err) {
+                      reject(err);
+                    }
+                  });
               }
+            }
           })
           .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve(deleted);  
+              if(err) {
+                reject(err);
+              } 
+              else{
+                Developments
+                  .findByIdAndRemove(id)
+                  .exec((err, deleted) => {
+                      err ? reject(err)
+                          : resolve();
+                  });
+              }
           });
-
-        Developments
-          .findByIdAndRemove(id)
-          .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve();
-          });
-        
     });
 });
 
@@ -144,9 +146,9 @@ developmentsSchema.static('updateDevelopments', (id:string, developments:Object)
         Developments
         .findByIdAndUpdate(id, developments)
         .exec((err, update) => {
-              err ? reject(err)
-                  : resolve(update);
-          });
+          err ? reject(err)
+              : resolve(update);
+        });
     });
 });
 

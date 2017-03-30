@@ -8,43 +8,9 @@ import {DreamTalk} from '../../../../global/chat.service';
 
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-
-    	Users
-    		.findById(userId)
-    		.select({"dreamtalk": {$slice: -1}})
-    		.exec((err, res) => {
-    			var last_dreamtalk_data = res.dreamtalk;
-                console.log(last_dreamtalk_data.length);
-                if(last_dreamtalk_data.length > 0) {
-                    for(var i = 0; i < last_dreamtalk_data.length; i++){
-                        var expire = last_dreamtalk_data[i].loginTokenExpires;
-                        var today = new Date();
-                        if(today > expire) {
-                            DreamTalk.requestToken(userId, username).then(token => {
-                                var res_token = JSON.parse(token);
-                                var user_token = res_token.token;
-
-                                ChatRooms.login(user_token, userId, username).then(res => {
-                                    resolve(res);
-                                });
-                            });
-                        }
-                        else{
-                            resolve(last_dreamtalk_data[i]);
-                        }
-                    }
-                }
-        		else{
-                    DreamTalk.requestToken(userId, username).then(token => {
-                        var res_token = JSON.parse(token);
-                        var user_token = res_token.token;
-
-                        ChatRooms.login(user_token, userId, username).then(res => {
-                            resolve(res);
-                        });
-                    });
-                }	
-    		})
+        DreamTalk.requestToken(userId, username).then(token => {
+            resolve(JSON.parse(token));
+        });
     });
 });
 
@@ -60,13 +26,24 @@ chatsSchema.static('login', (token:string, userId:string, username:string):Promi
 	        	Users
 	        		.findByIdAndUpdate(userId, pushObj)
 	        		.exec((err, result) => {
-	        			(err) ? reject(err)
-	        				  : resolve(result);
+	        			if(err) {
+                            reject(err);
+                        }
+                        else{
+                            resolve({'loginId': id, 'loginToken': token, 'loginTokenExpires': tokenExpires});            
+                        }
 	        		})
-	        	resolve({'loginId': id, 'loginToken': token, 'loginTokenExpires': tokenExpires});
         	}
-        	else{
-        		ChatRooms.requestToken(userId, username);
+        	else if(result.err){
+                console.log(result.err);
+        		DreamTalk.requestToken(userId, username).then(token => {
+                    var res_token = JSON.parse(token);
+                    var user_token = res_token.token;
+
+                    ChatRooms.login(user_token, userId, username).then(res => {
+                        resolve(res);
+                    });
+                });
         	}
         });
     });
@@ -88,31 +65,31 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
     });
 });
 
-chatsSchema.static('createRoom', (uid:Object, name:string):Promise<any> => {
+chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        name.toString();
-        console.log(name);
+        property_id.toString();
     	Properties
-    		.findById(name, (err, property) => {
+    		.findById(property_id, (err, property) => {
     			var members = [];
     			members.push(property.owner.user);
+                var manager = '';
     			if(property.manager){
     				members.push(property.manager);	
+                    manager = property.manager;
     			}
-    		    console.log(name);
 		    	ChatRooms
-		    		.findOne({"tenant": uid, "propertyId": name}, (err, result) => {
+		    		.findOne({"tenant": uid, "property_id": property_id}, (err, result) => {
 		    			if(!result){
-		    				DreamTalk.createRoom(uid, name, members).then(result => {
+                            let roomName = uid+'-'+property.owner.user+'-'+property_id;
+		    				DreamTalk.createRoom(uid, roomName, members, property_id, property.owner.user, manager).then(result => {
 					        	if(result.res.message){
-                                    console.log('message: '+result.res.message);
 					        		resolve(result.res);
 					        	}
 					        	else{
 					        		let room = JSON.parse(result.res.body);
 					        		var _chat_rooms = new ChatRooms();
 					        			_chat_rooms.room_id = room._id;
-					                    _chat_rooms.property_id = name;
+					                    _chat_rooms.property_id = property_id;
 					                    _chat_rooms.landlord = property.owner.user;
                                         _chat_rooms.status = 'enquiries';
                                         if(members.length > 1) {

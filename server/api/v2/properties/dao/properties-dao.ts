@@ -12,15 +12,6 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 var split = require('split-string');
 
-propertiesSchema.static('userLandlordProperty', (userId:string):Promise<any> => {
-  return new Promise((resolve:Function, reject:Function) => {
-      Users
-        .findById(userId).exec().then(user => {
-          reject(true);
-        })
-  });
-});
-
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
@@ -119,8 +110,8 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
             select: 'email picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
-              err ? reject(err)
-                  : resolve(properties);
+            err ? reject(err)
+                : resolve(properties);
           });
     });
 });
@@ -139,8 +130,8 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
             select: 'email picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
-              err ? reject(err)
-                  : resolve(properties);
+            err ? reject(err)
+                : resolve(properties);
           });
     });
 });

@@ -53,6 +53,14 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static checkUserData(req: express.Request, res: express.Response):void {
+		let _search = req.params.search;
+		UsersDAO
+		['checkUserData'](_search)
+		.then(users => res.status(200).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getPropertyNonManager(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		
