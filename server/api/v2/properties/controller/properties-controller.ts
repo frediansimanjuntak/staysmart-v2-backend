@@ -63,7 +63,7 @@ export class PropertiesController {
 		let _userId = req["user"]._id;
 		PropertiesDAO
 		['deleteProperties'](_id, _userId)
-		.then(() => res.status(200).end())
+		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -71,9 +71,10 @@ export class PropertiesController {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
 		let _confirmation = req.params.confirmation;
+		let _proof = req.body;
 		PropertiesDAO
-		['confirmationProperty'](_id, _userId, _confirmation)
-		.then(() => res.status(200).end())
+		['confirmationProperty'](_id, _userId, _confirmation, _proof)
+		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -83,7 +84,7 @@ export class PropertiesController {
 
 		PropertiesDAO
 		['shortlistProperty'](_id, _userId)
-		.then(() => res.status(200).end())
+		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -93,7 +94,7 @@ export class PropertiesController {
 
 		PropertiesDAO
 		['unShortlistProperty'](_id, _userId)
-		.then(() => res.status(200).end())
+		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 }
