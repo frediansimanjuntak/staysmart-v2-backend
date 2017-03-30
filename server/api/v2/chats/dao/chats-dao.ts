@@ -83,7 +83,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                             let roomName = uid+'-'+property.owner.user+'-'+property_id;
 		    				DreamTalk.createRoom(uid, roomName, members, property_id, property.owner.user, manager).then(result => {
 					        	if(result.res.message){
-					        		resolve(result.res);
+					        		resolve({message: result.res});
 					        	}
 					        	else{
 					        		let room = JSON.parse(result.res.body);
@@ -135,7 +135,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
 					                                })
 					                                .exec((err, users) => {
 					                                    err ? reject(err)
-					                                        : resolve(users);
+					                                        : resolve({'data': saved, 'message': 'room created'});
 					                                });	
 			                            	    
                                             }
@@ -144,7 +144,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
 					        });
 		    			}
 		    			else{
-		    				resolve(result);
+		    				resolve({'data': result, 'message': 'room exist'});
 		    			}
 		    		})
 	    	})

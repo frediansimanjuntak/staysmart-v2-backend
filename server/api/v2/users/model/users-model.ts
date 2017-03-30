@@ -352,14 +352,15 @@ UsersSchema.methods = {
         return hash;
       });
     }
-
-    bcrypt.hash(sha256(password), 10, function(err, hash){
-      if(err) {
-        return callback(err);
-      } else {
-        return callback(null, hash);
-      }
-    });
+    else{
+      bcrypt.hash(sha256(password), 10, function(err, hash){
+        if(err) {
+          return callback(err);
+        } else {
+          return callback(null, hash);
+        }
+      });
+    }
   }
 };
 
