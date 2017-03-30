@@ -34,17 +34,47 @@ usersSchema.static('getAll', ():Promise<any> => {
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
 			.populate({
 				path: 'owned_properties',
-				populate: {
+				populate: [{
 					path: 'development',
 					model: 'Developments'
-				}
+				},{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+				},{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+				},{
+					path: 'pictures.bed',
+					model: 'Attachments'
+				},{
+					path: 'pictures.dining',
+					model: 'Attachments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+				}]	
 			})
 			.populate({
 				path: 'rented_properties',
-				populate: {
+				populate: [{
 					path: 'development',
 					model: 'Developments'
-				}
+				},{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+				},{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+				},{
+					path: 'pictures.bed',
+					model: 'Attachments'
+				},{
+					path: 'pictures.dining',
+					model: 'Attachments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+				}]
 			})
 			.exec((err, users) => {
 				err ? reject(err)
@@ -84,17 +114,47 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 	        })
 	        .populate({
 				path: 'owned_properties',
-				populate: {
+				populate: [{
 					path: 'development',
 					model: 'Developments'
-				}
+				},{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+				},{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+				},{
+					path: 'pictures.bed',
+					model: 'Attachments'
+				},{
+					path: 'pictures.dining',
+					model: 'Attachments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+				}]	
 			})
 			.populate({
 				path: 'rented_properties',
-				populate: {
+				populate: [{
 					path: 'development',
 					model: 'Developments'
-				}
+				},{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+				},{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+				},{
+					path: 'pictures.bed',
+					model: 'Attachments'
+				},{
+					path: 'pictures.dining',
+					model: 'Attachments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+				}]
 			})
 			.exec((err, users) => {
 				err ? reject(err)

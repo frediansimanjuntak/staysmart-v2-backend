@@ -23,16 +23,32 @@ developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<a
     return new Promise((resolve:Function, reject:Function) => {
         Properties.searchProperties(searchComponent).then(properties => {
           var dev = [];
+          var count_match = 0;
+          var dev_id;
           for(var i = 0; i < properties.length; i++){
+            console.log(i);
             let dev_data = properties[i].development;
+            
             if(dev.length > 0) {
               for(var j = 0; j < dev.length; j++){
-                if(dev[j].development._id === dev_data._id) {
-                  dev[j].count += 1;
+                if(dev[j].development._id == dev_data._id) {
+                  count_match += 1;
+                  dev_id = dev[j].development._id;
                 }
                 else{
-                  dev.push({'development': dev_data, 'count': 1});    
+                  count_match = 0;
                 }
+                   
+              }
+              if(count_match > 0) {
+                for(var k = 0; k < dev.length; k++){
+                  if(dev[k].development._id == dev_id) {
+                    dev[k].count += 1;
+                  }
+                }
+              }
+              else{
+                dev.push({'development': dev_data, 'count': 1}); 
               }
             }
             else{
