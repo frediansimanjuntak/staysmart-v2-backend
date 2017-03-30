@@ -87,7 +87,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             path: 'picture',
             model: 'Attachments'
           },
-          select: 'email picture landlord.data.name tenant.data.name'
+          select: 'username email picture landlord.data.name tenant.data.name'
         })
         property.exec((err, properties) => {
           err ? reject(err)
