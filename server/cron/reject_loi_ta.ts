@@ -13,19 +13,25 @@ export class AutoReject {
         /* runs once at the specified date. */
         let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
         Agreements
-          .update({}, {
-            $set: {"letter_of_intent.status": "expired"}
-          })
-          .where("letter_of_intent.status").in(['pending', 'landlord-confirmation', 'admin-confirmation'])
+          .find({})
+          .where("letter_of_intent.status").in(['pending', 'draft', 'payment-confirmed'])
           .where("letter_of_intent.created_at").lte(oneWeeksAgo)
-          .exec((err, res) => {
-            if(err){
-              console.log('error');
-            } 
-            else
-            {
-              console.log(res);
-            }
+          .exec((err, agreement) => {
+              let agreementData = agreement;
+              for(var i = 0; i < agreementData.lenght; i++){
+                let idAgreement = agreementData[i]._id;
+                let type = "expiredLoi";                
+                agreementData[i].letter_of_intent.status = "expired";
+                agreementData[i].save((err, saved) => {
+                  if(err){
+                    reject(err);
+                  }
+                  if(saved){
+                    Agreements.email(idAgreement, type);
+                    resolve({message:"success"})
+                  }
+                });
+              }
           })
         }, function () {
           /* This function is executed when the job stops */
@@ -43,19 +49,25 @@ export class AutoReject {
         /* runs once at the specified date. */
         let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
         Agreements
-          .update({}, {
-            $set: {"tenancy_agreement.status": "expired"}
-          })
-          .where("tenancy_agreement.status").in(['pending', 'tenant-confirmation', 'admin-confirmation'])
+          .find({})
+          .where("tenancy_agreement.status").in(['pending', 'admin-confirmation'])
           .where("tenancy_agreement.created_at").lte(oneWeeksAgo)
-          .exec((err, res) => {
-            if(err){
-              console.log('error');
-            } 
-            else
-            {
-              console.log(res);
-            }
+          .exec((err, agreement) => {
+              let agreementData = agreement;
+              for(var i = 0; i < agreementData.lenght; i++){
+                let idAgreement = agreementData[i]._id;
+                let type = "expiredTa";                
+                agreementData[i].tenancy_agreement.status = "expired";
+                agreementData[i].save((err, saved) => {
+                  if(err){
+                    reject(err);
+                  }
+                  if(saved){
+                    Agreements.email(idAgreement, type);
+                    resolve({message:"success"})
+                  }
+                });
+              }
           })
         }, function () {
           /* This function is executed when the job stops */

@@ -134,6 +134,7 @@ export class mail{
 			});	
 		})
 	}
+
 	static rejectLoiLandlord(emailTo, fullname, landlord_username, fulladdress, rejectedBy, from){
 		return new Promise((resolve:Function, reject:Function) => {
 			var emailSubject = 'Reject Letter of Intent';
@@ -141,6 +142,19 @@ export class mail{
 			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
 				resolve(res);
 			});	
+		})
+	}
+
+	static rejectLoiAdmin(emailTo, fullname, fulladdress, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Reject Letter of Intent';
+			for (var i = 0; i < emailTo.lenght; i++){
+				var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname[i]+',<br><br><p style="align:justify;">We regret to inform you that your Letter of Intent (LOI) for the property situated at '+fulladdress+' has been rejected by Staysmart.</p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the LOI.</p><P style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br> Staysmart Team</body></html>';
+				EmailService.sendEmail(emailTo[i], emailSubject, content).then(res => {
+					resolve(res);
+				});
+			}
+				
 		})
 	}
 
@@ -194,15 +208,17 @@ export class mail{
 		})
 	}
 
-	static expiredTa(emailTo, fullname, fulladdress, from){
+	static stampCertificateTa(emailTo, fullname, fulladdress, link, from){
 		return new Promise((resolve:Function, reject:Function) => {
-			var emailSubject = 'Accepted Tenancy Agreement';
-			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname+',<br><br><p style="align:justify;">We regret to inform you that the Tenancy Agreement (TA) for the property situated at '+fulladdress+' has been expired.</p><p style="align:justify;">Please feel free to contact us at '+from+' if you require any assistance.</p><br><br>Sincerely,<br> Staysmart Team</body></html>';
-			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
-				resolve(res);
-			});	
+			var emailSubject = 'Stamp Certificate Tenancy Agreement';
+			for (var i = 0; i < emailTo.lenght; i++){
+				var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname+',<br><br><p style="align:justify;"> A copy of the Stamp Certificate for the lease at '+fulladdress+' has been received. You may access it <a target="_blank" href="'+link+'"> here </a></p><p style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br>Thanks,<br> Staysmart Team</body></html>';
+				EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
+					resolve(res);
+				});	
+			}
 		})
-	}
+	}	
 
 	static acceptTaPayment(emailTo, fullname, fulladdress, accepted_by, from){
 		return new Promise((resolve:Function, reject:Function) => {
@@ -234,6 +250,18 @@ export class mail{
 		})
 	}
 
+	static rejectTaAdmin(emailTo, fullname, fulladdress, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Reject Payment Tenancy Agreement';
+			for (var i = 0; i < emailTo.lenght; i++){
+				var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname[i]+',<br><br><p style="align:justify;">We regret to inform you that the Tenancy Agreement (TA) for the property situated at '+fulladdress+' has rejected by Staysmart.</p><p style="align:justify;">Please feel free to contact us at '+from+' if you require any assistance.</p><br><br>Sincerely,<br> Staysmart Team</body></html>';
+				EmailService.sendEmail(emailTo[i], emailSubject, content).then(res => {
+					resolve(res);
+				});
+			}				
+		})
+	}
+
 	static createInventory(emailTo, tenant_username, landlord_username, full_address, from){
 		return new Promise((resolve:Function, reject:Function) => {
 			var emailSubject = 'Receive Inventory List';
@@ -261,6 +289,30 @@ export class mail{
 			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
 				resolve(res);
 			});	
+		})
+	}
+
+	static expiredLoi(emailTo, fullname, full_address, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Expired Inventory List';
+			for (var i = 0; i < emailTo.lenght; i++){
+				var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname[i]+',<br><br><p style="align:justify;">We regret to inform you that your Letter of Intent (LOI) for the property situated at '+full_address+' has been expired.</p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the LOI.</p><P style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br> Staysmart Team</body></html>';
+				EmailService.sendEmail(emailTo[i], emailSubject, content).then(res => {
+					resolve(res);
+				});	
+			}
+		})
+	}
+
+	static expiredTa(emailTo, fullname, fulladdress, from){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Expired Tenancy Agreement';
+			for (var i = 0; i < emailTo.lenght; i++){
+				var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname[i]+',<br><br><p style="align:justify;">We regret to inform you that the Tenancy Agreement (TA) for the property situated at '+fulladdress+' has been expired.</p><p style="align:justify;">Please feel free to contact us at '+from+' if you require any assistance.</p><br><br>Sincerely,<br> Staysmart Team</body></html>';
+				EmailService.sendEmail(emailTo[i], emailSubject, content).then(res => {
+					resolve(res);
+				});	
+			}
 		})
 	}
 }
