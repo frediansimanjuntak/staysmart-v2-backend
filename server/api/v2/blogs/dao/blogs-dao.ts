@@ -24,14 +24,16 @@ blogsSchema.static('getAll', ():Promise<any> => {
               populate: {
                 path: 'picture',
                 model: 'Attachments'
-              }
+              },
+              select: 'username picture'
             }
           },{
             path: 'created_by',
             populate: {
               path: 'picture',
               model: 'Attachments'
-            }
+            },
+            select: 'username picture'
           }])
           .exec((err, blogs) => {
               err ? reject(err)
@@ -54,14 +56,16 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
               populate: {
                 path: 'picture',
                 model: 'Attachments'
-              }
+              },
+              select: 'username picture'
             }
           },{
             path: 'created_by',
             populate: {
               path: 'picture',
               model: 'Attachments'
-            }
+            },
+            select: 'username picture'
           }])
           .exec((err, blogs) => {
               err ? reject(err)
@@ -75,7 +79,26 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
 
         Blogs
           .findOne({"slug": slug})
-          .populate("cover category comments created_by")
+          .populate("cover category")
+          .populate([{
+            path: 'comments',
+            populate: {
+              path: 'user',
+              model: 'Users',
+              populate: {
+                path: 'picture',
+                model: 'Attachments'
+              },
+              select: 'username picture'
+            }
+          },{
+            path: 'created_by',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            },
+            select: 'username picture'
+          }])
           .exec((err, blogs) => {
               err ? reject(err)
                   : resolve(blogs);

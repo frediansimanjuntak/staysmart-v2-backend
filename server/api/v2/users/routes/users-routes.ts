@@ -69,6 +69,10 @@ export class UserRoutes {
 			.get(auth.isAuthenticated(), UsersController.searchUser);
 
 		router
+			.route('/users/check/:search')
+			.get(UsersController.checkUserData);
+
+		router
 			.route('/users/property/nonmanager')
 			.get(auth.isAuthenticated(), UsersController.getPropertyNonManager);
 

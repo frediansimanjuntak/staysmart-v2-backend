@@ -11,8 +11,8 @@ notificationsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("user")
           .exec((err, notifications) => {
-              err ? reject(err)
-                  : resolve(notifications);
+            err ? reject(err)
+                : resolve(notifications);
           });
     });
 });
@@ -24,8 +24,8 @@ notificationsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("user")
           .exec((err, notifications) => {
-              err ? reject(err)
-                  : resolve(notifications);
+            err ? reject(err)
+                : resolve(notifications);
           });
     });
 });
@@ -55,8 +55,8 @@ notificationsSchema.static('deleteNotifications', (id:string):Promise<any> => {
         Notifications
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve();
+            err ? reject(err)
+                : resolve();
           });
         
     });
@@ -75,8 +75,8 @@ notificationsSchema.static('updateNotifications', (id:string):Promise<any> => {
             }
           })
           .exec((err, update) => {
-              err ? reject(err)
-                  : resolve(update);
+            err ? reject(err)
+                : resolve(update);
           });
     });
 });

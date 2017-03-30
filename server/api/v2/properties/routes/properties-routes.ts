@@ -40,9 +40,5 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(), PropertiesController.shortlistProperty)
 			.put(auth.isAuthenticated(), PropertiesController.unShortlistProperty);
 
-		router
-			.route('/properties/landlord/check')
-			.get(auth.isAuthenticated(),PropertiesController.userLandlordProperty);
-		
 	}
 } 

@@ -55,8 +55,9 @@ companiesSchema.static('createCompanies', (companies:Object, created_by:string):
                   }
                 })
                 .exec((err, update) => {
-                    err ? reject(err)
-                        : resolve(update);
+                  if(err) {
+                    reject(err);
+                  }
                 });
               resolve({companiesId});        
             }
@@ -111,17 +112,18 @@ companiesSchema.static('deleteCompanies', (id:string, currentUser:string):Promis
               }
               else if(res == true){
                 if(companies.documents != null) {
-                    var ObjectID = mongoose.Types.ObjectId;
-                    var companies_documents = [].concat(companies.documents)
-                        for (var i = 0; i < companies_documents.length; i++) {
-                            let document = companies_documents[i];
-                            Attachments
-                              .findByIdAndRemove(document)
-                              .exec((err, deleted) => {
-                                  err ? reject(err)
-                                      : resolve(deleted);
-                              });
+                  var ObjectID = mongoose.Types.ObjectId;
+                  var companies_documents = [].concat(companies.documents)
+                  for (var i = 0; i < companies_documents.length; i++) {
+                    let document = companies_documents[i];
+                    Attachments
+                      .findByIdAndRemove(document)
+                      .exec((err, deleted) => {
+                        if(err) {
+                          reject(err);
                         }
+                      });
+                  }
                 }
                 Users
                   .findByIdAndUpdate(companies.created_by, {
@@ -130,15 +132,17 @@ companiesSchema.static('deleteCompanies', (id:string, currentUser:string):Promis
                     }
                   })
                   .exec((err, update) => {
-                        err ? reject(err)
-                            : resolve(update);
-                    });
-
-                Companies
-                  .findByIdAndRemove(id)
-                  .exec((err, deleted) => {
-                      err ? reject(err)
-                          : resolve(deleted);
+                    if(err) {
+                      reject(err);
+                    }
+                    else{
+                      Companies
+                        .findByIdAndRemove(id)
+                        .exec((err, deleted) => {
+                            err ? reject(err)
+                                : resolve(deleted);
+                        });
+                    }
                   });
               }
             });
@@ -161,8 +165,8 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object, currentU
                 Companies
                   .findByIdAndUpdate(id, companies)
                   .exec((err, update) => {
-                        err ? reject(err)
-                            : resolve(update);
+                    err ? reject(err)
+                        : resolve(update);
                   });
               }
             });    

@@ -11,8 +11,8 @@ faqsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("created_by")
           .exec((err, faqs) => {
-              err ? reject(err)
-                  : resolve(faqs);
+            err ? reject(err)
+                : resolve(faqs);
           });
     });
 });
@@ -24,8 +24,8 @@ faqsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("created_by")
           .exec((err, faqs) => {
-              err ? reject(err)
-                  : resolve(faqs);
+            err ? reject(err)
+                : resolve(faqs);
           });
     });
 });
@@ -36,8 +36,8 @@ faqsSchema.static('getByFilter', (filter:string):Promise<any> => {
         Faqs
           .find({'for': filter})
           .exec((err, faqs) => {
-              err ? reject(err)
-                  : resolve(faqs);
+            err ? reject(err)
+                : resolve(faqs);
           });
     });
 });
@@ -68,8 +68,8 @@ faqsSchema.static('deleteFaqs', (id:string):Promise<any> => {
         Faqs
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve();
+            err ? reject(err)
+                : resolve();
           });
         
     });
@@ -84,9 +84,9 @@ faqsSchema.static('updateFaqs', (id:string, faqs:Object):Promise<any> => {
         Faqs
         .findByIdAndUpdate(id, faqs)
         .exec((err, update) => {
-              err ? reject(err)
-                  : resolve(update);
-          });
+          err ? reject(err)
+              : resolve(update);
+        });
     });
 });
 

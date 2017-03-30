@@ -7,8 +7,8 @@ import Users from '../api/v2/users/dao/users-dao';
 
 var DDPClient = require('ddp');
 var headers = {
-	'X-Client-ID': 'xyb6HBZQK8Jq2YX3h',
-	'X-Client-Secret': 'pGnYqGHHdvoy4NOyDzXH6VW7rIjd-evVxnjgotH8 ',
+	'X-Client-ID': '9Q8h3xqoqdFjmd47e',
+	'X-Client-Secret': 'vatELursu2xR0nx4jq6c7nvPn53YKZOryT1r_c14 ',
 	'Content-Type': 'application/json'
 };
 var ddp = new DDPClient({
@@ -166,10 +166,10 @@ export class DreamTalk{
 		});
 	}
 
-	static createRoom(uid, name, members) {
+	static createRoom(uid, name, members, property_id, landlord, manager) {
 		console.log('chat room created');
 		return new Promise((resolve:Function, reject:Function) => {
-			var extra = {status: 'enquiries'};
+			var extra = {status: 'enquiries', properties_id: property_id, tenant: uid, landlord: landlord, manager: manager};
 			DreamTalk.doHTTP('POST', '/rooms', {
 				uid,
 				name, 

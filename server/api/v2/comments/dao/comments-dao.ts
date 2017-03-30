@@ -19,7 +19,8 @@ commentsSchema.static('getAll', ():Promise<any> => {
 				populate: {
 					path: 'picture',
 					model: 'Attachments'
-				}
+				},
+				select: 'username picture'
 			})
 			.exec((err, comments) => {
 				err ? reject(err)
@@ -39,7 +40,8 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 				populate: {
 					path: 'picture',
 					model: 'Attachments'
-				}
+				},
+				select: 'username picture'
 			})
 			.exec((err, comments) => {
 				err ? reject(err)
@@ -56,7 +58,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		var ObjectID = mongoose.Types.ObjectId;  
 		let body:any = comments;
 		var type;
-		if(body.commendId) {
+		if(body.commentID) {
 			type = 'reply/';
 		}
 		else{
