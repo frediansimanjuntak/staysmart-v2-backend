@@ -367,17 +367,21 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 usersSchema.static('updateUserData', (id:Object, type:string, userData:Object, currentUser:string):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
 		Users.validateUser(id, currentUser).then(res => {
+			console.log('user data');
+			console.log(userData);
+			let body:any = userData;
 			if(res.message) {
 				reject({message: res.message});
 			}
 			else if(res == true){
 				var ObjectID = mongoose.Types.ObjectId;  
 				let userObj = {$set: {}};
-				
-				for(var param in userData) {
-					userObj.$set[type+'.data.'+param] = userData[param];
-				}
+					userObj.$set[type+'.data.name'] = body.name;
+					userObj.$set[type+'.data.identification_type'] = body.identification_type;
+					userObj.$set[type+'.data.identification_number'] = body.identification_number;
+					userObj.$set[type+'.data.identification_proof'] = {'front': body.identification_proof.front, 'back': body.identification_proof.back};
 				Users.createHistory(id, type).then(res => {
+					console.log(userObj);
 					Users
 						.findByIdAndUpdate(id, userObj)
 						.exec((err, update) => {
