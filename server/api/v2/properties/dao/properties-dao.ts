@@ -451,111 +451,115 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
     });
 });
 
-propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId:string, confirmation:string):Promise<any> => {
+propertiesSchema.static('confirmationProperty', (id:string, userId:string, confirmation:string, proof:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
-      if(!_.isString(id)) {
-        return reject(new TypeError('Id is not a valid string.'));
-      }
-      if(!_.isString(userId)) {
-        return reject(new TypeError('UserId is not a valid string.'));
-      }
-      if(!_.isObject(proof)) {
-        return reject(new TypeError('Proof is not a valid object.'));
-      }
-      if(!_.isString(confirmation)) {
-        return reject(new TypeError('Confirmation type is not a valid string.'));
-      }
       var action = 'update';
       var type = 'confirmation';
-      Properties.createPropertyHistory(id, action, type);
+      Properties.createPropertyHistory(id, action, type).then(res => {
+        if(confirmation == 'approve') {
+          var confirmation_result = 'approved';
 
-      if(confirmation == 'approve') {
-        var confirmation_result = 'approved';
+          Properties
+            .findById(id)
+            .populate("owner.user")
+            .exec((err, properties) => {
+              if(err) {
+                reject(err);
+              }
+              else{
+                var emailTo = properties.owner.user.email;
+                var full_name = properties.owner.user.username;
+                var full_address = properties.address.full_address;
+                var url = config.url.approveProperty;
+                var from = 'Staysmart';
 
+                mail.approveProperty(emailTo, full_name, full_address, url, from);  
+              }
+            })
+        }
+        else if(confirmation == 'reject'){
+          confirmation_result = 'rejected';
+
+          Properties
+            .findById(id)
+            .populate("owner.user")
+            .exec((err, properties) => {
+              if(err) {
+                reject(err);
+              }
+              else{
+                var emailTo = properties.owner.user.email;
+                var full_name = properties.owner.user.username;
+                var full_address = properties.address.full_address;
+                var from = 'Staysmart';
+
+                mail.rejectProperty(emailTo, full_name, full_address, from);
+              }
+            });
+        }
+        let body:any = proof;
         Properties
-          .findById(id)
-          .populate("owner.user")
-          .exec((err, properties) => {
-            var emailTo = properties.owner.user.email;
-            var full_name = properties.owner.user.username;
-            var full_address = properties.address.full_address;
-            var url = config.url.approveProperty;
-            var from = 'Staysmart';
-
-            mail.approveProperty(emailTo, full_name, full_address, url, from);
+          .update({"_id": id}, {
+            $set: {
+              "confirmation.status": confirmation_result,
+              "confirmation.proof": body.proofId,
+              "confirmation.by": userId,
+              "confirmation.date": new Date()
+            }
           })
-      }
-      else if(confirmation == 'reject'){
-        confirmation_result = 'rejected';
+          .exec((err, update) => {
+            if(err) {
+              reject(err);
+            }
+            else{
+              Properties
+                .findById(id, (err, result) => {
+                  var devID = result.development;
+                  var unit = '#'+result.address.floor+'-'+result.address.unit;
+                  if(result.status != 'draft' && confirmation == 'approve') {
+                    Developments
+                      .update({"_id":result.development}, {
+                        $push: {
+                          "properties": id
+                        },
+                        $inc:{
+                          "number_of_units": 1
+                        }
+                      })
+                      .exec((err, update) => {
+                          if(err) {
+                            reject(err);
+                          }
+                          else{
+                            Developments
+                              .findById(devID)
+                              .exec((err, data) => {
+                                if(err) {
+                                  reject(err);
+                                }
+                                else{
+                                  var notification = {
+                                    "user": result.owner.user,
+                                    "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
+                                    "type": confirmation_result+"_property",
+                                    "ref_id": id
+                                  };
 
-        Properties
-          .findById(id)
-          .populate("owner.user")
-          .exec((err, properties) => {
-            var emailTo = properties.owner.user.email;
-            var full_name = properties.owner.user.username;
-            var full_address = properties.address.full_address;
-            var from = 'Staysmart';
-
-            mail.rejectProperty(emailTo, full_name, full_address, from);
+                                  Notifications.createNotifications(notification);
+                                }
+                              });
+                            console.log('aaaa');
+                            resolve({message: 'confirmation updated'});
+                          }
+                      });
+                  }
+                  else{
+                    resolve({message: 'property status is draft.'});
+                  }
+                })
+            }
           });
-      }
-      let body:any = proof;
-      Properties
-        .update({"_id": id}, {
-          $set: {
-            "confirmation.status": confirmation_result,
-            "confirmation.proof": body.proofId,
-            "confirmation.by": userId,
-            "confirmation.date": Date.now
-          }
-        })
-        .exec((err, update) => {
-          if(err) {
-            reject(err);
-          }
-          else{
-            Properties
-              .findById(id, (err, result) => {
-                var devID = result.development;
-                var unit = '#'+result.address.floor+'-'+result.address.unit;
-                
-                if(result.status != 'draft' && confirmation == 'approve') {
-                  Developments
-                    .update({"_id":result.development}, {
-                      $push: {
-                        "properties": id
-                      },
-                      $inc:{
-                        "number_of_units": 1
-                      }
-                    })
-                    .exec((err, saved) => {
-                        if(err) {
-                          reject(err);
-                        }
-                        else{
-                          Developments
-                            .findById(devID, (error, devResult) => {
-                              var notification = {
-                                "user": result.owner.user,
-                                "message": "Property "+confirmation_result+" for "+unit+" "+devResult.name,
-                                "type": confirmation_result+"_property",
-                                "ref_id": id
-                              };
-
-                              Notifications.createNotifications(notification);        
-                            })
-                            .exec((err, update) => {
-                              err ? reject(err)
-                              : resolve(update);
-                            });
-                        }
-                    });
-                }
-              })
-          }
-        });
+      });
   });
 });
 

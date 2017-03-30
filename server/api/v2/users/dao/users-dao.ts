@@ -31,7 +31,21 @@ usersSchema.static('getAll', ():Promise<any> => {
 
 		Users
 			.find(_query)
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
+			.populate({
+				path: 'owned_properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			})
+			.populate({
+				path: 'rented_properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			})
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -43,7 +57,7 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
 			.findOne({_id:userId}, '-salt -password')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
 			.populate({
 	          path: 'tenant.chat_rooms',
 	          populate: [{
@@ -68,6 +82,20 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 	            select: 'tenant.data'
 	          }],
 	        })
+	        .populate({
+				path: 'owned_properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			})
+			.populate({
+				path: 'rented_properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			})
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -82,7 +110,21 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 		}
 		Users
 			.findById(id, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank owned_properties rented_properties.$.property rented_properties.$.agreement agreements companies")
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
+			.populate({
+				path: 'owned_properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			})
+			.populate({
+				path: 'rented_properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			})
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
