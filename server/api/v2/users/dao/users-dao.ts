@@ -335,7 +335,6 @@ usersSchema.static('updateUserData', (id:Object, type:string, userData:Object, c
 				for(var param in userData) {
 					userObj.$set[type+'.data.'+param] = userData[param];
 				}
-				
 				Users.createHistory(id, type).then(res => {
 					Users
 						.findByIdAndUpdate(id, userObj)
@@ -379,38 +378,42 @@ usersSchema.static('updateUserDataOwners', (id:string, ownerData:Object):Promise
 usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let userOldData = type+'.data';
-		
 		Users
 			.findById(id, userOldData, (err, usersData) => {
 				let datas:any = usersData;
-				if(type === 'tenant') {
+				if(type == 'tenant') {
 					var history_data = datas.tenant.data;
 				}
-				else if(type === 'landlord'){
+				else if(type == 'landlord'){
 					var history_data = datas.landlord.data;
 				}
 				let historyData:any = history_data;
-
 				if(historyData.name != null) {
 					var historyObj = {$push: {}};
 					historyObj.$push[type+'.histories'] = {"date": new Date(), "data": history_data};
 					Users
 						.findByIdAndUpdate(id, historyObj)
 						.exec((err, saved) => {
-							err ? reject(err)
-							: resolve(saved);
-						});
-
-					var unsetObj = {$unset: {}};
-					unsetObj.$unset[userOldData+'.name'] = "";
-					unsetObj.$unset[userOldData+'.identification_type'] = "";
-					unsetObj.$unset[userOldData+'.identification_number'] = "";
-					unsetObj.$unset[userOldData+'.identification_proof'] = "";
-					Users
-						.findByIdAndUpdate(id, unsetObj)
-						.exec((err, update) => {
-							err ? reject(err)
-							: resolve(update);
+							if(err) {
+								reject(err);
+							}
+							else{
+								var unsetObj = {$unset: {}};
+								unsetObj.$unset[userOldData+'.name'] = "";
+								unsetObj.$unset[userOldData+'.identification_type'] = "";
+								unsetObj.$unset[userOldData+'.identification_number'] = "";
+								unsetObj.$unset[userOldData+'.identification_proof'] = "";
+								Users
+									.findByIdAndUpdate(id, unsetObj)
+									.exec((err, update) => {
+										if(err) {
+											reject(err);
+										}
+										else{
+											resolve({message: 'history created.'});
+										}
+									});
+							}
 						});
 				}
 			})
