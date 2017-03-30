@@ -239,15 +239,9 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
     });
 });
 
-propertiesSchema.static('updateProperties', (id:string, propertiesObject:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
+propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(id)) {
-          return reject(new TypeError('Id is not a valid string.'));
-        }
-        if (!_.isObject(propertiesObject)) {
-          return reject(new TypeError('Property is not a valid object.'));
-        }
-        let body:any = propertiesObject;
+        let body:any = properties;
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
             reject({message: res.message});
@@ -255,23 +249,23 @@ propertiesSchema.static('updateProperties', (id:string, propertiesObject:Object,
           else if(res == true){
             Properties
               .findById(id)
-              .exec((err, res) => {
+              .exec((err, property_result) => {
                 if(err) {
                   reject(err);
                 }
                 else{
-                  let old_status = res.status;
+                  let old_status = property_result.status;
                   var action = 'update';
                   var type = 'data';
-                  Properties.createPropertyHistory(id, action, type).then(res => {
-                    Properties.insertData(propertiesObject, id, userId).then(res => {
-                      Properties
-                        .findByIdAndUpdate(id, propertiesObject)
-                        .exec((err, update) => {
-                              if(err) {
-                                reject(err);
-                              }
-                              else{
+                  Properties.createPropertyHistory(id, action, type).then(history => {
+                    Properties
+                      .findByIdAndUpdate(id, properties)
+                      .exec((err, update) => {
+                            if(err) {
+                              reject(err);
+                            }
+                            else{
+                              Properties.insertData(properties, id, userId).then(res => {
                                 if(body.status && body.status != 'draft') {
                                   Properties
                                     .findById(id)
@@ -296,7 +290,7 @@ propertiesSchema.static('updateProperties', (id:string, propertiesObject:Object,
                                             
                                         }
                                         if(owner) {
-                                          Users.updateUserData(userId, 'landlord', owner);
+                                          Users.updateUserData(userId, 'landlord', owner, userId);
                                           var type = 'owner';
                                           Properties.unsetTemp(id, type);
                                         }
@@ -312,8 +306,8 @@ propertiesSchema.static('updateProperties', (id:string, propertiesObject:Object,
                                 else{
                                   resolve({message: 'Properties updated.'});
                                 }
-                              }
-                          });
+                              });
+                            }  
                     });
                   });
                 }
@@ -529,7 +523,6 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                                           Notifications.createNotifications(notification);
                                         }
                                       });
-                                    console.log('aaaa');
                                     resolve({message: 'confirmation updated'});
                                   }
                               });
@@ -592,6 +585,7 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:Object):Prom
       Users
         .findById(userId)
         .exec((err, user) => {
+          console.log(user.role);
           if(user.role != 'admin') {
             Properties.findById(propertyId, (err, result) => {
               let user_id = userId.toString();
@@ -640,6 +634,8 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
       }
       else{
         var type = 'landlord';
+        console.log('landlord data');
+        console.log(body.landlordData);
         Users.updateUserData(userId, type, body.landlordData, userId).then(res => {
           console.log('success');
         });
