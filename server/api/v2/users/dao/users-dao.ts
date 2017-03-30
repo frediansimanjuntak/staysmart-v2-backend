@@ -416,6 +416,9 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 							}
 						});
 				}
+				else{
+					resolve({message: 'still no data'});
+				}
 			})
 	});
 });

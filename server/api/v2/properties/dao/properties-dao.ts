@@ -14,7 +14,7 @@ var split = require('split-string');
 
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        let _query = {};
+        let _query = {"confirmation.status": "approved"};
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
@@ -646,7 +646,9 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
       }
       else{
         var type = 'landlord';
-        Users.updateUserData(userId, type, body.landlordData, userId);
+        Users.updateUserData(userId, type, body.landlordData, userId).then(res => {
+          console.log('success');
+        });
       }
     }
 
