@@ -26,7 +26,6 @@ developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<a
           var count_match = 0;
           var dev_id;
           for(var i = 0; i < properties.length; i++){
-            console.log(i);
             let dev_data = properties[i].development;
             
             if(dev.length > 0) {

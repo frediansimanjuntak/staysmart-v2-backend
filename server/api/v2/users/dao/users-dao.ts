@@ -408,17 +408,17 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 						if(body.picture) {
 							user.picture = body.picture;
 						}
-						if(body.oldpassword) {
+						if(body.oldpassword && body.newpassword) {
 							if(user.password == user.encryptPassword(body.oldpassword)){
 								if(body.newpassword){
 									user.password = body.newpassword;
 								}
 								else{
-									reject({message: 'no password'})
+									reject({message: 'no new password'})
 								}
 							}
 							else if(user.password != user.encryptPassword(body.oldpassword)){
-								reject({message: 'wrong password'});
+								reject({message: "old password didn't match with password in database"});
 							}
 						}
 							            
@@ -435,8 +435,6 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 usersSchema.static('updateUserData', (id:Object, type:string, userData:Object, currentUser:string):Promise<any> =>{
 	return new Promise((resolve:Function, reject:Function) => {
 		Users.validateUser(id, currentUser).then(res => {
-			console.log('user data');
-			console.log(userData);
 			let body:any = userData;
 			if(res.message) {
 				reject({message: res.message});
@@ -449,7 +447,6 @@ usersSchema.static('updateUserData', (id:Object, type:string, userData:Object, c
 					userObj.$set[type+'.data.identification_number'] = body.identification_number;
 					userObj.$set[type+'.data.identification_proof'] = {'front': body.identification_proof.front, 'back': body.identification_proof.back};
 				Users.createHistory(id, type).then(res => {
-					console.log(userObj);
 					Users
 						.findByIdAndUpdate(id, userObj)
 						.exec((err, update) => {
