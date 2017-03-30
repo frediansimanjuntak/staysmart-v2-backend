@@ -273,7 +273,6 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                       var owned_type = property.owned_type;
                                       if(property.temp) {
                                         if(property.temp.owner || property.temp.shareholders.length > 0) {
-                                          console.log('oooooooi');
                                           var shareholders = property.temp.shareholders;
                                           var owner = property.temp.owner;
                                           
@@ -592,7 +591,6 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:Object):Prom
       Users
         .findById(userId)
         .exec((err, user) => {
-          console.log(user.role);
           if(user.role != 'admin') {
             Properties.findById(propertyId, (err, result) => {
               let user_id = userId.toString();
@@ -641,8 +639,6 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
       }
       else{
         var type = 'landlord';
-        console.log('landlord data');
-        console.log(body.landlordData);
         Users.updateUserData(userId, type, body.landlordData, userId).then(res => {
           console.log('success');
         });
