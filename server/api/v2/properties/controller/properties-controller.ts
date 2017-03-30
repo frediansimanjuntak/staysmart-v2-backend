@@ -40,6 +40,7 @@ export class PropertiesController {
 		let _userId = req["user"]._id;
 		let _userEmail = req["user"].email;
 		let _userFullname = req["user"].username;
+		console.log(_properties);
 		PropertiesDAO
 		['createProperties'](_properties, _userId, _userEmail, _userFullname)
 		.then(properties => res.status(201).json(properties))

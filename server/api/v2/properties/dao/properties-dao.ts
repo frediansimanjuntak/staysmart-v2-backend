@@ -156,9 +156,9 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     });
 });
 
-propertiesSchema.static('createProperties', (property:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
+propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      if (!_.isObject(property)) {
+      if (!_.isObject(propertiesObject)) {
         return reject(new TypeError('Property not a valid object.'));
       }
       if (!_.isObject(userId)) {
@@ -166,8 +166,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
       }
       
       var ObjectID = mongoose.Types.ObjectId;  
-      let body:any = property;
-
+      let body:any = propertiesObject;
       Developments
         .findById(body.development)
         .exec((err, development) => {
@@ -187,7 +186,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                     reject({message: 'property for this floor and unit in this development already exist.'});
                   }
                   else{
-                    var _properties = new Properties(property);
+                    var _properties = new Properties(propertiesObject);
                         _properties.slug = slug;
                         _properties.owner.user = userId;
                         _properties.confirmation.status = 'pending';
@@ -197,8 +196,7 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
                           }
                           else if(saved){
                             let propertyID = saved._id;
-
-                            Properties.insertData(property, propertyID, userId).then(res => {
+                            Properties.insertData(propertiesObject, propertyID, userId).then(res => {
                               Users
                                 .update({"_id":userId}, {
                                   $push: {
@@ -241,15 +239,15 @@ propertiesSchema.static('createProperties', (property:Object, userId:Object, use
     });
 });
 
-propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
+propertiesSchema.static('updateProperties', (id:string, propertiesObject:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
           return reject(new TypeError('Id is not a valid string.'));
         }
-        if (!_.isObject(properties)) {
+        if (!_.isObject(propertiesObject)) {
           return reject(new TypeError('Property is not a valid object.'));
         }
-        let body:any = properties;
+        let body:any = propertiesObject;
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
             reject({message: res.message});
@@ -266,9 +264,9 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                   var action = 'update';
                   var type = 'data';
                   Properties.createPropertyHistory(id, action, type).then(res => {
-                    Properties.insertData(properties, id, userId).then(res => {
+                    Properties.insertData(propertiesObject, id, userId).then(res => {
                       Properties
-                        .findByIdAndUpdate(id, properties)
+                        .findByIdAndUpdate(id, propertiesObject)
                         .exec((err, update) => {
                               if(err) {
                                 reject(err);
@@ -485,7 +483,6 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
             var from = 'Staysmart';
 
             mail.approveProperty(emailTo, full_name, full_address, url, from);
-            resolve({message: 'updated'});
           })
       }
       else if(confirmation == 'reject'){
@@ -501,7 +498,6 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
             var from = 'Staysmart';
 
             mail.rejectProperty(emailTo, full_name, full_address, from);
-            resolve({message: 'updated'});
           });
       }
       let body:any = proof;
@@ -515,46 +511,51 @@ propertiesSchema.static('confirmationProperty', (id:string, proof:Object, userId
           }
         })
         .exec((err, update) => {
-          err ? reject(err)
-          : resolve(update);
-        });
-      Properties
-        .findById(id, (err, result) => {
-          var devID = result.development;
-          var unit = '#'+result.address.floor+'-'+result.address.unit;
-          
-          if(result.status != 'draft' && confirmation == 'approve') {
-            Developments
-              .update({"_id":result.development}, {
-                $push: {
-                  "properties": id
-                },
-                $inc:{
-                  "number_of_units": 1
+          if(err) {
+            reject(err);
+          }
+          else{
+            Properties
+              .findById(id, (err, result) => {
+                var devID = result.development;
+                var unit = '#'+result.address.floor+'-'+result.address.unit;
+                
+                if(result.status != 'draft' && confirmation == 'approve') {
+                  Developments
+                    .update({"_id":result.development}, {
+                      $push: {
+                        "properties": id
+                      },
+                      $inc:{
+                        "number_of_units": 1
+                      }
+                    })
+                    .exec((err, saved) => {
+                        if(err) {
+                          reject(err);
+                        }
+                        else{
+                          Developments
+                            .findById(devID, (error, devResult) => {
+                              var notification = {
+                                "user": result.owner.user,
+                                "message": "Property "+confirmation_result+" for "+unit+" "+devResult.name,
+                                "type": confirmation_result+"_property",
+                                "ref_id": id
+                              };
+
+                              Notifications.createNotifications(notification);        
+                            })
+                            .exec((err, update) => {
+                              err ? reject(err)
+                              : resolve(update);
+                            });
+                        }
+                    });
                 }
               })
-              .exec((err, saved) => {
-                  err ? reject(err)
-                      : resolve(saved);
-              });
           }
-
-          Developments
-            .findById(devID, (error, devResult) => {
-              var notification = {
-                "user": result.owner.user,
-                "message": "Property "+confirmation_result+" for "+unit+" "+devResult.name,
-                "type": confirmation_result+"_property",
-                "ref_id": id
-              };
-
-              Notifications.createNotifications(notification);        
-            })
-            .exec((err, update) => {
-              err ? reject(err)
-              : resolve(update);
-            });
-        })
+        });
   });
 });
 
@@ -645,7 +646,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
       }
       else{
         var type = 'landlord';
-        Users.updateUserData(userId, type, body.landlordData, userId); 
+        Users.updateUserData(userId, type, body.landlordData, userId);
       }
     }
 
@@ -703,7 +704,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             });
           })  
       }
-      else if(body.owner && body.owner.company && body.shareholders != null) {
+      else if(body.owner && body.owner.company && body.shareholders.length > 0) {
         if(body.status == 'draft') {
           Properties
             .findByIdAndUpdate(propertyId, {
@@ -733,7 +734,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
       }
     }
     else if(body.owned_type == 'individual'){
-      if(body.shareholders != null) {
+      if(body.shareholders && body.shareholders.length > 0) {
         if(body.status == 'draft') {
           Properties
             .findByIdAndUpdate(propertyId, {
@@ -762,6 +763,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
         }
       }
     }
+    resolve({message: 'done'});
   });
 });
 
