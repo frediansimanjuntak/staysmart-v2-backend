@@ -272,33 +272,40 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                     .exec((err, property) => {
                                       var owned_type = property.owned_type;
                                       if(property.temp) {
-                                        var shareholders = property.temp.shareholders;
-                                        var owner = property.temp.owner;
-                                        var companyId = property.owner.company;
+                                        if(property.temp.owner || property.temp.shareholders.length > 0) {
+                                          console.log('oooooooi');
+                                          var shareholders = property.temp.shareholders;
+                                          var owner = property.temp.owner;
+                                          
+                                          var companyId = property.owner.company;
 
-                                        if(shareholders.length > 0) {
-                                          if(owned_type == 'individual') {
-                                            Users.updateUserDataOwners(userId, shareholders);
-                                            var type = 'shareholders';
+                                          if(shareholders.length > 0) {
+                                            if(owned_type == 'individual') {
+                                              Users.updateUserDataOwners(userId, shareholders);
+                                              var type = 'shareholders';
+                                              Properties.unsetTemp(id, type);
+                                            }
+                                            else{
+                                              Companies.addCompaniesShareholders(companyId, shareholders, userId);
+                                              var type = 'shareholders';
+                                              Properties.unsetTemp(id, type);
+                                            }
+                                              
+                                          }
+                                          if(owner.name) {
+                                            Users.updateUserData(userId, 'landlord', owner, userId);
+                                            var type = 'owner';
                                             Properties.unsetTemp(id, type);
                                           }
-                                          else{
-                                            Companies.addCompaniesShareholders(companyId, shareholders, userId);
-                                            var type = 'shareholders';
-                                            Properties.unsetTemp(id, type);
+                                          var full_address = body.address.full_address;
+                                          var from = 'Staysmart';
+                                          if(body.status && body.status != 'draft') {
+                                            mail.submitProperty(userEmail, userFullname, full_address, from);
+                                            resolve({res, message: 'property created'});
                                           }
-                                            
                                         }
-                                        if(owner) {
-                                          Users.updateUserData(userId, 'landlord', owner, userId);
-                                          var type = 'owner';
-                                          Properties.unsetTemp(id, type);
-                                        }
-                                        var full_address = body.address.full_address;
-                                        var from = 'Staysmart';
-                                        if(body.status && body.status != 'draft') {
-                                          mail.submitProperty(userEmail, userFullname, full_address, from);
-                                          resolve({res, message: 'property created'});
+                                        else{
+                                          resolve({message: 'Properties updated.'});
                                         }
                                       }
                                     })
