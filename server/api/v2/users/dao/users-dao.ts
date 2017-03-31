@@ -635,34 +635,43 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 		var randomToken = Math.random().toString(36).substr(2, 30);
 		var validateEmail = GlobalService.validateEmail(email);
 		if(validateEmail == true) {
-			Users
-				.update({"email": email}, {
-					$set: {
-						"reset_password.token": randomToken,
-						"reset_password.created_at": new Date(),
-						"reset_password.expired_at": new Date(+new Date() + 24*60*60*1000)
-					}
-				})
-				.exec((err, update) => {
-					if(err) {
-						reject(err);
-					}
-					else if(update) {
-						Users
-							.findOne({email: email}, (err, result) => {
-								if(result) {
-									var fullname = result.username;
-									var from = 'Staysmart';
-									var url = config.url.reset_password+randomToken;
-									mail.resetPassword(email, fullname, url, from);
-									resolve({message: 'mail sent'});
-								}
-								else{
-									resolve({message: 'no user registered with that email.'});
-								}
-							})
-					}
-				});
+			Users.checkUserData(email).then(res => {
+				console.log(res);
+				if(res.message == true) {
+					Users
+						.update({"email": email}, {
+							$set: {
+								"reset_password.token": randomToken,
+								"reset_password.created_at": new Date(),
+								"reset_password.expired_at": new Date(+new Date() + 24*60*60*1000)
+							}
+						})
+						.exec((err, update) => {
+							if(err) {
+								reject(err);
+							}
+							else if(update) {
+								Users
+									.findOne({email: email}, (err, result) => {
+										if(result) {
+											var fullname = result.username;
+											var from = 'Staysmart';
+											var url = config.url.reset_password+randomToken;
+											mail.resetPassword(email, fullname, url, from);
+											resolve({message: 'mail sent'});
+										}
+										else{
+											resolve({message: 'no user registered with that email.'});
+										}
+									})
+							}
+						});
+				}
+				else{
+					reject({message: 'no user found with that email.'});
+				}
+			})
+					
 		}
 		else{
 			reject({message: 'Email not valid.'});
