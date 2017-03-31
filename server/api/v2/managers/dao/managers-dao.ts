@@ -43,7 +43,7 @@ managersSchema.static('getOwnManager', (id:string, idmanager:string):Promise<any
       }
 
       Managers
-        .find({"_id": id, "data.manager": idmanager})
+        .findOne({"_id": id, "data": {$elemMatch: {"manager": idmanager}}})
         .exec((err, managers) => {
             err ? reject(err)
                 : resolve(managers);
@@ -56,52 +56,94 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
       if (!_.isObject(managers)) {
         return reject(new TypeError('Notification is not a valid object.'));
       }
-
+      let IDuser = userId.toString();
       let body:any = managers;
+      console.log(body);
       let managerId = body.manager;
       let properties = [].concat(body.property);
-
+      let status = "pending";
+      
       for (var i = 0; i < properties.length; i++){
-        let property = properties[i];
-        Managers
-          .findOne({"property": property}, (err, data)=>{
-            if (data == null){
-              var _managers = new Managers();
-                  _managers.property = property;
-                  _managers.save();
+        let propertyID = properties[i];
+        console.log(propertyID);
+        Properties
+          .findById(propertyID)
+          .exec((err, result) => {
+            if(err){
+              reject(err);
             }
-
-            let propertyId = property;
-            let status = "pending";
-
-            Managers
-              .find({"property": property, "data.manager": managerId}, (err, result)=>{
-                if (result != null){
-                  console.log("maaf sudah pernah input")
-                }
-                else{
+            if(result){
+              if(result.owner.user != IDuser){
+                reject({message: "forbidden"})
+              }
+              if(result.owner.user == IDuser){
+                if(!result.manager){
                   Managers
-                    .update({"property": propertyId}, {
-                      $push: {
-                        "data": {
-                          "manager": managerId,
-                          "chat": body.chat,
-                          "owner": userId,
-                          "status": status,
+                    .findOne({"property": propertyID})
+                    .exec((err, res) => {
+                      if(err){
+                        reject({message : err});
+                      }
+                      else{
+                        if (res == null){
+                          var _managers = new Managers();
+                          _managers.property = propertyID;
+                          _managers.data = [{
+                            "manager": managerId,
+                            "owner": result.owner.user,
+                            "chat": body.chat,
+                            "status": status
+                          }];
+                          _managers.save((err, saved)=>{
+                            err ? reject(err)
+                                : resolve(saved);
+                          });
+                        }
+                        else{
+                          // resolve({message:"response", res}) 
+                          let IDManager = res._id.toString();                         
+                          Managers
+                            .findOne({"_id": IDManager, "data": {$elemMatch: {"manager": managerId}}})
+                            .exec((err, manager) => {
+                              if(err){
+                                reject("message",err);
+                              }
+                              else{
+                                // resolve({message: "res", manager});
+                                if(manager == null){
+                                  Managers
+                                    .update({"_id": IDManager}, {
+                                      $push: {
+                                        "data": {
+                                          "manager": managerId,
+                                          "chat": body.chat,
+                                          "owner": userId,
+                                          "status": status
+                                        }
+                                      }
+                                    })
+                                    .exec((err, updated) => {
+                                      if(err){
+                                        reject(err)
+                                      }
+                                      else{
+                                        Managers.notificationManager(IDManager, status, managerId); 
+                                        resolve({message:"updated"});
+                                      }
+                                    })
+                                }
+                                else{
+                                  resolve({message: "Already been input manager"});
+                                }
+                              }
+                            })
                         }
                       }
                     })
-                    .exec((err, update) => {
-                      if(err) {
-                        reject(err);
-                      }
-                      else{
-                        Managers.notificationManager(propertyId, status, managerId);      
-                      }
-                    });        
                 }
-              })  
-           }) 
+              }
+            }
+          })   
         }    
     });
 });
@@ -213,9 +255,9 @@ managersSchema.static('changeStatusManagers', (id:string, status:string, userId:
     });
 });
 
-managersSchema.static('notificationManager', (propertyId:string, status:string, managerId:string):Promise<any> => {
+managersSchema.static('notificationManager', (id:string, status:string, managerId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
-    if (!_.isString(propertyId)) {
+    if (!_.isString(id)) {
       return reject(new TypeError('Id is not a valid string.'));
     }
 
@@ -224,49 +266,59 @@ managersSchema.static('notificationManager', (propertyId:string, status:string, 
     let user = "";
 
     Managers
-      .find({"property": propertyId, "data.manager": managerId}, (err, managerData) => {
-        let id = managerData._id;
-        let DataManager:any = managerData.data;
-        let managerId = DataManager.manager;
-        let ownerId = DataManager.owner;
+      .findOne({"_id": id, "data": {$elemMatch: {"manager": managerId}}})
+      .exec((err, res) => {
+        if(err){
+          reject(err);
+        }
+        if(res){
+          let id = res._id;
+          let propertyId = res.property;
+          let DataManager = [].concat(res.data);
+          for(var i = 0; i < DataManager.length; i++){
+            let managerId = DataManager[i].manager;
+            let ownerId = DataManager[i].owner;
 
-        Properties
-          .findById(propertyId, (err, result) => {
-            var devID = result.development;
-            var unit = '#' + result.address.floor + '-' + result.address.unit;
-            Developments
-              .findById(devID, (error, devResult) => {
-                if(status == "pending"){
-                  message = "You have been selected as a manager in " + unit + " " + devResult.name;
-                  type_notif = "received_LOI";
-                  user = managerId;
-                }
-                if(status == "accepted"){
-                  message = "you have received as a manager in " + unit + " " + devResult.name;
-                  type_notif = "rejected_LOI";
-                  user = managerId;
-                }
-                if(status == "rejected"){
-                  message = "You have rejected as a manager in " + unit + " " + devResult.name;
-                  type_notif = "accepted_LOI";
-                  user = ownerId;
-                }
+            Properties
+              .findById(propertyId, (err, result) => {
+                var devID = result.development;
+                var unit = '#' + result.address.floor + '-' + result.address.unit;
+                Developments
+                  .findById(devID, (error, devResult) => {
+                    if(status == "pending"){
+                      message = "You have been selected as a manager in " + unit + " " + devResult.name;
+                      type_notif = "received_LOI";
+                      user = managerId;
+                    }
+                    if(status == "accepted"){
+                      message = "you have received as a manager in " + unit + " " + devResult.name;
+                      type_notif = "rejected_LOI";
+                      user = managerId;
+                    }
+                    if(status == "rejected"){
+                      message = "You have rejected as a manager in " + unit + " " + devResult.name;
+                      type_notif = "accepted_LOI";
+                      user = ownerId;
+                    }
 
-                var notification = {
-                  "user": user,
-                  "message": message,
-                  "type": type_notif,
-                  "ref_id": id
-                };
+                    var notification = {
+                      "user": user,
+                      "message": message,
+                      "type": type_notif,
+                      "ref_id": id
+                    };
 
-                Notifications.createNotifications(notification);        
-              })
-              .exec((err, update) => {
-                err ? reject(err)
-                    : resolve(update);
-              });
-      })    
-    }) 
+                    Notifications.createNotifications(notification);        
+                  })
+                  .exec((err, update) => {
+                    err ? reject(err)
+                        : resolve(update);
+                        console.log("notif", update);
+                  });
+              })  
+          }
+        }
+      })
   });
 });
 
