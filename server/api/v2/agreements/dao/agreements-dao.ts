@@ -11,15 +11,28 @@ import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import {mail} from '../../../../email/mail';
 
-agreementsSchema.static('getAll', (userId:string):Promise<any> => {
+agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		
-		Agreements
-			.find({$or: [{"tenant": userId},{"landlord":userId}] })
+		if(role == "admin"){
+			let _query = {};
+			Agreements
+			.find(_query)
+			.populate("landlord tenant property")
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
 			});
+		}
+		else{
+			Agreements
+			.find({$or: [{"tenant": userId},{"landlord":userId}] })
+			.populate("landlord tenant property")
+			.exec((err, agreements) => {
+				err ? reject(err)
+					: resolve(agreements);
+			});
+		}
 	});
 });
 
@@ -102,7 +115,7 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 });
 
 //LOI
-agreementsSchema.static('getLoi', (id:string):Promise<any> => {
+agreementsSchema.static('getLoi', (id:string, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -390,7 +403,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string):Pro
 });
 
 //TA
-agreementsSchema.static('getTA', (id:string):Promise<any> => {
+agreementsSchema.static('getTA', (id:string, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -669,6 +682,22 @@ agreementsSchema.static('stampCertificateTA', (id:string, data:Object):Promise<a
 });
 
 //inventory list
+agreementsSchema.static('getInventoryList', (id:string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Agreements
+			.findById(id)
+			.select("inventory_list.data")
+			.populate("inventory_list.data.lists.items.attachments")
+			.exec((err, agreements) => {
+				err ? reject(err)
+					: resolve(agreements.inventory_list.data);
+			});
+	});
+});
+
 agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -728,6 +757,9 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 										}
 									});
 							});							
+						}
+						if(il.status == "completed"){
+							resolve({message: "can not change"})
 						}
 						if(!il){
 							agreement.inventory_list.data.confirmation.landlord.sign = body.confirmation.landlord.sign;
@@ -1274,11 +1306,25 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 					Agreements.feeNeededRefund(paymentID).then(res =>{
 						agreement.letter_of_intent.data.status = "rejected";
 						agreement.save((err, saved) => {
-							let typeMail = "rejectLoiPayment";
-							Agreements.email(id, typeMail).then(res => {
-								Agreements.notification(id, type_notif);
-								resolve({status: saved.letter_of_intent.data.status});
-							})
+							Payments
+								.update({"_id": id}, {
+									$set:{
+										"status": "rejected",
+										"remarks": body.remarks
+									}
+								})
+								.exec((err, updated) => {
+									if(err){
+										reject(err)
+									}
+									else if(updated){
+										let typeMail = "rejectLoiPayment";
+										Agreements.email(id, typeMail).then(res => {
+											Agreements.notification(id, type_notif);
+											resolve({status: saved.letter_of_intent.data.status});
+										})
+									}
+								})						
 				      	});	
 					});
 				}

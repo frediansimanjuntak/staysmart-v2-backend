@@ -4,9 +4,10 @@ import AgreementsDAO from '../dao/agreements-dao';
 export class AgreementsController {
 	static getAll(req: express.Request, res: express.Response):void {		
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getAll'](_userId)
+		['getAll'](_userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
