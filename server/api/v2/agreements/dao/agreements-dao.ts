@@ -58,31 +58,46 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 		}
 		let body:any = agreements;
 		Properties
-			.findById(body.property, (err, property) => {
-				if (err){
+			.findById(body.property)
+			.exec((err, properties) => {
+				if(err){
 					reject(err);
 				}
-				else if(property){
-					let propertyId = property._id;
-					let propertyStatus = property.status
-					let landlordId = property.owner.user;
-					if(propertyStatus == "published" || propertyStatus == "initiated"){
-						var _agreements = new Agreements({
-							"property": propertyId,
-							"tenant": userId,
-							"landlord": landlordId,
-							"appointment": body.appointment
-						});		
-						_agreements.save((err, saved)=>{
-							err ? reject(err)
-								: resolve(saved);
-						});
-					}
-					else{
-						reject({message: "this property has rented"})
-					}					
-				}				
-			})		
+				else{
+					let propertyId = properties._id;
+					let propertyStatus = properties.status
+					let landlordId = properties.owner.user;
+					Agreements
+						.findOne({"property": body.property, "tenant": userId})
+						.exec((err, agreement) => {
+							if(err){
+								reject(err);
+							}
+							if(agreement){
+								if(agreement == null){
+									if(propertyStatus == "published" || propertyStatus == "initiated"){
+										var _agreements = new Agreements({
+											"property": propertyId,
+											"tenant": userId,
+											"landlord": landlordId,
+											"appointment": body.appointment
+										});		
+										_agreements.save((err, saved)=>{
+											err ? reject(err)
+												: resolve(saved);
+										});
+									}
+									else{
+										reject({message: "this property has rented"})
+									}
+								}
+								else if(agreement != null){
+									resolve({message: "agreement has been made"})
+								}
+							}
+						})					
+				}
+			})			
 	});
 });
 
@@ -233,7 +248,6 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 					    loiObj.$set["letter_of_intent.data.status"] = "draft";
 					    loiObj.$set["letter_of_intent.data.created_at"] = new Date();
 
-					    console.log(loiObj);
 						Agreements
 							.update(_query, loiObj)
 							.exec((err, updated) => {
@@ -263,7 +277,6 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 					reject(err);
 				}
 				else if(agreement){
-					console.log(agreement);
 					let tenantId = agreement.tenant._id;
 					let propertyId = agreement.property._id;
 					if(tenantId != IDUser){
@@ -309,7 +322,6 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 		let type_notif = "acceptLoi";
 		let type = "letter_of_intent";	
 		let IDUser = userId.toString();
-		console.log(data);
 
 		Agreements
 			.findById(id)
@@ -573,7 +585,6 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 						.exec((err, updated) => {
 							if(err){
 								reject(err);
-								console.log(err);
 							}
 							if(updated){
 								Users
@@ -589,7 +600,6 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 									.exec((err, updated) => {
 										if(err){
 											reject(err);
-											console.log(err);
 										}
 									});
 							}
@@ -906,10 +916,8 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 		let paymentType = "";
 		let payObj = {$set: {}};
 
-		console.log(body);
 		Agreements
 			.findById(id, (err, agreement) => {
-				console.log("ini agreement", agreement)
 				let loiData = agreement.letter_of_intent.data;
 				let gfd = loiData.gfd_amount;
 				let std = loiData.sd_amount;
@@ -953,7 +961,6 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 				_payment.save();	
 
 				var paymentId = _payment._id;
-				console.log(paymentId)
 				if(type == "letter_of_intent"){
 					payObj.$set["letter_of_intent.data.payment"] = paymentId;
 				}
@@ -966,7 +973,6 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 					.exec((err, updated) => {
 			      		err ? reject(err)
 			      			: resolve(updated);
-			      			console.log("update",updated);
 			      	});	
 			})		
 	});

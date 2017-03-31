@@ -44,7 +44,6 @@ export class reportDAO{
 					}
 				})
 				.exec((err, agreement) => {
-					console.log(agreement.letter_of_intent.data.landlord.bank_account);
 					let property = agreement.property;
 					let landlord = agreement.landlord;
 					let tenant = agreement.tenant;
@@ -158,7 +157,6 @@ export class reportDAO{
 					if(agreement){
 						let loi = agreement.letter_of_intent.data;
 						let loiStatus = loi.status;
-						console.log(loiStatus);
 						if (loiStatus == "pending" ||loiStatus == "draft" || loiStatus == "payment-confirmed") {
 							reportDAO.reportLOIPending(id).then(res => {
 								let result = juice(res);
@@ -288,8 +286,6 @@ export class reportDAO{
 			let body:any = data;
 			let report = body.report;
 			let pdfName = body.pdf_name;
-			// let htmlcode = 'c:/repositories/staysmart-v2-backend/server/template/report-template/pending-tenancyagreement-custom.html'
-			// var html = fs.readFileSync(htmlcode, 'utf8');	
 			let html = report;
 			var options = { 
 				"format": "A4",

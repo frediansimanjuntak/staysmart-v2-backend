@@ -58,14 +58,12 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
       }
       let IDuser = userId.toString();
       let body:any = managers;
-      console.log(body);
       let managerId = body.manager;
       let properties = [].concat(body.property);
       let status = "pending";
       
       for (var i = 0; i < properties.length; i++){
         let propertyID = properties[i];
-        console.log(propertyID);
         Properties
           .findById(propertyID)
           .exec((err, result) => {
@@ -100,7 +98,6 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
                           });
                         }
                         else{
-                          // resolve({message:"response", res}) 
                           let IDManager = res._id.toString();                         
                           Managers
                             .findOne({"_id": IDManager, "data": {$elemMatch: {"manager": managerId}}})
@@ -109,7 +106,6 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
                                 reject("message",err);
                               }
                               else{
-                                // resolve({message: "res", manager});
                                 if(manager == null){
                                   Managers
                                     .update({"_id": IDManager}, {
@@ -313,7 +309,6 @@ managersSchema.static('notificationManager', (id:string, status:string, managerI
                   .exec((err, update) => {
                     err ? reject(err)
                         : resolve(update);
-                        console.log("notif", update);
                   });
               })  
           }
