@@ -54,11 +54,11 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
             else{
               AWSService.upload(key, file).then(fileDetails => {
                 console.log(fileDetails);
-                
+                var fileName = fileDetails.name.replace(" ","%20");
                 var _attachment = new Attachments(attachments);
                 _attachment.name = fileDetails.name;
                 _attachment.type = fileDetails.type;
-                _attachment.key = 'attachment/'+fileDetails.name;
+                _attachment.key = 'attachment/'+fileName;
                 _attachment.size = files[i].size;    
                 _attachment.save((err, saved) => {
                   if(err != null) 
