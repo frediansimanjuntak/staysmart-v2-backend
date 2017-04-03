@@ -1257,7 +1257,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 						});
 				}
 				if (type == "tenancy_agreement"){
-					agreement.tenancy_agreement.data.status = "landlord-confirmation";
+					agreement.tenancy_agreement.data.status = "accepted";
 					paymentID = taData.payment;
 					totalFee = scd;
 					totalReceive = receive_payment;
