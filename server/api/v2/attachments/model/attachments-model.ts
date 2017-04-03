@@ -3,6 +3,7 @@
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 import {AWSService} from '../../../../global/aws.service';
+import config from '../../../../config/environment/index';
 
 var Schema = mongoose.Schema;
 
@@ -14,7 +15,21 @@ var AttachmentsSchema = new mongoose.Schema({
 	metadata: {},
 	remarks: {type: String},
 	uploaded_at: {type: Date, default: Date.now}
+}, 
+{
+	toObject: {
+		virtuals: true
+	},
+	toJSON: {
+		virtuals: true
+	}
 });
+
+AttachmentsSchema
+	.virtual('url')
+	.get(function() {
+		return 'https://'+config.awsBucket+config.awsUrl+this.key;
+	});
 
 AttachmentsSchema.post('remove', function(removed){
   AWSService.delete(removed).then(res => {

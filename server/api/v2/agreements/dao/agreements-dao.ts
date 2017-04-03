@@ -18,7 +18,21 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 			let _query = {};
 			Agreements
 			.find(_query)
-			.populate("landlord tenant property letter_of_intent.data.payment tenancy_agreement.data.payment")
+			.populate("landlord tenant property")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
@@ -27,7 +41,21 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 		else{
 			Agreements
 			.find({$or: [{"tenant": userId},{"landlord":userId}] })
-			.populate("landlord tenant property letter_of_intent.data.payment tenancy_agreement.data.payment")
+			.populate("landlord tenant property")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
@@ -43,7 +71,21 @@ agreementsSchema.static('getById', (id:string):Promise<any> => {
 		}
 		Agreements
 			.findById(id)
-			.populate("landlord tenant property letter_of_intent.data.payment tenancy_agreement.data.payment")
+			.populate("landlord tenant property")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
@@ -139,6 +181,13 @@ agreementsSchema.static('getLoi', (id:string, userId:string):Promise<any> => {
 			.findById(id)
 			.select("letter_of_intent.data")
 			.populate("landlord tenant property letter_of_intent.data.tenant.bank_account.bank")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements.letter_of_intent.data);

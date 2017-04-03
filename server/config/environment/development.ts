@@ -11,6 +11,7 @@ export default {
   },
   
   awsBucket: 'staysmart-revamp',
+  awsUrl: '.s3-ap-southeast-1.amazonaws.com/',
 
   dream_talk: {
   	ws: 'wss://dt.shrimpventures.com/websocket',
