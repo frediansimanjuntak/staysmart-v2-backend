@@ -95,7 +95,7 @@ var UsersSchema = new mongoose.Schema({
 					ref: 'Banks'
 				},
 				name: {type: String},
-				no: {type: Number, unique: true}
+				no: {type: Number}
 			}
 		},
 		histories: 
