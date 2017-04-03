@@ -170,7 +170,7 @@ var PropertiesSchema = new mongoose.Schema({
 			}
 		],
 	},
-	status: {type: String, enum:['draft','published','initiated','rented'], default: 'published'},
+	status: {type: String, enum:['draft','pending','published','initiated','rented'], default: 'pending'},
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},

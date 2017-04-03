@@ -495,6 +495,12 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                     else{
                       Properties
                         .findById(id, (err, result) => {
+                          result.status = 'published';
+                          result.save((err, update) => {
+                            if(err) {
+                              reject(err);
+                            }
+                          });
                           var devID = result.development;
                           var unit = '#'+result.address.floor+'-'+result.address.unit;
                           if(result.status != 'draft' && confirmation == 'approve') {
