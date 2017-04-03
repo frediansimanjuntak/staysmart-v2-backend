@@ -602,6 +602,9 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:Object):Prom
               }
             })    
           }
+          else{
+            resolve(true);
+          }
         })
   });
 });

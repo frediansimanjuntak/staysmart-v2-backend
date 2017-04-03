@@ -14,7 +14,7 @@ var PropertiesSchema = new mongoose.Schema({
 	address: {
 		floor:{type: String},
 		unit: {type: String},
-		block_number: {type: Number},
+		block_number: {type: String},
 		street_name: {type: String},
 		postal_code: {type: Number},
 		coordinates: 

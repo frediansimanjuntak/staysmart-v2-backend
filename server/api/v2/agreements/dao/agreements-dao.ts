@@ -115,7 +115,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 							if(err){
 								reject(err);
 							}
-							if(agreement){
+							else{
 								if(agreement == null){
 									if(propertyStatus == "published" || propertyStatus == "initiated"){
 										var _agreements = new Agreements({
@@ -136,10 +136,10 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 								else if(agreement != null){
 									resolve({message: "agreement has been made"})
 								}
-							}
-						})					
+							}							
+						});					
 				}
-			})			
+			});			
 	});
 });
 
@@ -523,7 +523,7 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 							Users
 								.update({"_id": landlordId}, {
 									$push: {
-										"landlord.data.$.histories": {
+										"landlord.histories": {
 											"date": new Date(),
 											"data": landlordDataBank
 										}

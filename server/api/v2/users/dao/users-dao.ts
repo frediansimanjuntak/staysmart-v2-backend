@@ -733,6 +733,9 @@ usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<
 					resolve(true);
 				}
 			}
+			else{
+				resolve(true);
+			}
 		})
 	});
 });
