@@ -238,7 +238,13 @@ commentsSchema.static('validationComment', (userId:string, commentsId:string):Pr
 										}
 									})
 							}
+							else{
+								resolve(true);
+							}
 						})
+				}
+				else{
+					resolve(true);
 				}
 			})
 	});
@@ -266,9 +272,18 @@ commentsSchema.static('validationReply', (userId:string, commentsId:string, repl
 													}
 												})
 										}
+										else{
+											resolve(true);
+										}
 									})
 							}
+							else{
+								resolve(true);
+							}
 						})
+				}
+				else{
+					resolve(true);
 				}
 			})
 	});
