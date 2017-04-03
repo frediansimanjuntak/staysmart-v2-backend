@@ -82,7 +82,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
                     var from = 'Staysmart';
 
                     mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                    resolve({message: 'appoinment proposed'});
+                    resolve({appoinment_id: saved._id, message: 'appoinment proposed'});
                   })
               }
             });
