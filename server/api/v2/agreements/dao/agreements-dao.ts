@@ -18,7 +18,7 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 			let _query = {};
 			Agreements
 			.find(_query)
-			.populate("landlord tenant property")
+			.populate("landlord tenant property letter_of_intent.data.payment tenancy_agreement.data.payment")
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
@@ -27,7 +27,7 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 		else{
 			Agreements
 			.find({$or: [{"tenant": userId},{"landlord":userId}] })
-			.populate("landlord tenant property")
+			.populate("landlord tenant property letter_of_intent.data.payment tenancy_agreement.data.payment")
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
@@ -43,7 +43,7 @@ agreementsSchema.static('getById', (id:string):Promise<any> => {
 		}
 		Agreements
 			.findById(id)
-			.populate("landlord tenant property")
+			.populate("landlord tenant property letter_of_intent.data.payment tenancy_agreement.data.payment")
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
