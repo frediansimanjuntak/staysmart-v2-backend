@@ -6,3 +6,10 @@ unit_coverage
 client/dev/bower_components
 typings
 dist
+*.log
+
+*.cfg
+
+*.state
+
+*.do
