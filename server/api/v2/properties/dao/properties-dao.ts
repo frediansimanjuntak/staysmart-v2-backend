@@ -14,7 +14,8 @@ var split = require('split-string');
 
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        let _query = {"confirmation.status": "approved"};
+        var today = new Date();
+        let _query = {"confirmation.status": "approved", "details.available": {$lte: today}};
         var property = Properties.find(_query);
 
         let search:any = searchComponent;

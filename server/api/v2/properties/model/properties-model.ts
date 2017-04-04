@@ -2,7 +2,7 @@
 
 import * as express from 'express';
 import * as mongoose from 'mongoose';
-
+import Users from '../../users/dao/users-dao';
 var Schema = mongoose.Schema;
 
 var PropertiesSchema = new mongoose.Schema({
@@ -178,6 +178,60 @@ var PropertiesSchema = new mongoose.Schema({
 		data: {}
 	}],
 	created_at: {type: Date}
+}, {
+	toObject: {
+		virtuals: true
+	},
+	toJSON: {
+		virtuals: true
+	}
 });
+
+PropertiesSchema
+	.virtual('rented_until')
+	.get(function() {
+		if(this.status == 'rented') {
+			Users
+				.findOne({"rented_properties": {$elemMatch: {"property": this._id}}})
+				.exec((err, property) => {
+					if(err) {
+						return '';
+					}
+					else{
+						for(var i = 0; i < property.rented_properties.length; i++){
+							if(property.rented_properties[i].property == this._id) {
+								return property.rented_properties[i];
+							}
+							else{
+								return '';
+							}
+						}
+					}
+				})
+		}
+		else{
+			return '';	
+		}
+	});
+
+PropertiesSchema
+	.virtual('rented_by')
+	.get(function() {
+		if(this.status == 'rented') {
+			Users
+				.findOne({"rented_properties": {$elemMatch: {"property": this._id}}})
+				.exec((err, property) => {
+					if(err) {
+						return '';
+					}
+					else{
+						return {_id: property._id, username: property.username};
+					}
+				})
+		}
+		else{
+			return '';	
+		}
+	});
 
 export default PropertiesSchema;

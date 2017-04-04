@@ -31,6 +31,9 @@ appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
             },{
               path: 'pictures.kitchen',
               model: 'Attachments'
+            },{
+              path: 'development',
+              model: 'Developments'
             }]
           })
           .exec((err, appointments) => {
@@ -63,6 +66,9 @@ appointmentsSchema.static('getById', (id:string):Promise<any> => {
             },{
               path: 'pictures.kitchen',
               model: 'Attachments'
+            },{
+              path: 'development',
+              model: 'Developments'
             }]
           })
           .exec((err, appointments) => {
