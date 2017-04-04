@@ -33,6 +33,38 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 					model: 'Attachments'
 				}
 			})
+			.populate({
+				path: 'appointment',
+				populate: [{
+					path: 'tenant',
+					model: 'Users'
+				}, {
+					path: 'landlord',
+					model: 'Users'
+				}, {
+					path: 'property',
+					model: 'Properties',
+		            populate: [{
+		              path: 'pictures.living',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.dining',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.bed',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.toilet',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.kitchen',
+		              model: 'Attachments'
+		            },{
+		              path: 'development',
+		              model: 'Developments'
+		            }]
+				}]
+			})
 			.exec((err, agreements) => {
 				err ? reject(err)
 					: resolve(agreements);
@@ -55,6 +87,38 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 					path: 'attachment.payment',
 					model: 'Attachments'
 				}
+			})
+			.populate({
+				path: 'appointment',
+				populate: [{
+					path: 'tenant',
+					model: 'Users'
+				}, {
+					path: 'landlord',
+					model: 'Users'
+				}, {
+					path: 'property',
+					model: 'Properties',
+		            populate: [{
+		              path: 'pictures.living',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.dining',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.bed',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.toilet',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.kitchen',
+		              model: 'Attachments'
+		            },{
+		              path: 'development',
+		              model: 'Developments'
+		            }]
+				}]
 			})
 			.exec((err, agreements) => {
 				err ? reject(err)
@@ -85,6 +149,38 @@ agreementsSchema.static('getById', (id:string):Promise<any> => {
 					path: 'attachment.payment',
 					model: 'Attachments'
 				}
+			})
+			.populate({
+				path: 'appointment',
+				populate: [{
+					path: 'tenant',
+					model: 'Users'
+				}, {
+					path: 'landlord',
+					model: 'Users'
+				}, {
+					path: 'property',
+					model: 'Properties',
+		            populate: [{
+		              path: 'pictures.living',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.dining',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.bed',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.toilet',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.kitchen',
+		              model: 'Attachments'
+		            },{
+		              path: 'development',
+		              model: 'Developments'
+		            }]
+				}]
 			})
 			.exec((err, agreements) => {
 				err ? reject(err)
