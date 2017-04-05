@@ -184,7 +184,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                     
                     var notification = {
                       "user": appointment.property.tenant,
-                      "message": "Appointment "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.property.choosen_time.date+" from "+appointment.property.choosen_time.from+" to "+appointment.property.choosen_time.to,
+                      "message": "Appointment "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.chosen_time.date+" from "+appointment.chosen_time.from+" to "+appointment.chosen_time.to,
                       "type": "appointment_proposed",
                       "ref_id": id
                     };
