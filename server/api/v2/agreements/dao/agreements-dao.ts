@@ -195,47 +195,52 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 			return reject(new TypeError('Agreement is not a valid object.'));
 		}
 		let body:any = agreements;
-		Properties
-			.findById(body.property)
-			.exec((err, properties) => {
-				if(err){
-					reject(err);
-				}
-				else{
-					let propertyId = properties._id;
-					let propertyStatus = properties.status
-					let landlordId = properties.owner.user;
-					Agreements
-						.findOne({"property": body.property, "tenant": userId})
-						.exec((err, agreement) => {
-							if(err){
-								reject(err);
-							}
-							else{
-								if(agreement == null){
-									if(propertyStatus == "published" || propertyStatus == "initiated"){
-										var _agreements = new Agreements({
-											"property": propertyId,
-											"tenant": userId,
-											"landlord": landlordId,
-											"appointment": body.appointment
-										});		
-										_agreements.save((err, saved)=>{
-											err ? reject(err)
-												: resolve(saved);
-										});
-									}
-									else{
-										reject({message: "this property has rented"})
-									}
+		if(!body.property) {
+			reject({message: 'no property id'});
+		}
+		else{
+			Properties
+				.findById(body.property)
+				.exec((err, properties) => {
+					if(err){
+						reject(err);
+					}
+					else{
+						let propertyId = properties._id;
+						let propertyStatus = properties.status;
+						let landlordId = properties.owner.user;
+						Agreements
+							.findOne({"property": body.property, "tenant": userId})
+							.exec((err, agreement) => {
+								if(err){
+									reject(err);
 								}
-								else if(agreement != null){
-									resolve({message: "agreement has been made"})
-								}
-							}							
-						});					
-				}
-			});			
+								else{
+									if(agreement == null){
+										if(propertyStatus == "published" || propertyStatus == "initiated"){
+											var _agreements = new Agreements({
+												"property": propertyId,
+												"tenant": userId,
+												"landlord": landlordId,
+												"appointment": body.appointment
+											});		
+											_agreements.save((err, saved)=>{
+												err ? reject(err)
+													: resolve(saved);
+											});
+										}
+										else{
+											reject({message: "this property has rented"})
+										}
+									}
+									else if(agreement != null){
+										resolve({message: "agreement has been made"})
+									}
+								}							
+							});					
+					}
+				});		
+		}
 	});
 });
 
