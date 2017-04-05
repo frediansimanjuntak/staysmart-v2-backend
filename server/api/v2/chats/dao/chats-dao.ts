@@ -9,6 +9,7 @@ import {DreamTalk} from '../../../../global/chat.service';
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.requestToken(userId, username).then(token => {
+            console.log(token);
             resolve(JSON.parse(token));
         });
     });

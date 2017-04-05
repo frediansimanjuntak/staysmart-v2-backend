@@ -14,7 +14,8 @@ var split = require('split-string');
 
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        let _query = {"confirmation.status": "approved"};
+        var today = new Date();
+        let _query = {"confirmation.status": "approved", "details.available": {$lte: today}};
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
@@ -107,7 +108,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
               path: 'picture',
               model: 'Attachments'
             },
-            select: 'email picture landlord.data.name tenant.data.name'
+            select: 'username email picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
             err ? reject(err)
@@ -127,7 +128,7 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
               path: 'picture',
               model: 'Attachments'
             },
-            select: 'email picture landlord.data.name tenant.data.name'
+            select: 'username email picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
             err ? reject(err)
@@ -147,7 +148,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
               path: 'picture',
               model: 'Attachments'
             },
-            select: 'email picture landlord.data.name tenant.data.name'
+            select: 'username email picture landlord.data.name tenant.data.name'
           })
           .exec((err, result) => {
             err ? reject(err)
@@ -161,81 +162,82 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
       if (!_.isObject(propertiesObject)) {
         return reject(new TypeError('Property not a valid object.'));
       }
-      if (!_.isObject(userId)) {
-        return reject(new TypeError('User id not a valid object.'));
+      if(!userId || userId == null) {
+        reject({message: 'Please login first before continue.'});
       }
-      
-      var ObjectID = mongoose.Types.ObjectId;  
-      let body:any = propertiesObject;
-      Developments
-        .findById(body.development)
-        .exec((err, development) => {
-          if(err) {
-            reject(err);
-          }
-          else if(development) {
-            let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
-            Properties
-              .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
-              .exec((err, properties) => {
-                if(err) {
-                  reject(err);
-                }
-                else if(properties) {
-                  if(properties.length > 0) {
-                    reject({message: 'property for this floor and unit in this development already exist.'});
+      else{
+        var ObjectID = mongoose.Types.ObjectId;  
+        let body:any = propertiesObject;
+        Developments
+          .findById(body.development)
+          .exec((err, development) => {
+            if(err) {
+              reject(err);
+            }
+            else if(development) {
+              let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
+              Properties
+                .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
+                .exec((err, properties) => {
+                  if(err) {
+                    reject(err);
                   }
-                  else{
-                    var _properties = new Properties(propertiesObject);
-                        _properties.slug = slug;
-                        _properties.owner.user = userId;
-                        _properties.confirmation.status = 'pending';
-                        _properties.save((err, saved)=>{
-                          if(err) {
-                            reject(err);
-                          }
-                          else if(saved){
-                            let propertyID = saved._id;
-                            Properties.insertData(propertiesObject, propertyID, userId).then(res => {
-                              Users
-                                .update({"_id":userId}, {
-                                  $push: {
-                                    "owned_properties": propertyID
-                                  }
-                                })
-                                .exec((err, saved) => {
-                                    if(err) {
-                                      reject(err);
+                  else if(properties) {
+                    if(properties.length > 0) {
+                      reject({message: 'property for this floor and unit in this development already exist.'});
+                    }
+                    else{
+                      var _properties = new Properties(propertiesObject);
+                          _properties.slug = slug;
+                          _properties.owner.user = userId;
+                          _properties.confirmation.status = 'pending';
+                          _properties.save((err, saved)=>{
+                            if(err) {
+                              reject(err);
+                            }
+                            else if(saved){
+                              let propertyID = saved._id;
+                              Properties.insertData(propertiesObject, propertyID, userId).then(res => {
+                                Users
+                                  .update({"_id":userId}, {
+                                    $push: {
+                                      "owned_properties": propertyID
                                     }
-                                    else if(saved) {
-                                      if(!body.address.full_address) {
-                                        reject({message:'no full address'});
+                                  })
+                                  .exec((err, saved) => {
+                                      if(err) {
+                                        reject(err);
                                       }
-                                      else{
-                                        var full_address = body.address.full_address;
-                                        var from = 'Staysmart';
-                                        if(body.status && body.status != 'draft') {
-                                          mail.submitProperty(userEmail, userFullname, full_address, from);
-                                          resolve({message: 'property created'});    
-                                        }
-                                        else if(body.status && body.status == 'draft'){
-                                          resolve({message: 'property draft created'});
+                                      else if(saved) {
+                                        if(!body.address.full_address) {
+                                          reject({message:'no full address'});
                                         }
                                         else{
-                                          mail.submitProperty(userEmail, userFullname, full_address, from);
-                                          resolve({message: 'property created'});
+                                          var full_address = body.address.full_address;
+                                          var from = 'Staysmart';
+                                          if(body.status && body.status != 'draft') {
+                                            mail.submitProperty(userEmail, userFullname, full_address, from);
+                                            resolve({message: 'property created'});    
+                                          }
+                                          else if(body.status && body.status == 'draft'){
+                                            resolve({message: 'property draft created'});
+                                          }
+                                          else{
+                                            mail.submitProperty(userEmail, userFullname, full_address, from);
+                                            resolve({message: 'property created'});
+                                          }
                                         }
                                       }
-                                    }
+                                  });
                                 });
-                              });
-                          }
-                        });
+                            }
+                          });
+                    }
                   }
-                }
-              })
-          }
-        })
+                })
+            }
+          })
+      }
     });
 });
 
@@ -495,6 +497,12 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                     else{
                       Properties
                         .findById(id, (err, result) => {
+                          result.status = 'published';
+                          result.save((err, update) => {
+                            if(err) {
+                              reject(err);
+                            }
+                          });
                           var devID = result.development;
                           var unit = '#'+result.address.floor+'-'+result.address.unit;
                           if(result.status != 'draft' && confirmation == 'approve') {
@@ -601,6 +609,9 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:Object):Prom
                 resolve({message: "Forbidden"});
               }
             })    
+          }
+          else{
+            resolve(true);
           }
         })
   });

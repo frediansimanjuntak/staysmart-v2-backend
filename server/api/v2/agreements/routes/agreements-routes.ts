@@ -99,6 +99,6 @@ export class AgreementsRoutes {
 
 		router
 			.route('/ta/stamp_certificate/:id')
-			.post(auth.isAuthenticated(), AgreementsController.stampCertificateTA);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.stampCertificateTA);
 	}
 }

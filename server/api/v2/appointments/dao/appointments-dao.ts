@@ -13,7 +13,29 @@ appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
 
         Appointments
           .find({ $or: [ { "landlord": userId }, { "tenant": userId } ] })
-          .populate("landlord tenant property")
+          .populate("landlord tenant")
+          .populate({
+            path: 'property',
+            populate: [{
+              path: 'pictures.living',
+              model: 'Attachments'
+            },{
+              path: 'pictures.dining',
+              model: 'Attachments'
+            },{
+              path: 'pictures.bed',
+              model: 'Attachments'
+            },{
+              path: 'pictures.toilet',
+              model: 'Attachments'
+            },{
+              path: 'pictures.kitchen',
+              model: 'Attachments'
+            },{
+              path: 'development',
+              model: 'Developments'
+            }]
+          })
           .exec((err, appointments) => {
               err ? reject(err)
                   : resolve(appointments);
@@ -26,7 +48,29 @@ appointmentsSchema.static('getById', (id:string):Promise<any> => {
 
         Appointments
           .findById(id)
-          .populate("landlord tenant property")
+          .populate("landlord tenant")
+          .populate({
+            path: 'property',
+            populate: [{
+              path: 'pictures.living',
+              model: 'Attachments'
+            },{
+              path: 'pictures.dining',
+              model: 'Attachments'
+            },{
+              path: 'pictures.bed',
+              model: 'Attachments'
+            },{
+              path: 'pictures.toilet',
+              model: 'Attachments'
+            },{
+              path: 'pictures.kitchen',
+              model: 'Attachments'
+            },{
+              path: 'development',
+              model: 'Developments'
+            }]
+          })
           .exec((err, appointments) => {
               err ? reject(err)
                   : resolve(appointments);
@@ -82,7 +126,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
                     var from = 'Staysmart';
 
                     mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                    resolve({message: 'appoinment proposed'});
+                    resolve({appoinment_id: saved._id, message: 'appoinment proposed'});
                   })
               }
             });
@@ -140,7 +184,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                     
                     var notification = {
                       "user": appointment.property.tenant,
-                      "message": "Appointment "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.property.choosen_time.date+" from "+appointment.property.choosen_time.from+" to "+appointment.property.choosen_time.to,
+                      "message": "Appointment "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.chosen_time.date+" from "+appointment.chosen_time.from+" to "+appointment.chosen_time.to,
                       "type": "appointment_proposed",
                       "ref_id": id
                     };

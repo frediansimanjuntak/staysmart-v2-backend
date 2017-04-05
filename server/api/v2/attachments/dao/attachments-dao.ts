@@ -3,11 +3,12 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import attachmentsSchema from '../model/attachments-model';
 import {AWSService} from '../../../../global/aws.service';
+import config from '../../../../config/environment/index';
 
 attachmentsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
-
+        
         Attachments
           .find(_query)
           .exec((err, attachments) => {
@@ -52,10 +53,12 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
             }
             else{
               AWSService.upload(key, file).then(fileDetails => {
+                console.log(fileDetails);
+                var fileName = fileDetails.name.replace(" ","%20");
                 var _attachment = new Attachments(attachments);
                 _attachment.name = fileDetails.name;
                 _attachment.type = fileDetails.type;
-                _attachment.key = fileDetails.url;
+                _attachment.key = 'attachment/'+fileName;
                 _attachment.size = files[i].size;    
                 _attachment.save((err, saved) => {
                   if(err != null) 

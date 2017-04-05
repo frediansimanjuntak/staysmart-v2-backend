@@ -322,9 +322,8 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 					var fullname = _user.username;
 					var from = 'Staysmart';
 					SMS.sendActivationCode(body.phone, randomCode);
-					mail.signUp(_user.email, fullname, from).then(res => {
-						resolve({res, userId: saved._id, token});
-					})
+					mail.signUp(_user.email, fullname, from);
+					resolve({userId: saved._id, token});
 				}
 			});
 	});
@@ -564,6 +563,9 @@ usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 						reject({message: 'Your code has expired.'});
 					}	
 				}
+				else{
+					reject({message: 'Your code is wrong or has expired.'});
+				}
 			})
 		});
 });
@@ -730,6 +732,9 @@ usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<
 				else{
 					resolve(true);
 				}
+			}
+			else{
+				resolve(true);
 			}
 		})
 	});
