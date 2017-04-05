@@ -24,7 +24,7 @@ import {Cron} from "./cron/index";
 var PORT = process.env.PORT || 5000;
 const app = express();
 
-// if(config.seedDB) { require('./config/seed'); }
+if(config.seedDB) { require('./config/seed'); }
 
 require('./config/express').default(app);
 RoutesConfig.init(app);

@@ -20,10 +20,10 @@ var AgreementsSchema = new mongoose.Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Properties'
 	},
-	appointment: [{
+	appointment: {
 		type: Schema.Types.ObjectId,
 		ref: 'Appointments'
-	}],
+	},
 	letter_of_intent: {
 		data: {
 			monthly_rental: {type: Number},
