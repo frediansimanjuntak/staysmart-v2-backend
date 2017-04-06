@@ -104,5 +104,25 @@ AppointmentsSchema
 			})
 	})
 
+AppointmentsSchema
+	.virtual('agreement_id')
+	.get(function() {
+		Agreements
+			.findOne({"property": this.property, "tenant": this.tenant})
+			.exec((err, agreement) => {
+				if(err) {
+					return null;
+				}
+				else{
+					if(agreement != null) {
+						return agreement._id;
+					}
+					else{
+						return null;
+					}
+				}
+			})
+	})
+
 
 export default AppointmentsSchema;
