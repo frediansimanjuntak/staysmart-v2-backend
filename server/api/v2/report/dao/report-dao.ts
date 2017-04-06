@@ -179,7 +179,7 @@ export class reportDAO{
 	}
 	static reportLOIPending(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/pending-letterofintent-custom.html'
+			let reportHtml = __dirname+'/../../../../server/template/report-template/pending-letterofintent-custom.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";
