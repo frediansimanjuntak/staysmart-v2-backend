@@ -54,7 +54,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
             else{
               AWSService.upload(key, file).then(fileDetails => {
                 console.log(fileDetails);
-                var fileName = fileDetails.name.replace(" ","%20");
+                var fileName = fileDetails.name.replace(/ /g,"%20");
                 var _attachment = new Attachments(attachments);
                 _attachment.name = fileDetails.name;
                 _attachment.type = fileDetails.type;
