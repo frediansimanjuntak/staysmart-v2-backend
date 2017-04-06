@@ -202,8 +202,11 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                     else if(status == 'rejected') {
                       mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from);
                     }
-                    resolve({message: 'appoinment updated'});
+                    resolve({message: 'appointment updated'});
                   })
+              }
+              else{
+                resolve({message: 'appointment updated'});
               }
             }
         });
