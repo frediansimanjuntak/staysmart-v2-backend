@@ -218,16 +218,17 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 								else{
 									if(agreement == null){
 										if(propertyStatus == "published" || propertyStatus == "initiated"){
-											var _agreements = new Agreements({
-												"property": propertyId,
-												"tenant": userId,
-												"landlord": landlordId,
-												"appointment": body.appointment
-											});		
-											_agreements.save((err, saved)=>{
-												err ? reject(err)
-													: resolve(saved);
-											});
+											var _agreements = new Agreements();
+												_agreements.property = propertyId;
+												_agreements.tenant =  userId;
+												_agreements.landlord = landlordId;
+												if(body.appointment) {
+													_agreements.appointment = body.appointment;
+												}
+												_agreements.save((err, saved)=>{
+													err ? reject(err)
+														: resolve({agreement_id: saved._id});
+												});
 										}
 										else{
 											reject({message: "this property has rented"})

@@ -3,6 +3,7 @@
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 import Users from '../../users/dao/users-dao';
+import Agreements from '../../agreements/dao/agreements-dao';
 var Schema = mongoose.Schema;
 
 var PropertiesSchema = new mongoose.Schema({
@@ -233,5 +234,46 @@ PropertiesSchema
 			return '';	
 		}
 	});
+
+PropertiesSchema
+	.virtual('ta_signed_date')
+	.get(function() {
+		Agreements
+			.findOne({"property": this._id})
+			.exec((err, agreement) => {
+				console.log(agreement);
+				if(err) {
+					return null;
+				}
+				else{
+					if(agreement != null) {
+						if(agreement.tenancy_agreement) {
+							if(agreement.tenancy_agreement.data) {
+								if(agreement.tenancy_agreement.data.confirmation.tenant) {
+									if(agreement.tenancy_agreement.data.confirmation.tenant.date) {
+										return agreement.tenancy_agreement.data.confirmation.tenant.date;
+									}
+									else{
+										return null;
+									}
+								}
+								else{
+									return null;
+								}
+							}
+							else{
+								return null;
+							}
+						}
+						else{
+							return null;
+						}
+					}
+					else{
+						return null;
+					}
+				}
+			})
+	})
 
 export default PropertiesSchema;
