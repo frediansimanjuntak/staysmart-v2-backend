@@ -12,6 +12,26 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 var split = require('split-string');
 
+propertiesSchema.static('getAll', ():Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Properties
+          .find({})
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+          .populate({
+            path: 'owner.user',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            },
+            select: 'username email picture landlord.data.name tenant.data.name'
+          })
+          .exec((err, properties) => {
+            err ? reject(err)
+                : resolve(properties);
+          });
+    });
+});
+
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var today = new Date();
