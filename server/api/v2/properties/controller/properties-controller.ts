@@ -2,6 +2,13 @@ import * as express from 'express';
 import PropertiesDAO from '../dao/properties-dao';
 
 export class PropertiesController {
+	static getAll(req: express.Request, res: express.Response):void {
+		PropertiesDAO
+		['getAll']()
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static searchProperties(req: express.Request, res: express.Response):void {
 		let _searchComponent = req.params;
 		PropertiesDAO

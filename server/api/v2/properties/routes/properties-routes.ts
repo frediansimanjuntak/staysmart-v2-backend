@@ -8,6 +8,7 @@ export class PropertiesRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/properties')
+			.get(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.getAll)
 			.post(auth.isAuthenticated(),PropertiesController.createProperties);
 
 		router
