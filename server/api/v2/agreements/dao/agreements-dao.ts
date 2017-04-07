@@ -235,7 +235,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 										}
 									}
 									else if(agreement != null){
-										resolve({message: "agreement has been made"})
+										resolve({agreement_id: agreement._id, message: "agreement has been made"})
 									}
 								}							
 							});					

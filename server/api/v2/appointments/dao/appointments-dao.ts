@@ -6,7 +6,14 @@ import Users from '../../users/dao/users-dao'
 import Properties from '../../properties/dao/properties-dao'
 import Notifications from '../../notifications/dao/notifications-dao'
 import Developments from '../../developments/dao/developments-dao'
+import Agreements from '../../agreements/dao/agreements-dao';
 import {mail} from '../../../../email/mail';
+
+appointmentsSchema.static('getStatus', ():Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+
+  })
+})
 
 appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -37,8 +44,13 @@ appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
             }]
           })
           .exec((err, appointments) => {
-              err ? reject(err)
-                  : resolve(appointments);
+            let res = [];
+              if(err) {
+                reject(err);
+              }
+              else{
+                resolve(res);
+              }
           });
     });
 });

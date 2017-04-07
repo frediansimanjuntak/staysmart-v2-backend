@@ -241,7 +241,6 @@ PropertiesSchema
 		Agreements
 			.findOne({"property": this._id})
 			.exec((err, agreement) => {
-				console.log(agreement);
 				if(err) {
 					return null;
 				}
