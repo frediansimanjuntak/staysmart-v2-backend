@@ -10,6 +10,10 @@ var Schema = mongoose.Schema;
 
 var AppointmentsSchema = new mongoose.Schema({
 	room_id: {type: String},
+	agreement: {
+		type: Schema.Types.ObjectId,
+		ref: 'Agreements'
+	},
 	landlord: {
 		type: Schema.Types.ObjectId,
 		ref: 'Users'

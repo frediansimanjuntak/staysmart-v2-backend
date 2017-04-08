@@ -24,6 +24,7 @@ var UsersSchema = new mongoose.Schema({
 		expires: {type: Date},
 		code: {type: String}
 	},
+  reported: {type: Boolean, default: false},
 	tenant: {
 		data: {
 			name: {type: String},

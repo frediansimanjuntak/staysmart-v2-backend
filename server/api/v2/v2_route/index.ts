@@ -17,6 +17,7 @@ import {AppointmentsRoutes} from "../appointments/routes/appointments-routes";
 import {AgreementsRoutes} from "../agreements/routes/agreements-routes";
 import {ManagersRoutes} from "../managers/routes/managers-routes";
 import {ReportRoutes} from "../report/routes/report-routes";
+import {UserReportsRoutes} from "../user_reports/routes/user_reports-routes";
 
 var router = express.Router();
 
@@ -35,9 +36,11 @@ CompaniesRoutes.init(router);
 PropertiesRoutes.init(router);
 AgreementsRoutes.init(router);
 AttachmentsRoutes.init(router);
+UserReportsRoutes.init(router);
 AppointmentsRoutes.init(router);
 DevelopmentsRoutes.init(router);
 NotificationsRoutes.init(router);
 BlogCategoriesRoutes.init(router);
+
 
 export default router;

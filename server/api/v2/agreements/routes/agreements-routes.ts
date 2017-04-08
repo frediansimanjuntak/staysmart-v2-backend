@@ -60,6 +60,10 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.createLoi);
 
 		router
+			.route('/loi/appointment/:idAgreement/:idAppointment')
+			.post(auth.isAuthenticated(), AgreementsController.createLoiAppointment);
+
+		router
 			.route('/loi/send/:id')
 			.post(auth.isAuthenticated(), AgreementsController.sendLoi);
 

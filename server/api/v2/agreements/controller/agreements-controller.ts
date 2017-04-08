@@ -123,6 +123,18 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static createLoiAppointment(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _idAgreement = req.params.idAgreement;
+		let _idAppointment = req.params.idAppointment;
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['createLoiAppointment'](_idAgreement, _idAppointment, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createLoi(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;

@@ -297,6 +297,53 @@ agreementsSchema.static('getLoi', (id:string, userId:string):Promise<any> => {
 	});
 });
 
+agreementsSchema.static('createLoiAppointment', (idAgreement:string, idAppointment:string, data:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(data)) {
+			return reject(new TypeError('TA is not a valid object.'));
+		}
+
+		Agreements
+			.findById(idAgreement)
+			.exec((err, agreement) => {
+				let appointment;
+				if(agreement.appointment){
+					appointment = agreement.appointment;
+					if(appointment == idAppointment){
+						let statusLoi = agreement.letter_of_intent.data.status;
+						if(statusLoi  == "rejected" || statusLoi == "expired"){
+							resolve({message: "create Loi"})
+						}
+						else{
+							Agreements.getLoi(idAgreement, userId).then(res => {
+								if(res){
+									resolve(res);
+								}
+								else{
+									reject({message: "error get LOI"});
+								}
+							})
+						}
+					}
+					else if (appointment != idAppointment){
+						reject({message: "Appointment not same"})
+					}					
+				}
+				if(!agreement.appointment){
+					agreement.appointment = idAppointment;
+					agreement.save((err, saved) => {
+						if(err){
+							reject(err);
+						}
+						else{
+							resolve({message: "create Loi"});
+						}
+					})					
+				}				
+			})
+	});
+});
+
 agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {

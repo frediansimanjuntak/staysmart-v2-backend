@@ -20,7 +20,7 @@ appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
 
         Appointments
           .find({ $or: [ { "landlord": userId }, { "tenant": userId } ] })
-          .populate("landlord tenant")
+          .populate("landlord tenant agreement")
           .populate({
             path: 'property',
             populate: [{
@@ -60,7 +60,7 @@ appointmentsSchema.static('getById', (id:string):Promise<any> => {
 
         Appointments
           .findById(id)
-          .populate("landlord tenant")
+          .populate("landlord tenant agreement")
           .populate({
             path: 'property',
             populate: [{
@@ -100,6 +100,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
       console.log(appointments);
       for(var i = 0; i < body.time.length; i++){
         var _appointments = new Appointments(appointments);
+            _appointments.agreement = body.agreement;
             _appointments.tenant = tenant;
             _appointments.chosen_time.date = body.date;
             _appointments.chosen_time.from = body.time[i];
