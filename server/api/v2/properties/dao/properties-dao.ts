@@ -29,7 +29,7 @@ propertiesSchema.static('getAll', ():Promise<any> => {
             path: 'amenities',
             populate: {
               path: 'icon',
-              model: Attachments
+              model: 'Attachments'
             }
           })
           .exec((err, properties) => {
@@ -121,7 +121,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           path: 'amenities',
           populate: {
             path: 'icon',
-            model: Attachments
+            model: 'Attachments'
           }
         })
         property.exec((err, properties) => {
@@ -148,7 +148,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
             path: 'amenities',
             populate: {
               path: 'icon',
-              model: Attachments
+              model: 'Attachments'
             }
           })
           .exec((err, properties) => {
@@ -607,7 +607,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
       Users
         .findByIdAndUpdate(id, {
           $push: {
-            "shortlisted_property": id
+            "shortlisted_properties": id
           }
         })
         .exec((err, update) => {
@@ -625,7 +625,7 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
       Users
         .findByIdAndUpdate(id, {
           $pull: {
-            "shortlisted_property": id
+            "shortlisted_properties": id
           }
         })
         .exec((err, update) => {
