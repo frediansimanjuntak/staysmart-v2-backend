@@ -135,37 +135,51 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
                     newrelic.noticeError(err);
                   }
                   else if(saved){
-                    var appointmentId = _appointments._id;
-                    Appointments
-                      .findById(appointmentId)
-                      .populate("landlord tenant")
-                      .populate({
-                        path: 'property',
-                        populate: {
-                          path: 'development',
-                          model: 'Developments',
-                        },
+                    let appointmentId = saved._id;
+                    let agreementId = saved.agreement
+                    Agreements
+                      .update({"_id": agreementId}, {
+                        $set: {
+                          "appointment": appointmentId
+                        }
                       })
-                      .exec((err, appointment) => {
-                        var devID = appointment.property.development;
-                        var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
-                        
-                        var notification = {
-                          "user": body.landlord,
-                          "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
-                          "type": "appointment_proposed",
-                          "ref_id": appointmentId
-                        };
-                        Notifications.createNotifications(notification);  
-                        var emailTo = appointment.landlord.email;
-                        var fullname = appointment.landlord.username;
-                        var tenant_username = appointment.tenant.username;                    
-                        var full_address = appointment.property.address.full_address;
-                        var from = 'Staysmart';
+                      .exec((err, updated) => {
+                        if(err){
+                          reject(err);
+                        }
+                        if(updated){
+                          Appointments
+                            .findById(appointmentId)
+                            .populate("landlord tenant")
+                            .populate({
+                              path: 'property',
+                              populate: {
+                                path: 'development',
+                                model: 'Developments',
+                              },
+                            })
+                            .exec((err, appointment) => {
+                              var devID = appointment.property.development;
+                              var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+                              
+                              var notification = {
+                                "user": body.landlord,
+                                "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
+                                "type": "appointment_proposed",
+                                "ref_id": appointmentId
+                              };
+                              Notifications.createNotifications(notification);  
+                              var emailTo = appointment.landlord.email;
+                              var fullname = appointment.landlord.username;
+                              var tenant_username = appointment.tenant.username;                    
+                              var full_address = appointment.property.address.full_address;
+                              var from = 'Staysmart';
 
-                        mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                        resolve({appoinment_id: saved._id, message: 'appoinment proposed'});
-                      })
+                              mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
+                              resolve({appoinment_id: saved._id, message: 'appoinment proposed'});
+                            })
+                        }
+                      })                    
                   }
                 })
               }

@@ -12,6 +12,14 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.createAgreements);
 
 		router
+			.route('/agreements/history')
+			.get(auth.isAuthenticated(), AgreementsController.getAllHistory);
+
+		router
+			.route('/agreements/user')
+			.get(auth.isAuthenticated(), AgreementsController.getByUser);
+
+		router
 			.route('/agreements/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getById)
 			.delete(auth.isAuthenticated(), AgreementsController.deleteAgreements);	
@@ -60,7 +68,7 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.createLoi);
 
 		router
-			.route('/loi/appointment/:idAgreement/:idAppointment')
+			.route('/loi/appointment/:id')
 			.post(auth.isAuthenticated(), AgreementsController.createLoiAppointment);
 
 		router

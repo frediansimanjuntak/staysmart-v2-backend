@@ -12,6 +12,23 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getAllHistory(req: express.Request, res: express.Response):void {	
+
+		AgreementsDAO
+		['getAllHistory']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByUser(req: express.Request, res: express.Response):void {		
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['getByUser'](_userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
@@ -124,13 +141,11 @@ export class AgreementsController {
 	}
 
 	static createLoiAppointment(req: express.Request, res: express.Response):void {
-		let _data = req.body;
-		let _idAgreement = req.params.idAgreement;
-		let _idAppointment = req.params.idAppointment;
+		let _idAppointment = req.params.id;
 		let _userId = req["user"]._id;
 
 		AgreementsDAO
-		['createLoiAppointment'](_idAgreement, _idAppointment, _data, _userId)
+		['createLoiAppointment'](_idAppointment, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

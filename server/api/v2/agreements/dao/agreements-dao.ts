@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
+import * as newrelic from 'newrelic';
 import agreementsSchema from '../model/agreements-model';
 import Users from '../../users/dao/users-dao';
 import Payments from '../../payments/dao/payments-dao';
@@ -11,120 +12,107 @@ import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import {mail} from '../../../../email/mail';
 
+
+agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements
+			.find(query)
+			.populate("landlord tenant property")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
+			.populate({
+				path: 'appointment',
+				populate: [{
+					path: 'tenant',
+					model: 'Users'
+				}, {
+					path: 'landlord',
+					model: 'Users'
+				}, {
+					path: 'property',
+					model: 'Properties',
+		            populate: [{
+		              path: 'pictures.living',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.dining',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.bed',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.toilet',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.kitchen',
+		              model: 'Attachments'
+		            },{
+		              path: 'development',
+		              model: 'Developments'
+		            }]
+				}]
+			})
+			.exec((err, agreements) => {
+				err ? reject(err)
+					: resolve(agreements);
+			});
+	});
+});
+
+
 agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		
 		if(role == "admin"){
 			let _query = {};
-			Agreements
-			.find(_query)
-			.populate("landlord tenant property")
-			.populate({
-				path: 'letter_of_intent.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
+			Agreements.getAgreement(_query).then(res => {
+				if(res){
+					resolve(res);
+				}
+				else{
+					reject({message: "error"});
 				}
 			})
-			.populate({
-				path: 'tenancy_agreement.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
-				}
-			})
-			.populate({
-				path: 'appointment',
-				populate: [{
-					path: 'tenant',
-					model: 'Users'
-				}, {
-					path: 'landlord',
-					model: 'Users'
-				}, {
-					path: 'property',
-					model: 'Properties',
-		            populate: [{
-		              path: 'pictures.living',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.dining',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.bed',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.toilet',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.kitchen',
-		              model: 'Attachments'
-		            },{
-		              path: 'development',
-		              model: 'Developments'
-		            }]
-				}]
-			})
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements);
-			});
 		}
 		else{
-			Agreements
-			.find({$or: [{"tenant": userId},{"landlord":userId}] })
-			.populate("landlord tenant property")
-			.populate({
-				path: 'letter_of_intent.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
+			let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
+			Agreements.getAgreement(_query).then(res => {
+				if(res){
+					resolve(res);
+				}
+				else{
+					reject({message: "error"});
 				}
 			})
-			.populate({
-				path: 'tenancy_agreement.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
-				}
-			})
-			.populate({
-				path: 'appointment',
-				populate: [{
-					path: 'tenant',
-					model: 'Users'
-				}, {
-					path: 'landlord',
-					model: 'Users'
-				}, {
-					path: 'property',
-					model: 'Properties',
-		            populate: [{
-		              path: 'pictures.living',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.dining',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.bed',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.toilet',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.kitchen',
-		              model: 'Attachments'
-		            },{
-		              path: 'development',
-		              model: 'Developments'
-		            }]
-				}]
-			})
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements);
-			});
 		}
+	});
+});
+
+
+agreementsSchema.static('getByUser', (userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+
+		let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				resolve(res);
+			}
+			else{
+				reject({message: "error"});
+			}
+		})		
 	});
 });
 
@@ -133,59 +121,29 @@ agreementsSchema.static('getById', (id:string):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		Agreements
-			.findById(id)
-			.populate("landlord tenant property")
-			.populate({
-				path: 'letter_of_intent.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
-				}
-			})
-			.populate({
-				path: 'tenancy_agreement.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
-				}
-			})
-			.populate({
-				path: 'appointment',
-				populate: [{
-					path: 'tenant',
-					model: 'Users'
-				}, {
-					path: 'landlord',
-					model: 'Users'
-				}, {
-					path: 'property',
-					model: 'Properties',
-		            populate: [{
-		              path: 'pictures.living',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.dining',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.bed',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.toilet',
-		              model: 'Attachments'
-		            },{
-		              path: 'pictures.kitchen',
-		              model: 'Attachments'
-		            },{
-		              path: 'development',
-		              model: 'Developments'
-		            }]
-				}]
-			})
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements);
-			});
+		let _query = {"_id": id};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				resolve(res);
+			}
+			else{
+				reject({message: "error"});
+			}
+		})
+	});
+});
+
+agreementsSchema.static('getAllHistory', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let _query = {$and: [{"letter_of_intent.data.status": "accepted"},{"tenancy_agreement.data.status": "accepted"}]};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				resolve(res);
+			}
+			else{
+				reject({message: "error"});
+			}
+		})
 	});
 });
 
@@ -204,6 +162,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 				.exec((err, properties) => {
 					if(err){
 						reject(err);
+						newrelic.noticeError(err);
 					}
 					else{
 						let propertyId = properties._id;
@@ -214,6 +173,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 							.exec((err, agreement) => {
 								if(err){
 									reject(err);
+									newrelic.noticeError(err);
 								}
 								else{
 									if(agreement == null){
@@ -297,50 +257,52 @@ agreementsSchema.static('getLoi', (id:string, userId:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('createLoiAppointment', (idAgreement:string, idAppointment:string, data:Object, userId:string):Promise<any> => {
+agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(data)) {
-			return reject(new TypeError('TA is not a valid object.'));
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
 		}
 
-		Agreements
-			.findById(idAgreement)
-			.exec((err, agreement) => {
-				let appointment;
-				if(agreement.appointment){
-					appointment = agreement.appointment;
-					if(appointment == idAppointment){
-						let statusLoi = agreement.letter_of_intent.data.status;
-						if(statusLoi  == "rejected" || statusLoi == "expired"){
-							resolve({message: "create Loi"})
-						}
-						else{
-							Agreements.getLoi(idAgreement, userId).then(res => {
-								if(res){
-									resolve(res);
-								}
-								else{
-									reject({message: "error get LOI"});
-								}
-							})
-						}
-					}
-					else if (appointment != idAppointment){
-						reject({message: "Appointment not same"})
-					}					
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if(err){
+					reject(err);
+					newrelic.noticeError("error get appointment");
 				}
-				if(!agreement.appointment){
-					agreement.appointment = idAppointment;
-					agreement.save((err, saved) => {
-						if(err){
-							reject(err);
-						}
-						else{
-							resolve({message: "create Loi"});
-						}
-					})					
-				}				
-			})
+				else{
+					let agreementId = appointment.agreement;
+					Agreements
+						.findById(agreementId)
+						.exec((err, agreement) => {
+							if(err){
+								reject(err);
+								newrelic.noticeError("error get agreement");
+							}
+							if(agreement){
+								if(agreement.appointment == id){
+									let statusLoi = agreement.letter_of_intent.data.status;
+									if(statusLoi  == "rejected" || statusLoi == "expired"){
+										resolve({message: "create Loi"})
+									}
+									else{
+										Agreements.getLoi(agreementId.toString(), userId).then(res => {
+											if(res){
+												resolve({message: "create Loi"});
+											}
+											else{
+												reject({message: "error get LOI"});
+											}
+										})
+									}
+								}
+								else if (agreement.appointment != id){
+									reject({message: "Appointment not same"})
+								}
+							}								
+						})
+				}
+			})		
 	});
 });
 
