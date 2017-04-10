@@ -179,7 +179,7 @@ export class reportDAO{
 	}
 	static reportLOIPending(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = __dirname+'/../../../../server/template/report-template/pending-letterofintent-custom.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/pending-letterofintent-custom.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";
@@ -194,7 +194,7 @@ export class reportDAO{
 	
 	static reportLOIComfirm(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/comfirm-letterofintent-custom.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/comfirm-letterofintent-custom.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";
@@ -209,7 +209,7 @@ export class reportDAO{
 
 	static reportLOIPrint(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/print-letterofintent.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/print-letterofintent.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";
@@ -252,7 +252,7 @@ export class reportDAO{
 	}
 	static reportTAPending(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/pending-tenancyagreement-custom.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/pending-tenancyagreement-custom.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "ta";
@@ -267,7 +267,7 @@ export class reportDAO{
 
 	static reportTAPrint(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/print-tenancyagreement.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/print-tenancyagreement.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "ta";
