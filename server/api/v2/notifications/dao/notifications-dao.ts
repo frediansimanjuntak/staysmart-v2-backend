@@ -19,6 +19,9 @@ notificationsSchema.static('getAll', ():Promise<any> => {
 
 notificationsSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
 
         Notifications
           .findById(id)

@@ -2,9 +2,6 @@
 
 import * as express from 'express';
 import * as mongoose from 'mongoose';
-import Agreements from '../../agreements/dao/agreements-dao';
-
-var crypto = require('crypto')
 
 var Schema = mongoose.Schema;
 

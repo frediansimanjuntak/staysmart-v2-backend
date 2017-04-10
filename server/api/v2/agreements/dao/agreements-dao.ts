@@ -17,7 +17,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("landlord tenant property")
+			.populate("landlord tenant property letter_of_intent.data.property letter_of_intent.data.appointment")
 			.populate({
 				path: 'letter_of_intent.data.payment',
 				populate: {
@@ -116,15 +116,24 @@ agreementsSchema.static('getByUser', (userId:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('getById', (id:string):Promise<any> => {
+agreementsSchema.static('getById', (id:string, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
+
+		let IDUser = userId.toString();
 		let _query = {"_id": id};
 		Agreements.getAgreement(_query).then(res => {
 			if(res){
-				resolve(res);
+				_.each(res, (result) => {
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser){
+						resolve(result);
+					}
+					else{
+						reject({message:"forbidden"});
+					}
+				})				 
 			}
 			else{
 				reject({message: "error"});
@@ -144,6 +153,71 @@ agreementsSchema.static('getAllHistory', ():Promise<any> => {
 				reject({message: "error"});
 			}
 		})
+	});
+});
+
+agreementsSchema.static('getOdometer', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+
+		let _query = {};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				resolve(res);
+				var taDocs = res.filter(Boolean);
+				var savedComission = 12100;
+				_.each(taDocs, function(ta) {
+				let n;
+				let x;
+				let cal;
+				if (ta.status == 'accepted') {
+				  if (!ta.renewal) {
+				    x = ta.monthly_rental;
+				    if (ta.term_lease <= 12) {
+				      n = 12;
+				    } else {
+				      n = ta.term_lease;
+				    }
+				    if (x <= 4000) {
+				      cal = n/24 * x *2;
+				    } else if (x > 4000) {
+				      cal = n/24 * x;
+				    }
+				    savedComission += cal;
+				  }
+				}
+				});
+				return savedComission;
+			}
+			else{
+				reject({message: "error"});
+			}
+		})
+		var getSavedComission = function(latestTAs) {
+		  var taDocs = latestTAs.filter(Boolean);
+		  var savedComission = 12100;
+		  _.each(taDocs, function(ta) {
+		    let n;
+		    let x;
+		    let cal;
+		    if (ta.status == 'accepted') {
+		      if (!ta.renewal) {
+		        x = ta.monthly_rental;
+		        if (ta.term_lease <= 12) {
+		          n = 12;
+		        } else {
+		          n = ta.term_lease;
+		        }
+		        if (x <= 4000) {
+		          cal = n/24 * x *2;
+		        } else if (x > 4000) {
+		          cal = n/24 * x;
+		        }
+		        savedComission += cal;
+		      }
+		    }
+		  });
+		  return savedComission;
+		}
 	});
 });
 
@@ -179,16 +253,16 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 									if(agreement == null){
 										if(propertyStatus == "published" || propertyStatus == "initiated"){
 											var _agreements = new Agreements();
-												_agreements.property = propertyId;
-												_agreements.tenant =  userId;
-												_agreements.landlord = landlordId;
-												if(body.appointment) {
-													_agreements.appointment = body.appointment;
-												}
-												_agreements.save((err, saved)=>{
-													err ? reject(err)
-														: resolve({agreement_id: saved._id});
-												});
+											_agreements.property = propertyId;
+											_agreements.tenant =  userId;
+											_agreements.landlord = landlordId;
+											if(body.appointment) {
+												_agreements.appointment = body.appointment;
+											}
+											_agreements.save((err, saved)=>{
+												err ? reject(err)
+													: resolve({agreement_id: saved._id});
+											});
 										}
 										else{
 											reject({message: "this property has rented"})
@@ -272,6 +346,7 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 				}
 				else{
 					let agreementId = appointment.agreement;
+					let statusAppointment = appointment.status;
 					Agreements
 						.findById(agreementId)
 						.exec((err, agreement) => {
@@ -280,25 +355,43 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 								newrelic.noticeError("error get agreement");
 							}
 							if(agreement){
-								if(agreement.appointment == id){
-									let statusLoi = agreement.letter_of_intent.data.status;
-									if(statusLoi  == "rejected" || statusLoi == "expired"){
-										resolve({message: "create Loi"})
+								agreement.appointment = id;
+								agreement.save((err, saved) => {
+									if(err){
+										reject(err);
 									}
-									else{
-										Agreements.getLoi(agreementId.toString(), userId).then(res => {
-											if(res){
-												resolve({message: "create Loi"});
+									if(saved){
+										if(statusAppointment == "archived"){
+											if(saved.appointment == id.toString() && agreement._id == agreementId.toString()){
+												let statusLoi = agreement.letter_of_intent.data.status;
+												if(statusLoi  == "rejected" || statusLoi == "expired"){
+													resolve({message: "create Loi"});
+												}
+												else{
+													Agreements.getLoi(agreementId.toString(), userId).then(res => {
+														if(res){
+															if(res.created_at){
+																resolve({message: "forbidden"});
+															}
+															else{
+																resolve({message: "create Loi"});
+															}
+														}
+														else{
+															reject({message: "error get LOI"});
+														}
+													})
+												}
 											}
 											else{
-												reject({message: "error get LOI"});
+												reject({message: "forbidden"});
 											}
-										})
+										}
+										else{
+											reject({message: "Appointment not same"});
+										}
 									}
-								}
-								else if (agreement.appointment != id){
-									reject({message: "Appointment not same"})
-								}
+								})																
 							}								
 						})
 				}
@@ -335,7 +428,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 						resolve({message: "forbidden"});
 					}
 					if (tenantID == IDUser){
-						if(loi.created_at){
+						if(loi.created_at || loi.status == "rejected" || loi.status == "expired"){
 							Agreements.createHistory(id, typeDataa);
 							Agreements
 								.findByIdAndUpdate(id, {
@@ -407,6 +500,11 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 					    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
 					    loiObj.$set["letter_of_intent.data.status"] = "draft";
 					    loiObj.$set["letter_of_intent.data.created_at"] = new Date();
+					    loiObj.$set["letter_of_intent.data.property"] = propertyID;
+					    if(agreement.appointment){
+							appointmentID = agreement.appointment._id;
+							loiObj.$set["letter_of_intent.data.appointment"] = appointmentID;
+						}
 
 						Agreements
 							.update(_query, loiObj)
