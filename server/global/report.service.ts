@@ -220,7 +220,7 @@ export class report {
 			  let paymentProof = getData;
 			  if(paymentProof) {
 			  	let fileType = paymentProof.type; 
-				let url = paymentProof.key;
+				let url = paymentProof.url;
 				let subType = fileType.substring(0, 5);
 				if(subType == 'image'){
 					getData = '<img src="' + url + '" height="500px" /> ';
