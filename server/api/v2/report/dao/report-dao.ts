@@ -57,6 +57,10 @@ export class reportDAO{
 					let date_expired;
 					let created_at;
 					let created_day;
+					let bank;
+					let bankCode;
+					let bankName;
+					let bankNo;
 					if (type == "loi"){
 						tenant_sign = loi.confirmation.tenant.sign;
 						landlord_sign = loi.confirmation.landlord.sign;
@@ -67,6 +71,18 @@ export class reportDAO{
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
 						if(loi.payment){
 							payment_proof = loi.payment.attachment.payment;
+						}						
+						if(loi.landlord.bank_account.no){
+							bankName = loi.landlord.bank_account.name,
+							bankNo = loi.landlord.bank_account.no,
+							bank = loi.landlord.bank_account.bank.name,								
+							bankCode = loi.landlord.bank_account.bank.code
+						}
+						else if (loi.landlord.bank_account.no){
+							bankName = "",
+							bankNo = "",
+							bank = "",								
+							bankCode = ""
 						}
 					}
 					else if (type == "ta"){
@@ -130,10 +146,10 @@ export class reportDAO{
 								"company_name": landlord.companies
 							},
 							"landlord_account": {								
-								"name": loi.landlord.bank_account.name,
-								"no": loi.landlord.bank_account.no,
-								"bank": loi.landlord.bank_account.bank.name,
-								"bank_code": loi.landlord.bank_account.bank.code
+								"name": bankName,
+								"no": bankNo,
+								"bank": bank,								
+								"bank_code": bankCode
 							},
 							"date_ta": ta.created_at,
 							"date_expired": date_expired,
