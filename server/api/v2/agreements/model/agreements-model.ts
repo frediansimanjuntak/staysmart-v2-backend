@@ -106,7 +106,7 @@ var AgreementsSchema = new mongoose.Schema({
 			term_lease_extend: {type: Number},
 			appointment: {
 				type: Schema.Types.ObjectId,
-				ref: 'Appoinments'
+				ref: 'Appointments'
 			},
 			property: {
 				type: Schema.Types.ObjectId,
