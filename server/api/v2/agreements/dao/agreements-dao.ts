@@ -496,6 +496,9 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 					    }
 					    loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
 						loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
+						loiObj.$set["letter_of_intent.data.term_lease_extend"] = 0;
+						loiObj.$set["letter_of_intent.data.lapse_offer"] = 0;
+						loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 0;
 					    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
 					    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
 					    loiObj.$set["letter_of_intent.data.status"] = "draft";
