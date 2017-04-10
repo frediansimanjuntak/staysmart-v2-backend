@@ -17,6 +17,14 @@ export class NotificationsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getByUser(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		NotificationsDAO
+		['getByUser'](_userId)
+		.then(notifications => res.status(200).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createNotifications(req: express.Request, res: express.Response):void {
 		let _notifications = req.body;
 		NotificationsDAO

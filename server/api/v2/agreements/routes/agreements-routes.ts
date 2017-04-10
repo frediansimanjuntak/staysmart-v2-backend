@@ -13,7 +13,7 @@ export class AgreementsRoutes {
 
 		router
 			.route('/agreements/history')
-			.get(auth.isAuthenticated(), AgreementsController.getAllHistory);
+			.get(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.getAllHistory);
 
 		router
 			.route('/agreements/user')
