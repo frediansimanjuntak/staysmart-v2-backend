@@ -138,13 +138,13 @@ var UsersSchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: 'ChatRooms'
   }],
-	agreements: 
-	[
-		{
-			type: Schema.Types.ObjectId,
-			ref: 'Agreements'
-		}
-	],
+	// agreements: 
+	// [
+	// 	{
+	// 		type: Schema.Types.ObjectId,
+	// 		ref: 'Agreements'
+	// 	}
+	// ],
 	dreamtalk:
 	[{
     loginId: {type: String},
@@ -165,7 +165,7 @@ var UsersSchema = new mongoose.Schema({
 			ref: 'Companies'
 		}
 	],
-  shortlisted_property :[{
+  shortlisted_properties :[{
       type: Schema.Types.ObjectId,
       ref: 'Properties'
   }],

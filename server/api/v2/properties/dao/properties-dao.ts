@@ -718,7 +718,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
               if(body.shareholders != null) {
                 if(body.status == 'draft') {
                   if(body.shareholders.length > 0) {
-                    var shareholder_data = body.shareholder;
+                    var shareholder_data = body.shareholders;
 
                     Properties
                       .findByIdAndUpdate(propertyId, {
