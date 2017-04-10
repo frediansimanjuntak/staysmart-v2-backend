@@ -12,6 +12,23 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getAllHistory(req: express.Request, res: express.Response):void {	
+
+		AgreementsDAO
+		['getAllHistory']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByUser(req: express.Request, res: express.Response):void {		
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['getByUser'](_userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
@@ -120,6 +137,16 @@ export class AgreementsController {
 		AgreementsDAO
 		['getLoi'](_id, _userId)
 		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static createLoiAppointment(req: express.Request, res: express.Response):void {
+		let _idAppointment = req.params.id;
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['createLoiAppointment'](_idAppointment, _userId)
+		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 

@@ -17,6 +17,10 @@ export class NotificationsRoutes {
 			.delete(auth.isAuthenticated(),NotificationsController.deleteNotifications);
 
 		router
+			.route('/notifications/user')
+			.get(auth.isAuthenticated(),NotificationsController.getByUser);
+
+		router
 			.route('/notifications/update/:id')
 			.put(auth.isAuthenticated(),NotificationsController.updateNotifications);
 	}

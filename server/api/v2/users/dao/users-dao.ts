@@ -52,6 +52,13 @@ usersSchema.static('getAll', ():Promise<any> => {
 				},{
 					path: 'pictures.living',
 					model: 'Attachments'
+				},{
+					path: 'amenities',
+					model: 'Amenities',
+					populate: {
+						path: 'icon',
+						model: 'Attachments'
+					}
 				}]	
 			})
 			.populate({
@@ -74,6 +81,13 @@ usersSchema.static('getAll', ():Promise<any> => {
 				},{
 					path: 'pictures.living',
 					model: 'Attachments'
+				},{
+					path: 'amenities',
+					model: 'Amenities',
+					populate: {
+						path: 'icon',
+						model: 'Attachments'
+					}
 				}]
 			})
 			.exec((err, users) => {
@@ -140,6 +154,13 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				},{
 					path: 'pictures.living',
 					model: 'Attachments'
+				},{
+					path: 'amenities',
+					model: 'Amenities',
+					populate: {
+						path: 'icon',
+						model: 'Attachments'
+					}
 				}]	
 			})
 			.populate({
@@ -162,6 +183,13 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				},{
 					path: 'pictures.living',
 					model: 'Attachments'
+				},{
+					path: 'amenities',
+					model: 'Amenities',
+					populate: {
+						path: 'icon',
+						model: 'Attachments'
+					}
 				}]
 			})
 			.exec((err, users) => {

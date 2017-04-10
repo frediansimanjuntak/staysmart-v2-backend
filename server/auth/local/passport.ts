@@ -7,8 +7,8 @@ var LocalStrategy = passportLocal.Strategy;
 function localAuthenticate(User, username, password, done) {
   User.findOne({ 
     $or: [
-      {username: username.toLowerCase()}, 
-      {email: username.toLowerCase()}
+      {username: username.toLowerCase(), reported: false}, 
+      {email: username.toLowerCase(), reported: false}
     ]
   }).exec()
     .then(user => {

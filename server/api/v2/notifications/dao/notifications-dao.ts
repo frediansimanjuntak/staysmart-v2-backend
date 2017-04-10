@@ -30,6 +30,19 @@ notificationsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
+notificationsSchema.static('getByUser', (userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        Notifications
+          .find({"user": userId})
+          .populate("user")
+          .exec((err, notifications) => {
+            err ? reject(err)
+                : resolve(notifications);
+          });
+    });
+});
+
 notificationsSchema.static('createNotifications', (notifications:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(notifications)) {
