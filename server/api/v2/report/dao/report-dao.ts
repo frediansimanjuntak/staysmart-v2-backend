@@ -50,6 +50,7 @@ export class reportDAO{
 					let loi = agreement.letter_of_intent.data;
 					let ta = agreement.tenancy_agreement.data;
 					let payment_proof;
+					let secpayment_proof;
 					let tenant_sign;
 					let landlord_sign;
 					let status;
@@ -71,6 +72,7 @@ export class reportDAO{
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
 						if(loi.payment){
 							payment_proof = loi.payment.attachment.payment;
+							secpayment_proof = loi.payment.attachment.payment_confirm;
 						}						
 						if(loi.landlord.bank_account.no){
 							bankName = loi.landlord.bank_account.name,
@@ -95,7 +97,20 @@ export class reportDAO{
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
 						if(ta.payment){
 							payment_proof = ta.payment.attachment.payment;
-						}						
+							secpayment_proof = ta.payment.attachment.payment_confirm;
+						}	
+						if(loi.landlord.bank_account.no){
+							bankName = loi.landlord.bank_account.name,
+							bankNo = loi.landlord.bank_account.no,
+							bank = loi.landlord.bank_account.bank.name,								
+							bankCode = loi.landlord.bank_account.bank.code
+						}
+						else if (loi.landlord.bank_account.no){
+							bankName = "",
+							bankNo = "",
+							bank = "",								
+							bankCode = ""
+						}					
 					}				
 
 					var data = {
@@ -112,6 +127,7 @@ export class reportDAO{
 							"requirements": loi.requirements,							
 							"tenant_sign": tenant_sign,
 							"payment_proof": payment_proof,
+							"second_payment_proof": secpayment_proof,
 							"landlord_sign": landlord_sign,
 							"monthly_rental": loi.monthly_rental,
 							"gfd_amount": loi.gfd_amount,

@@ -12,13 +12,17 @@ export class ManagersRoutes {
 			.post(auth.isAuthenticated(),ManagersController.createManagers);
 
 		router
-			.route('/managers/:id')
-			.get(auth.isAuthenticated(),ManagersController.getManagers)
-			.delete(auth.isAuthenticated(),ManagersController.deleteManagers);
+			.route('/managers/find_own')
+			.get(auth.isAuthenticated(),ManagersController.getOwnManager);
 
 		router
-			.route('/managers/own/:id/:idmanager')
-			.get(auth.isAuthenticated(),ManagersController.getOwnManager);
+			.route('/managers/:id')
+			.get(auth.isAuthenticated(),ManagersController.getById)
+			.delete(auth.isAuthenticated(),ManagersController.deleteManagers);	
+
+		router
+			.route('/managers/property/:id')
+			.delete(auth.isAuthenticated(),ManagersController.deleteUserManagers);	
 
 		router
 			.route('/managers/update/:id')

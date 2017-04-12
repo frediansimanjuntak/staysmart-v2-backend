@@ -11,23 +11,19 @@ var ManagersSchema = new mongoose.Schema({
 			type: Schema.Types.ObjectId,
 			ref: 'Properties'
 		},
-	data: [{
-			manager: {
-				type: Schema.Types.ObjectId,
-				ref: 'Users'
-			},
-			owner: {
-				type: Schema.Types.ObjectId,
-				ref: 'Users'
-			},
-			chat: {type: Boolean, default: false},
-			status: {type: String, enum:['pending', 'accepted', 'rejected']},
-			created_at: {type: Date, default: Date.now}
-		}],
-	histories:[{
-			date: {type: Date},
-			data: {}
-		}]	
+	owner: 
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Users'
+		},
+	manager: 
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Users'
+		},
+	chat: {type: Boolean, default: false},
+	status: {type: String, enum:['pending', 'accepted', 'rejected']},
+	created_at: {type: Date, default: Date.now}		
 });
 
 export default ManagersSchema;

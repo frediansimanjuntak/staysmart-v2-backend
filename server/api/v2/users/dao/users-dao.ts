@@ -164,6 +164,64 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				}]	
 			})
 			.populate({
+				path: 'managed_properties',
+				populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+				},{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+				},{
+					path: 'pictures.bed',
+					model: 'Attachments'
+				},{
+					path: 'pictures.dining',
+					model: 'Attachments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+				},{
+					path: 'amenities',
+					model: 'Amenities',
+					populate: {
+						path: 'icon',
+						model: 'Attachments'
+					}
+				}]	
+			})
+	        .populate({
+				path: 'shortlisted_properties',
+				populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+				},{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+				},{
+					path: 'pictures.bed',
+					model: 'Attachments'
+				},{
+					path: 'pictures.dining',
+					model: 'Attachments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+				},{
+					path: 'amenities',
+					model: 'Amenities',
+					populate: {
+						path: 'icon',
+						model: 'Attachments'
+					}
+				}]	
+			})
+			.populate({
 				path: 'rented_properties',
 				populate: [{
 					path: 'development',

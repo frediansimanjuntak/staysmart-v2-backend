@@ -269,7 +269,7 @@ export class report {
 			  let secPaymentProof = getData;
 			  if(secPaymentProof) {
 				let fileType = secPaymentProof.type;
-				let url = secPaymentProof.key;
+				let url = secPaymentProof.url;
 				let subType = fileType.substring(0, 5);
 				if(subType == 'image'){
 					getData = '<img src="' + url + '" height="500px" /> ';

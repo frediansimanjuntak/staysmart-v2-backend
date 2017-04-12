@@ -17,7 +17,7 @@ export class AgreementsRoutes {
 
 		router
 			.route('/agreements/user')
-			.get(auth.isAuthenticated(), AgreementsController.getByUser);
+			.get(auth.isAuthenticated(), AgreementsController.getByUser);		
 
 		router
 			.route('/agreements/:id')
@@ -112,5 +112,10 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/stamp_certificate/:id')
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.stampCertificateTA);
+
+		//odometer
+		router
+			.route('/odometer')
+			.get(AgreementsController.getOdometer);
 	}
 }
