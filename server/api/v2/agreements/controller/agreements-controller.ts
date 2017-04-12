@@ -39,6 +39,14 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getOdometer(req: express.Request, res: express.Response):void {	
+
+		AgreementsDAO
+		['getOdometer']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createAgreements(req: express.Request, res: express.Response):void {
 		let _agreements = req.body;
 		let _userId = req["user"]._id;
@@ -186,9 +194,10 @@ export class AgreementsController {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
 		let _role = req["user"].role;
+		let _loi = req.body;
 
 		AgreementsDAO
-		['rejectLoi'](_id, _userId, _role)
+		['rejectLoi'](_id, _userId, _role, _loi)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

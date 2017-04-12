@@ -35,6 +35,11 @@ var AppointmentsSchema = new mongoose.Schema({
 		type: String, 
 		enum: ['pending','accepted','rejected','archived'], 
 		default: 'pending'
+	},
+	state: {
+		type: String, 
+		enum: ['under consideration', 'initiate letter of intent', 'initiate tenancy agreement'], 
+		default: 'under consideration'
 	}
 });
 
