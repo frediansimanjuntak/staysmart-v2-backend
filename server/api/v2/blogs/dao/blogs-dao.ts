@@ -18,7 +18,7 @@ blogsSchema.static('getAll', ():Promise<any> => {
           .populate("cover category")
           .populate([{
             path: 'comments',
-            populate: {
+            populate: [{
               path: 'user',
               model: 'Users',
               populate: {
@@ -26,7 +26,11 @@ blogsSchema.static('getAll', ():Promise<any> => {
                 model: 'Attachments'
               },
               select: 'username picture'
-            }
+            },
+            {
+              path: 'replies',
+              model: 'Comments'
+            }]
           },{
             path: 'created_by',
             populate: {
@@ -50,15 +54,19 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
           .populate("cover category")
           .populate([{
             path: 'comments',
-            populate: {
-              path: 'user',
-              model: 'Users',
-              populate: {
-                path: 'picture',
-                model: 'Attachments'
-              },
-              select: 'username picture'
-            }
+            populate: [{
+                path: 'user',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username picture'
+              }, 
+              {
+                path: 'replies',
+                model: 'Comments'
+            }]
           },{
             path: 'created_by',
             populate: {
@@ -82,7 +90,7 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
           .populate("cover category")
           .populate([{
             path: 'comments',
-            populate: {
+            populate: [{
               path: 'user',
               model: 'Users',
               populate: {
@@ -90,7 +98,11 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
                 model: 'Attachments'
               },
               select: 'username picture'
-            }
+            },
+            {
+              path: 'replies',
+              model: 'Comments'
+            }]
           },{
             path: 'created_by',
             populate: {

@@ -17,20 +17,36 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("landlord tenant property letter_of_intent.data.property letter_of_intent.data.appointment")
+			.populate("landlord tenant property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments")
 			.populate({
 				path: 'letter_of_intent.data.payment',
-				populate: {
+				populate: [{
 					path: 'attachment.payment',
 					model: 'Attachments'
-				}
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
 			})
 			.populate({
-				path: 'tenancy_agreement.data.payment',
-				populate: {
+				path: 'letter_of_intent.data.payment',
+				populate: [{
 					path: 'attachment.payment',
 					model: 'Attachments'
-				}
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
 			})
 			.populate({
 				path: 'property',
@@ -124,7 +140,7 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 });
 
 
-agreementsSchema.static('getByUser', (userId:string):Promise<any> => {
+agreementsSchema.static('getByUser', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 
 		let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
@@ -139,7 +155,7 @@ agreementsSchema.static('getByUser', (userId:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('getById', (id:string, userId:string):Promise<any> => {
+agreementsSchema.static('getById', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -150,7 +166,7 @@ agreementsSchema.static('getById', (id:string, userId:string):Promise<any> => {
 		Agreements.getAgreement(_query).then(res => {
 			if(res){
 				_.each(res, (result) => {
-					if(result.landlord._id == IDUser || result.tenant._id == IDUser){
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
 						resolve(result);
 					}
 					else{
@@ -218,32 +234,6 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 				reject({message: "error"});	
 			}
 		})
-		// var getSavedComission = function(latestTAs) {
-		//   var taDocs = latestTAs.filter(Boolean);
-		//   var savedComission = 12100;
-		//   _.each(taDocs, function(ta) {
-		//     let n;
-		//     let x;
-		//     let cal;
-		//     if (ta.status == 'accepted') {
-		//       if (!ta.renewal) {
-		//         x = ta.monthly_rental;
-		//         if (ta.term_lease <= 12) {
-		//           n = 12;
-		//         } else {
-		//           n = ta.term_lease;
-		//         }
-		//         if (x <= 4000) {
-		//           cal = n/24 * x *2;
-		//         } else if (x > 4000) {
-		//           cal = n/24 * x;
-		//         }
-		//         savedComission += cal;
-		//       }
-		//     }
-		//   });
-		//   return savedComission;
-		// }
 	});
 });
 
@@ -1061,6 +1051,7 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 		let body:any = data;
 		let type_notif = "initiateIL";
 		let IDUser = userId.toString();
+		console.log(body);
 
 		Agreements
 			.findById(id)
@@ -1082,42 +1073,25 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 						if(il.status == "pending"){
 							let typeDataa = "inventory_list";
 							Agreements.createHistory(id, typeDataa).then(res => {
-								Agreements
-									.findByIdAndUpdate(id, {
-										$unset: {
-											"inventory_list.data": ""
-										}
-									})
-									.exec((err, update) => {
-										if(err) {
-											reject(err);
-										}
-										else if(update) {
-											agreement.inventory_list.data.confirmation.landlord.sign = body.confirmation.landlord.sign;
-											agreement.inventory_list.data.confirmation.landlord.date = new Date();
-											agreement.inventory_list.data.status = "pending";
-											agreement.inventory_list.data.created_at = new Date();
-											agreement.inventory_list.data.property = propertyId;
-											agreement.inventory_list.data.lists = body.lists;
-											agreement.save((err, saved) => {
-												if(err){
-													reject(err);
-												}
-												if(saved){
-													let type = "updateInventory";
-													Agreements.email(id, type);
-													resolve({message: 'update inventory list success'});
-												}
-											})											
-										}
-									});
+								agreement.inventory_list.data.lists = body.lists;
+								agreement.inventory_list.data.created_at = new Date();	
+								agreement.save((err, saved) => {
+									if(err){
+										reject(err);
+									}
+									if(saved){
+										let type = "updateInventory";
+										Agreements.email(id, type);
+										resolve({message: 'update inventory list success'});
+									}
+								});								
 							});							
 						}
 						if(il.status == "completed"){
 							resolve({message: "can not change"})
 						}
-						if(!il){
-							agreement.inventory_list.data.confirmation.landlord.sign = body.confirmation.landlord.sign;
+						if(!il.status){
+							agreement.inventory_list.data.confirmation.landlord.sign = body.sign;
 							agreement.inventory_list.data.confirmation.landlord.date = new Date();
 							agreement.inventory_list.data.status = "pending";
 							agreement.inventory_list.data.created_at = new Date();
@@ -1150,15 +1124,15 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 		let ObjectID = mongoose.Types.ObjectId;
 		let type_notif = "confirmedIL";
 		let IDUser = userId.toString();
-
+		console.log(body);
 		Agreements
 			.findById(id, (err, agreement) => {
 				let tenantId = agreement.tenant;
 
-				if (IDUser != tenantId){
+				if (tenantId != IDUser){
 					reject ({message: "sorry you can not check this Inventory List"})
 				}
-				else if(IDUser == tenantId){
+				else if(tenantId == IDUser){
 					for(var i = 0; i < body.lists.length; i++){
 						for(var j = 0; j < agreement.inventory_list.data.lists.length; j++){
 							if(agreement.inventory_list.data.lists[j]._id == body.lists[i].idList) {
@@ -1177,7 +1151,7 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 							}
 						}
 					}
-					agreement.inventory_list.data.confirmation.tenant.sign = body.confirmation.tenant.sign;
+					agreement.inventory_list.data.confirmation.tenant.sign = body.sign;
 					agreement.inventory_list.data.confirmation.tenant.date = new Date();
 					agreement.inventory_list.data.status = "completed";
 					agreement.save((err, update) => {

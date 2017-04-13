@@ -22,9 +22,10 @@ export class AgreementsController {
 
 	static getByUser(req: express.Request, res: express.Response):void {		
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getByUser'](_userId)
+		['getByUser'](_userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -32,9 +33,10 @@ export class AgreementsController {
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getById'](_id, _userId)
+		['getById'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -298,6 +300,7 @@ export class AgreementsController {
 	}
 
 	static createInventoryList(req: express.Request, res: express.Response):void {
+		console.log(req.body);
 		let _id = req.params.id;
 		let _agreement = req.body;
 		let _userId = req["user"]._id;
