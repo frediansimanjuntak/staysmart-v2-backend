@@ -161,14 +161,6 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
           .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
           .populate({
             path: 'owner.user',
-            populate: {
-              path: 'picture',
-              model: 'Attachments'
-            },
-            select: 'username email picture landlord.data.name tenant.data.name'
-          })
-          .populate({
-            path: 'owner.user',
             populate: [{
               path: 'picture',
               model: 'Attachments'                          
@@ -180,7 +172,8 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
             {
               path: 'landlord.data.identification_proof.back',
               model: 'Attachments' 
-            }]
+            }],
+            select: 'username email picture landlord.data reported'
           })
           .populate({
               path: 'owner.company',

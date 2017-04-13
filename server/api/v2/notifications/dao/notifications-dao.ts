@@ -86,7 +86,7 @@ notificationsSchema.static('updateNotifications', (id:string):Promise<any> => {
         Notifications
           .findByIdAndUpdate(id, {
             $set: {
-              "read_at": Date.now,
+              "read_at": new Date(),
               "clicked": true
             }
           })
