@@ -57,6 +57,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
 		let body:any = comments;
+		console.log(body);
 		var type;
 		if(body.commentID) {
 			type = 'reply/';
