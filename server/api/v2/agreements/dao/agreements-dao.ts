@@ -1785,12 +1785,12 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 							}
 							if(type == "initiateIL"){
 								message = "Inventory List received for" + unit + " " + devResult.name;
-								type_notif = "received_LOI";
+								type_notif = "received_Inventory";
 								user = tenantId;
 							}
 			            	if(type == "confirmedIL"){
 								message = "Inventory List confirmed for" + unit + " " + devResult.name;
-								type_notif = "rejected_LOI";
+								type_notif = "confirm_Inventory";
 								user = landlordId;
 							}
 				            var notification = {

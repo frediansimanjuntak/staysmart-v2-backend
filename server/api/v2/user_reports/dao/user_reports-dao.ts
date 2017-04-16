@@ -10,7 +10,7 @@ userReportsSchema.static('getAll', ():Promise<any> => {
 
         UserReports
           .find(_query)
-          .populate("reported reported")
+          .populate("reporter reported")
           .exec((err, reports) => {
               err ? reject(err)
                   : resolve(reports);
@@ -55,7 +55,7 @@ userReportsSchema.static('getById', (id:string):Promise<any> => {
 
         UserReports
           .findById(id)
-          .populate("reported reporter")
+          .populate("reporter reported")
           .exec((err, reports) => {
               err ? reject(err)
                   : resolve(reports);
@@ -71,7 +71,7 @@ userReportsSchema.static('getByReported', (reported:string):Promise<any> => {
 
         UserReports
           .findOne({"reported": reported})
-          .populate("reported reporter")
+          .populate("reporter reported")
           .exec((err, reports) => {
               err ? reject(err)
                   : resolve(reports);
@@ -121,7 +121,7 @@ userReportsSchema.static('deleteUserReports', (id:string):Promise<any> => {
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
-                  : resolve();
+                  : resolve({message: "delete success"});
           });        
     });
 });
