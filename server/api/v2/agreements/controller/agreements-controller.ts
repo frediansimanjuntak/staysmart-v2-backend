@@ -12,12 +12,39 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getAllHistory(req: express.Request, res: express.Response):void {	
+
+		AgreementsDAO
+		['getAllHistory']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByUser(req: express.Request, res: express.Response):void {		
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+
+		AgreementsDAO
+		['getByUser'](_userId, _role)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getById'](_id, _userId)
+		['getById'](_id, _userId, _role)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getOdometer(req: express.Request, res: express.Response):void {	
+
+		AgreementsDAO
+		['getOdometer']()
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -123,6 +150,16 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static createLoiAppointment(req: express.Request, res: express.Response):void {
+		let _idAppointment = req.params.id;
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['createLoiAppointment'](_idAppointment, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createLoi(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;
@@ -159,9 +196,10 @@ export class AgreementsController {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
 		let _role = req["user"].role;
+		let _loi = req.body;
 
 		AgreementsDAO
-		['rejectLoi'](_id, _userId, _role)
+		['rejectLoi'](_id, _userId, _role, _loi)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -262,6 +300,7 @@ export class AgreementsController {
 	}
 
 	static createInventoryList(req: express.Request, res: express.Response):void {
+		console.log(req.body);
 		let _id = req.params.id;
 		let _agreement = req.body;
 		let _userId = req["user"]._id;

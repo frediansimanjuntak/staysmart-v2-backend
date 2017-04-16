@@ -106,7 +106,7 @@ var AgreementsSchema = new mongoose.Schema({
 			term_lease_extend: {type: Number},
 			appointment: {
 				type: Schema.Types.ObjectId,
-				ref: 'Appoinments'
+				ref: 'Appointments'
 			},
 			property: {
 				type: Schema.Types.ObjectId,
@@ -160,7 +160,7 @@ var AgreementsSchema = new mongoose.Schema({
 			},
 			status: {
 				type: String, 
-				enum: ['pending', 'accepted', 'expired', 'admin-confirmation', 'rejected']
+				enum: ['pending', 'accepted', 'expired', 'admin-confirmation', 'payment-confirmed', 'rejected']
 			},
 			stamp_certificate: {
 				type: Schema.Types.ObjectId,

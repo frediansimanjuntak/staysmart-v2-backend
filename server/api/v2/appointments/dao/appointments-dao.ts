@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
+import * as newrelic from 'newrelic';
 import appointmentsSchema from '../model/appointments-model';
 import Users from '../../users/dao/users-dao'
 import Properties from '../../properties/dao/properties-dao'
@@ -9,84 +10,105 @@ import Developments from '../../developments/dao/developments-dao'
 import Agreements from '../../agreements/dao/agreements-dao';
 import {mail} from '../../../../email/mail';
 
-appointmentsSchema.static('getStatus', ():Promise<any> => {
+appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
-
+      Appointments
+          .find(query)
+          .populate("landlord tenant agreement")
+          .populate({
+            path: 'property',
+            populate: [{
+              path: 'pictures.living',
+              model: 'Attachments'
+            },{
+              path: 'pictures.dining',
+              model: 'Attachments'
+            },{
+              path: 'pictures.bed',
+              model: 'Attachments'
+            },{
+              path: 'pictures.toilet',
+              model: 'Attachments'
+            },{
+              path: 'pictures.kitchen',
+              model: 'Attachments'
+            },{
+              path: 'development',
+              model: 'Developments'
+            }]
+          })
+          .exec((err, appointments) => {
+              if(err) {
+                reject(err);
+                newrelic.noticeError(err);
+              }
+              else{
+                resolve(appointments);
+              }
+          });
   })
 })
 
 appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
-        Appointments
-          .find({ $or: [ { "landlord": userId }, { "tenant": userId } ] })
-          .populate("landlord tenant")
-          .populate({
-            path: 'property',
-            populate: [{
-              path: 'pictures.living',
-              model: 'Attachments'
-            },{
-              path: 'pictures.dining',
-              model: 'Attachments'
-            },{
-              path: 'pictures.bed',
-              model: 'Attachments'
-            },{
-              path: 'pictures.toilet',
-              model: 'Attachments'
-            },{
-              path: 'pictures.kitchen',
-              model: 'Attachments'
-            },{
-              path: 'development',
-              model: 'Developments'
-            }]
-          })
-          .exec((err, appointments) => {
-            let res = [];
-              if(err) {
-                reject(err);
-              }
-              else{
-                resolve(res);
-              }
-          });
+        var ObjectID = mongoose.Types.ObjectId;  
+        let _query = {};
+        Appointments.getAppointment(_query).then(res => {
+          if(res){
+            resolve(res);
+          }
+          else{
+            let message = {message: "error"}
+            reject(message);
+          }
+        })        
     });
 });
 
-appointmentsSchema.static('getById', (id:string):Promise<any> => {
+appointmentsSchema.static('getByUser', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
-        Appointments
-          .findById(id)
-          .populate("landlord tenant")
-          .populate({
-            path: 'property',
-            populate: [{
-              path: 'pictures.living',
-              model: 'Attachments'
-            },{
-              path: 'pictures.dining',
-              model: 'Attachments'
-            },{
-              path: 'pictures.bed',
-              model: 'Attachments'
-            },{
-              path: 'pictures.toilet',
-              model: 'Attachments'
-            },{
-              path: 'pictures.kitchen',
-              model: 'Attachments'
-            },{
-              path: 'development',
-              model: 'Developments'
-            }]
-          })
-          .exec((err, appointments) => {
-              err ? reject(err)
-                  : resolve(appointments);
-          });
+        var ObjectID = mongoose.Types.ObjectId;  
+        let _query = {$or: [{"landlord": ObjectID(userId)}, {"tenant": ObjectID(userId)}]};
+        Appointments.getAppointment(_query).then(res => {
+          if(res){
+            resolve(res);
+          }
+          else{
+            let message = {message: "error"}
+            reject(message);
+            newrelic.noticeError(message);
+          }
+        })        
+    });
+});
+
+appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+          return reject(new TypeError('Id is not a valid string.'));
+        }
+ 
+        let IDUser = userId.toString();
+        let _query = {"_id": id};
+        Appointments.getAppointment(_query).then(res => {
+          if(res){
+            _.each(res, function(result){
+              if(result.landlord._id == IDUser || result.tenant._id == IDUser){
+                resolve(result);
+              }
+              else{
+                reject({message:"forbidden"});
+              } 
+            })           
+          }
+          else{
+            let message = {message: "error"}
+            reject(message);
+            newrelic.noticeError(message);
+          }
+        }) 
     });
 });
 
@@ -95,54 +117,75 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
       if (!_.isObject(appointments)) {
         return reject(new TypeError('Appointment is not a valid object.'));
       }
-      var ObjectID = mongoose.Types.ObjectId;  
+      let tenantId = tenant.toString();
       let body:any = appointments;
-      console.log(appointments);
-      for(var i = 0; i < body.time.length; i++){
-        var _appointments = new Appointments(appointments);
-            _appointments.tenant = tenant;
-            _appointments.chosen_time.date = body.date;
-            _appointments.chosen_time.from = body.time[i];
-            _appointments.chosen_time.to = body.time2[i];
-            _appointments.save((err, saved)=>{
-              if(err) {
-                reject(err);
-              }
-              else if(saved){
-                var appointmentId = _appointments._id;
-                Appointments
-                  .findById(appointmentId)
-                  .populate("landlord tenant")
-                  .populate({
-                    path: 'property',
-                    populate: {
-                      path: 'development',
-                      model: 'Developments',
-                    },
-                  })
-                  .exec((err, appointment) => {
-                    var devID = appointment.property.development;
-                    var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
-                    
-                    var notification = {
-                      "user": body.landlord,
-                      "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
-                      "type": "appointment_proposed",
-                      "ref_id": appointmentId
-                    };
-                    Notifications.createNotifications(notification);  
-                    var emailTo = appointment.landlord.email;
-                    var fullname = appointment.landlord.username;
-                    var tenant_username = appointment.tenant.username;                    
-                    var full_address = appointment.property.address.full_address;
-                    var from = 'Staysmart';
 
-                    mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                    resolve({appoinment_id: saved._id, message: 'appoinment proposed'});
-                  })
+      Properties
+        .findById(body.property)
+        .populate("owner.user development")
+        .exec((err, property) => {
+          if(err){
+            reject(err);
+          }
+          else{
+            let landlordId = property.owner.user._id;
+            let propertyId = property._id;
+            let data = {
+              "property": body.property
+            };
+            Agreements.createAgreements(data, tenant).then(res => {
+              let agreementId = res.agreement_id;
+              for(var i = 0; i < body.time.length; i++){
+                var _appointments = new Appointments(appointments);
+                _appointments.agreement = agreementId;
+                _appointments.landlord = landlordId;
+                _appointments.tenant = tenant;
+                _appointments.chosen_time.date = body.date;
+                _appointments.chosen_time.from = body.time[i];
+                _appointments.chosen_time.to = body.time2[i];
+                _appointments.save((err, saved)=>{
+                  if(err) {
+                    reject(err);
+                    newrelic.noticeError(err);
+                  }
+                  else if(saved){
+                    let appointmentId = saved._id;
+                    Appointments
+                      .findById(appointmentId)
+                      .populate("landlord tenant")
+                      .populate({
+                        path: 'property',
+                        populate: {
+                          path: 'development',
+                          model: 'Developments',
+                        },
+                      })
+                      .exec((err, appointment) => {
+                        var devID = appointment.property.development;
+                        var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+                        
+                        var notification = {
+                          "user": body.landlord,
+                          "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
+                          "type": "appointment_proposed",
+                          "ref_id": appointmentId
+                        };
+                        Notifications.createNotifications(notification);  
+                        var emailTo = appointment.landlord.email;
+                        var fullname = appointment.landlord.username;
+                        var tenant_username = appointment.tenant.username;                    
+                        var full_address = appointment.property.address.full_address;
+                        var from = 'Staysmart';
+
+                        mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
+                        resolve({appointment_id: saved._id, message: 'appoinment proposed'});
+                      })                 
+                  }
+                })
               }
-            });
-      }
+            });            
+          }
+        })     
     });
 });
 
@@ -156,7 +199,7 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject(err)
-                  : resolve();
+                  : resolve({message:"delete success"});
           });
     });
 });
@@ -176,6 +219,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
         .exec((err, update) => {
             if(err) {
               reject(err);
+              newrelic.noticeError();
             }
             else if(update) {
               if(status == 'accepted' || status == 'rejected')

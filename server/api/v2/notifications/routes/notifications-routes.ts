@@ -12,12 +12,16 @@ export class NotificationsRoutes {
 			.post(auth.isAuthenticated(),NotificationsController.createNotifications);
 
 		router
+			.route('/notifications/user')
+			.get(auth.isAuthenticated(),NotificationsController.getByUser);
+
+		router
 			.route('/notifications/:id')
 			.get(auth.isAuthenticated(),NotificationsController.getById)
-			.delete(auth.isAuthenticated(),NotificationsController.deleteNotifications);
+			.delete(auth.isAuthenticated(),NotificationsController.deleteNotifications);		
 
 		router
 			.route('/notifications/update/:id')
-			.put(auth.isAuthenticated(),NotificationsController.updateNotifications);
+			.post(auth.isAuthenticated(),NotificationsController.updateNotifications);
 	}
 } 

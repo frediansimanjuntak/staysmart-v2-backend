@@ -3,17 +3,25 @@ import AppointmentsDAO from '../dao/appointments-dao';
 
 export class AppointmentsController {
 	static getAll(req: express.Request, res: express.Response):void {
+		AppointmentsDAO
+		['getAll']()
+		.then(appointments => res.status(200).json(appointments))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByUser(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		AppointmentsDAO
-		['getAll'](_userId)
+		['getByUser'](_userId)
 		.then(appointments => res.status(200).json(appointments))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 		AppointmentsDAO
-		['getById'](_id)
+		['getById'](_id, _userId)
 		.then(appointments => res.status(200).json(appointments))
 		.catch(error => res.status(400).json(error));
 	}

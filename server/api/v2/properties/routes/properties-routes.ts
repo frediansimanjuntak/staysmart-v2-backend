@@ -39,7 +39,7 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/shortlist_property/:id')
 			.post(auth.isAuthenticated(), PropertiesController.shortlistProperty)
-			.put(auth.isAuthenticated(), PropertiesController.unShortlistProperty);
+			.delete(auth.isAuthenticated(), PropertiesController.unShortlistProperty);
 
 	}
 } 

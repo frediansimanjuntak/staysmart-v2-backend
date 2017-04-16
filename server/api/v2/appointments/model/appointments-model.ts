@@ -2,14 +2,15 @@
 
 import * as express from 'express';
 import * as mongoose from 'mongoose';
-import Agreements from '../../agreements/dao/agreements-dao';
-
-var crypto = require('crypto')
 
 var Schema = mongoose.Schema;
 
 var AppointmentsSchema = new mongoose.Schema({
 	room_id: {type: String},
+	agreement: {
+		type: Schema.Types.ObjectId,
+		ref: 'Agreements'
+	},
 	landlord: {
 		type: Schema.Types.ObjectId,
 		ref: 'Users'
@@ -34,6 +35,11 @@ var AppointmentsSchema = new mongoose.Schema({
 		type: String, 
 		enum: ['pending','accepted','rejected','archived'], 
 		default: 'pending'
+	},
+	state: {
+		type: String, 
+		enum: ['under consideration', 'initiate letter of intent', 'initiate tenancy agreement'], 
+		default: 'under consideration'
 	}
 });
 

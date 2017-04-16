@@ -50,6 +50,7 @@ export class reportDAO{
 					let loi = agreement.letter_of_intent.data;
 					let ta = agreement.tenancy_agreement.data;
 					let payment_proof;
+					let secpayment_proof;
 					let tenant_sign;
 					let landlord_sign;
 					let status;
@@ -57,6 +58,10 @@ export class reportDAO{
 					let date_expired;
 					let created_at;
 					let created_day;
+					let bank;
+					let bankCode;
+					let bankName;
+					let bankNo;
 					if (type == "loi"){
 						tenant_sign = loi.confirmation.tenant.sign;
 						landlord_sign = loi.confirmation.landlord.sign;
@@ -67,6 +72,19 @@ export class reportDAO{
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
 						if(loi.payment){
 							payment_proof = loi.payment.attachment.payment;
+							secpayment_proof = loi.payment.attachment.payment_confirm;
+						}						
+						if(loi.landlord.bank_account.no){
+							bankName = loi.landlord.bank_account.name,
+							bankNo = loi.landlord.bank_account.no,
+							bank = loi.landlord.bank_account.bank.name,								
+							bankCode = loi.landlord.bank_account.bank.code
+						}
+						else if (loi.landlord.bank_account.no){
+							bankName = "",
+							bankNo = "",
+							bank = "",								
+							bankCode = ""
 						}
 					}
 					else if (type == "ta"){
@@ -79,7 +97,20 @@ export class reportDAO{
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
 						if(ta.payment){
 							payment_proof = ta.payment.attachment.payment;
-						}						
+							secpayment_proof = ta.payment.attachment.payment_confirm;
+						}	
+						if(loi.landlord.bank_account.no){
+							bankName = loi.landlord.bank_account.name,
+							bankNo = loi.landlord.bank_account.no,
+							bank = loi.landlord.bank_account.bank.name,								
+							bankCode = loi.landlord.bank_account.bank.code
+						}
+						else if (loi.landlord.bank_account.no){
+							bankName = "",
+							bankNo = "",
+							bank = "",								
+							bankCode = ""
+						}					
 					}				
 
 					var data = {
@@ -96,6 +127,7 @@ export class reportDAO{
 							"requirements": loi.requirements,							
 							"tenant_sign": tenant_sign,
 							"payment_proof": payment_proof,
+							"second_payment_proof": secpayment_proof,
 							"landlord_sign": landlord_sign,
 							"monthly_rental": loi.monthly_rental,
 							"gfd_amount": loi.gfd_amount,
@@ -130,10 +162,10 @@ export class reportDAO{
 								"company_name": landlord.companies
 							},
 							"landlord_account": {								
-								"name": loi.landlord.bank_account.name,
-								"no": loi.landlord.bank_account.no,
-								"bank": loi.landlord.bank_account.bank.name,
-								"bank_code": loi.landlord.bank_account.bank.code
+								"name": bankName,
+								"no": bankNo,
+								"bank": bank,								
+								"bank_code": bankCode
 							},
 							"date_ta": ta.created_at,
 							"date_expired": date_expired,
@@ -179,7 +211,7 @@ export class reportDAO{
 	}
 	static reportLOIPending(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = __dirname+'/../../../../server/template/report-template/pending-letterofintent-custom.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/pending-letterofintent-custom.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";
@@ -194,7 +226,7 @@ export class reportDAO{
 	
 	static reportLOIComfirm(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/comfirm-letterofintent-custom.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/comfirm-letterofintent-custom.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";
@@ -209,7 +241,7 @@ export class reportDAO{
 
 	static reportLOIPrint(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/print-letterofintent.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/print-letterofintent.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";
@@ -252,7 +284,7 @@ export class reportDAO{
 	}
 	static reportTAPending(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/pending-tenancyagreement-custom.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/pending-tenancyagreement-custom.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "ta";
@@ -267,7 +299,7 @@ export class reportDAO{
 
 	static reportTAPrint(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = 'c:/repositories/staysmart-v2-backend/server/template/report-template/print-tenancyagreement.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/print-tenancyagreement.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "ta";

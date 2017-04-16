@@ -19,17 +19,40 @@ propertiesSchema.static('getAll', ():Promise<any> => {
           .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
           .populate({
             path: 'owner.user',
-            populate: {
+            populate: [{
               path: 'picture',
-              model: 'Attachments'
+              model: 'Attachments'                          
             },
-            select: 'username email picture landlord.data.name tenant.data.name'
+            {
+              path: 'landlord.data.identification_proof.front',
+              model: 'Attachments' 
+            },
+            {
+              path: 'landlord.data.identification_proof.back',
+              model: 'Attachments' 
+            },
+            {
+              path: 'companies',
+              model: 'Companies',
+              populate: [{
+                  path: 'documents',
+                  model: 'Attachments'
+                },
+                {
+                  path: 'shareholders.identification_proof.front',
+                  model: 'Attachments'
+                },
+                {
+                  path: 'shareholders.identification_proof.front',
+                  model: 'Attachments'
+                }]
+            }]
           })
           .populate({
             path: 'amenities',
             populate: {
               path: 'icon',
-              model: Attachments
+              model: 'Attachments'
             }
           })
           .exec((err, properties) => {
@@ -121,7 +144,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           path: 'amenities',
           populate: {
             path: 'icon',
-            model: Attachments
+            model: 'Attachments'
           }
         })
         property.exec((err, properties) => {
@@ -138,17 +161,41 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
           .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
           .populate({
             path: 'owner.user',
-            populate: {
+            populate: [{
               path: 'picture',
-              model: 'Attachments'
+              model: 'Attachments'                          
             },
-            select: 'username email picture landlord.data.name tenant.data.name'
+            {
+              path: 'landlord.data.identification_proof.front',
+              model: 'Attachments' 
+            },
+            {
+              path: 'landlord.data.identification_proof.back',
+              model: 'Attachments' 
+            }],
+            select: 'username email picture landlord.data reported'
           })
+          .populate({
+              path: 'owner.company',
+              model: 'Companies',
+              populate: [{
+                  path: 'documents',
+                  model: 'Attachments'
+                },
+                {
+                  path: 'shareholders.identification_proof.front',
+                  model: 'Attachments'
+                },
+                {
+                  path: 'shareholders.identification_proof.front',
+                  model: 'Attachments'
+                }]
+            })
           .populate({
             path: 'amenities',
             populate: {
               path: 'icon',
-              model: Attachments
+              model: 'Attachments'
             }
           })
           .exec((err, properties) => {
@@ -182,7 +229,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({"owner.user": userId, "status": "draft"})
-          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by temp.owner.$.identification_proof.front temp.owner.$.identification_proof.back temp.shareholders.$.identification_proof.front temp.shareholders.$.identification_proof.back")
+          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
           .populate({
             path: 'owner.user',
             populate: {
@@ -605,15 +652,30 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
         return reject(new TypeError('Id is not a valid string.'));
       }
       Users
-        .findByIdAndUpdate(id, {
-          $push: {
-            "shortlisted_property": id
+        .find({"_id": userId, "shortlisted_properties": id})
+        .select("shortlisted_property")
+        .exec((err, res) => {
+          if(err){
+            reject(err);
           }
-        })
-        .exec((err, update) => {
-          err ? reject(err)
-              : resolve(update);
-        });
+          if(res){
+            if(res.length > 0){
+              resolve({message: "Already shortlisted this property"})
+            }
+            if(res.length == 0){
+              Users
+                .findByIdAndUpdate(userId, {
+                  $push: {
+                    "shortlisted_properties": id
+                  }
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                      : resolve({message: "Success shortlisted this property"});
+                });
+            }          
+          }
+        })     
   });
 });
 
@@ -623,15 +685,30 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
         return reject(new TypeError('Id is not a valid string.'));
       }
       Users
-        .findByIdAndUpdate(id, {
-          $pull: {
-            "shortlisted_property": id
+        .find({"_id": userId, "shortlisted_properties": id})
+        .select("shortlisted_property")
+        .exec((err, res) => {
+          if(err){
+            reject(err);
+          }
+          if(res){
+            if(res.length == 0){
+              resolve({message: "Not in your shortlisted property"})
+            }
+            if(res.length > 0){
+              Users
+                .findByIdAndUpdate(userId, {
+                  $pull: {
+                    "shortlisted_properties": id
+                  }
+                })
+                .exec((err, update) => {
+                  err ? reject(err)
+                      : resolve({message: "Success to unshortlisted this property"});
+                });
+            }          
           }
         })
-        .exec((err, update) => {
-          err ? reject(err)
-              : resolve(update);
-        });
   });
 });
 
@@ -718,7 +795,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
               if(body.shareholders != null) {
                 if(body.status == 'draft') {
                   if(body.shareholders.length > 0) {
-                    var shareholder_data = body.shareholder;
+                    var shareholder_data = body.shareholders;
 
                     Properties
                       .findByIdAndUpdate(propertyId, {

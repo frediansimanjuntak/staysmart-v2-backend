@@ -37,6 +37,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
       }
       var files = [].concat(attachments);
       var idAtt = [];
+      var urlAtt =[];
       var errAtt = 0;
 
       if(files.length > 0)
@@ -61,6 +62,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
                 _attachment.key = 'attachment/'+fileName;
                 _attachment.size = files[i].size;    
                 _attachment.save((err, saved) => {
+                  let url = saved.url;
                   if(err != null) 
                   {
                     errAtt = errAtt + 1;
@@ -71,12 +73,15 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
                   }                
                 });
 
-                let idattach = _attachment.id;  
+                let idattach = _attachment.id; 
+                let url = _attachment.url; 
                 idAtt.push(idattach);
+                urlAtt.push(url);
+
                  
                 if (i >= files.length - 1){
                   if(errAtt == 0) {
-                    resolve({idAtt, errAtt});  
+                    resolve({idAtt, urlAtt, errAtt});  
                   }
                   else{
                     resolve({errAtt});

@@ -3,28 +3,28 @@ import ManagersDAO from '../dao/managers-dao';
 
 export class ManagersController {
 	static getAll(req: express.Request, res: express.Response):void {
+
 		ManagersDAO
 		['getAll']()
-		.then(notifications => res.status(200).json(notifications))
+		.then(managers => res.status(200).json(managers))
 		.catch(error => res.status(400).json(error));
 	}
 
-	static getManagers(req: express.Request, res: express.Response):void {
+	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 
 		ManagersDAO
-		['getManagers'](_id)
-		.then(notifications => res.status(200).json(notifications))
+		['getById'](_id)
+		.then(managers => res.status(200).json(managers))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getOwnManager(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
-		let _idManager = req.params.idmanager;
+		let _userId = req["user"]._id;
 
 		ManagersDAO
-		['getOwnManager'](_id, _idManager)
-		.then(notifications => res.status(200).json(notifications))
+		['getOwnManager'](_userId)
+		.then(managers => res.status(200).json(managers))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -34,7 +34,7 @@ export class ManagersController {
 
 		ManagersDAO
 		['createManagers'](_userId, _manager)
-		.then(notifications => res.status(201).json(notifications))
+		.then(managers => res.status(201).json(managers))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -47,12 +47,21 @@ export class ManagersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static deleteUserManagers(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		ManagersDAO
+		['deleteUserManagers'](_id)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
+	}
+
 	static updateManagers(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 
 		ManagersDAO
 		['updateManagers'](_id)
-		.then(notifications => res.status(201).json(notifications))
+		.then(managers => res.status(201).json(managers))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -62,7 +71,7 @@ export class ManagersController {
 
 		ManagersDAO
 		['acceptManagers'](_id, _userId)
-		.then(notifications => res.status(201).json(notifications))
+		.then(managers => res.status(201).json(managers))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -72,7 +81,7 @@ export class ManagersController {
 
 		ManagersDAO
 		['rejectManagers'](_id, _userId)
-		.then(notifications => res.status(201).json(notifications))
+		.then(managers => res.status(201).json(managers))
 		.catch(error => res.status(400).json(error));
 	}
 }

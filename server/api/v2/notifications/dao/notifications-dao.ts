@@ -19,9 +19,25 @@ notificationsSchema.static('getAll', ():Promise<any> => {
 
 notificationsSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
 
         Notifications
           .findById(id)
+          .populate("user")
+          .exec((err, notifications) => {
+            err ? reject(err)
+                : resolve(notifications);
+          });
+    });
+});
+
+notificationsSchema.static('getByUser', (userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        Notifications
+          .find({"user": userId})
           .populate("user")
           .exec((err, notifications) => {
             err ? reject(err)
@@ -70,7 +86,7 @@ notificationsSchema.static('updateNotifications', (id:string):Promise<any> => {
         Notifications
           .findByIdAndUpdate(id, {
             $set: {
-              "read_at": Date.now,
+              "read_at": new Date(),
               "clicked": true
             }
           })

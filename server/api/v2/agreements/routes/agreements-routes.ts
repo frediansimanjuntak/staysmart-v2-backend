@@ -12,6 +12,14 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.createAgreements);
 
 		router
+			.route('/agreements/history')
+			.get(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.getAllHistory);
+
+		router
+			.route('/agreements/user')
+			.get(auth.isAuthenticated(), AgreementsController.getByUser);		
+
+		router
 			.route('/agreements/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getById)
 			.delete(auth.isAuthenticated(), AgreementsController.deleteAgreements);	
@@ -60,6 +68,10 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.createLoi);
 
 		router
+			.route('/loi/appointment/:id')
+			.post(auth.isAuthenticated(), AgreementsController.createLoiAppointment);
+
+		router
 			.route('/loi/send/:id')
 			.post(auth.isAuthenticated(), AgreementsController.sendLoi);
 
@@ -100,5 +112,10 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/stamp_certificate/:id')
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.stampCertificateTA);
+
+		//odometer
+		router
+			.route('/odometer')
+			.get(AgreementsController.getOdometer);
 	}
 }

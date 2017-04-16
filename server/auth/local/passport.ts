@@ -8,8 +8,7 @@ function localAuthenticate(User, username, password, done) {
   User.findOne({ 
     $or: [
       {username: username.toLowerCase()}, 
-      {email: username.toLowerCase()}
-    ]
+      {email: username.toLowerCase()}]
   }).exec()
     .then(user => {
       if(!user) {
