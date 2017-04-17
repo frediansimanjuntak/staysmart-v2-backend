@@ -18,7 +18,8 @@ function localAuthenticate(User, username, password, done) {
       }
       user.authenticate(password, function(authError, authenticated) {
         if(authError) {
-          return done(authError);
+          // return done(authError);
+          return done({ message: 'Incorrect username/email and password.' })
         }
         if(!authenticated) {
           return done(null, false, { message: 'Incorrect username/email and password.' });
