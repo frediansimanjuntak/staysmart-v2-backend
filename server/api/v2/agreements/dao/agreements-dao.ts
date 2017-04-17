@@ -347,21 +347,23 @@ agreementsSchema.static('getLoi', (id:string, userId:string, role:string):Promis
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		Agreements
-			.findById(id)
-			.select("letter_of_intent.data")
-			.populate("landlord tenant property letter_of_intent.data.tenant.bank_account.bank")
-			.populate({
-				path: 'letter_of_intent.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
-				}
-			})
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements.letter_of_intent.data);
-			});
+		let IDUser = userId.toString();
+		let _query = {"_id": id};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+						resolve(result.letter_of_intent.data);
+					}
+					else{
+						reject({message:"forbidden"});
+					}
+				})				 
+			}
+			else{
+				reject({message: "error"});
+			}
+		})		
 	});
 });
 
@@ -733,14 +735,23 @@ agreementsSchema.static('getTA', (id:string, userId:string, role:string):Promise
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-
-		Agreements
-			.findById(id)
-			.select("tenancy_agreement.data")
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements.tenancy_agreement.data);
-			});
+		let IDUser = userId.toString();
+		let _query = {"_id": id};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+						resolve(result.tenancy_agreement.data);
+					}
+					else{
+						reject({message:"forbidden"});
+					}
+				})				 
+			}
+			else{
+				reject({message: "error"});
+			}
+		})
 	});
 });
 
