@@ -17,13 +17,13 @@ export class UserReportsRoutes {
 
 		router
 			.route('/user_reports/:id')
-			.get(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.getById)
-			.delete(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.deleteUserReports);
+			.get(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.getById);
 
 		router
 			.route('/user_reports/reported/:reported')
 			.get(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.getByReported)
-			.post(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.reportUser);
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.reportUser)
+			.delete(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.deleteUserReports);
 		
 	}
 } 
