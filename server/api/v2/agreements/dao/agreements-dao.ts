@@ -52,7 +52,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 				}]
 			})
 			.populate({
-				path: 'letter_of_intent.data.payment',
+				path: 'tenancy_agreement.data.payment',
 				populate: [{
 					path: 'attachment.payment',
 					model: 'Attachments'
