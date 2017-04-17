@@ -2,8 +2,9 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import chatsSchema from '../model/chats-model';
-import Users from '../../users/dao/users-dao'
-import Properties from '../../properties/dao/properties-dao'
+import Users from '../../users/dao/users-dao';
+import Agreements from '../../agreements/dao/agreements-dao'
+import Properties from '../../properties/dao/properties-dao';
 import {DreamTalk} from '../../../../global/chat.service';
 
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
@@ -71,6 +72,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
         property_id.toString();
     	Properties
     		.findById(property_id, (err, property) => {
+                let landlordId = property.owner.user;
     			var members = [];
     			members.push(property.owner.user);
                 var manager = '';
@@ -102,6 +104,33 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
 					                            reject(err);
 					                        }
 					                        else if(saved){
+                                                Agreements
+                                                    .findOne({"property": property_id, "tenant": uid})
+                                                    .exec((err, agreement) => {
+                                                        if(err){
+                                                            reject(err);
+                                                        }
+                                                        else{
+                                                            if(agreement == null){
+                                                                var _agreements = new Agreements();
+                                                                _agreements.property = property_id;
+                                                                _agreements.tenant =  uid;
+                                                                _agreements.landlord = landlordId;
+                                                                _agreements.room_id = saved._id;
+                                                                _agreements.save((err, saved)=>{
+                                                                    err ? reject(err)
+                                                                        : resolve(saved);
+                                                                });
+                                                            }
+                                                            if(agreement != null){
+                                                                agreement.room_id = saved._id;
+                                                                agreement.save((err, saved)=>{
+                                                                    err ? reject(err)
+                                                                        : resolve(saved);
+                                                                });
+                                                            }
+                                                        }
+                                                })
 					                            console.log(saved);
 					                            Users
 					                                .findByIdAndUpdate(uid, {

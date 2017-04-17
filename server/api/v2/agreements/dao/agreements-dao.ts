@@ -17,7 +17,25 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("landlord tenant property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments")
+			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments")
+			.populate({
+				path: 'landlord',
+				model: 'Users',
+	            populate: {
+	              path: 'picture',
+	              model: 'Attachments'
+	            },
+	            select: 'username email picture landlord.data'
+			})
+			.populate({
+				path: 'tenant',
+				model: 'Users',
+	            populate: {
+	              path: 'picture',
+	              model: 'Attachments'
+	            },
+	            select: 'username email picture landlord.data'
+			})
 			.populate({
 				path: 'letter_of_intent.data.payment',
 				populate: [{
@@ -324,7 +342,7 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 });
 
 //LOI
-agreementsSchema.static('getLoi', (id:string, userId:string):Promise<any> => {
+agreementsSchema.static('getLoi', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -710,7 +728,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 });
 
 //TA
-agreementsSchema.static('getTA', (id:string, userId:string):Promise<any> => {
+agreementsSchema.static('getTA', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -1051,7 +1069,6 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 		let body:any = data;
 		let type_notif = "initiateIL";
 		let IDUser = userId.toString();
-		console.log(body);
 
 		Agreements
 			.findById(id)
@@ -1124,7 +1141,7 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 		let ObjectID = mongoose.Types.ObjectId;
 		let type_notif = "confirmedIL";
 		let IDUser = userId.toString();
-		console.log(body);
+		
 		Agreements
 			.findById(id, (err, agreement) => {
 				let tenantId = agreement.tenant;
