@@ -119,7 +119,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
       }
       let tenantId = tenant.toString();
       let body:any = appointments;
-
+      console.log(body);
       Properties
         .findById(body.property)
         .populate("owner.user development")
@@ -178,7 +178,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
                         var from = 'Staysmart';
 
                         mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                        resolve({appointment_id: saved._id, message: 'appoinment proposed'});
+                        resolve({appointment_id: appointmentId, message: 'appoinment proposed'});
                       })                 
                   }
                 })

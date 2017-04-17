@@ -31,17 +31,25 @@ export class reportDAO{
 				})
 				.populate({
 					path: 'letter_of_intent.data.payment',
-					populate: {
+					populate: [{
 						path: 'attachment.payment',
-						model: 'Attachments'
-					}
+						model: 'Attachments',
+					},
+					{
+						path: 'attachment.payment_confirm',
+						model: 'Attachments'					
+					}]
 				})
 				.populate({
 					path: 'tenancy_agreement.data.payment',
-					populate: {
+					populate: [{
 						path: 'attachment.payment',
-						model: 'Attachments'
-					}
+						model: 'Attachments',
+					},
+					{
+						path: 'attachment.payment_confirm',
+						model: 'Attachments'					
+					}]
 				})
 				.exec((err, agreement) => {
 					let property = agreement.property;
@@ -197,9 +205,9 @@ export class reportDAO{
 							});
 						}
 						else if (loiStatus == "accepted") {
-							reportDAO.reportLOIPrint(id).then(res => {
+							reportDAO.reportLOIFinish(id).then(res => {
 								let result = juice(res);
-								resolve(res)
+								resolve(res);
 							});
 						}
 					}					
@@ -239,6 +247,21 @@ export class reportDAO{
 		})		
 	}
 
+	static reportLOIFinish(id:string){
+		return new Promise((resolve:Function, reject:Function) => {
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/comfirm-ckeditor.html'
+			var htmlString = fs.readFileSync(reportHtml).toString();
+
+			let type = "loi";
+			reportDAO.ReportData(id, type).then(result => {
+				let data = result;
+				report.replaceCode(htmlString, data).then(res =>{
+						resolve(res);
+					});
+			})	
+		})					
+	}
+
 	static reportLOIPrint(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
 			let reportHtml = __dirname + '/../../../../../server/template/report-template/print-letterofintent.html'
@@ -251,8 +274,7 @@ export class reportDAO{
 						resolve(res);
 					});
 			})	
-		})
-					
+		})					
 	}
 
 	static reportTA(id: string){
@@ -309,8 +331,7 @@ export class reportDAO{
 						resolve(res);
 					});
 			})	
-		})
-					
+		})					
 	}
 
 	static printReport(data:Object){

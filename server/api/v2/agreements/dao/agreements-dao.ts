@@ -17,7 +17,25 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("landlord tenant property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments")
+			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments")
+			.populate({
+				path: 'landlord',
+				model: 'Users',
+	            populate: {
+	              path: 'picture',
+	              model: 'Attachments'
+	            },
+	            select: 'username email picture landlord.data'
+			})
+			.populate({
+				path: 'tenant',
+				model: 'Users',
+	            populate: {
+	              path: 'picture',
+	              model: 'Attachments'
+	            },
+	            select: 'username email picture landlord.data'
+			})
 			.populate({
 				path: 'letter_of_intent.data.payment',
 				populate: [{
@@ -34,7 +52,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 				}]
 			})
 			.populate({
-				path: 'letter_of_intent.data.payment',
+				path: 'tenancy_agreement.data.payment',
 				populate: [{
 					path: 'attachment.payment',
 					model: 'Attachments'
@@ -324,26 +342,28 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 });
 
 //LOI
-agreementsSchema.static('getLoi', (id:string, userId:string):Promise<any> => {
+agreementsSchema.static('getLoi', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		Agreements
-			.findById(id)
-			.select("letter_of_intent.data")
-			.populate("landlord tenant property letter_of_intent.data.tenant.bank_account.bank")
-			.populate({
-				path: 'letter_of_intent.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
-				}
-			})
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements.letter_of_intent.data);
-			});
+		let IDUser = userId.toString();
+		let _query = {"_id": id};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+						resolve(result.letter_of_intent.data);
+					}
+					else{
+						reject({message:"forbidden"});
+					}
+				})				 
+			}
+			else{
+				reject({message: "error"});
+			}
+		})		
 	});
 });
 
@@ -710,19 +730,28 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 });
 
 //TA
-agreementsSchema.static('getTA', (id:string, userId:string):Promise<any> => {
+agreementsSchema.static('getTA', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-
-		Agreements
-			.findById(id)
-			.select("tenancy_agreement.data")
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements.tenancy_agreement.data);
-			});
+		let IDUser = userId.toString();
+		let _query = {"_id": id};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+						resolve(result.tenancy_agreement.data);
+					}
+					else{
+						reject({message:"forbidden"});
+					}
+				})				 
+			}
+			else{
+				reject({message: "error"});
+			}
+		})
 	});
 });
 
@@ -1051,7 +1080,6 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 		let body:any = data;
 		let type_notif = "initiateIL";
 		let IDUser = userId.toString();
-		console.log(body);
 
 		Agreements
 			.findById(id)
@@ -1124,7 +1152,7 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 		let ObjectID = mongoose.Types.ObjectId;
 		let type_notif = "confirmedIL";
 		let IDUser = userId.toString();
-		console.log(body);
+		
 		Agreements
 			.findById(id, (err, agreement) => {
 				let tenantId = agreement.tenant;

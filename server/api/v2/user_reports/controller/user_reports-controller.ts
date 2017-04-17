@@ -53,9 +53,10 @@ export class UserReportsController {
 	}
 
 	static deleteUserReports(req: express.Request, res: express.Response):void {
-		let _id = req.params.id;
+		let _reported = req.params.reported;
+		
 		UserReportsDAO
-		['deleteUserReports'](_id)
+		['deleteUserReports'](_reported)
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}

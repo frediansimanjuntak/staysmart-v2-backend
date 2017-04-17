@@ -305,7 +305,7 @@ export class DreamTalk{
 		return new Promise((resolve:Function, reject:Function) => {
 			DreamTalk.doHTTP('DELETE', '/rooms/members', {
 				roomId, uid
-			})
+			}) 
 			.then(res => {
 				resolve(JSON.parse(res.body));
 			})

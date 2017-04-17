@@ -30,7 +30,7 @@ usersSchema.static('getAll', ():Promise<any> => {
 		let _query = {};
 
 		Users
-			.find(_query)
+			.find(_query, '-salt -password')
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
 			.populate({
 				path: 'owned_properties',
@@ -100,7 +100,7 @@ usersSchema.static('getAll', ():Promise<any> => {
 usersSchema.static('me', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
-			.findOne({_id:userId}, '-salt -password')
+			.findOne({_id: userId}, '-salt -password')
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements")
 			.populate("landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back")
 			.populate({
@@ -684,7 +684,7 @@ usersSchema.static('blockUser', (id:string, userId:Object):Promise<any> => {
 		Users
 			.findByIdAndUpdate(userId, {
 				$push: {
-					"blocked_users": id
+					"blocked_users": id 
 				}
 			})
 			.exec((err, update) => {

@@ -111,14 +111,14 @@ userReportsSchema.static('reportUser', (reported:string):Promise<any> => {
     });
 });
 
-userReportsSchema.static('deleteUserReports', (id:string):Promise<any> => {
+userReportsSchema.static('deleteUserReports', (reported:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(id)) {
+        if (!_.isString(reported)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
 
         UserReports
-          .findByIdAndRemove(id)
+          .remove({"reported": reported})
           .exec((err, deleted) => {
               err ? reject(err)
                   : resolve({message: "delete success"});

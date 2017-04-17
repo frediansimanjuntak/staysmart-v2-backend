@@ -143,9 +143,10 @@ export class AgreementsController {
 	static getLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getLoi'](_id, _userId)
+		['getLoi'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -218,9 +219,10 @@ export class AgreementsController {
 	static getTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getTA'](_id, _userId)
+		['getTA'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -292,9 +294,10 @@ export class AgreementsController {
 	static getInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;	
 		let _userId = req["user"]._id;	
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getInventoryList'](_id, _userId)
+		['getInventoryList'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
