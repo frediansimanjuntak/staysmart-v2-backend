@@ -25,84 +25,12 @@ usersSchema.static('index', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('getAll', ():Promise<any> => {
+usersSchema.static('getUser', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		let _query = {};
 
 		Users
-			.find(_query, '-salt -password')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
-			.populate({
-				path: 'owned_properties',
-				populate: [{
-					path: 'development',
-					model: 'Developments'
-				},{
-					path: 'pictures.kitchen',
-					model: 'Attachments'
-				},{
-					path: 'pictures.toilet',
-					model: 'Attachments'
-				},{
-					path: 'pictures.bed',
-					model: 'Attachments'
-				},{
-					path: 'pictures.dining',
-					model: 'Attachments'
-				},{
-					path: 'pictures.living',
-					model: 'Attachments'
-				},{
-					path: 'amenities',
-					model: 'Amenities',
-					populate: {
-						path: 'icon',
-						model: 'Attachments'
-					}
-				}]	
-			})
-			.populate({
-				path: 'rented_properties',
-				populate: [{
-					path: 'development',
-					model: 'Developments'
-				},{
-					path: 'pictures.kitchen',
-					model: 'Attachments'
-				},{
-					path: 'pictures.toilet',
-					model: 'Attachments'
-				},{
-					path: 'pictures.bed',
-					model: 'Attachments'
-				},{
-					path: 'pictures.dining',
-					model: 'Attachments'
-				},{
-					path: 'pictures.living',
-					model: 'Attachments'
-				},{
-					path: 'amenities',
-					model: 'Amenities',
-					populate: {
-						path: 'icon',
-						model: 'Attachments'
-					}
-				}]
-			})
-			.exec((err, users) => {
-				err ? reject(err)
-				: resolve(users);
-			});
-	});
-});
-
-usersSchema.static('me', (userId:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		Users
-			.findOne({_id: userId}, '-salt -password')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements")
-			.populate("landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back")
+			.find(query, '-salt -password')
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back blocked_users")
 			.populate({
 				path: 'companies',
 				populate: [{
@@ -119,24 +47,18 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				}]
 			})
 			.populate({
-	          path: 'tenant.chat_rooms',
+	          path: 'chat_rooms',
 	          populate: [{
-	            path: 'propertyId',
+	            path: 'property',
 	            model: 'Properties',
 	            select: 'address'
-	          },{
+	          },
+	          {
 	            path: 'landlord',
 	            model: 'Users',
 	            select: 'landlord.data'
-	          }],
-	        })
-	        .populate({
-	          path: 'landlord.chat_rooms',
-	          populate: [{
-	            path: 'propertyId',
-	            model: 'Properties',
-	            select: 'address'
-	          },{
+	          },
+	          {
 	            path: 'tenant',
 	            model: 'Users',
 	            select: 'tenant.data'
@@ -147,22 +69,28 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				populate: [{
 					path: 'development',
 					model: 'Developments'
-				},{
+				},
+				{
 					path: 'pictures.kitchen',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.toilet',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.bed',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.dining',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.living',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'amenities',
 					model: 'Amenities',
 					populate: {
@@ -176,22 +104,28 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				populate: [{
 					path: 'development',
 					model: 'Developments'
-				},{
+				},
+				{
 					path: 'pictures.kitchen',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.toilet',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.bed',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.dining',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.living',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'amenities',
 					model: 'Amenities',
 					populate: {
@@ -205,22 +139,28 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				populate: [{
 					path: 'development',
 					model: 'Developments'
-				},{
+				},
+				{
 					path: 'pictures.kitchen',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.toilet',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.bed',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.dining',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.living',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'amenities',
 					model: 'Amenities',
 					populate: {
@@ -236,22 +176,28 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 					populate: [{
 						path: 'development',
 						model: 'Developments'
-					},{
+					},
+					{
 						path: 'pictures.kitchen',
 						model: 'Attachments'
-					},{
+					},
+					{
 						path: 'pictures.toilet',
 						model: 'Attachments'
-					},{
+					},
+					{
 						path: 'pictures.bed',
 						model: 'Attachments'
-					},{
+					},
+					{
 						path: 'pictures.dining',
 						model: 'Attachments'
-					},{
+					},
+					{
 						path: 'pictures.living',
 						model: 'Attachments'
-					},{
+					},
+					{
 						path: 'amenities',
 						model: 'Amenities',
 						populate: {
@@ -271,32 +217,55 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 	});
 });
 
+usersSchema.static('getAll', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let _query = {};
+
+		Users.getUser(_query).then(res => {
+			if(res){				
+				resolve(res);
+			}
+			else{
+				reject({message: "error get data"});
+			}
+		})
+	});
+});
+
+usersSchema.static('me', (userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let _query = {"_id": userId};
+
+		Users.getUser(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					resolve(result);
+				})				
+			}
+			else{
+				reject({message: "error get data"});
+			}
+		})
+	});
+});
+
 usersSchema.static('getById', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		Users
-			.findById(id, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
-			.populate({
-				path: 'owned_properties',
-				populate: {
-					path: 'development',
-					model: 'Developments'
-				}
-			})
-			.populate({
-				path: 'rented_properties',
-				populate: {
-					path: 'development',
-					model: 'Developments'
-				}
-			})
-			.exec((err, users) => {
-				err ? reject(err)
-				: resolve(users);
-			});
+		let _query = {"_id": id};
+
+		Users.getUser(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					resolve(result);
+				})
+			}
+			else{
+				reject({message: "error get data"});
+			}
+		})
 	});
 });
 
