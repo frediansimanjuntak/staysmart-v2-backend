@@ -108,7 +108,7 @@ export class DreamTalk{
 		}
 		return new Promise((resolve, reject) => {
 		  request(options, function(err, res, body) {
-		    if (err) {
+		    if (err) { 
 		      reject(err);
 		    }
 		    if (res && (res.statusCode >= 200 && res.statusCode < 400)) {
