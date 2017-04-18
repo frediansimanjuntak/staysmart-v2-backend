@@ -420,6 +420,47 @@ chatsSchema.static('deleteRoom', (roomId:string, userId: string):Promise<any> =>
     });
 });
 
+chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        let body:any = data;
+        console.log(body);
+        for(var i = 0; i < body.ids.length; i++){
+            let roomId = body.ids[i];
+            ChatRooms
+            .findById(roomId)
+            .exec((err, chat_room) => {
+                 console.log(chat_room);
+                if(role == "admin") {
+                    if(chat_room.landlord){
+                        DreamTalk.deleteRoom(roomId, chat_room.landlord);
+                    }
+                    if(chat_room.tenant){
+                        DreamTalk.deleteRoom(roomId, chat_room.tenant);
+                    }
+                    if(chat_room.manager){
+                        DreamTalk.deleteRoom(roomId, chat_room.manager);
+                    }
+                    ChatRooms
+                        .findByIdAndRemove(roomId)
+                        .exec((err, result) => {
+                            if(err) {
+                                reject(err);
+                            }
+                            else{
+                                resolve({message: 'chat room deleted.'});
+                            }
+                        })
+                }
+                else{
+                    reject({message: 'you do not have access to this room.'});
+                }
+            })
+        }
+        
+    });
+});
+
 let ChatRooms = mongoose.model('ChatRooms', chatsSchema);
 
 export default ChatRooms;
