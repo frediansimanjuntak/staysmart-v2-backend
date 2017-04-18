@@ -120,6 +120,16 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static penaltyPayment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['penaltyPayment'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+
 	static getTotalRefundPayment(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 
