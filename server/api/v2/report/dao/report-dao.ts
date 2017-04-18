@@ -120,9 +120,38 @@ export class reportDAO{
 							bankCode = ""
 						}					
 					}				
+					console.log(property.development._id);
 
 					var data = {
+						"property": {
+							"development": property.development._id,
+							"address": { 
+								"block_no": property.address.block_number,
+								"street_name": property.address.street_name,
+								"unit_no": property.address.floor,
+								"unit_no_2": property.address.unit,
+								"country": property.address.country,
+								"postal_code": property.address.postal_code
+							},
+							"details": {
+								"furnishing": property.details.furnishing
+							}
+						},
 						"form_data":{
+							"property": {
+								"development": property.development._id,
+								"address": { 
+									"block_no": property.address.block_number,
+									"street_name": property.address.street_name,
+									"unit_no": property.address.floor,
+									"unit_no_2": property.address.unit,
+									"country": property.address.country,
+									"postal_code": property.address.postal_code
+								},
+								"details": {
+									"furnishing": property.details.furnishing
+								}
+							},
 							"occupants": {
 								"name": loi.occupiers.name,
 								"id_no": loi.occupiers.identification_number
@@ -149,21 +178,7 @@ export class reportDAO{
 							"minor_repair_cost": loi.minor_repair_cost,
 							"status_sign": "accept",
 							"status": status,
-							"confirmation_date": confirmation_date,
-							"property": {
-								"development": property.development.name,
-								"address": {
-									"block_no": property.address.block_number,
-									"street_name": property.address.street_name,
-									"unit_no": property.address.floor,
-									"unit_no_2": property.address.unit,
-									"country": property.address.country,
-									"postal_code": property.address.postal_code
-								},
-								"details": {
-									"furnishing": property.details.furnishing
-								}
-							},
+							"confirmation_date": confirmation_date,							
 							"landlord":{
 								"full_name": landlord.landlord.data.name,
 								"id_number": landlord.landlord.data.identification_number,

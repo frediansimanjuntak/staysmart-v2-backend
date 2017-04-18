@@ -105,10 +105,18 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 			.populate("landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back")
 			.populate({
 				path: 'companies',
-				populate: {
+				populate: [{
 					path: 'documents',
 					model: 'Attachments'
-				}
+				},
+				{
+					path: 'shareholders.identification_proof.front',
+					model: 'Attachments'
+				},
+				{
+					path: 'shareholders.identification_proof.back',
+					model: 'Attachments'
+				}]
 			})
 			.populate({
 	          path: 'tenant.chat_rooms',
@@ -224,31 +232,37 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 			.populate({
 				path: 'rented_properties',
 				populate: [{
-					path: 'development',
-					model: 'Developments'
-				},{
-					path: 'pictures.kitchen',
-					model: 'Attachments'
-				},{
-					path: 'pictures.toilet',
-					model: 'Attachments'
-				},{
-					path: 'pictures.bed',
-					model: 'Attachments'
-				},{
-					path: 'pictures.dining',
-					model: 'Attachments'
-				},{
-					path: 'pictures.living',
-					model: 'Attachments'
-				},{
-					path: 'amenities',
-					model: 'Amenities',
-					populate: {
-						path: 'icon',
+					path: 'property',
+					populate: [{
+						path: 'development',
+						model: 'Developments'
+					},{
+						path: 'pictures.kitchen',
 						model: 'Attachments'
-					}
-				}]
+					},{
+						path: 'pictures.toilet',
+						model: 'Attachments'
+					},{
+						path: 'pictures.bed',
+						model: 'Attachments'
+					},{
+						path: 'pictures.dining',
+						model: 'Attachments'
+					},{
+						path: 'pictures.living',
+						model: 'Attachments'
+					},{
+						path: 'amenities',
+						model: 'Amenities',
+						populate: {
+							path: 'icon',
+							model: 'Attachments'
+						}
+					}]
+				},{
+					path: 'agreement',
+					model: 'Agreements'
+				}]				
 			})
 			.exec((err, users) => {
 				err ? reject(err)

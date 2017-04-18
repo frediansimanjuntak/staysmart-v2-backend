@@ -82,12 +82,17 @@ var objectFunction = {
   },
   ordinal: function(strDate, strFormat) { return moment(Date.parse(strDate)).format(strFormat).slice(-2); },
   devName: function(devId) {
-    let dev = Developments.findOne({ '_id': devId });
-    if (dev) {
-      return dev.name;
-    } else {
-      return "Development not found";
-    }
+  	Developments
+  		.findById(devId)
+  		.exec((err, res) => {
+  			if(err){
+  				return "Development not found";
+  			}
+  			if(res){
+  				return (res.name);
+  				// console.log(res.name);  				
+  			}
+  		})
   },
   payment: function(id) {
     if(id) {
@@ -312,7 +317,7 @@ export class report {
 				let status ;
 				if (getData == 'accepted') {
 					status = 'accept / <strike>reject </strike>';
-				} 
+				}  
 				else if (getData == 'rejected') {
 					status = '<strike>accept </strike>/ reject ';
 				} 
