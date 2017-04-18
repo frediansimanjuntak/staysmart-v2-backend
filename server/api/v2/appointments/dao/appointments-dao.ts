@@ -112,7 +112,7 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
     });
 });
 
-appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Object):Promise<any> => {
+appointmentsSchema.static('createAppointments', (appointments:Object, tenant:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(appointments)) {
         return reject(new TypeError('Appointment is not a valid object.'));
@@ -133,13 +133,13 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
             let data = {
               "property": body.property
             };
-            Agreements.createAgreements(data, tenant).then(res => {
+            Agreements.createAgreements(data, tenantId).then(res => {
               let agreementId = res.agreement_id;
               for(var i = 0; i < body.time.length; i++){
                 var _appointments = new Appointments(appointments);
                 _appointments.agreement = agreementId;
                 _appointments.landlord = landlordId;
-                _appointments.tenant = tenant;
+                _appointments.tenant = tenantId;
                 _appointments.chosen_time.date = body.date;
                 _appointments.chosen_time.from = body.time[i];
                 _appointments.chosen_time.to = body.time2[i];
@@ -178,7 +178,8 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:Obj
                         var from = 'Staysmart';
 
                         mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                        resolve({appointment_id: appointmentId, message: 'appoinment proposed'});
+                        resolve({appointment_id: appointmentId});
+                        console.log({appointment_id: appointmentId, message: 'appoinment proposed'});
                       })                 
                   }
                 })

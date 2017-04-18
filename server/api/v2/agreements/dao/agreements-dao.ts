@@ -283,7 +283,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 									reject(err);
 									newrelic.noticeError(err);
 								}
-								else{
+								if(agreement){
 									if(agreement == null){
 										if(propertyStatus == "published" || propertyStatus == "initiated"){
 											var _agreements = new Agreements();
@@ -298,7 +298,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 													: resolve({agreement_id: saved._id});
 											});
 										}
-										else{
+										if(propertyStatus == "rented"){
 											reject({message: "this property has rented"})
 										}
 									}
@@ -1696,6 +1696,28 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 					});
 				}							
 			})		
+	});
+});
+
+agreementsSchema.static('penaltyPayment', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		Agreements
+			.findById(id)
+			.populate("letter_of_intent.data.payment tenancy_agreement.data.payment")
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					let paymentLoi = res.letter_of_intent.data.payment._id;
+					let paymentTa = res.tenancy_agreement.data.payment._id;
+					
+					resolve(res);
+				}
+			})
 	});
 });
 
