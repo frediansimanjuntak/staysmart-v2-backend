@@ -1699,11 +1699,28 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 	});
 });
 
+agreementsSchema.static('refundPenaltyPayment', (idPayment:string, idfee:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Payments
+			.update({"_id": idPayment, "fee": {$elemMatch: {"_id": idfee}}},{
+				$set: {
+					"fee.$.needed_refund": true,
+					"fee.$.updated_at": new Date()
+				}
+			})
+			.exec((err, result) => {
+				err ? reject(err)
+            	  	: resolve(result);
+			})			
+	});
+});
+
 agreementsSchema.static('penaltyPayment', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
+		let feeRefund;
 		Agreements
 			.findById(id)
 			.populate("letter_of_intent.data.payment tenancy_agreement.data.payment")
@@ -1714,8 +1731,68 @@ agreementsSchema.static('penaltyPayment', (id:string):Promise<any> => {
 				if(res){
 					let paymentLoi = res.letter_of_intent.data.payment._id;
 					let paymentTa = res.tenancy_agreement.data.payment._id;
-					
-					resolve(res);
+					let paymentTaStatus = res.tenancy_agreement.data.status;
+					if(paymentTaStatus == "admin-confirmation"){
+						Payments
+							.findById(paymentLoi)
+							.select({"fee": {$elemMatch: {"code_name": "std"}}})
+							.exec((err, payLoiStd) => {
+								if(err){
+									reject(err);
+								}
+								if(payLoiStd){
+									let feeStd = payLoiStd.fee;
+									for(var i = 0; i < feeStd.length; i++){
+										let receivedAmountStd = feeStd[i].received_amount;
+										let idStd = feeStd[i]._id;
+										Agreements.refundPenaltyPayment(paymentLoi, idStd);															
+										feeRefund = receivedAmountStd;
+									}
+									Payments
+										.findById(paymentLoi)
+										.select({"fee": {$elemMatch: {"code_name": "mmr"}}})
+										.exec((err, payLoiMmr) => {
+											if(err){
+												reject(err);
+											}
+											if(payLoiMmr){
+												if(payLoiMmr){
+													let feeMmr = payLoiMmr.fee;
+													for(var i = 0; i < feeMmr.length; i++){
+														let receivedAmountMmr = feeMmr[i].received_amount;
+														let idMmr = feeMmr[i]._id;
+														Agreements.refundPenaltyPayment(paymentLoi, idMmr);
+														feeRefund = feeRefund + receivedAmountMmr;
+													}					
+												}
+												Payments
+													.findById(paymentTa)
+													.select({"fee": {$elemMatch: {"code_name": "scd"}}})
+													.exec((err, payTaScd) => {
+														if(err){
+															reject(err);
+														}
+														if(payTaScd){
+															if(payTaScd){
+																let feeScdTa = payTaScd.fee;
+																for(var i = 0; i < feeScdTa.length; i++){
+																	let receivedAmountScd = feeScdTa[i].received_amount;
+																	let idScd = feeScdTa[i]._id;
+																	Agreements.refundPenaltyPayment(paymentLoi, idScd);
+																	feeRefund = feeRefund + receivedAmountScd;
+																}					
+															}
+															resolve({message: "penalty", "total refund": feeRefund});												
+														}	
+													})											
+											}	
+										})				
+								}	
+							})
+					}
+					else{
+						reject({message: "forbidden"});
+					}					
 				}
 			})
 	});
@@ -1760,7 +1837,7 @@ agreementsSchema.static('refundPayment', (id:string, data:Object):Promise<any> =
 					for(var i = 0; i < payments.fee.length; i++){
 						let refunded = payments.fee[i].refunded;
 						Payments
-							.update({"_id": id, "fee":{ $elemMatch: {"needed_refund": false}}}, {
+							.update({"_id": id, "fee":{ $elemMatch: {"needed_refund": true}}}, {
 								$set: {
 									"fee.$.refunded": true,
 									"fee.$.updated_at": new Date(),

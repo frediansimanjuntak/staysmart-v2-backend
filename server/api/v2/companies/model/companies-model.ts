@@ -31,7 +31,7 @@ var CompaniesSchema = new mongoose.Schema({
 					type: Schema.Types.ObjectId,
 					ref: 'Attachments'
 				}
-			}
+			} 
 		}
 	],
 	created_by: 

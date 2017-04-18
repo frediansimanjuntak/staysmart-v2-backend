@@ -60,6 +60,10 @@ export class AgreementsRoutes {
 			.route('/agreement/payment/refund/:id')
 			.get(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.getTotalRefundPayment)
 			.post(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.refundPayment);
+
+		router
+			.route('/agreement/payment/penalty/:id')
+			.post(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.penaltyPayment);
 					
 		//LOI
 		router
