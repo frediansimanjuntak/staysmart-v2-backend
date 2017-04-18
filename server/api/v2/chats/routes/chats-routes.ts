@@ -7,6 +7,14 @@ import * as auth from '../../../../auth/auth-service';
 export class ChatsRoutes {
 	static init(router: express.Router) {
 		router
+			.route('/chats')
+			.get(auth.isAuthenticated(),ChatsController.getAll);
+
+		router
+			.route('/chats/users')
+			.get(auth.isAuthenticated(),ChatsController.getByUser);
+
+		router
 			.route('/chats/request_token')
 			.get(auth.isAuthenticated(),ChatsController.requestToken)
 

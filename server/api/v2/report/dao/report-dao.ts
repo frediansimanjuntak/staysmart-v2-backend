@@ -249,7 +249,7 @@ export class reportDAO{
 
 	static reportLOIFinish(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
-			let reportHtml = __dirname + '/../../../../../server/template/report-template/comfirm-ckeditor.html'
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/comfirm-letterofintent-ckeditor.html'
 			var htmlString = fs.readFileSync(reportHtml).toString();
 
 			let type = "loi";

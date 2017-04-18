@@ -7,6 +7,82 @@ import Agreements from '../../agreements/dao/agreements-dao'
 import Properties from '../../properties/dao/properties-dao';
 import {DreamTalk} from '../../../../global/chat.service';
 
+chatsSchema.static('getChatRooms', (query:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        ChatRooms
+            .find(query)
+            .populate("agreement")
+            .populate({
+                path: 'landlord',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username email picture landlord.data'
+            })
+            .populate({
+                path: 'tenant',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username email picture landlord.data'
+            })
+            .populate({
+                path: 'manager',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username email picture landlord.data'
+            })
+            .populate({
+                path: 'property',
+                model: 'Properties',
+                populate: {
+                  path: 'development',
+                  model: 'Developments'
+                }
+            })
+            .exec((err, res) => {
+                err ? reject(err)
+                  : resolve(res);
+            })
+    });
+});
+
+chatsSchema.static('getAll', ():Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query = {};
+        ChatRooms.getChatRooms(_query).then(res => {
+            if(res){
+                resolve(res);
+            }
+            else{
+                reject({message: "error get data"});
+            }
+        })
+    });
+});
+
+chatsSchema.static('getByUser', (userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        let _query = {$or: [{"tenant": userId},{"landlord":userId},{"manager":userId}] };
+        ChatRooms.getChatRooms(_query).then(res => {
+            if(res){
+                resolve(res);
+            }
+            else{
+                reject({message: "error get data"});
+            }
+        })        
+    });
+});
+
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.requestToken(userId, username).then(token => {
@@ -81,7 +157,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                     manager = property.manager;
     			}
 		    	ChatRooms
-		    		.findOne({"tenant": uid, "property_id": property_id}, (err, result) => {
+		    		.findOne({"tenant": uid, "property": property_id}, (err, result) => {
 		    			if(!result){
                             let roomName = uid+'-'+property.owner.user+'-'+property_id;
 		    				DreamTalk.createRoom(uid, roomName, members, property_id, property.owner.user, manager).then(result => {
@@ -92,7 +168,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
 					        		let room = JSON.parse(result.res.body);
 					        		var _chat_rooms = new ChatRooms();
 					        			_chat_rooms.room_id = room._id;
-					                    _chat_rooms.property_id = property_id;
+					                    _chat_rooms.property = property_id;
 					                    _chat_rooms.landlord = property.owner.user;
                                         _chat_rooms.status = 'enquiries';
                                         if(members.length > 1) {
@@ -117,16 +193,42 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                                                                 _agreements.tenant =  uid;
                                                                 _agreements.landlord = landlordId;
                                                                 _agreements.room_id = saved._id;
-                                                                _agreements.save((err, saved)=>{
-                                                                    err ? reject(err)
-                                                                        : resolve(saved);
+                                                                _agreements.save((err, done)=>{
+                                                                    if(err){
+                                                                        reject(err);
+                                                                    }
+                                                                    if(done){
+                                                                        ChatRooms
+                                                                            .update({"_id": saved._id}, {
+                                                                                $set: {
+                                                                                    "agreement": done._id
+                                                                                }
+                                                                            })
+                                                                            .exec((err, updated) => {
+                                                                                err ? reject(err)
+                                                                                    : resolve(updated);
+                                                                            })
+                                                                    }
                                                                 });
                                                             }
                                                             if(agreement != null){
                                                                 agreement.room_id = saved._id;
-                                                                agreement.save((err, saved)=>{
-                                                                    err ? reject(err)
-                                                                        : resolve(saved);
+                                                                agreement.save((err, done)=>{
+                                                                    if(err){
+                                                                        reject(err);
+                                                                    }
+                                                                    if(done){
+                                                                        ChatRooms
+                                                                            .update({"_id": saved._id}, {
+                                                                                $set: {
+                                                                                    "agreement": done._id
+                                                                                }
+                                                                            })
+                                                                            .exec((err, updated) => {
+                                                                                err ? reject(err)
+                                                                                    : resolve(updated);
+                                                                            })
+                                                                    }
                                                                 });
                                                             }
                                                         }

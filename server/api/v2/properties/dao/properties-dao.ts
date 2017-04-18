@@ -811,7 +811,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                   }
                 }
                 else{
-                  var shareholder_data = body.shareholder;
+                  var shareholder_data = body.shareholders;
                   Companies
                     .findByIdAndUpdate(companyId, {
                       $set: {

@@ -2,6 +2,22 @@ import * as express from 'express';
 import ChatsDAO from '../dao/chats-dao';
 
 export class ChatsController {
+	static getAll(req: express.Request, res: express.Response):void {
+
+		ChatsDAO
+		['getAll']()
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByUser(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id.toString();
+		ChatsDAO
+		['getByUser'](_userId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static requestToken(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id.toString();
 		let _username = req["user"].username;
