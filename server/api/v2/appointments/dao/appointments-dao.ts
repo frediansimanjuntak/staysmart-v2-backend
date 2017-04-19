@@ -14,7 +14,25 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       Appointments
           .find(query)
-          .populate("landlord tenant agreement")
+          .populate("agreement")
+          .populate({
+            path: 'landlord',
+            model: 'Users',
+                  populate: {
+                    path: 'picture',
+                    model: 'Attachments'
+                  },
+                  select: 'username email picture landlord.data'
+          })
+          .populate({
+            path: 'tenant',
+            model: 'Users',
+                  populate: {
+                    path: 'picture',
+                    model: 'Attachments'
+                  },
+                  select: 'username email picture landlord.data'
+          })
           .populate({
             path: 'property',
             populate: [{

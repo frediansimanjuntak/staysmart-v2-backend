@@ -55,6 +55,26 @@ export class mail{
 		})
 	}
 
+	static blogReplyComment(emailTo, blogTitle, url){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Blog Reply Comment';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+emailTo+',<br><br><p style="align:justify;">Thank you for your reply a comment on "'+blogTitle+'"</p><p style="align:justify;">You can view your reply comment <a target="_blank" href="'+url+'">here</a>. </p>Thanks,<br>Staysmart Team</body></html>';
+			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
+				resolve(res);
+			});	
+		})
+	}
+
+	static blogCommentOnReply(emailTo, emailReplied, blogTitle, url){
+		return new Promise((resolve:Function, reject:Function) => {
+			var emailSubject = 'Blog Comment Reply';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+emailTo+',<br><br><p style="align:justify;">'+emailReplied+' Has reply your comment on "'+blogTitle+'"</p><p style="align:justify;">You can view your the comment <a target="_blank" href="'+url+'">here</a>. </p>Thanks,<br>Staysmart Team</body></html>';
+			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
+				resolve(res);
+			});	
+		})
+	}
+
 	static acceptedLoiLandlord(emailTo, fullname, landlord_username, fulladdress, from){
 		return new Promise((resolve:Function, reject:Function) => {
 			var emailSubject = 'Accepted Letter of Intent';

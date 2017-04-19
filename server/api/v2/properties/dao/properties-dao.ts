@@ -187,7 +187,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
                   model: 'Attachments'
                 },
                 {
-                  path: 'shareholders.identification_proof.front',
+                  path: 'shareholders.identification_proof.back',
                   model: 'Attachments'
                 }]
             })

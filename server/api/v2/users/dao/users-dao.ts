@@ -170,10 +170,8 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 				}]	
 			})
 			.populate({
-				path: 'rented_properties',
+				path: 'rented_properties.property',
 				populate: [{
-					path: 'property',
-					populate: [{
 						path: 'development',
 						model: 'Developments'
 					},
@@ -204,11 +202,11 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 							path: 'icon',
 							model: 'Attachments'
 						}
-					}]
-				},{
-					path: 'agreement',
-					model: 'Agreements'
-				}]				
+					}]			
+			})
+			.populate({
+				path: 'rented_properties.agreement',
+				model: 'Agreements'
 			})
 			.exec((err, users) => {
 				err ? reject(err)
