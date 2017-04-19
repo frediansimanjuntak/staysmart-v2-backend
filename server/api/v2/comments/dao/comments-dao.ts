@@ -88,17 +88,31 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 										var blogTitle = blog.title;
 										var url = config.url.blog_comment+saved._id;
 										mail.blogComment(email, blogTitle, url);
-										if(body.commentID) {
+										if(body.commentID) {											
 											Comments
-												.findByIdAndUpdate(body.commentID, {
-													$push: {
-														"replies": saved._id
+												.findById(body.commentID)
+												.populate("user")
+												.exec((err, res) => {
+													if(err){
+														reject(err);
 													}
-												})
-												.exec((err, update) => {
-													err ? reject(err)
-													: resolve({message: 'updated'});;
-												});						
+													if(res){
+														let comIdUser = res.user._id;
+														let comMailUser = res.user.email;
+														mail.blogReplyComment(email, blogTitle, url);
+														mail.blogCommentOnReply(comMailUser, email, blogTitle, url);
+														Comments
+															.findByIdAndUpdate(body.commentID, {
+																$push: {
+																	"replies": saved._id
+																}
+															})
+															.exec((err, update) => {
+																err ? reject(err)
+																: resolve({message: 'updated'});;
+															});	
+													}
+												})																
 										}
 										else{
 											Blogs
