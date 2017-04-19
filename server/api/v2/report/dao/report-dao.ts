@@ -196,7 +196,7 @@ export class reportDAO{
 						}
 					}
 					if(err){
-						reject(err);
+						reject({message: err.message});
 					}
 					else if(agreement){
 						resolve(data);
@@ -227,7 +227,7 @@ export class reportDAO{
 						}
 					}					
 					else if(err){
-						reject(err);
+						reject({message: err.message});
 					}
 				})
 		})
@@ -314,7 +314,7 @@ export class reportDAO{
 						}
 					}
 					else if(err){
-						reject(err);
+						reject({message: err.message});
 					}					
 				})
 		})

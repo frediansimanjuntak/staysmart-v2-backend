@@ -10,7 +10,7 @@ banksSchema.static('getAll', ():Promise<any> => {
         Banks
           .find(_query)
           .exec((err, banks) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(banks);
           });
     });
@@ -22,7 +22,7 @@ banksSchema.static('getById', (id:string):Promise<any> => {
         Banks
           .findById(id)
           .exec((err, banks) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(banks);
           });
     });
@@ -38,7 +38,7 @@ banksSchema.static('createBanks', (banks:Object):Promise<any> => {
       
       var _banks = new Banks(banks);
           _banks.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -53,7 +53,7 @@ banksSchema.static('deleteBanks', (id:string):Promise<any> => {
         Banks
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve();
           });
         
@@ -69,7 +69,7 @@ banksSchema.static('updateBanks', (id:string, banks:Object):Promise<any> => {
         Banks
         .findByIdAndUpdate(id, banks)
         .exec((err, update) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(update);
           });
     });

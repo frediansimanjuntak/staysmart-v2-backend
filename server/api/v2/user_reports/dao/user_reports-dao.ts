@@ -12,7 +12,7 @@ userReportsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("reporter reported")
           .exec((err, reports) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(reports);
           });
     });
@@ -33,13 +33,13 @@ userReportsSchema.static('getGroupCount', ():Promise<any> => {
         UserReports
           .aggregate(pipeline, (err, res)=>{
             if(err){
-              reject(err);
+              reject({message: err.message});
             }
             else{
               UserReports
                 .populate(res, {path: '$reported'})
                 .exec((err, res) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve(res);
                 })
             }
@@ -57,7 +57,7 @@ userReportsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("reporter reported")
           .exec((err, reports) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(reports);
           });
     });
@@ -73,7 +73,7 @@ userReportsSchema.static('getByReported', (reported:string):Promise<any> => {
           .findOne({"reported": reported})
           .populate("reporter reported")
           .exec((err, reports) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(reports);
           });
     });
@@ -87,7 +87,7 @@ userReportsSchema.static('createUserReports', (reports:Object, userId:string):Pr
         var _reports = new UserReports(reports);
         _reports.reporter = userId;
         _reports.save((err, saved)=>{
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(saved);
         });
     });
@@ -105,7 +105,7 @@ userReportsSchema.static('reportUser', (reported:string):Promise<any> => {
             }
           })
           .exec((err, res) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(res);
           })
     });
@@ -120,7 +120,7 @@ userReportsSchema.static('deleteUserReports', (reported:string):Promise<any> => 
         UserReports
           .remove({"reported": reported})
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve({message: "delete success"});
           });        
     });

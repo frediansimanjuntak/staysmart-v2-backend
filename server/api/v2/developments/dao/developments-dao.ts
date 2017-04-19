@@ -13,7 +13,7 @@ developmentsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(developments);
           });
     });
@@ -66,7 +66,7 @@ developmentsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(developments);
           });
     });
@@ -80,7 +80,7 @@ developmentsSchema.static('getDevelopment', (unit:string):Promise<any> => {
           .where('number_of_units').gt(unit)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(developments);
           });
     });
@@ -98,7 +98,7 @@ developmentsSchema.static('createDevelopments', (developments:Object):Promise<an
       var _developments = new Developments(developments);
           _developments.slug = slug_name;
           _developments.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -130,7 +130,7 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
                   .findByIdAndRemove(properties)
                   .exec((err, deleted) => {
                     if(err) {
-                      reject(err);
+                      reject({message: err.message});
                     }
                   });
               }
@@ -138,13 +138,13 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
           })
           .exec((err, deleted) => {
               if(err) {
-                reject(err);
+                reject({message: err.message});
               } 
               else{
                 Developments
                   .findByIdAndRemove(id)
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve();
                   });
               }
@@ -161,7 +161,7 @@ developmentsSchema.static('updateDevelopments', (id:string, developments:Object)
         Developments
         .findByIdAndUpdate(id, developments)
         .exec((err, update) => {
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(update);
         });
     });

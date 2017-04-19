@@ -57,7 +57,7 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
           })
           .exec((err, appointments) => {
               if(err) {
-                reject(err);
+                reject({message: err.message});
                 newrelic.noticeError(err);
               }
               else{
@@ -143,7 +143,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
         .populate("owner.user development")
         .exec((err, property) => {
           if(err){
-            reject(err);
+            reject({message: err.message});
           }
           else{
             let landlordId = property.owner.user._id;
@@ -163,7 +163,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                 _appointments.chosen_time.to = body.time2[i];
                 _appointments.save((err, saved)=>{
                   if(err) {
-                    reject(err);
+                    reject({message: err.message});
                     newrelic.noticeError(err);
                   }
                   else if(saved){
@@ -217,7 +217,7 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
         Appointments
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve({message:"delete success"});
           });
     });
@@ -237,7 +237,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
         })
         .exec((err, update) => {
             if(err) {
-              reject(err);
+              reject({message: err.message});
               newrelic.noticeError();
             }
             else if(update) {

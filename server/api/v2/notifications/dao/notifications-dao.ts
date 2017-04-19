@@ -11,7 +11,7 @@ notificationsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("user")
           .exec((err, notifications) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(notifications);
           });
     });
@@ -27,7 +27,7 @@ notificationsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("user")
           .exec((err, notifications) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(notifications);
           });
     });
@@ -40,7 +40,7 @@ notificationsSchema.static('getByUser', (userId:string):Promise<any> => {
           .find({"user": userId})
           .populate("user")
           .exec((err, notifications) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(notifications);
           });
     });
@@ -56,7 +56,7 @@ notificationsSchema.static('createNotifications', (notifications:Object):Promise
       
       var _notifications = new Notifications(notifications);
           _notifications.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -71,7 +71,7 @@ notificationsSchema.static('deleteNotifications', (id:string):Promise<any> => {
         Notifications
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve();
           });
         
@@ -91,7 +91,7 @@ notificationsSchema.static('updateNotifications', (id:string):Promise<any> => {
             }
           })
           .exec((err, update) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(update);
           });
     });

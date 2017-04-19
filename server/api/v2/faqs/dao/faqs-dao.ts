@@ -11,7 +11,7 @@ faqsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("created_by")
           .exec((err, faqs) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(faqs);
           });
     });
@@ -24,7 +24,7 @@ faqsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("created_by")
           .exec((err, faqs) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(faqs);
           });
     });
@@ -36,7 +36,7 @@ faqsSchema.static('getByFilter', (filter:string):Promise<any> => {
         Faqs
           .find({'for': filter})
           .exec((err, faqs) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(faqs);
           });
     });
@@ -53,7 +53,7 @@ faqsSchema.static('createFaqs', (faqs:Object, created_by:string):Promise<any> =>
       var _faqs = new Faqs(faqs);
           _faqs.created_by = created_by;
           _faqs.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -68,7 +68,7 @@ faqsSchema.static('deleteFaqs', (id:string):Promise<any> => {
         Faqs
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve();
           });
         
@@ -84,7 +84,7 @@ faqsSchema.static('updateFaqs', (id:string, faqs:Object):Promise<any> => {
         Faqs
         .findByIdAndUpdate(id, faqs)
         .exec((err, update) => {
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(update);
         });
     });

@@ -10,7 +10,7 @@ subscribesSchema.static('getAll', ():Promise<any> => {
 		Subscribes
 			.find(_query)
 			.exec((err, subscribes) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 				: resolve(subscribes);
 			});
 	});
@@ -25,7 +25,7 @@ subscribesSchema.static('getById', (id:string):Promise<any> => {
 		Subscribes
 			.findById(id)
 			.exec((err, subscribes) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve(subscribes);
 			});
 	});
@@ -41,7 +41,7 @@ subscribesSchema.static('createSubscribes', (subscribes:Object):Promise<any> => 
 			.find({"email": body.email})
 			.exec((err, res) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(res){
 					if(res.length >= 1){
@@ -50,7 +50,7 @@ subscribesSchema.static('createSubscribes', (subscribes:Object):Promise<any> => 
 					if(res.length < 1){
 						var _subscribes = new Subscribes(subscribes);
 						_subscribes.save((err, saved)=>{
-							err ? reject(err)
+							err ? reject({message: err.message})
 								: resolve(subscribes);
 						})
 					}
@@ -69,7 +69,7 @@ subscribesSchema.static('unSubscribes', (subscribes:Object):Promise<any> => {
 			.find({"email": body.email})
 			.exec((err, res) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(res){
 					if(res.length >= 1){
@@ -78,7 +78,7 @@ subscribesSchema.static('unSubscribes', (subscribes:Object):Promise<any> => {
 							Subscribes
 						      .findByIdAndRemove(id)
 						      .exec((err, deleted) => {
-						          err ? reject(err)
+						          err ? reject({message: err.message})
 						              : resolve({message:"unsubscribe success"});
 						      });
 						})												
@@ -100,7 +100,7 @@ subscribesSchema.static('deleteSubscribes', (id:string):Promise<any> => {
 		Subscribes
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve({message:"delete success"});
           });
 	});
@@ -114,7 +114,7 @@ subscribesSchema.static('deleteManySubscribes', (data:Object):Promise<any> => {
         	Subscribes
 		      .findByIdAndRemove(id)
 		      .exec((err, deleted) => {
-		          err ? reject(err)
+		          err ? reject({message: err.message})
 		              : resolve({message:"delete success"});
 		      });
         }		

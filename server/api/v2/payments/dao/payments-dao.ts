@@ -10,7 +10,7 @@ paymentsSchema.static('getAll', ():Promise<any> => {
         Payments
           .find(_query)
           .exec((err, payments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(payments);
           });
     });
@@ -22,7 +22,7 @@ paymentsSchema.static('getById', (id:string):Promise<any> => {
         Payments
           .findById(id)
           .exec((err, payments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(payments);
           });
     });
@@ -38,7 +38,7 @@ paymentsSchema.static('createPayments', (payments:Object):Promise<any> => {
       
       var _payments = new Payments(payments);
           _payments.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -53,7 +53,7 @@ paymentsSchema.static('deletePayments', (id:string):Promise<any> => {
         Payments
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve();
           });
         
@@ -69,7 +69,7 @@ paymentsSchema.static('updatePayments', (id:string, payments:Object):Promise<any
         Payments
         .findByIdAndUpdate(id, payments)
         .exec((err, update) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(update);
           });
     });
