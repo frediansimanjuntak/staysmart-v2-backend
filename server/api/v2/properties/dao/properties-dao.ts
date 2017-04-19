@@ -56,7 +56,7 @@ propertiesSchema.static('getAll', ():Promise<any> => {
             }
           })
           .exec((err, properties) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(properties);
           });
     });
@@ -148,7 +148,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           }
         })
         property.exec((err, properties) => {
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(properties);
         });
     });
@@ -199,7 +199,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
             }
           })
           .exec((err, properties) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(properties);
           });
     });
@@ -219,7 +219,7 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
             select: 'username email picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(properties);
           });
     });
@@ -239,7 +239,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
             select: 'username email picture landlord.data.name tenant.data.name'
           })
           .exec((err, result) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(result);
           });
     });
@@ -260,7 +260,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
           .findById(body.development)
           .exec((err, development) => {
             if(err) {
-              reject(err);
+              reject({message: err.message});
             }
             else if(development) {
               let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
@@ -268,7 +268,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                 .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
                 .exec((err, properties) => {
                   if(err) {
-                    reject(err);
+                    reject({message: err.message});
                   }
                   else if(properties) {
                     if(properties.length > 0) {
@@ -281,7 +281,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                           _properties.confirmation.status = 'pending';
                           _properties.save((err, saved)=>{
                             if(err) {
-                              reject(err);
+                              reject({message: err.message});
                             }
                             else if(saved){
                               let propertyID = saved._id;
@@ -294,7 +294,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                                   })
                                   .exec((err, saved) => {
                                       if(err) {
-                                        reject(err);
+                                        reject({message: err.message});
                                       }
                                       else if(saved) {
                                         if(!body.address.full_address) {
@@ -341,7 +341,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
               .findById(id)
               .exec((err, property_result) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
                 else{
                   let old_status = property_result.status;
@@ -352,7 +352,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                       .findByIdAndUpdate(id, properties)
                       .exec((err, update) => {
                             if(err) {
-                              reject(err);
+                              reject({message: err.message});
                             }
                             else{
                               Properties.insertData(properties, id, userId).then(res => {
@@ -430,7 +430,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
               })
               .exec((err, saved) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
                 else if(saved) {
                   if(type == 'data') {
@@ -444,7 +444,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
                         }
                       })
                       .exec((err, update) => {
-                        err ? reject(err)
+                        err ? reject({message: err.message})
                         : resolve({message: 'updated'});
                       });
                   }
@@ -456,7 +456,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
                         }
                       })
                       .exec((err, update) => {
-                        err ? reject(err)
+                        err ? reject({message: err.message})
                         : resolve({message: 'updated'});
                       }); 
                   }
@@ -481,7 +481,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.living[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -489,7 +489,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.dining[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -497,7 +497,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.bed[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -505,7 +505,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.toilet[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -513,7 +513,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.kitchen[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -525,14 +525,14 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 }
               })
               .exec((err, deleted) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve(deleted);
               });
 
             Properties
               .findByIdAndRemove(id)
               .exec((err, deleted) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve(deleted);
               });
           }
@@ -550,7 +550,7 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
           .populate("owner.user")  
           .exec((err, properties) => {
             if(err) {
-              reject(err);
+              reject({message: err.message});
             }
             else{
               if(properties.status != 'draft') {
@@ -580,7 +580,7 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                   })
                   .exec((err, update) => {
                     if(err) {
-                      reject(err);
+                      reject({message: err.message});
                     }
                     else{
                       Properties
@@ -588,7 +588,7 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                           result.status = 'published';
                           result.save((err, update) => {
                             if(err) {
-                              reject(err);
+                              reject({message: err.message});
                             }
                           });
                           var devID = result.development;
@@ -605,14 +605,14 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                               })
                               .exec((err, update) => {
                                   if(err) {
-                                    reject(err);
+                                    reject({message: err.message});
                                   }
                                   else{
                                     Developments
                                       .findById(devID)
                                       .exec((err, data) => {
                                         if(err) {
-                                          reject(err);
+                                          reject({message: err.message});
                                         }
                                         else{
                                           var notification = {
@@ -656,7 +656,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
         .select("shortlisted_property")
         .exec((err, res) => {
           if(err){
-            reject(err);
+            reject({message: err.message});
           }
           if(res){
             if(res.length > 0){
@@ -670,7 +670,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
                   }
                 })
                 .exec((err, update) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve({message: "Success shortlisted this property"});
                 });
             }          
@@ -689,7 +689,7 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
         .select("shortlisted_property")
         .exec((err, res) => {
           if(err){
-            reject(err);
+            reject({message: err.message});
           }
           if(res){
             if(res.length == 0){
@@ -703,7 +703,7 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
                   }
                 })
                 .exec((err, update) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve({message: "Success to unshortlisted this property"});
                 });
             }          
@@ -743,7 +743,7 @@ propertiesSchema.static('unsetTemp', (propertyId:string, type:string):Promise<an
       Properties
         .findByIdAndUpdate(propertyId, unsetObj)
         .exec((err, update) => {
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(update);
         });
   });
@@ -762,7 +762,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
           })
           .exec((err, res) => {
             if(err) {
-              reject(err);
+              reject({message: err.message});
             }
           });
       }
@@ -788,7 +788,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                 })
                 .exec((err, update) => {
                     if(err) {
-                      reject(err);
+                      reject({message: err.message});
                     }
                 });
                 
@@ -805,7 +805,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                       })
                       .exec((err, update) => {
                           if(err) {
-                            reject(err);
+                            reject({message: err.message});
                           }
                       });
                   }
@@ -820,7 +820,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                     })
                     .exec((err, update) => {
                         if(err) {
-                          reject(err);
+                          reject({message: err.message});
                         }
                     });
                 }
@@ -838,7 +838,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
               if(err) {
-                reject(err);
+                reject({message: err.message});
               }  
             });
         }
@@ -851,7 +851,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
             });
         }
@@ -868,7 +868,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
             });
         }
@@ -881,7 +881,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
             });
         }

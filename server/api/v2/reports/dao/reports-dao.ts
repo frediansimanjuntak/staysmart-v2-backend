@@ -11,7 +11,7 @@ reportsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("reported reported")
           .exec((err, reports) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(reports);
           });
     });
@@ -24,7 +24,7 @@ reportsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("reported reporter")
           .exec((err, reports) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(reports);
           });
     });
@@ -40,7 +40,7 @@ reportsSchema.static('createReports', (reports:Object):Promise<any> => {
       
       var _reports = new Reports(reports);
           _reports.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -55,7 +55,7 @@ reportsSchema.static('deleteReports', (id:string):Promise<any> => {
         Reports
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve();
           });
         

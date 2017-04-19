@@ -23,7 +23,7 @@ commentsSchema.static('getAll', ():Promise<any> => {
 				select: 'username picture'
 			})
 			.exec((err, comments) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 				: resolve(comments);
 			});
 	});
@@ -44,7 +44,7 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 				select: 'username picture'
 			})
 			.exec((err, comments) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 				: resolve(comments);
 			});
 	});
@@ -75,13 +75,13 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 					_comments.type = type;
 					_comments.save((err, saved)=>{
 						if(err) {
-							reject(err);
+							reject({message: err.message});
 						}
 						else if(saved) {
 							Blogs
 								.findById(body.blog, (err, blog) => {
 									if(err) {
-										reject(err);
+										reject({message: err.message});
 									}
 									else{
 										var email = body.email;
@@ -94,7 +94,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 												.populate("user")
 												.exec((err, res) => {
 													if(err){
-														reject(err);
+														reject({message: err.message});
 													}
 													if(res){
 														let comIdUser = res.user._id;
@@ -108,7 +108,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 																}
 															})
 															.exec((err, update) => {
-																err ? reject(err)
+																err ? reject({message: err.message})
 																: resolve({message: 'updated'});;
 															});	
 													}
@@ -122,7 +122,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 													}
 												})
 												.exec((err, update) => {
-													err ? reject(err)
+													err ? reject({message: err.message})
 													: resolve({message: 'updated'});
 												});	
 										}
@@ -154,14 +154,14 @@ commentsSchema.static('deleteReplies', (idComment:string, reply: Object, current
 						}
 					)
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 
 				Comments
 					.findByIdAndRemove(body.idReply)
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 			}
@@ -189,21 +189,21 @@ commentsSchema.static('deleteComments', (idComment:string, currentUser:string):P
 								Comments
 									.findByIdAndRemove(reply)
 									.exec((err, deleted) => {
-										err ? reject(err)
+										err ? reject({message: err.message})
 										: resolve(deleted);
 									});
 							}	
 						}
 					})
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 
 				Comments
 					.findByIdAndRemove(idComment)
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 			}
@@ -224,7 +224,7 @@ commentsSchema.static('updateComments', (id:string, comments:Object, currentUser
 				Comments
 					.findByIdAndUpdate(id, comments)
 					.exec((err, update) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(update);
 					});
 			}

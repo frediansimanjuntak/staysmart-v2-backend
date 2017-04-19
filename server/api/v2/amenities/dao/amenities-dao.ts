@@ -12,7 +12,7 @@ amenitiesSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("icon")
           .exec((err, amenities) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(amenities);
           });
     });
@@ -25,7 +25,7 @@ amenitiesSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("icon")
           .exec((err, amenities) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(amenities);
           });
     });
@@ -41,7 +41,7 @@ amenitiesSchema.static('createAmenities', (amenities:Object):Promise<any> => {
       
       var _amenities = new Amenities(amenities);
           _amenities.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -57,13 +57,13 @@ amenitiesSchema.static('deleteAmenities', (id:string):Promise<any> => {
             Attachments.deleteAttachments(amenities.icon);
           })
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve();
           });
         Amenities
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve();
           });
         
@@ -79,7 +79,7 @@ amenitiesSchema.static('updateAmenities', (id:string, amenities:Object):Promise<
         Amenities
         .findByIdAndUpdate(id, amenities)
         .exec((err, update) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(update);
           });
     });

@@ -40,7 +40,7 @@ blogsSchema.static('getAll', ():Promise<any> => {
             select: 'username picture'
           }])
           .exec((err, blogs) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(blogs);
           });
     });
@@ -76,7 +76,7 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
             select: 'username picture'
           }])
           .exec((err, blogs) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(blogs);
           });
     });
@@ -112,7 +112,7 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
             select: 'username picture'
           }])
           .exec((err, blogs) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(blogs);
           });
     });
@@ -136,7 +136,7 @@ blogsSchema.static('createBlogs', (blogs:Object, covers:Object, created_by:strin
             _blogs.created_by = created_by;
             _blogs.cover = idAttachment;
             _blogs.save((err, saved)=>{
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(saved);
             });
       });
@@ -155,7 +155,7 @@ blogsSchema.static('deleteBlogs', (id:string):Promise<any> => {
                   Attachments
                       .findByIdAndRemove(blogs.cover)
                       .exec((err, deleted) => {
-                        err ? reject(err)
+                        err ? reject({message: err.message})
                             : resolve(deleted);
                       });
                 }
@@ -164,7 +164,7 @@ blogsSchema.static('deleteBlogs', (id:string):Promise<any> => {
         Blogs
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve();
           });
         
@@ -193,7 +193,7 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promi
           .findByIdAndUpdate(id, blogObj)
           .exec((err, update) => {
              if(err) {
-               reject(err);
+               reject({message: err.message});
              }
              else if(update) {
               Blogs
@@ -201,7 +201,7 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promi
                 .populate("created_by")
                 .exec((err, blog) => {
                   if(err) {
-                    reject(err);
+                    reject({message: err.message});
                   }
                   else if(blog) {
                     var emailTo = blog.created_by.email;

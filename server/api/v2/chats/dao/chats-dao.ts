@@ -48,7 +48,7 @@ chatsSchema.static('getChatRooms', (query:Object):Promise<any> => {
                 }
             })
             .exec((err, res) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                   : resolve(res);
             })
     });
@@ -105,7 +105,7 @@ chatsSchema.static('login', (token:string, userId:string, username:string):Promi
 	        		.findByIdAndUpdate(userId, pushObj)
 	        		.exec((err, result) => {
 	        			if(err) {
-                            reject(err);
+                            reject({message: err.message});
                         }
                         else{
                             resolve({'loginId': id, 'loginToken': token, 'loginTokenExpires': tokenExpires});            
@@ -177,14 +177,14 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
 					                    _chat_rooms.tenant = uid;
 					                    _chat_rooms.save((err, saved)=>{
 					                        if(err){
-					                            reject(err);
+					                            reject({message: err.message});
 					                        }
 					                        else if(saved){
                                                 Agreements
                                                     .findOne({"property": property_id, "tenant": uid})
                                                     .exec((err, agreement) => {
                                                         if(err){
-                                                            reject(err);
+                                                            reject({message: err.message});
                                                         }
                                                         else{
                                                             if(agreement == null){
@@ -195,7 +195,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                                                                 _agreements.room_id = saved._id;
                                                                 _agreements.save((err, done)=>{
                                                                     if(err){
-                                                                        reject(err);
+                                                                        reject({message: err.message});
                                                                     }
                                                                     if(done){
                                                                         ChatRooms
@@ -205,7 +205,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                                                                                 }
                                                                             })
                                                                             .exec((err, updated) => {
-                                                                                err ? reject(err)
+                                                                                err ? reject({message: err.message})
                                                                                     : resolve(updated);
                                                                             })
                                                                     }
@@ -215,7 +215,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                                                                 agreement.room_id = saved._id;
                                                                 agreement.save((err, done)=>{
                                                                     if(err){
-                                                                        reject(err);
+                                                                        reject({message: err.message});
                                                                     }
                                                                     if(done){
                                                                         ChatRooms
@@ -225,7 +225,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                                                                                 }
                                                                             })
                                                                             .exec((err, updated) => {
-                                                                                err ? reject(err)
+                                                                                err ? reject({message: err.message})
                                                                                     : resolve(updated);
                                                                             })
                                                                     }
@@ -242,7 +242,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
 					                                })
 					                                .exec((err, users) => {
 					                                    if(err) {
-                                                            reject(err);
+                                                            reject({message: err.message});
                                                         }
 					                                });
 
@@ -255,7 +255,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
                                                         })
                                                         .exec((err, users) => {
                                                             if(err) {
-                                                                reject(err);
+                                                                reject({message: err.message});
                                                             }
                                                         });
                                                 }
@@ -266,7 +266,7 @@ chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> =
 					                                    }
 					                                })
 					                                .exec((err, users) => {
-					                                    err ? reject(err)
+					                                    err ? reject({message: err.message})
 					                                        : resolve({'data': saved, 'message': 'room created'});
 					                                });	
 			                            	    
@@ -292,7 +292,7 @@ chatsSchema.static('archivedRoom', (roomId:string):Promise<any> => {
                 }
             })
             .exec((err, chat_rooms) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                     : resolve({message: 'room updated'});
             })
     });
@@ -333,13 +333,13 @@ chatsSchema.static('postMembers', (roomId:string, memberId:string):Promise<any> 
                     .find({"room_id": roomId})
                     .exec((err, chat_room) => {
                         if(err) {
-                            reject(err);
+                            reject({message: err.message});
                         }
                         else if(chat_room) {
                             for(var i = 0; i < chat_room.length; i++){
                                 chat_room[i].manager = memberId;
                                 chat_room[i].save((err, result) => {
-                                    err ? reject(err)
+                                    err ? reject({message: err.message})
                                         : resolve(result);
                                 });
                             }
@@ -377,7 +377,7 @@ chatsSchema.static('updateRoom', (roomId:string, status:string):Promise<any> => 
             })
             .exec((err, chat_rooms) => {
                 if(err) {
-                    reject(err);
+                    reject({message: err.message});
                 }
                 else if(chat_rooms) {
                     DreamTalk.updateRoom(roomId, extra);
@@ -406,7 +406,7 @@ chatsSchema.static('deleteRoom', (roomId:string, userId: string):Promise<any> =>
                         .findByIdAndRemove(roomId)
                         .exec((err, result) => {
                             if(err) {
-                                reject(err);
+                                reject({message: err.message});
                             }
                             else{
                                 resolve({message: 'chat room deleted.'});
@@ -445,7 +445,7 @@ chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> =>
                         .findByIdAndRemove(roomId)
                         .exec((err, result) => {
                             if(err) {
-                                reject(err);
+                                reject({message: err.message});
                             }
                             else{
                                 resolve({message: 'chat room deleted.'});

@@ -30,7 +30,8 @@ export function isAuthenticated() {
       validateJwt(req, res, function(err, validate){
         if(err) {
           // return res.status(err.status).send({message: err.message});
-          return res.status(err.status).send({message: "Incorrect username/email and password."});
+          return res.status(err.status).send({message: "You Must Login"});
+          // return res.status(err.status).send({message: "Incorrect username/email and password."});
         }
         else{
           validateJwt(req, res, next);
@@ -47,7 +48,7 @@ export function isAuthenticated() {
           req.user = user;
           next();
         })
-        .catch(err => next(err));
+        .catch(err => next({message: "error", err}));
     });
 }
 
