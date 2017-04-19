@@ -222,7 +222,6 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 		let _query = {};
 		Agreements.getAgreement(_query).then(res => {
 			if(res){
-				// resolve(res);
 				var taDocs = res;
 				var savedComission = 12100;
 				_.each(taDocs, function(ta) {					
@@ -247,8 +246,10 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 					    savedComission += cal;
 					  }
 					}
+					else{
+						savedComission = savedComission;
+					}
 				});
-				console.log(savedComission);
 				resolve({odometer: savedComission});
 			}
 			else{
