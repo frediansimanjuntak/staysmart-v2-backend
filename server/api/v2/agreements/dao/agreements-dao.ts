@@ -67,6 +67,21 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 				}]
 			})
 			.populate({
+				path: 'tenancy_agreement.data',
+				populate: [{
+					path: 'stamp_certificate',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})
+			.populate({
 				path: 'property',
 				model: 'Properties',
 	            populate: [{
