@@ -17,7 +17,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments")
+			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate")
 			.populate({
 				path: 'landlord',
 				model: 'Users',
@@ -55,21 +55,6 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
 					path: 'attachment.payment',
-					model: 'Attachments'
-				},
-				{
-					path: 'attachment.payment_confirm',
-					model: 'Attachments'
-				},
-				{
-					path: 'attachment.refund_confirm',
-					model: 'Attachments'
-				}]
-			})
-			.populate({
-				path: 'tenancy_agreement.data',
-				populate: [{
-					path: 'stamp_certificate',
 					model: 'Attachments'
 				},
 				{
@@ -156,6 +141,9 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 				else{
 					reject({message: "error"});
 				}
+			})
+			.catch(err => {
+				reject({message: "error"});
 			})
 		}
 		else{
