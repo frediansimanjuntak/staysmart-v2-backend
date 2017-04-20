@@ -30,6 +30,7 @@ export default {
 
   url:{
     reset_password: 'http://localhost:3000/reset-password-email/',
+    blog: 'http://ss-front.shrimpventures.com:3000/blog-view',
     blog_comment: '',
     approveProperty: '',
   },

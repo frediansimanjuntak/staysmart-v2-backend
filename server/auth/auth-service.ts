@@ -29,9 +29,15 @@ export function isAuthenticated() {
      
       validateJwt(req, res, function(err, validate){
         if(err) {
-          // return res.status(err.status).send({message: err.message});
-          return res.status(err.status).send({message: "You Must Login"});
-          // return res.status(err.status).send({message: "Incorrect username/email and password."});
+          if(err.message == "jwt expired"){
+            return res.status(err.status).send({message: "Your session has been expired", code: 411});
+          }
+          if(err.message == "jwt malformed"){
+            return res.status(err.status).send({message: "You must be logged in to do this", code: 412});
+          }
+          else{
+            return res.status(err.status).send({message: err.message});
+          }
         }
         else{
           validateJwt(req, res, next);
