@@ -25,7 +25,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	              path: 'picture',
 	              model: 'Attachments'
 	            },
-	            select: 'username email picture landlord.data'
+	            select: 'username email picture landlord.data phone'
 			})
 			.populate({
 				path: 'tenant',
@@ -34,7 +34,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	              path: 'picture',
 	              model: 'Attachments'
 	            },
-	            select: 'username email picture landlord.data'
+	            select: 'username email picture landlord.data phone'
 			})
 			.populate({
 				path: 'letter_of_intent.data.payment',
@@ -265,6 +265,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 			return reject(new TypeError('Agreement is not a valid object.'));
 		}
 		let body:any = agreements;
+		let IDUser = userId.toString();
 		if(!body.property) {
 			reject({message: 'no property id'});
 		}
@@ -276,41 +277,48 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 						reject({message: err.message});
 						newrelic.noticeError(err);
 					}
-					else{
+					if(properties){
 						let propertyId = properties._id;
 						let propertyStatus = properties.status;
 						let landlordId = properties.owner.user;
-						Agreements
-							.findOne({"property": body.property, "tenant": userId})
-							.exec((err, agreement) => {
-								if(err){
-									reject({message: err.message});
-									newrelic.noticeError(err);
-								}
-								if(agreement){
-									if(agreement == null){
-										if(propertyStatus == "published" || propertyStatus == "initiated"){
-											var _agreements = new Agreements();
-											_agreements.property = propertyId;
-											_agreements.tenant =  userId;
-											_agreements.landlord = landlordId;
-											if(body.appointment) {
-												_agreements.appointment = body.appointment;
+						if(landlordId == userId){
+							resolve({message: "You can not create agreement with your owned property"});
+						}
+						if(landlordId != userId){
+							Agreements
+								.find({"property": body.property, "tenant": userId})
+								.exec((err, agreement) => {
+									if(err){
+										reject({message: err.message});
+										newrelic.noticeError(err);
+									}
+									if(agreement){
+										if(agreement.length == 0){
+											if(propertyStatus == "published" || propertyStatus == "initiated"){
+												var _agreements = new Agreements(agreements);
+												_agreements.property = propertyId;
+												_agreements.tenant =  userId;
+												_agreements.landlord = landlordId;
+												if(body.appointment) {
+													_agreements.appointment = body.appointment;
+												}
+												_agreements.save((err, saved)=>{
+													err ? reject({message: err})
+														: resolve({_id: saved._id});
+												});
 											}
-											_agreements.save((err, saved)=>{
-												err ? reject({"message": err})
-													: resolve({agreement_id: saved._id});
-											});
+											if(propertyStatus == "rented"){
+												reject({message: "this property has rented"})
+											}
 										}
-										if(propertyStatus == "rented"){
-											reject({message: "this property has rented"})
+										else if(agreement.length > 0){
+											_.each(agreement, (res) => {
+												resolve({_id: res._id, message: "agreement has been made"})
+											})											
 										}
-									}
-									else if(agreement != null){
-										resolve({agreement_id: agreement._id, message: "agreement has been made"})
-									}
-								}							
-							});					
+									}							
+								});	
+						}										
 					}
 				});		
 		}
@@ -1343,7 +1351,8 @@ agreementsSchema.static('feeUpdate', (data:Object):Promise<any> => {
 						"fee.$.refunded": false,
 						"fee.$.updated_at": new Date(),
 						"attachment.payment_confirm": body.payment_confirm,
-						"status": body.status
+						"status": body.status,
+						"remarks": body.remarks
 					}
 				})
 				.exec((err, updated) => {
@@ -1359,7 +1368,8 @@ agreementsSchema.static('feeUpdate', (data:Object):Promise<any> => {
 						"fee.$.refunded": false,
 						"fee.$.updated_at": new Date(),
 						"attachment.payment_confirm": body.payment_confirm,
-						"status": body.status
+						"status": body.status,
+						"remarks": body.remarks
 					}
 				})
 				.exec((err, updated) => {
@@ -1377,7 +1387,8 @@ agreementsSchema.static('feeUpdate', (data:Object):Promise<any> => {
 						"fee.$.refunded": false,
 						"fee.$.updated_at": new Date(),
 						"attachment.payment_confirm": body.payment_confirm,
-						"status": body.status
+						"status": body.status,
+						"remarks": body.remarks
 					}
 				})
 				.exec((err, updated) => {
@@ -1413,7 +1424,7 @@ agreementsSchema.static('addRefund', (data:Object):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('paymentConfirmedLoi', (id:string):Promise<any> => {
+agreementsSchema.static('paymentConfirmedLoi', (id:string, statusPay:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -1426,7 +1437,7 @@ agreementsSchema.static('paymentConfirmedLoi', (id:string):Promise<any> => {
 					reject({message: err.message})
 				}
 				else if (agreement){
-					agreement.letter_of_intent.data.status = "payment-confirmed";
+					agreement.letter_of_intent.data.status = statusPay;
 					agreement.save((err, saved) => {
 						if(err){
 							reject({message: err.message});
@@ -1440,7 +1451,7 @@ agreementsSchema.static('paymentConfirmedLoi', (id:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> => {
+agreementsSchema.static('processPayment', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -1508,19 +1519,25 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 									if (feeGfd <= feeStd){
 										receivePaymentGfd = feeGfd;
 										reducePaymentGfd = receive_payment - receivePaymentGfd;
-										reducePaymentStd = feeStd - reducePaymentGfd;
-										if (reducePaymentStd >= 1){
+										reducePaymentStd = reducePaymentGfd - feeStd;
+										if (reducePaymentStd > 0){
 											receivePaymentStd = feeStd;
 											refundPayment = reducePaymentGfd - receivePaymentStd;
+										}
+										if (reducePaymentStd < 0){
+											receivePaymentStd = reducePaymentGfd;
 										}
 									}
 									else{
 										receivePaymentStd = feeStd;
 										reducePaymentStd = receive_payment - receivePaymentStd;
 										reducePaymentGfd = reducePaymentStd - feeGfd; 
-										if (reducePaymentGfd >= 1){
+										if (reducePaymentGfd > 0){
 											receivePaymentGfd = feeGfd;
 											refundPayment = reducePaymentStd - receivePaymentGfd;
+										}
+										if (reducePaymentGfd < 0){
+											receivePaymentGfd = reducePaymentStd;
 										}
 									}
 									var data ={
@@ -1532,13 +1549,17 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 										"payment_confirm": body.payment_confirm,
 										"refundPayment": refundPayment,
 										"typeInput": "loi",
-										"status": "accepted"
+										"status": body.status_payment,
+										"remarks": body.remarks
 									}					
 									if(totalReceive - totalFee == 0)
 									{	
 										Agreements.feeUpdate(data).then(res => {
-											Agreements.paymentConfirmedLoi(id);
-											let typeMail = "acceptLoiPayment";
+											let statusLoi = body.status_loi;
+											Agreements.paymentConfirmedLoi(id, statusLoi);
+											let type_notif = body.type_notif;
+											Agreements.notification(id, type_notif);
+											let typeMail = body.type_mail;
 											Agreements.email(id, typeMail).then(res => {
 												resolve({message: "success"});
 											})								
@@ -1547,13 +1568,33 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 									if (totalReceive - totalFee >= 1){									
 										Agreements.feeUpdate(data).then (res => {
 											Agreements.addRefund(data).then (res => {
-												Agreements.paymentConfirmedLoi(id);
-												let typeMail = "acceptLoiPayment";
+												let statusLoi = body.status_loi
+												Agreements.paymentConfirmedLoi(id, statusLoi);
+												let type_notif = body.type_notif;
+												Agreements.notification(id, type_notif);
+												let typeMail = body.type_mail;
 												Agreements.email(id, typeMail).then(res => {
 													resolve({message: "success"});
 												})
 											});											
 										});	
+									}
+									if (totalReceive - totalFee < 0){
+										if(body.status_payment == "accepted"){
+											resolve({message: "sorry can not accept this payment"})
+										}
+										if(body.status_payment == "rejected"){
+											Agreements.feeUpdate(data).then(res => {
+												let statusLoi = body.status_loi
+												Agreements.paymentConfirmedLoi(id, statusLoi);
+												let type_notif = body.type_notif;
+												Agreements.notification(id, type_notif);
+												let typeMail = body.type_mail;
+												Agreements.email(id, typeMail).then(res => {
+													resolve({message: "success"});
+												})								
+											});
+										}
 									}
 								});															
 						});
@@ -1576,7 +1617,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 							if (feeScd != 0){
 								receivePaymentScd = feeScd;
 								reducePaymentScd = receive_payment - receivePaymentScd;
-								if (reducePaymentScd >= 1){
+								if (reducePaymentScd > 0){
 									refundPayment = reducePaymentScd;
 								}
 							}
@@ -1587,12 +1628,15 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 								"payment_confirm": body.payment_confirm,
 								"refundPayment": refundPayment,
 								"typeInput": "ta",
-								"status": "accepted"
+								"status": body.status_payment,
+								"remarks": body.remarks
 							}					
 							if(totalReceive - totalFee == 0)
 							{	
 								Agreements.feeUpdate(data).then(res => {
-									let typeMail = "acceptTaPayment";
+									let typeMail = body.type_mail;
+									let type_notif = body.type_notif;
+									Agreements.notification(id, type_notif);
 									Agreements.email(id, typeMail).then(res => {
 										resolve({message: "success"});
 									})
@@ -1601,11 +1645,28 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 							if (totalReceive - totalFee >= 1){									
 								Agreements.feeUpdate(data).then(res => {
 									Agreements.addRefund(data);	
-									let typeMail = "acceptTaPayment";
+									let type_notif = body.type_notif;
+									Agreements.notification(id, type_notif);
+									let typeMail = body.type_mail;
 									Agreements.email(id, typeMail).then(res => {
 										resolve({message: "success"});
 									})
 								});																			
+							}
+							if (totalReceive - totalFee < 0){
+								if(body.status_payment == "accepted"){
+									resolve({message: "sorry can not accept this payment"})
+								}
+								if(body.status_payment == "rejected"){
+									Agreements.feeUpdate(data).then(res => {
+										let typeMail = body.type_mail;
+										let type_notif = body.type_notif;
+										Agreements.notification(id, type_notif);
+										Agreements.email(id, typeMail).then(res => {
+											resolve({message: "success"});
+										})
+									});	
+								}
 							}
 						});	
 				}
@@ -1614,6 +1675,85 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 		      			: resolve(saved);
 		      	});				
 			})
+	});
+});
+
+agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		let ObjectID = mongoose.Types.ObjectId;
+		let body:any = data;
+		let type:any = body.type;
+		let receive_payment = body.receive_payment;
+		let type_notif;
+		let typeMail;
+		if(type == "letter_of_intent"){
+			typeMail = "acceptLoiPayment";
+			type_notif = "acceptLoiPayment";
+		}
+		if (type == "tenancy_agreement"){
+			typeMail = "acceptTaPayment";
+			type_notif = "acceptTaPayment";
+		}
+
+		let dataAccept = {
+			"type": type,
+			"receive_payment": receive_payment,
+			"payment_confirm": body.payment_confirm,
+			"status_payment": "accepted",
+			"remarks": body.remarks,
+			"status_loi": "payment-confirmed",
+			"type_mail": typeMail,
+			"type_notif" : type_notif
+		}		
+		Agreements.processPayment(id, dataAccept).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject(err);
+		})
+	});
+});
+
+agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		
+		let ObjectID = mongoose.Types.ObjectId;
+		let body:any = data;
+		let type:any = body.type;
+		let receive_payment = body.receive_payment;
+		let type_notif;
+		let typeMail;
+		if(type == "letter_of_intent"){
+			typeMail = "rejectLoiPayment";
+			type_notif = "rejectLoiPayment";
+		}
+		if (type == "tenancy_agreement"){
+			typeMail = "rejectTaPayment";
+			type_notif = "rejectTaPayment";
+		}
+
+		let dataReject = {
+			"type": type,
+			"receive_payment": receive_payment,
+			"payment_confirm": body.payment_confirm,
+			"status_payment": "rejected",
+			"remarks": body.remarks,
+			"status_loi": "rejected",
+			"type_mail": typeMail,
+			"type_notif" : type_notif
+		}		
+		Agreements.processPayment(id, dataReject).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject(err);
+		})
 	});
 });
 
@@ -1643,65 +1783,6 @@ agreementsSchema.static('feeNeededRefund', (id:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}		
-		let body:any = data;
-		let type:any = body.type;
-		let paymentID;
-		let type_notif = "rejectLoi";
-		
-	    Agreements
-			.findById(id, (err, agreement) => {
-				let loiData = agreement.letter_of_intent.data;
-				let taData = agreement.tenancy_agreement.data;
-
-				if (type == "letter_of_intent"){
-					paymentID = loiData.payment.toString();					
-					Agreements.feeNeededRefund(paymentID).then(res =>{
-						agreement.letter_of_intent.data.status = "rejected";
-						agreement.save((err, saved) => {
-							Payments
-								.update({"_id": id}, {
-									$set:{
-										"status": "rejected",
-										"remarks": body.remarks
-									}
-								})
-								.exec((err, updated) => {
-									if(err){
-										reject({message: err.message})
-									}
-									else if(updated){
-										let typeMail = "rejectLoiPayment";
-										Agreements.email(id, typeMail).then(res => {
-											Agreements.notification(id, type_notif);
-											resolve({status: saved.letter_of_intent.data.status});
-										})
-									}
-								})						
-				      	});	
-					});
-				}
-				if (type == "tenancy_agreement"){
-					agreement.tenancy_agreement.data.status = "rejected";
-					paymentID = taData.payment;
-					Agreements.feeNeededRefund(paymentID).then(res =>{
-						agreement.letter_of_intent.data.status = "rejected";
-						agreement.save((err, saved) => {
-				      		let typeMail = "rejectTaPayment";
-							Agreements.email(id, typeMail).then(res => {
-								Agreements.notification(id, type_notif);
-								resolve({status: saved.tenancy_agreement.data.status});
-							})
-				      	});	
-					});
-				}							
-			})		
-	});
-});
 
 agreementsSchema.static('refundPenaltyPayment', (idPayment:string, idfee:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {

@@ -132,12 +132,10 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
 
 appointmentsSchema.static('createAppointments', (appointments:Object, tenant:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      if (!_.isObject(appointments)) {
-        return reject(new TypeError('Appointment is not a valid object.'));
-      }
+
       let tenantId = tenant.toString();
       let body:any = appointments;
-      console.log(body);
+      
       Properties
         .findById(body.property)
         .populate("owner.user development")
@@ -151,58 +149,81 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
             let data = {
               "property": body.property
             };
-            Agreements.createAgreements(data, tenantId).then(res => {
-              let agreementId = res.agreement_id;
-              for(var i = 0; i < body.time.length; i++){
-                var _appointments = new Appointments(appointments);
-                _appointments.agreement = agreementId;
-                _appointments.landlord = landlordId;
-                _appointments.tenant = tenantId;
-                _appointments.chosen_time.date = body.date;
-                _appointments.chosen_time.from = body.time[i];
-                _appointments.chosen_time.to = body.time2[i];
-                _appointments.save((err, saved)=>{
-                  if(err) {
-                    reject({message: err.message});
-                    newrelic.noticeError(err);
-                  }
-                  else if(saved){
-                    let appointmentId = saved._id;
-                    Appointments
-                      .findById(appointmentId)
-                      .populate("landlord tenant")
-                      .populate({
-                        path: 'property',
-                        populate: {
-                          path: 'development',
-                          model: 'Developments',
-                        },
-                      })
-                      .exec((err, appointment) => {
-                        var devID = appointment.property.development;
-                        var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
-                        
-                        var notification = {
-                          "user": body.landlord,
-                          "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
-                          "type": "appointment_proposed",
-                          "ref_id": appointmentId
-                        };
-                        Notifications.createNotifications(notification);  
-                        var emailTo = appointment.landlord.email;
-                        var fullname = appointment.landlord.username;
-                        var tenant_username = appointment.tenant.username;                    
-                        var full_address = appointment.property.address.full_address;
-                        var from = 'Staysmart';
+            if(landlordId == tenantId){
+              resolve({message: "You can not create appointment with your owned property"});
+            }
+            if(landlordId != tenantId){
+              Agreements.createAgreements(data, tenant).then(res => {
+                let agreementId = res._id;
+                for(var i = 0; i < body.time.length; i++){
+                  let timeFrom = body.time[i];
+                  let timeTo = body.time2[i];
+                  Appointments
+                    .find({"chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo})
+                    .exec((err, res) => {
+                      if(err){
+                        reject(err);
+                      }
+                      if(res){
+                        if(res.length == 0){
+                          var _appointments = new Appointments(appointments);
+                          _appointments.agreement = agreementId;
+                          _appointments.landlord = landlordId;
+                          _appointments.tenant = tenantId;
+                          _appointments.chosen_time.date = body.date;
+                          _appointments.chosen_time.from = timeFrom;
+                          _appointments.chosen_time.to = timeTo;
+                          _appointments.save((err, saved)=>{
+                            if(err) {
+                              reject({message: err.message});
+                              newrelic.noticeError(err);
+                            }
+                            else if(saved){
+                              let appointmentId = saved._id;
+                              Appointments
+                                .findById(appointmentId)
+                                .populate("landlord tenant")
+                                .populate({
+                                  path: 'property',
+                                  populate: {
+                                    path: 'development',
+                                    model: 'Developments',
+                                  },
+                                })
+                                .exec((err, appointment) => {
+                                  var devID = appointment.property.development;
+                                  var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+                                  
+                                  var notification = {
+                                    "user": body.landlord,
+                                    "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
+                                    "type": "appointment_proposed",
+                                    "ref_id": appointmentId
+                                  };
+                                  Notifications.createNotifications(notification);  
+                                  var emailTo = appointment.landlord.email;
+                                  var fullname = appointment.landlord.username;
+                                  var tenant_username = appointment.tenant.username;                    
+                                  var full_address = appointment.property.address.full_address;
+                                  var from = 'Staysmart';
 
-                        mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                        resolve({appointment_id: appointmentId});
-                        console.log({appointment_id: appointmentId, message: 'appoinment proposed'});
-                      })                 
-                  }
-                })
-              }
-            });            
+                                  mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
+                                  resolve({appointment_id: appointmentId, message: 'appoinment proposed'});
+                                })                 
+                            }
+                          })
+                        }
+                        if(res.length > 0){
+                          resolve({message: "Allready Appointment"})
+                        }
+                      }
+                    })                  
+                }
+              })
+              .catch(err => {
+                reject(err);
+              });
+            }                        
           }
         })     
     });

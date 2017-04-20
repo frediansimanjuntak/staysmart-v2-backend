@@ -129,7 +129,6 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
-
 	static getTotalRefundPayment(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 
