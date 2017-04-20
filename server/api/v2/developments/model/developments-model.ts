@@ -18,7 +18,7 @@ var DevelopmentsSchema = new mongoose.Schema({
 			ref: 'Properties'
 		}
 	],
-	tenure: {type:  String},
+	tenure: {type: String},
 	age: {type: Number},
 	planning_region: {type: String},
 	planning_area: {type: String},
