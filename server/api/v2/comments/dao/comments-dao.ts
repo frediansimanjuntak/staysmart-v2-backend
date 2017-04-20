@@ -50,6 +50,34 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 	});
 });
 
+commentsSchema.static('sendSubscribeBlog', (idBlog:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Comments
+			.find({"blog": idBlog, "subscribes": true})
+			.populate("blog")
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					_.each(res, (result) => {
+						let blogTitle = result.blog.title;
+						let blogSlug = result.blog.slug;
+						let email = result.email;
+						let name = result.name;
+						var url = config.url.blog+blogSlug;
+						mail.blogSubscribe(email, name, blogTitle, url).then(send => {
+							resolve({message: "email sent"});
+						})
+						.catch(err => {
+							reject(err);
+						});						
+					})
+				}
+			})		
+	});
+});
+
 commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(comments)) {
@@ -69,7 +97,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 			.findOne({"email": body.email})
 			.exec((err, user) => {
 				var _comments = new Comments(comments);
-					if(user) {
+					if(user != null) {
 						_comments.user = user._id;	
 					}
 					_comments.type = type;
@@ -78,6 +106,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 							reject({message: err.message});
 						}
 						else if(saved) {
+						Comments.sendSubscribeBlog(body.blog);							
 							Blogs
 								.findById(body.blog, (err, blog) => {
 									if(err) {
@@ -91,14 +120,12 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 										if(body.commentID) {											
 											Comments
 												.findById(body.commentID)
-												.populate("user")
 												.exec((err, res) => {
 													if(err){
 														reject({message: err.message});
 													}
 													if(res){
-														let comIdUser = res.user._id;
-														let comMailUser = res.user.email;
+														let comMailUser = res.email;
 														mail.blogReplyComment(email, blogTitle, url);
 														mail.blogCommentOnReply(comMailUser, email, blogTitle, url);
 														Comments

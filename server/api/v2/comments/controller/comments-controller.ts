@@ -53,4 +53,12 @@ export class CommentsController {
 		.then(comments => res.status(201).json(comments))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static sendSubscribeBlog(req: express.Request, res: express.Response):void {
+		let _id = req.params.idblog;
+		CommentsDAO
+		['sendSubscribeBlog'](_id)
+		.then(comments => res.status(201).json(comments))
+		.catch(error => res.status(400).json(error));
+	}
 }

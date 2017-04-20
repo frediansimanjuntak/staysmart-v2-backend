@@ -23,5 +23,9 @@ export class CommentsRoutes {
 		router
 			.route('/comments/update/:id')
 			.put(auth.isAuthenticated(),CommentsController.updateComments);
+
+		router
+			.route('/comments/send_subscribe/:idblog')
+			.post(CommentsController.sendSubscribeBlog);
 	}
 }
