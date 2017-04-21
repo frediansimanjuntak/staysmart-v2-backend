@@ -1323,9 +1323,11 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 				var paymentId = _payment._id;
 				if(type == "letter_of_intent"){
 					payObj.$set["letter_of_intent.data.payment"] = paymentId;
+					payObj.$set["letter_of_intent.data.status"] = "pending";
 				}
 				else if (type ==  "tenancy_agreement"){
 					payObj.$set["tenancy_agreement.data.payment"] = paymentId;
+					payObj.$set["tenancy_agreement.data.status"] = "admin-confirmation";
 				}
 
 				Agreements

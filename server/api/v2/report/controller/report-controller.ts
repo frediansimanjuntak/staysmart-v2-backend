@@ -20,8 +20,9 @@ export class ReportController{
 
 	static printReport(req: express.Request, res: express.Response):void{
 		let _data = req.body;
+		let _id = req.params.id;
 
-		reportDAO.printReport(_data)
+		reportDAO.printReport(_id, _data)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}		
