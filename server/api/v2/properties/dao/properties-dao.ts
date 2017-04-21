@@ -566,82 +566,88 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                 var full_address = properties.address.full_address;
                 var url = config.url.approveProperty;
                 var from = 'Staysmart';
+                if(confirmation == 'approve' || confirmation == 'reject'){
+                  if(confirmation == 'approve') {
+                    var confirmation_result = 'approved';
+                    mail.approveProperty(emailTo, full_name, full_address, url, from);
+                  }
+                  if(confirmation == 'reject'){
+                    confirmation_result = 'rejected';
+                    mail.rejectProperty(emailTo, full_name, full_address, from);
+                  }
+                  let body:any = proof;
+                  Properties
+                    .update({"_id": id}, {
+                      $set: {
+                        "confirmation.status": confirmation_result,
+                        "confirmation.proof": body.proofId,
+                        "confirmation.by": userId,
+                        "confirmation.date": new Date(),
+                        "confirmation.remarks": body.remarks
+                      }
+                    })
+                    .exec((err, update) => {
+                      if(err) {
+                        reject({message: err.message});
+                      }
+                      else{
+                        Properties
+                          .findById(id, (err, result) => {
+                            result.status = 'published';
+                            result.save((err, update) => {
+                              if(err) {
+                                reject({message: err.message});
+                              }
+                            });
+                            var devID = result.development;
+                            var unit = '#'+result.address.floor+'-'+result.address.unit;
+                            if(result.status != 'draft' && confirmation == 'approve') {
+                              Developments
+                                .update({"_id":result.development}, {
+                                  $push: {
+                                    "properties": id
+                                  },
+                                  $inc:{
+                                    "number_of_units": 1
+                                  }
+                                })
+                                .exec((err, update) => {
+                                    if(err) {
+                                      reject({message: err.message});
+                                    }
+                                    else{
+                                      Developments
+                                        .findById(devID)
+                                        .exec((err, data) => {
+                                          if(err) {
+                                            reject({message: err.message});
+                                          }
+                                          else{
+                                            var notification = {
+                                              "user": result.owner.user,
+                                              "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
+                                              "type": confirmation_result+"_property",
+                                              "ref_id": id
+                                            };
 
-                if(confirmation == 'approve') {
-                  var confirmation_result = 'approved';
-                  mail.approveProperty(emailTo, full_name, full_address, url, from);
-                }
-                else if(confirmation == 'reject'){
-                  confirmation_result = 'rejected';
-                  mail.rejectProperty(emailTo, full_name, full_address, from);
-                }
-                let body:any = proof;
-                Properties
-                  .update({"_id": id}, {
-                    $set: {
-                      "confirmation.status": confirmation_result,
-                      "confirmation.proof": body.proofId,
-                      "confirmation.by": userId,
-                      "confirmation.date": new Date()
-                    }
-                  })
-                  .exec((err, update) => {
-                    if(err) {
-                      reject({message: err.message});
-                    }
-                    else{
-                      Properties
-                        .findById(id, (err, result) => {
-                          result.status = 'published';
-                          result.save((err, update) => {
-                            if(err) {
-                              reject({message: err.message});
+                                            Notifications.createNotifications(notification);
+                                          }
+                                        });
+                                      resolve({message: 'confirmation updated'});
+                                    }
+                                });
                             }
-                          });
-                          var devID = result.development;
-                          var unit = '#'+result.address.floor+'-'+result.address.unit;
-                          if(result.status != 'draft' && confirmation == 'approve') {
-                            Developments
-                              .update({"_id":result.development}, {
-                                $push: {
-                                  "properties": id
-                                },
-                                $inc:{
-                                  "number_of_units": 1
-                                }
-                              })
-                              .exec((err, update) => {
-                                  if(err) {
-                                    reject({message: err.message});
-                                  }
-                                  else{
-                                    Developments
-                                      .findById(devID)
-                                      .exec((err, data) => {
-                                        if(err) {
-                                          reject({message: err.message});
-                                        }
-                                        else{
-                                          var notification = {
-                                            "user": result.owner.user,
-                                            "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
-                                            "type": confirmation_result+"_property",
-                                            "ref_id": id
-                                          };
-
-                                          Notifications.createNotifications(notification);
-                                        }
-                                      });
-                                    resolve({message: 'confirmation updated'});
-                                  }
-                              });
-                          }
-                          else{
-                            resolve({message: 'property status is draft.'});
-                          }
-                        })
-                    }
-                  });
+                            else{
+                              resolve({message: 'property status is draft.'});
+                            }
+                          })
+                      }
+                    });
+                }
+                else{
+                  reject({message: "wrong confirmation type"})
+                }
+                
               }
               else{
                 resolve({message: 'property status is draft.'});
