@@ -12,6 +12,10 @@ export class AppointmentsRoutes {
 			.post(auth.isAuthenticated(),AppointmentsController.createAppointments);
 
 		router
+			.route('/appointments/me')
+			.get(auth.isAuthenticated(),AppointmentsController.getByUser);
+
+		router
 			.route('/appointments/:id')
 			.get(auth.isAuthenticated(),AppointmentsController.getById)
 			.delete(auth.isAuthenticated(),AppointmentsController.deleteAppointments);
