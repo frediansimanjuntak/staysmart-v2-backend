@@ -131,7 +131,8 @@ var PropertiesSchema = new mongoose.Schema({
 				type: Schema.Types.ObjectId,
 				ref: 'Users'
 			},
-		date: {type: Date}
+		date: {type: Date},
+		remarks: {type: String}
 	},
 	temp: {
 		owner: 
