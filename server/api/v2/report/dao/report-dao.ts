@@ -124,7 +124,7 @@ export class reportDAO{
 
 					var data = {
 						"property": {
-							"development": property.development._id,
+							"development": property.development.name,
 							"address": { 
 								"block_no": property.address.block_number,
 								"street_name": property.address.street_name,
@@ -139,7 +139,7 @@ export class reportDAO{
 						},
 						"form_data":{
 							"property": {
-								"development": property.development._id,
+								"development": property.development.name,
 								"address": { 
 									"block_no": property.address.block_number,
 									"street_name": property.address.street_name,
@@ -212,7 +212,7 @@ export class reportDAO{
 					if(agreement){
 						let loi = agreement.letter_of_intent.data;
 						let loiStatus = loi.status;
-						if (loiStatus == "pending" ||loiStatus == "draft" || loiStatus == "payment-confirmed") {
+						if (loiStatus == "pending" ||loiStatus == "draft" || loiStatus == "payment-confirmed" || loiStatus == "rejected") {
 							reportDAO.reportLOIPending(id).then(res => {
 								let result = juice(res);
 								resolve(res);	
@@ -224,7 +224,7 @@ export class reportDAO{
 								let result = juice(res);
 								resolve(res);
 							});
-						}
+						}						
 					}					
 					else if(err){
 						reject({message: err.message});
@@ -306,7 +306,7 @@ export class reportDAO{
 								resolve(res);
 							});
 						}
-						else if (taStatus == "accepted" || taStatus == "admin-confirmation") {
+						else if (taStatus == "accepted" || taStatus == "admin-confirmation" || taStatus == "rejected") {
 							reportDAO.reportTAPrint(id).then(res => {
 								let result = juice(res);
 								resolve(res);
@@ -349,12 +349,11 @@ export class reportDAO{
 		})					
 	}
 
-	static printReport(data:Object){
+	static printReport(id:string, data:Object){
 		return new Promise((resolve:Function, reject:Function) => {
 			let body:any = data;
-			let report = body.report;
-			let pdfName = body.pdf_name;
-			let html = report;
+			let type = body.type;
+			let report;
 			var options = { 
 				"format": "A4",
 				"border": {
@@ -365,11 +364,64 @@ export class reportDAO{
 					}
 				};
 
-			pdf.create(html, options).toFile('./'+pdfName+'.pdf', function(err, res) {
-			  if (err) return console.log(err);
-			  resolve(res);
-			  console.log(res); 
-			});	
+			if(type == "loi"){
+				let pdfName = "testLoi";
+				this.reportLOIPrint(id)
+					.then(res => {
+						console.log(res);
+						pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
+						  if (err) return console.log(err);
+						  resolve(resultt);
+						  console.log(resultt); 
+						});
+					})
+					.catch(err => {
+						reject(err);
+					})
+			}
+			if(type == "ta"){
+				let pdfName = "testTA";
+				this.reportTAPrint(id)
+					.then(res => {
+						pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
+						  if (err) return console.log(err);
+						  resolve(resultt);
+						  console.log(resultt); 
+						});
+					})
+					.catch(err => {
+						reject(err);
+					})
+			}
+			// let report = body.report;
+			// let pdfName = body.pdf_name;
+			// let htmlString = fs.readFileSync(report).toString();;
+			// var options = { 
+			// 	"format": "A4",
+			// 	"border": {
+			// 		"top": "2cm",
+			// 		"right": "2cm",
+			// 		"bottom": "2cm",
+			// 		"left": "2cm"
+			// 		}
+			// 	};
+
+			// reportDAO.ReportData(id, type).then(result => {
+			// 	let data = result;
+			// 	report.replaceCode(htmlString, data)
+			// 		.then(res =>{
+			// 			resolve(res);
+			// 			pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
+			// 			  if (err) return console.log(err);
+			// 			  resolve(resultt);
+			// 			  console.log(resultt); 
+			// 			});
+			// 		})
+			// 		.catch(err => {
+			// 			reject(err)
+			// 		});
+			// })
+					
 		})					
 	}
 }
