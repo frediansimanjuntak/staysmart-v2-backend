@@ -659,19 +659,36 @@ usersSchema.static('blockUser', (id:string, userId:Object):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		if (!_.isObject(userId)) {
-			return reject(new TypeError('User Id is not a valid object.'));
-		}
-		Users
-			.findByIdAndUpdate(userId, {
-				$push: {
-					"blocked_users": id 
+		let idUser = userId.toString();
+		if(id == idUser){
+			reject({message: "Connot Block by yourself"})
+		} 
+		if(id != idUser){
+			Users
+			.find({"_id": userId, "blocked_users": {$in: [id]}})
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					if(res.length == 0){
+						Users
+							.findByIdAndUpdate(userId, {
+								$push: {
+									"blocked_users": id 
+								}
+							})
+							.exec((err, update) => {
+								err ? reject(err)
+									: resolve(update);
+							});
+					}
+					if(res.length >= 1){
+						resolve({message: "Already User"})
+					}
 				}
 			})
-			.exec((err, update) => {
-				err ? reject(err)
-					: resolve(update);
-			});
+		}				
 	});
 });
 
@@ -680,19 +697,30 @@ usersSchema.static('unblockUser', (id:string, userId:Object):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		if (!_.isObject(userId)) {
-			return reject(new TypeError('User Id is not a valid object.'));
-		}
 		Users
-			.findByIdAndUpdate(userId, {
-				$pull: {
-					"blocked_users": id
+			.find({"_id": userId, "blocked_users": {$in: [id]}})
+			.exec((err, res) => {
+				if(err){
+					reject(err);
 				}
-			})
-			.exec((err, update) => {
-				err ? reject(err)
-					: resolve(update);
-			});
+				if(res){
+					if(res.length == 0){
+						resolve({message: "Not found user in blocked list"})
+					}
+					if(res.length >= 1){
+						Users
+							.findByIdAndUpdate(userId, {
+								$pull: {
+									"blocked_users": id
+								}
+							})
+							.exec((err, update) => {
+								err ? reject(err)
+									: resolve(update);
+							});
+					}
+				}
+			})		
 	});
 });
 

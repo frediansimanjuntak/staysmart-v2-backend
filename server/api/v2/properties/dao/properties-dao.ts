@@ -241,6 +241,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
           .exec((err, result) => {
             err ? reject({message: err.message})
                 : resolve(result);
+                console.log(result);
           });
     });
 });
@@ -332,6 +333,12 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
 propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let body:any = properties;
+        console.log(body);
+        let propertyObj = {$set: {}};
+        for(var param in body) {
+          propertyObj.$set[param] = body[param];
+        }
+
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
             reject({message: res.message});
@@ -349,7 +356,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                   var type = 'data';
                   Properties.createPropertyHistory(id, action, type).then(history => {
                     Properties
-                      .findByIdAndUpdate(id, properties)
+                      .findByIdAndUpdate(id, propertyObj)
                       .exec((err, update) => {
                             if(err) {
                               reject({message: err.message});
