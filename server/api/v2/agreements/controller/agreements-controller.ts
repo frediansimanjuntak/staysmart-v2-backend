@@ -333,4 +333,21 @@ export class AgreementsController {
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static getCertificateStampDuty(req: express.Request, res: express.Response):void {
+		AgreementsDAO
+		['getCertificateStampDuty']()
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static transferToLandlord(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _data = req.body;
+
+		AgreementsDAO
+		['transferToLandlord'](_id, _data)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
 }

@@ -1989,6 +1989,137 @@ agreementsSchema.static('refundPayment', (id:string, data:Object):Promise<any> =
 	});
 });
 
+agreementsSchema.static('transferToLandlord', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		let body:any = data;
+		Agreements
+			.findById(id)
+			.exec((err, agreement) => {
+				if(err){
+					reject({message: err.message});
+				}
+				if(agreement){
+					let paymentLoi = agreement.letter_of_intent.data.payment;
+					let paymentTa = agreement.tenancy_agreement.data.payment;
+
+					Payments.transferLandlord(paymentLoi, data).then((res)=>{
+						Payments.transferLandlord(paymentTa, data).then((res)=>{
+							resolve({message: "success transfer to landlord"})
+						})
+						.catch((err) => {
+							reject({message: err.message});
+						})
+					})
+					.catch((err) => {
+						reject({message: err.message});
+					})
+				}
+			})
+	});
+});
+
+agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+
+		let _query = {$and: [{"letter_of_intent.data.status": "accepted"},{"tenancy_agreement.data.status": "accepted"}]};
+
+		Agreements
+			.find(_query)
+			.populate("property landlord tenant")
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					if(res.length == 0){
+						reject({message: "No Data"})
+					}
+					if(res.length<= 1){
+						let dataArr = [];
+						for(var i = 0; i < res.length; i++){
+							let result = res[i];
+							let ta = result.tenancy_agreement.data
+							let loi = result.	letter_of_intent.data;
+		                    let gfd = loi.gfd_amount;
+		                    let std = loi.sd_amount;
+		                    let scd = loi.security_deposit;
+		                    let stampFee = loi.sd_amount;   
+		                    let totalCollected = gfd + std + scd;
+		                    let monthlyRental = loi.monthly_rental;
+		                    let termLease = loi.term_lease;
+		                    let feeEarned;
+		                    if (termLease == 6){
+		                        feeEarned = 10/100 * (1/4 * monthlyRental);
+		                    }
+		                    if (termLease == 12){
+		                        feeEarned = 10/100 * (1/2 * monthlyRental);
+		                    }
+		                    if (termLease == 24){
+		                        feeEarned = 10/100 * (1 * monthlyRental);
+		                    }
+		                    let amountLandlord = totalCollected - stampFee - feeEarned;
+		                    let floor = result.property.address.floor;
+		                    let unit = result.property.address.unit;
+		                    let streetName = result.property.address.street_name;
+		                    let dateListed = result.property.confirmation.date;
+		                    let landlordName = result.landlord.username;
+		                    let tenantName = result.tenant.username;
+		                    let dateTaConcluded = ta.payment.attachment.payment_confirm.uploaded_at
+		                    let transferredLandlord;
+		                    let dateTransferredLandlord;
+		                    let transferReference;
+		                    if(loi.payment.transfer_landlord){
+		                    	transferredLandlord = loi.payment.transfer_landlord.transfer;
+			                    dateTransferredLandlord = loi.payment.transfer_landlord.date_transferred;
+			                    transferReference = loi.payment.transfer_landlord.attachment;
+		                    }		                    
+		                    let stampCertificate = ta.stamp_certificate;
+
+		                    let data = {
+		                    	"property": "# " + floor + " - " + unit + " " + streetName,
+		                    	"date_listed": dateListed,
+		                    	"landlord": landlordName,
+		                    	"tenant": tenantName,
+		                    	"rental": monthlyRental,
+		                    	"tenure": termLease,
+		                    	"dateTaConcluded": dateTaConcluded,
+		                    	"total_collected": totalCollected,
+		                    	"stamp_fee": stampFee,
+		                    	"fee_earned": feeEarned,
+		                    	"amount_transferred_landlord": amountLandlord,
+		                    	"transferred_landlord": transferredLandlord,
+		                    	"date_transffered": dateTransferredLandlord,
+		                    	"transfer_reference": transferReference,
+		                    	"stamp_certificate":stampCertificate
+		                    }
+		                    dataArr.push(data);
+						}					
+					resolve(dataArr)
+					}
+					
+				}
+			})
+	});
+});
+
 //notification
 agreementsSchema.static('notification', (id:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {

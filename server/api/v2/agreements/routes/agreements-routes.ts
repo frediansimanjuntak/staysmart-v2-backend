@@ -28,16 +28,6 @@ export class AgreementsRoutes {
 			.route('/agreements/update/:id')
 			.post(auth.isAuthenticated(), AgreementsController.updateAgreements);	
 
-		//Inventory List
-		router
-			.route('/inventorylist/:id')
-			.get(auth.isAuthenticated(), AgreementsController.getInventoryList)
-			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
-
-		router
-			.route('/inventorylist/tenant_checked/:id')
-			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
-		
 		//confirmation
 		router
 			.route('/agreement/confirmation/:id')
@@ -64,7 +54,17 @@ export class AgreementsRoutes {
 		router
 			.route('/agreement/payment/penalty/:id')
 			.post(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.penaltyPayment);
-					
+
+		//Inventory List
+		router
+			.route('/inventorylist/:id')
+			.get(auth.isAuthenticated(), AgreementsController.getInventoryList)
+			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
+
+		router
+			.route('/inventorylist/tenant_checked/:id')
+			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
+							
 		//LOI
 		router
 			.route('/loi/:id')
@@ -116,6 +116,15 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/stamp_certificate/:id')
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.stampCertificateTA);
+
+		//list certificate
+		router
+			.route('/list_certificate')
+			.get(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.getCertificateStampDuty);
+
+		router
+			.route('/transfer/landlord/:id')
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.transferToLandlord);
 
 		//odometer
 		router
