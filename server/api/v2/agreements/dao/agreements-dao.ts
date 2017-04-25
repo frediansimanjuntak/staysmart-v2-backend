@@ -17,7 +17,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate")
+			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id")
 			.populate({
 				path: 'landlord',
 				model: 'Users',
