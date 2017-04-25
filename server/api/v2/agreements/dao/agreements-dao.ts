@@ -128,7 +128,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('getAllAgreement', (userId:string, role:string):Promise<any> => {
+agreementsSchema.static('getAllAgreement', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {};
 		Agreements.getAgreement(_query).then(res => {
@@ -141,26 +141,14 @@ agreementsSchema.static('getAllAgreement', (userId:string, role:string):Promise<
 });
 
 agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		
-		if(role == "admin"){
-			let _query = {};
-			Agreements.getAgreement(_query).then(res => {
-				resolve(res);
-			})
-			.catch(err => {
-				reject({message: err.message});
-			})
-		}
-		else{
-			let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
-			Agreements.getAgreement(_query).then(res => {
-				resolve(res);
-			})
-			.catch(err => {
-				reject({message: err.message});
-			})
-		}
+	return new Promise((resolve:Function, reject:Function) => {		
+		let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
+		Agreements.getAgreement(_query).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject({message: err.message});
+		})
 	});
 });
 

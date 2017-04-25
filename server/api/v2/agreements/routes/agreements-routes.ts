@@ -12,6 +12,10 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.createAgreements);
 
 		router
+			.route('/agreements/all')
+			.get(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.getAllAgreement);
+
+		router
 			.route('/agreements/history')
 			.get(auth.isAuthenticated(), auth.hasRole("admin"), AgreementsController.getAllHistory);
 
