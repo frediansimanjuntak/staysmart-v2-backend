@@ -138,12 +138,9 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 				if(res){
 					resolve(res);
 				}
-				else{
-					reject({message: "error"});
-				}
 			})
 			.catch(err => {
-				reject({message: "error"});
+				reject({message: err.message});
 			})
 		}
 		else{
@@ -152,9 +149,9 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 				if(res){
 					resolve(res);
 				}
-				else{
-					reject({message: "error"});
-				}
+			})
+			.catch(err => {
+				reject({message: err.message});
 			})
 		}
 	});
@@ -2050,7 +2047,7 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 				}
 				if(res){
 					if(res.length == 0){
-						reject({message: "No Data"})
+						resolve(res)
 					}
 					if(res.length<= 1){
 						let dataArr = [];
