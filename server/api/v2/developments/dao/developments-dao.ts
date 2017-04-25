@@ -33,11 +33,7 @@ developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<a
                 if(dev[j].development._id == dev_data._id) {
                   count_match += 1;
                   dev_id = dev[j].development._id;
-                }
-                else{
-                  count_match = 0;
-                }
-                   
+                }                 
               }
               if(count_match > 0) {
                 for(var k = 0; k < dev.length; k++){

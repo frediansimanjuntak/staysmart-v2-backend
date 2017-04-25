@@ -8,7 +8,10 @@ var crypto = require('crypto')
 var Schema = mongoose.Schema;
 
 var AgreementsSchema = new mongoose.Schema({
-	room_id: {type: String},
+	room_id: {
+		type: Schema.Types.ObjectId,
+		ref: 'ChatRooms'
+	},
 	landlord: {
 		type: Schema.Types.ObjectId,
 		ref: 'Users'
