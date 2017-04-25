@@ -368,11 +368,15 @@ export class reportDAO{
 				let pdfName = "testLoi";
 				this.reportLOIPrint(id)
 					.then(res => {
-						console.log(res);
+						// console.log(res);
 						pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
-						  if (err) return console.log(err);
-						  resolve(resultt);
-						  console.log(resultt); 
+						  if (err){
+						  	reject(err)
+						  }
+						  if(resultt){
+						  	resolve(resultt);
+						 	console.log(resultt);
+						  }						   
 						});
 					})
 					.catch(err => {
@@ -384,44 +388,19 @@ export class reportDAO{
 				this.reportTAPrint(id)
 					.then(res => {
 						pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
-						  if (err) return console.log(err);
-						  resolve(resultt);
-						  console.log(resultt); 
+						  if (err){
+						  	reject(err)
+						  }
+						  if(resultt){
+						  	resolve(resultt);
+						 	console.log(resultt);
+						  } 
 						});
 					})
 					.catch(err => {
 						reject(err);
 					})
-			}
-			// let report = body.report;
-			// let pdfName = body.pdf_name;
-			// let htmlString = fs.readFileSync(report).toString();;
-			// var options = { 
-			// 	"format": "A4",
-			// 	"border": {
-			// 		"top": "2cm",
-			// 		"right": "2cm",
-			// 		"bottom": "2cm",
-			// 		"left": "2cm"
-			// 		}
-			// 	};
-
-			// reportDAO.ReportData(id, type).then(result => {
-			// 	let data = result;
-			// 	report.replaceCode(htmlString, data)
-			// 		.then(res =>{
-			// 			resolve(res);
-			// 			pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
-			// 			  if (err) return console.log(err);
-			// 			  resolve(resultt);
-			// 			  console.log(resultt); 
-			// 			});
-			// 		})
-			// 		.catch(err => {
-			// 			reject(err)
-			// 		});
-			// })
-					
+			}					
 		})					
 	}
 }
