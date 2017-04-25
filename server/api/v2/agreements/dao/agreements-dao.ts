@@ -128,6 +128,17 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	});
 });
 
+agreementsSchema.static('getAllAgreement', (userId:string, role:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let _query = {};
+		Agreements.getAgreement(_query).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject({message: err.message});
+		})
+	});
+});
 
 agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -135,9 +146,7 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 		if(role == "admin"){
 			let _query = {};
 			Agreements.getAgreement(_query).then(res => {
-				if(res){
-					resolve(res);
-				}
+				resolve(res);
 			})
 			.catch(err => {
 				reject({message: err.message});
@@ -146,9 +155,7 @@ agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
 		else{
 			let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
 			Agreements.getAgreement(_query).then(res => {
-				if(res){
-					resolve(res);
-				}
+				resolve(res);
 			})
 			.catch(err => {
 				reject({message: err.message});
@@ -163,13 +170,11 @@ agreementsSchema.static('getByUser', (userId:string, role:string):Promise<any> =
 
 		let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
 		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				resolve(res);
-			}
-			else{
-				reject({message: "error"});
-			}
+			resolve(res);
 		})		
+		.catch(err => {
+			reject({message: err.message});
+		})
 	});
 });
 
@@ -182,19 +187,17 @@ agreementsSchema.static('getById', (id:string, userId:string, role:string):Promi
 		let IDUser = userId.toString();
 		let _query = {"_id": id};
 		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				_.each(res, (result) => {
-					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
-						resolve(result);
-					}
-					else{
-						reject({message:"forbidden"});
-					}
-				})				 
-			}
-			else{
-				reject({message: "error"});
-			}
+			_.each(res, (result) => {
+				if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+					resolve(result);
+				}
+				else{
+					reject({message:"forbidden"});
+				}
+			})		
+		})
+		.catch(err => {
+			reject({message: err.message});
 		})
 	});
 });
@@ -203,12 +206,10 @@ agreementsSchema.static('getAllHistory', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {$and: [{"letter_of_intent.data.status": "accepted"},{"tenancy_agreement.data.status": "accepted"}]};
 		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				resolve(res);
-			}
-			else{
-				reject({message: "error"});
-			}
+			resolve(res);
+		})
+		.catch(err => {
+			reject({message: err.message});
 		})
 	});
 });
@@ -218,40 +219,38 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 
 		let _query = {};
 		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				var taDocs = res;
-				var savedComission = 12100;
-				_.each(taDocs, function(ta) {					
-					let taData = ta.tenancy_agreement.data;
-					let loiData = ta.letter_of_intent.data;
-					let n;
-					let x;
-					let cal;
-					if (taData.status == 'accepted') {
-					  if (!loiData.renewal) {
-					    x = loiData.monthly_rental;
-					    if (loiData.term_lease <= 12) {
-					      n = 12;
-					    } else {
-					      n = loiData.term_lease;
-					    }
-					    if (x <= 4000) {
-					      cal = n/24 * x *2;
-					    } else if (x > 4000) {
-					      cal = n/24 * x;
-					    }
-					    savedComission += cal;
-					  }
-					}
-					else{
-						savedComission = savedComission;
-					}
-				});
-				resolve({odometer: savedComission});
-			}
-			else{
-				reject({message: "error"});	
-			}
+			var taDocs = res;
+			var savedComission = 12100;
+			_.each(taDocs, function(ta) {					
+				let taData = ta.tenancy_agreement.data;
+				let loiData = ta.letter_of_intent.data;
+				let n;
+				let x;
+				let cal;
+				if (taData.status == 'accepted') {
+				  if (!loiData.renewal) {
+				    x = loiData.monthly_rental;
+				    if (loiData.term_lease <= 12) {
+				      n = 12;
+				    } else {
+				      n = loiData.term_lease;
+				    }
+				    if (x <= 4000) {
+				      cal = n/24 * x *2;
+				    } else if (x > 4000) {
+				      cal = n/24 * x;
+				    }
+				    savedComission += cal;
+				  }
+				}
+				else{
+					savedComission = savedComission;
+				}
+			});
+			resolve({odometer: savedComission});
+		})
+		.catch(err => {
+			reject({message: err.message});
 		})
 	});
 });
@@ -861,7 +860,7 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 						reject({message:"forbidden"});
 					}
 					else if(landlordId == IDUser){
-						if(agreement.appointment._id){
+						if(agreement.appointment){
 							Appointments
 								.findById(agreement.appointment._id)
 								.exec((err, res) => {
