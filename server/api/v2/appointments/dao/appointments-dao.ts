@@ -14,11 +14,11 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       Appointments
           .find(query)
-          .populate("agreement")
+          .populate("agreement room_id")
           .populate({
             path: 'landlord',
             model: 'Users',
-                  populate: {
+                  populate: {  
                     path: 'picture',
                     model: 'Attachments'
                   },

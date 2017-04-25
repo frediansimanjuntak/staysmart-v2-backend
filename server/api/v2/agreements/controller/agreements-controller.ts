@@ -2,6 +2,14 @@ import * as express from 'express';
 import AgreementsDAO from '../dao/agreements-dao';
 
 export class AgreementsController {
+	static getAllAgreement(req: express.Request, res: express.Response):void {		
+
+		AgreementsDAO
+		['getAllAgreement']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getAll(req: express.Request, res: express.Response):void {		
 		let _userId = req["user"]._id;
 		let _role = req["user"].role;
