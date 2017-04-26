@@ -2016,7 +2016,26 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 
 		Agreements
 			.find(_query)
-			.populate("property landlord tenant")
+			.populate("property landlord tenant tenancy_agreement.data.stamp_certificate")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'transfer_landlord.attachment',
+					model: 'Attachments'
+				}]
+			})
 			.populate({
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
@@ -2044,6 +2063,7 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 						let dataArr = [];
 						for(var i = 0; i < res.length; i++){
 							let result = res[i];
+							let idagreement = result._id;
 							let ta = result.tenancy_agreement.data
 							let loi = result.	letter_of_intent.data;
 		                    let gfd = loi.gfd_amount;
@@ -2073,15 +2093,26 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 		                    let dateTaConcluded = ta.payment.attachment.payment_confirm.uploaded_at
 		                    let transferredLandlord;
 		                    let dateTransferredLandlord;
-		                    let transferReference;
+		                    let transferReferenceLoi;
+		                    if(loi.payment.attachment.payment_confirm){
+		                    	transferReferenceLoi = loi.payment.attachment.payment_confirm;
+		                    }
+		                    let transferReferenceTa;
+		                    let attachmentTransferredLandlord;
+		                    if(ta.payment.attachment.payment_confirm){
+		                    	transferReferenceTa = ta.payment.attachment.payment_confirm;
+		                    }
 		                    if(loi.payment.transfer_landlord){
 		                    	transferredLandlord = loi.payment.transfer_landlord.transfer;
 			                    dateTransferredLandlord = loi.payment.transfer_landlord.date_transferred;
-			                    transferReference = loi.payment.transfer_landlord.attachment;
+			                    if(loi.payment.transfer_landlord.attachment){
+			                    	attachmentTransferredLandlord = loi.payment.transfer_landlord.attachment;
+			                    }			                    
 		                    }		                    
 		                    let stampCertificate = ta.stamp_certificate;
 
 		                    let data = {
+		                    	"idagreement": idagreement,
 		                    	"property": "# " + floor + " - " + unit + " " + streetName,
 		                    	"date_listed": dateListed,
 		                    	"landlord": landlordName,
@@ -2095,8 +2126,10 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 		                    	"amount_transferred_landlord": amountLandlord,
 		                    	"transferred_landlord": transferredLandlord,
 		                    	"date_transffered": dateTransferredLandlord,
-		                    	"transfer_reference": transferReference,
-		                    	"stamp_certificate":stampCertificate
+		                    	"transfer_reference_loi": transferReferenceLoi,
+		                    	"transfer_reference_ta": transferReferenceTa,
+		                    	"attachment_transfer_landlord": attachmentTransferredLandlord,
+		                    	"stamp_certificate": stampCertificate
 		                    }
 		                    dataArr.push(data);
 						}					
