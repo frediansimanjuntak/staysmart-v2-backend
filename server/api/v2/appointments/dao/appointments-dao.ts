@@ -225,7 +225,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                           })
                         }
                         if(res.length > 0){
-                          resolve({message: "Allready Appointment"})
+                          resolve({message: "Already Appointment"})
                         }
                       }
                     })                  

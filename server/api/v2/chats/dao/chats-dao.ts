@@ -49,7 +49,7 @@ chatsSchema.static('getChatRooms', (query:Object):Promise<any> => {
             })
             .exec((err, res) => {
                 err ? reject({message: err.message})
-                  : resolve(res);
+                    : resolve(res);
             })
     });
 });
@@ -58,12 +58,27 @@ chatsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
         ChatRooms.getChatRooms(_query).then(res => {
-            if(res){
-                resolve(res);
-            }
-            else{
-                reject({message: "error get data"});
-            }
+            resolve(res);
+        })
+        .catch((err) => {
+            reject({message: err.message});
+        })
+    });
+});
+
+chatsSchema.static('getById', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        let _query = {"_id": id};
+        ChatRooms.getChatRooms(_query).then(res => {
+            _.each(res, (result) => {
+                resolve(result);
+            })
+        })
+        .catch((err) => {
+            reject({message: err.message});
         })
     });
 });
@@ -73,12 +88,13 @@ chatsSchema.static('getByUser', (userId:string):Promise<any> => {
 
         let _query = {$or: [{"tenant": userId},{"landlord":userId},{"manager":userId}] };
         ChatRooms.getChatRooms(_query).then(res => {
-            if(res){
-                resolve(res);
-            }
-            else{
-                reject({message: "error get data"});
-            }
+            resolve(res);
+            // _.each(res, (result) => {
+            //     resolve(result);
+            // })
+        })
+        .catch((err) => {
+            reject({message: err.message});
         })        
     });
 });

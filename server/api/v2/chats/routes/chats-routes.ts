@@ -8,7 +8,7 @@ export class ChatsRoutes {
 	static init(router: express.Router) {
 		router
 			.route('/chats')
-			.get(auth.isAuthenticated(),ChatsController.getAll);
+			.get(auth.isAuthenticated(),ChatsController.getAll);		
 
 		router
 			.route('/chats/users')
@@ -69,5 +69,9 @@ export class ChatsRoutes {
 		router
 			.route('/chats/answer/:id/:option')
 			.post(auth.isAuthenticated(),ChatsController.postAnswer)
+
+		router
+			.route('/chats/:id')
+			.get(auth.isAuthenticated(),ChatsController.getById);
 	}
 }

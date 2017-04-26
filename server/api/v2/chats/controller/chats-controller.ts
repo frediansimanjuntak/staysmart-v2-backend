@@ -10,6 +10,15 @@ export class ChatsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getById(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		ChatsDAO
+		['getById'](_id)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getByUser(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id.toString();
 		ChatsDAO
