@@ -155,6 +155,10 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
             if(landlordId != tenantId){
               Agreements.createAgreements(data, tenant).then(res => {
                 let agreementId = res._id;
+                let roomId;
+                if(res.room_id){
+                  roomId = res.room_id;
+                }                
                 for(var i = 0; i < body.time.length; i++){
                   let timeFrom = body.time[i];
                   let timeTo = body.time2[i];
@@ -169,6 +173,9 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                           var _appointments = new Appointments(appointments);
                           _appointments.agreement = agreementId;
                           _appointments.landlord = landlordId;
+                          if(roomId){
+                            _appointments.room_id = roomId;
+                          }
                           _appointments.tenant = tenantId;
                           _appointments.chosen_time.date = body.date;
                           _appointments.chosen_time.from = timeFrom;
@@ -180,6 +187,10 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                             }
                             else if(saved){
                               let appointmentId = saved._id;
+                              let roomChatId;
+                              if(saved.room_id){
+                                roomChatId = saved.room_id;
+                              }
                               Appointments
                                 .findById(appointmentId)
                                 .populate("landlord tenant")
@@ -208,7 +219,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                   var from = 'Staysmart';
 
                                   mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                                  resolve({appointment_id: appointmentId, message: 'appoinment proposed'});
+                                  resolve({appointment_id: appointmentId, room_id: roomChatId, message: 'appoinment proposed'});
                                 })                 
                             }
                           })
