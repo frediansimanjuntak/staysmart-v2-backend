@@ -73,13 +73,24 @@ appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
         var ObjectID = mongoose.Types.ObjectId;  
         let _query = {};
         Appointments.getAppointment(_query).then(res => {
-          if(res){
             resolve(res);
-          }
-          else{
-            let message = {message: "error"}
-            reject(message);
-          }
+        })
+        .catch((err)=>{
+            reject(err.message);
+        })        
+    });
+});
+
+appointmentsSchema.static('getByProperty', (idproperty:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        var ObjectID = mongoose.Types.ObjectId;  
+        let _query = {"property": idproperty};
+        Appointments.getAppointment(_query).then(res => {
+            resolve(res);
+        })
+        .catch((err)=>{
+            reject(err.message);
         })        
     });
 });
@@ -90,14 +101,10 @@ appointmentsSchema.static('getByUser', (userId:string):Promise<any> => {
         var ObjectID = mongoose.Types.ObjectId;  
         let _query = {$or: [{"landlord": ObjectID(userId)}, {"tenant": ObjectID(userId)}]};
         Appointments.getAppointment(_query).then(res => {
-          if(res){
             resolve(res);
-          }
-          else{
-            let message = {message: "error"}
-            reject(message);
-            newrelic.noticeError(message);
-          }
+        })
+        .catch((err)=>{
+            reject(err.message);
         })        
     });
 });
@@ -111,21 +118,17 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
         let IDUser = userId.toString();
         let _query = {"_id": id};
         Appointments.getAppointment(_query).then(res => {
-          if(res){
-            _.each(res, function(result){
-              if(result.landlord._id == IDUser || result.tenant._id == IDUser){
-                resolve(result);
-              }
-              else{
-                reject({message:"forbidden"});
-              } 
-            })           
-          }
-          else{
-            let message = {message: "error"}
-            reject(message);
-            newrelic.noticeError(message);
-          }
+          _.each(res, function(result){
+            if(result.landlord._id == IDUser || result.tenant._id == IDUser){
+              resolve(result);
+            }
+            else{
+              reject({message:"forbidden"});
+            } 
+          }) 
+        })
+        .catch((err)=>{
+            reject(err.message);
         }) 
     });
 });
@@ -225,7 +228,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                           })
                         }
                         if(res.length > 0){
-                          resolve({message: "Allready Appointment"})
+                          resolve({message: "Already Appointment"})
                         }
                       }
                     })                  

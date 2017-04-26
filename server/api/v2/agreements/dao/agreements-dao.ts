@@ -299,7 +299,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 											_.each(agreement, (res) => {
 												let roomId;
 												if(res.room_id){
-													roomId == res.room_id;
+													roomId = res.room_id;
 												}
 												resolve({_id: res._id, room_id: roomId, message: "agreement has been made"})
 											})											
@@ -441,10 +441,6 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 		let body:any = data;
-
-		if (!_.isNumeric(body.monthly_rental) || !_.isNumeric(body.term_lease)) {
-			return reject(new TypeError('Is not a valid number.'));
-		}		
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
 		let IDUser = userId.toString();

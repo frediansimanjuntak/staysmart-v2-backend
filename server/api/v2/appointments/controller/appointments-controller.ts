@@ -17,6 +17,15 @@ export class AppointmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getByProperty(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AppointmentsDAO
+		['getByProperty'](_id)
+		.then(appointments => res.status(200).json(appointments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
