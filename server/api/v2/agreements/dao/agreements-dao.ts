@@ -297,7 +297,11 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 										}
 										else if(agreement.length > 0){
 											_.each(agreement, (res) => {
-												resolve({_id: res._id, message: "agreement has been made"})
+												let roomId;
+												if(res.room_id){
+													roomId == res.room_id;
+												}
+												resolve({_id: res._id, room_id: roomId, message: "agreement has been made"})
 											})											
 										}
 									}							
@@ -437,6 +441,10 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 		let body:any = data;
+
+		if (!_.isNumeric(body.monthly_rental) || !_.isNumeric(body.term_lease)) {
+			return reject(new TypeError('Is not a valid number.'));
+		}		
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
@@ -2036,7 +2044,7 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 					if(res.length == 0){
 						resolve(res)
 					}
-					if(res.length<= 1){
+					if(res.length >= 1){
 						let dataArr = [];
 						for(var i = 0; i < res.length; i++){
 							let result = res[i];
