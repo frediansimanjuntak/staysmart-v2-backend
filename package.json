@@ -57,6 +57,7 @@
     "serve-favicon": "^2.3.2",
     "sha256": "^0.2.0",
     "slug": "^0.9.1",
+    "socket.io": "^1.7.3",
     "split-string": "^1.0.0"
   },
   "devDependencies": {
