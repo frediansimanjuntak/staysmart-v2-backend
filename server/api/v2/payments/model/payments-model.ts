@@ -14,8 +14,8 @@ var PaymentsSchema = new mongoose.Schema({
 			name: {type: String},
 			amount: {type: Number},
 			received_amount: {type: Number},
-			needed_refund: {type: Boolean},			
-			refunded: {type: Boolean},
+			needed_refund: {type: Boolean, default: false},			
+			refunded: {type: Boolean, default: false},
 			created_at: {type: Date},
 			updated_at: {type: Date}
 		}

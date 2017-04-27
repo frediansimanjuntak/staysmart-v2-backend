@@ -12,6 +12,7 @@ import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import {mail} from '../../../../email/mail';
 
+var io = require('socket.io')();
 
 agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -133,6 +134,8 @@ agreementsSchema.static('getAllAgreement', ():Promise<any> => {
 		let _query = {};
 		Agreements.getAgreement(_query).then(res => {
 			resolve(res);
+			io.sockets.emit('an event sent to all connected clients');
+			io.emit('an event sent to all connected clients');
 		})
 		.catch(err => {
 			reject({message: err.message});
@@ -1269,66 +1272,87 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 		console.log(body);
 
 		Agreements
-			.findById(id, (err, agreement) => {
-				let loiData = agreement.letter_of_intent.data;
-				let gfd = loiData.gfd_amount;
-				let std = loiData.sd_amount;
-				let scd = loiData.security_deposit;
-
-				if(type == "letter_of_intent"){
-					paymentFee = [{
-						"code_name": "std",
-						"name": "Stamp Duty",
-						"amount": std, 
-						"needed_refund": false, 
-						"refunded": false,
-						"created_at": new Date()
-					},
-					{
-						"code_name": "gfd",
-						"name": "Good Faith Deposit",
-						"amount": gfd, 
-						"needed_refund": false, 
-						"refunded": false,
-						"created_at": new Date()
-					}];
-					paymentType = "loi";
+			.findById(id)
+			.exec((err, agreement) => {
+				if(err){
+					reject(err);
 				}
-				else if (type ==  "tenancy_agreement"){
-					paymentFee = [{
-						"code_name": "scd",
-						"name": "Security Deposit",
-						"amount": scd, 
-						"needed_refund": false, 
-						"refunded": false,
-						"created_at": new Date()
-					}];
-					paymentType = "ta";
+				if(agreement){
+					let loiData = agreement.letter_of_intent.data;
+					let taData = agreement.tenancy_agreement.data;
+					let gfd = loiData.gfd_amount;
+					let std = loiData.sd_amount;
+					let scd = loiData.security_deposit;
+							
+					if(type == "letter_of_intent"){
+						if(loiData.payment){
+							resolve({message: "Already Payment"});									
+						}
+						if(!loiData.payment){
+								paymentFee = [{
+								"code_name": "std",
+								"name": "Stamp Duty",
+								"amount": std, 
+								"needed_refund": false, 
+								"refunded": false,
+								"created_at": new Date()
+							},
+							{
+								"code_name": "gfd",
+								"name": "Good Faith Deposit",
+								"amount": gfd, 
+								"needed_refund": false, 
+								"refunded": false,
+								"created_at": new Date()
+							}];
+							paymentType = "loi";
+						}
+					}
+					if (type ==  "tenancy_agreement"){
+						if(taData.payment){
+							resolve({message: "Already Payment"});
+						}
+						if(!taData.payment){
+							paymentFee = [{
+								"code_name": "scd",
+								"name": "Security Deposit",
+								"amount": scd, 
+								"needed_refund": false, 
+								"refunded": false,
+								"created_at": new Date()
+							}];
+							paymentType = "ta";
+						}
+					}
+					var _payment = new Payments();
+					_payment.fee = paymentFee;
+					_payment.type = paymentType;
+					_payment.attachment.payment = body.attachment;
+					_payment.status = "pending";
+					_payment.save((err, saved)=>{
+						if(err){
+							reject(err);
+						}
+						if(saved){
+							var paymentId = saved._id;
+							if (type ==  "tenancy_agreement"){
+								payObj.$set["tenancy_agreement.data.payment"] = paymentId;
+								payObj.$set["tenancy_agreement.data.status"] = "admin-confirmation";
+							}
+							if(type == "letter_of_intent"){
+								payObj.$set["letter_of_intent.data.payment"] = paymentId;
+								payObj.$set["letter_of_intent.data.status"] = "pending";
+							}
+							Agreements
+								.findByIdAndUpdate(id, payObj)
+								.exec((err, updated) => {
+						      		err ? reject({message: err.message})
+						      			: resolve({payment_id: saved._id, message:"payment created"});
+						      	});
+						}
+					})											
 				}
-				var _payment = new Payments();
-				_payment.type = paymentType;
-				_payment.fee = paymentFee;
-				_payment.attachment.payment = body.attachment;
-				_payment.status = "pending";
-				_payment.save();	
-
-				var paymentId = _payment._id;
-				if(type == "letter_of_intent"){
-					payObj.$set["letter_of_intent.data.payment"] = paymentId;
-					payObj.$set["letter_of_intent.data.status"] = "pending";
-				}
-				else if (type ==  "tenancy_agreement"){
-					payObj.$set["tenancy_agreement.data.payment"] = paymentId;
-					payObj.$set["tenancy_agreement.data.status"] = "admin-confirmation";
-				}
-
-				Agreements
-					.findByIdAndUpdate(id, payObj)
-					.exec((err, updated) => {
-			      		err ? reject({message: err.message})
-			      			: resolve(updated);
-			      	});	
-			})		
+			})	
 	});
 });
 

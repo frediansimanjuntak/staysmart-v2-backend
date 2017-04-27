@@ -138,7 +138,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             path: 'picture',
             model: 'Attachments'
           },
-          select: 'username email picture landlord.data.name tenant.data.name'
+          select: 'username email phone picture landlord.data.name tenant.data.name'
         })
         property.populate({
           path: 'amenities',
@@ -173,7 +173,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
               path: 'landlord.data.identification_proof.back',
               model: 'Attachments' 
             }],
-            select: 'username email picture landlord.data reported'
+            select: 'username email phone picture landlord.data reported'
           })
           .populate({
               path: 'owner.company',
@@ -216,7 +216,7 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
               path: 'picture',
               model: 'Attachments'
             },
-            select: 'username email picture landlord.data.name tenant.data.name'
+            select: 'username email phone picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
             err ? reject({message: err.message})
@@ -236,7 +236,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
               path: 'picture',
               model: 'Attachments'
             },
-            select: 'username email picture landlord.data.name tenant.data.name'
+            select: 'username email phone picture landlord.data.name tenant.data.name'
           })
           .exec((err, result) => {
             err ? reject({message: err.message})
