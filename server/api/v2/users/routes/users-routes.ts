@@ -42,7 +42,7 @@ export class UserRoutes {
 
 		router
 			.route('/users/verification_code/:id')
-			.get(auth.isAuthenticated(), UsersController.sendActivationCode);
+			.post(auth.isAuthenticated(), UsersController.sendActivationCode);
 
 		router
 			.route('/users/unactive/:id')

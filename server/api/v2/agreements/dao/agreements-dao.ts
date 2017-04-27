@@ -206,40 +206,44 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 
 		let _query = {};
-		Agreements.getAgreement(_query).then(res => {
-			var taDocs = res;
-			var savedComission = 12100;
-			_.each(taDocs, function(ta) {					
-				let taData = ta.tenancy_agreement.data;
-				let loiData = ta.letter_of_intent.data;
-				let n;
-				let x;
-				let cal;
-				if (taData.status == 'accepted') {
-				  if (!loiData.renewal) {
-				    x = loiData.monthly_rental;
-				    if (loiData.term_lease <= 12) {
-				      n = 12;
-				    } else {
-				      n = loiData.term_lease;
-				    }
-				    if (x <= 4000) {
-				      cal = n/24 * x *2;
-				    } else if (x > 4000) {
-				      cal = n/24 * x;
-				    }
-				    savedComission += cal;
-				  }
+		Agreements
+			.find(_query)
+			.exec((err, res)=> {
+				if(err){
+					reject(err);
 				}
-				else{
-					savedComission = savedComission;
+				if(res){
+					var taDocs = res;
+					var savedComission = 12100;
+					_.each(taDocs, function(ta) {					
+						let taData = ta.tenancy_agreement.data;
+						let loiData = ta.letter_of_intent.data;
+						let n;
+						let x;
+						let cal;
+						if (taData.status == 'accepted') {
+						  if (!loiData.renewal) {
+						    x = loiData.monthly_rental;
+						    if (loiData.term_lease <= 12) {
+						      n = 12;
+						    } else {
+						      n = loiData.term_lease;
+						    }
+						    if (x <= 4000) {
+						      cal = n/24 * x *2;
+						    } else if (x > 4000) {
+						      cal = n/24 * x;
+						    }
+						    savedComission += cal;
+						  }
+						}
+						else{
+							savedComission = savedComission;
+						}
+					});
+					resolve({odometer: savedComission});
 				}
-			});
-			resolve({odometer: savedComission});
-		})
-		.catch(err => {
-			reject({message: err.message});
-		})
+			})
 	});
 });
 
