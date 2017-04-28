@@ -1376,11 +1376,11 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 							var paymentId = saved._id;
 							if (type ==  "tenancy_agreement"){
 								payObj.$set["tenancy_agreement.data.payment"] = paymentId;
-								payObj.$set["tenancy_agreement.data.status"] = "admin-confirmation";
+								// payObj.$set["tenancy_agreement.data.status"] = "admin-confirmation";
 							}
 							if(type == "letter_of_intent"){
 								payObj.$set["letter_of_intent.data.payment"] = paymentId;
-								payObj.$set["letter_of_intent.data.status"] = "pending";
+								// payObj.$set["letter_of_intent.data.status"] = "pending";
 							}
 							Agreements
 								.findByIdAndUpdate(id, payObj)
@@ -1550,117 +1550,91 @@ agreementsSchema.static('processPayment', (id:string, data:Object):Promise<any> 
 					let std = loiData.sd_amount;
 					let scd = loiData.security_deposit;
 					if(type == "letter_of_intent"){
-						agreement.letter_of_intent.data.status = body.status_loi;
-						paymentID = loiData.payment;
-						totalFee = std + gfd;
-						totalReceive = receive_payment;
+						if(loiData.status == "draft"){
+							resolve({message: "LOI status is draft"})
+						}
+						else{
+							agreement.letter_of_intent.data.status = body.status_loi;
+							paymentID = loiData.payment;
+							totalFee = std + gfd;
+							totalReceive = receive_payment;
 
-						Payments
-						.findById(paymentID)
-						.exec((err, res) => {
-							if(err){
-								reject(err)
-							}
-							if(res){
-								console.log(res);
-								if(res.status == "rejected" || res.status == "accepted"){
-									resolve({message: "Allready Accept or Reject this Payment"});
+							Payments
+							.findById(paymentID)
+							.exec((err, res) => {
+								if(err){
+									reject(err)
 								}
-								if(res.status == "pending"){
-									Payments
-										.findOne({"_id": paymentID})
-										.select({"fee": {$elemMatch: {"code_name": "std"}}})
-										.exec((err, payment) => {
-											if(payment){
-												let fee1 = [].concat(payment.fee);
-												for(var i = 0; i < fee1.length; i++ ){
-													let _fee1 = fee1[i];
-													feeStd = _fee1.amount;
-													idStd = _fee1._id;
+								if(res){
+									console.log(res);
+									if(res.status == "rejected" || res.status == "accepted"){
+										resolve({message: "Allready Accept or Reject this Payment"});
+									}
+									if(res.status == "pending"){
+										Payments
+											.findOne({"_id": paymentID})
+											.select({"fee": {$elemMatch: {"code_name": "std"}}})
+											.exec((err, payment) => {
+												if(payment){
+													let fee1 = [].concat(payment.fee);
+													for(var i = 0; i < fee1.length; i++ ){
+														let _fee1 = fee1[i];
+														feeStd = _fee1.amount;
+														idStd = _fee1._id;
+													}
 												}
-											}
-											Payments
-												.findOne({"_id": paymentID})
-												.select({"fee": {$elemMatch: {"code_name": "gfd"}}})
-												.exec((err, paymentt) => {
-													if(paymentt){
-														let fee2 = [].concat(paymentt.fee);
-														for(var j = 0; j < fee2.length; j++ ){
-															let _fee2 = fee2[j];
-															feeGfd = _fee2.amount;
-															idGfd = _fee2._id;
+												Payments
+													.findOne({"_id": paymentID})
+													.select({"fee": {$elemMatch: {"code_name": "gfd"}}})
+													.exec((err, paymentt) => {
+														if(paymentt){
+															let fee2 = [].concat(paymentt.fee);
+															for(var j = 0; j < fee2.length; j++ ){
+																let _fee2 = fee2[j];
+																feeGfd = _fee2.amount;
+																idGfd = _fee2._id;
+															}
 														}
-													}
-													if (feeGfd <= feeStd){
-														receivePaymentGfd = feeGfd;
-														reducePaymentGfd = receive_payment - receivePaymentGfd;
-														reducePaymentStd = reducePaymentGfd - feeStd;
-														if (reducePaymentStd > 0){
-															receivePaymentStd = feeStd;
-															refundPayment = reducePaymentGfd - receivePaymentStd;
-														}
-														if (reducePaymentStd < 0){
-															receivePaymentStd = reducePaymentGfd;
-														}
-													}
-													else{
-														receivePaymentStd = feeStd;
-														reducePaymentStd = receive_payment - receivePaymentStd;
-														reducePaymentGfd = reducePaymentStd - feeGfd; 
-														if (reducePaymentGfd > 0){
+														if (feeGfd <= feeStd){
 															receivePaymentGfd = feeGfd;
-															refundPayment = reducePaymentStd - receivePaymentGfd;
+															reducePaymentGfd = receive_payment - receivePaymentGfd;
+															reducePaymentStd = reducePaymentGfd - feeStd;
+															if (reducePaymentStd > 0){
+																receivePaymentStd = feeStd;
+																refundPayment = reducePaymentGfd - receivePaymentStd;
+															}
+															if (reducePaymentStd < 0){
+																receivePaymentStd = reducePaymentGfd;
+															}
 														}
-														if (reducePaymentGfd < 0){
-															receivePaymentGfd = reducePaymentStd;
+														else{
+															receivePaymentStd = feeStd;
+															reducePaymentStd = receive_payment - receivePaymentStd;
+															reducePaymentGfd = reducePaymentStd - feeGfd; 
+															if (reducePaymentGfd > 0){
+																receivePaymentGfd = feeGfd;
+																refundPayment = reducePaymentStd - receivePaymentGfd;
+															}
+															if (reducePaymentGfd < 0){
+																receivePaymentGfd = reducePaymentStd;
+															}
 														}
-													}
-													var data ={
-														"paymentID": paymentID,
-														"idStd": idStd,
-														"idGfd": idGfd,									
-														"receivePaymentStd": receivePaymentStd,
-														"receivePaymentGfd": receivePaymentGfd,
-														"payment_confirm": body.payment_confirm,
-														"refundPayment": refundPayment,
-														"typeInput": "loi",
-														"status": body.status_payment,
-														"remarks": body.remarks
-													}					
-													if(totalReceive - totalFee == 0)
-													{	
-														Agreements.feeUpdate(data).then(res => {
-															let statusLoi = body.status_loi;
-															Agreements.paymentConfirmedLoi(id, statusLoi);
-															let type_notif = body.type_notif;
-															Agreements.notification(id, type_notif);
-															let typeMail = body.type_mail;
-															Agreements.email(id, typeMail).then(res => {
-																resolve({message: "success"});
-															})								
-														});									
-													}
-													if (totalReceive - totalFee >= 1){									
-														Agreements.feeUpdate(data).then (res => {
-															Agreements.addRefund(data).then (res => {
-																let statusLoi = body.status_loi
-																Agreements.paymentConfirmedLoi(id, statusLoi);
-																let type_notif = body.type_notif;
-																Agreements.notification(id, type_notif);
-																let typeMail = body.type_mail;
-																Agreements.email(id, typeMail).then(res => {
-																	resolve({message: "success"});
-																})
-															});											
-														});	
-													}
-													if (totalReceive - totalFee < 0){
-														if(body.status_payment == "accepted"){
-															resolve({message: "sorry can not accept this payment"})
-														}
-														if(body.status_payment == "rejected"){
+														var data ={
+															"paymentID": paymentID,
+															"idStd": idStd,
+															"idGfd": idGfd,									
+															"receivePaymentStd": receivePaymentStd,
+															"receivePaymentGfd": receivePaymentGfd,
+															"payment_confirm": body.payment_confirm,
+															"refundPayment": refundPayment,
+															"typeInput": "loi",
+															"status": body.status_payment,
+															"remarks": body.remarks
+														}					
+														if(totalReceive - totalFee == 0)
+														{	
 															Agreements.feeUpdate(data).then(res => {
-																let statusLoi = body.status_loi
+																let statusLoi = body.status_loi;
 																Agreements.paymentConfirmedLoi(id, statusLoi);
 																let type_notif = body.type_notif;
 																Agreements.notification(id, type_notif);
@@ -1668,99 +1642,135 @@ agreementsSchema.static('processPayment', (id:string, data:Object):Promise<any> 
 																Agreements.email(id, typeMail).then(res => {
 																	resolve({message: "success"});
 																})								
-															});
+															});									
 														}
-													}
-												});															
-										});
-								}			
-							}
-						})
+														if (totalReceive - totalFee >= 1){									
+															Agreements.feeUpdate(data).then (res => {
+																Agreements.addRefund(data).then (res => {
+																	let statusLoi = body.status_loi
+																	Agreements.paymentConfirmedLoi(id, statusLoi);
+																	let type_notif = body.type_notif;
+																	Agreements.notification(id, type_notif);
+																	let typeMail = body.type_mail;
+																	Agreements.email(id, typeMail).then(res => {
+																		resolve({message: "success"});
+																	})
+																});											
+															});	
+														}
+														if (totalReceive - totalFee < 0){
+															if(body.status_payment == "accepted"){
+																resolve({message: "sorry can not accept this payment"})
+															}
+															if(body.status_payment == "rejected"){
+																Agreements.feeUpdate(data).then(res => {
+																	let statusLoi = body.status_loi
+																	Agreements.paymentConfirmedLoi(id, statusLoi);
+																	let type_notif = body.type_notif;
+																	Agreements.notification(id, type_notif);
+																	let typeMail = body.type_mail;
+																	Agreements.email(id, typeMail).then(res => {
+																		resolve({message: "success"});
+																	})								
+																});
+															}
+														}
+													});															
+											});
+									}			
+								}
+							})
+						}						
 					}
 					if(type == "tenancy_agreement"){
-						agreement.tenancy_agreement.data.status = body.status_ta;
-						paymentID = taData.payment;
-						totalFee = scd;
-						totalReceive = receive_payment;
-						Payments
-						.findById(paymentID)
-						.exec((err, res) => {
-							if(err){
-								reject(err)
-							}
-							if(res){
-								if(res.status == "rejected" || res.status == "accepted"){
-									resolve({message: "Allready Accept or Reject this Payment"});
-								}
-								if(res.status == "pending"){
-									Payments
-										.findOne({"_id": paymentID})
-										.select({"fee": {$elemMatch: {"code_name": "scd"}}})
-										.exec((err, paymenttt) => {
-											let fee3 = [].concat(paymenttt.fee);
-											for(var k = 0; k < fee3.length; k++ ){
-												let _fee3 = fee3[k];
-												feeScd = _fee3.amount;
-												idScd = _fee3._id;
-											}
-											if (feeScd != 0){
-												receivePaymentScd = feeScd;
-												reducePaymentScd = receive_payment - receivePaymentScd;
-												if (reducePaymentScd > 0){
-													refundPayment = reducePaymentScd;
-												}
-											}
-											var data ={
-												"paymentID": paymentID,
-												"idScd": idScd,
-												"receivePaymentScd": receivePaymentScd,
-												"payment_confirm": body.payment_confirm,
-												"refundPayment": refundPayment,
-												"typeInput": "ta",
-												"status": body.status_payment,
-												"remarks": body.remarks
-											}					
-											if(totalReceive - totalFee == 0)
-											{	
-												Agreements.feeUpdate(data).then(res => {
-													let typeMail = body.type_mail;
-													let type_notif = body.type_notif;
-													Agreements.notification(id, type_notif);
-													Agreements.email(id, typeMail).then(res => {
-														resolve({message: "success"});
-													})
-												});									
-											}
-											if (totalReceive - totalFee >= 1){									
-												Agreements.feeUpdate(data).then(res => {
-													Agreements.addRefund(data);	
-													let type_notif = body.type_notif;
-													Agreements.notification(id, type_notif);
-													let typeMail = body.type_mail;
-													Agreements.email(id, typeMail).then(res => {
-														resolve({message: "success"});
-													})
-												});																			
-											}
-											if (totalReceive - totalFee < 0){
-												if(body.status_payment == "accepted"){
-													resolve({message: "sorry can not accept this payment"})
-												}
-												if(body.status_payment == "rejected"){
-													Agreements.feeUpdate(data).then(res => {
-														let typeMail = body.type_mail;
-														let type_notif = body.type_notif;
-														Agreements.notification(id, type_notif);
-														Agreements.email(id, typeMail).then(res => {
-															resolve({message: "success"});
-														})
-													});	
-												}
-											}
-										});	
-								}		
-							}
-						})
+						if(taData.status == "draft"){
+							resolve({message: "TA status is draft"})
+						}
+						else{
+							agreement.tenancy_agreement.data.status = body.status_ta;
+							paymentID = taData.payment;
+							totalFee = scd;
+							totalReceive = receive_payment;
+							Payments
+								.findById(paymentID)
+								.exec((err, res) => {
+									if(err){
+										reject(err)
+									}
+									if(res){
+										if(res.status == "rejected" || res.status == "accepted"){
+											resolve({message: "Allready Accept or Reject this Payment"});
+										}
+										if(res.status == "pending"){
+											Payments
+												.findOne({"_id": paymentID})
+												.select({"fee": {$elemMatch: {"code_name": "scd"}}})
+												.exec((err, paymenttt) => {
+													let fee3 = [].concat(paymenttt.fee);
+													for(var k = 0; k < fee3.length; k++ ){
+														let _fee3 = fee3[k];
+														feeScd = _fee3.amount;
+														idScd = _fee3._id;
+													}
+													if (feeScd != 0){
+														receivePaymentScd = feeScd;
+														reducePaymentScd = receive_payment - receivePaymentScd;
+														if (reducePaymentScd > 0){
+															refundPayment = reducePaymentScd;
+														}
+													}
+													var data ={
+														"paymentID": paymentID,
+														"idScd": idScd,
+														"receivePaymentScd": receivePaymentScd,
+														"payment_confirm": body.payment_confirm,
+														"refundPayment": refundPayment,
+														"typeInput": "ta",
+														"status": body.status_payment,
+														"remarks": body.remarks
+													}					
+													if(totalReceive - totalFee == 0)
+													{	
+														Agreements.feeUpdate(data).then(res => {
+															let typeMail = body.type_mail;
+															let type_notif = body.type_notif;
+															Agreements.notification(id, type_notif);
+															Agreements.email(id, typeMail).then(res => {
+																resolve({message: "success"});
+															})
+														});									
+													}
+													if (totalReceive - totalFee >= 1){									
+														Agreements.feeUpdate(data).then(res => {
+															Agreements.addRefund(data);	
+															let type_notif = body.type_notif;
+															Agreements.notification(id, type_notif);
+															let typeMail = body.type_mail;
+															Agreements.email(id, typeMail).then(res => {
+																resolve({message: "success"});
+															})
+														});																			
+													}
+													if (totalReceive - totalFee < 0){
+														if(body.status_payment == "accepted"){
+															resolve({message: "sorry can not accept this payment"})
+														}
+														if(body.status_payment == "rejected"){
+															Agreements.feeUpdate(data).then(res => {
+																let typeMail = body.type_mail;
+																let type_notif = body.type_notif;
+																Agreements.notification(id, type_notif);
+																Agreements.email(id, typeMail).then(res => {
+																	resolve({message: "success"});
+																})
+															});	
+														}
+													}
+												});	
+										}		
+									}
+								})
+						}						
 					}
 					agreement.save((err, saved) => {
 			      		err ? reject({message: err.message})
@@ -1784,6 +1794,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 		let typeMail;
 		let statusTa;
 		let statusLoi;
+
 		if(type == "letter_of_intent"){
 			typeMail = "acceptLoiPayment";
 			type_notif = "acceptLoiPayment";
