@@ -647,21 +647,28 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 			.findById(id)
 			.populate("landlord tenant property")
 			.exec((err, agreement) => {
-				let landlordId = agreement.landlord._id;
-				if (landlordId != IDUser){
+				let landlordId
+				if(agreement.landlord){
+					landlordId = agreement.landlord._id;
+					if (landlordId != IDUser){
+						resolve({message: "forbidden"});
+					}
+					else if(landlordId == IDUser){
+						agreement.letter_of_intent.data.status = "accepted";
+						agreement.save((err, saved) => {
+							Agreements.confirmation(id, data, type)
+							Agreements.notification(id, type_notif).then(res => {
+								let typeMail = "acceptedLoiLandlord";
+								Agreements.email(id, typeMail);
+								resolve(saved);
+							});
+						})
+					}
+				}	
+				else{
 					resolve({message: "forbidden"});
-				}
-				else if(landlordId == IDUser){
-					agreement.letter_of_intent.data.status = "accepted";
-					agreement.save((err, saved) => {
-						Agreements.confirmation(id, data, type)
-						Agreements.notification(id, type_notif).then(res => {
-							let typeMail = "acceptedLoiLandlord";
-							Agreements.email(id, typeMail);
-							resolve(saved);
-						});
-					})
-				}
+				}			
+				
 			})			
 	});
 });
