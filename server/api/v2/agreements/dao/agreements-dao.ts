@@ -1002,9 +1002,14 @@ agreementsSchema.static('rejectTA', (id:string, userId:string, role:string, ta:O
 						reject({message:"forbidden"});
 					}
 					if(tenantId == IDUser || role == "admin"){
-						let payment = agreement.tenancy_agreement.data.payment._id;
-						let paymentStatus = agreement.tenancy_agreement.data.payment.status;
-						let paymentFee = agreement.tenancy_agreement.data.payment.fee;
+						let payment;
+						let paymentStatus;
+						let paymentFee
+						if(agreement.tenancy_agreement.data.payment){
+							payment = agreement.tenancy_agreement.data.payment._id;
+							paymentStatus = agreement.tenancy_agreement.data.payment.status;
+							paymentFee = agreement.tenancy_agreement.data.payment.fee;
+						}						
 						let agreementStatus = agreement.status;
 						if(agreementStatus = "admin-confirmation"){
 							if(paymentStatus == "accepted" || paymentStatus == "pending"){

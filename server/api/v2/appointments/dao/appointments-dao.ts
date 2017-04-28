@@ -146,7 +146,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
           if(err){
             reject({message: err.message});
           }
-          else{
+          if(property){
             let landlordId = property.owner.user._id;
             let propertyId = property._id;
             let data = {
@@ -205,24 +205,29 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                   },
                                 })
                                 .exec((err, appointment) => {
-                                  var devID = appointment.property.development;
-                                  var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
-                                  
-                                  var notification = {
-                                    "user": body.landlord,
-                                    "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
-                                    "type": "appointment_proposed",
-                                    "ref_id": appointmentId
-                                  };
-                                  Notifications.createNotifications(notification);  
-                                  var emailTo = appointment.landlord.email;
-                                  var fullname = appointment.landlord.username;
-                                  var tenant_username = appointment.tenant.username;                    
-                                  var full_address = appointment.property.address.full_address;
-                                  var from = 'Staysmart';
+                                  if(err){
+                                    reject({message: err.message})
+                                  }
+                                  if(appointment){
+                                    var devID = appointment.property.development;
+                                    var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+                                    
+                                    var notification = {
+                                      "user": appointment.landlord._id,
+                                      "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
+                                      "type": "appointment_proposed",
+                                      "ref_id": appointmentId
+                                    };
+                                    Notifications.createNotifications(notification);  
+                                    var emailTo = appointment.landlord.email;
+                                    var fullname = appointment.landlord.username;
+                                    var tenant_username = appointment.tenant.username;                    
+                                    var full_address = appointment.property.address.full_address;
+                                    var from = 'Staysmart';
 
-                                  mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                                  resolve({appointment_id: appointmentId, room_id: roomChatId, message: 'appoinment proposed'});
+                                    mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
+                                    resolve({appointment_id: appointmentId, room_id: roomChatId, message: 'appoinment proposed'});
+                                  }                                  
                                 })                 
                             }
                           })
