@@ -65,7 +65,7 @@ propertiesSchema.static('getAll', ():Promise<any> => {
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var today = new Date();
-        let _query = {"confirmation.status": "approved", "details.available": {$lte: today}};
+        let _query = {"confirmation.status": "approved", "details.available": {$lte: today}, "status": "published"};
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
