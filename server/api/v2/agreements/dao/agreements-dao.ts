@@ -53,6 +53,36 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 				}]
 			})
 			.populate({
+				path: 'letter_of_intent.data.tenant',
+				populate: [{
+					path: 'identification_proof.front',
+					model: 'Attachments'
+				},
+				{
+					path: 'identification_proof.back',
+					model: 'Attachments'
+				},
+				{
+					path: 'bank_account.bank',
+					model: 'Banks'
+				}]
+			})
+			.populate({
+				path: 'letter_of_intent.data.landlord',
+				populate: [{
+					path: 'identification_proof.front',
+					model: 'Attachments'
+				},
+				{
+					path: 'identification_proof.back',
+					model: 'Attachments'
+				},
+				{
+					path: 'bank_account.bank',
+					model: 'Banks'
+				}]
+			})
+			.populate({
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
 					path: 'attachment.payment',
@@ -702,7 +732,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 							resolve({message: "this payment has rejected"})
 						}
 
-						if(paymentStatus == "pending" || paymentStatus == "accepted"){
+						if(paymentStatus == "pending" || paymentStatus == "payment-confirmed"){
 							for(var i = 0; i < paymentFee.length; i++){
 								Payments
 									.update({"_id": paymentId, "fee":{ $elemMatch: {"needed_refund": false}}}, {
@@ -732,9 +762,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 									if(landlordID == IDUser){
 										typeMail = "rejectLoiLandlord";
 									}
-									Agreements.email(id, typeMail).then(res => {
-										resolve(res);
-									})
+									Agreements.email(id, typeMail);
 									resolve({message: "Loi rejected"})
 								}
 							});							
@@ -2289,7 +2317,12 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 				                "type": type_notif,
 				                "ref_id": id
 				              };
-			              Notifications.createNotifications(notification);        
+			              Notifications.createNotifications(notification).then((res) => {
+			              		io.on('connect', onConnect);
+								function onConnect(socket){		
+									socket.emit('notification', { message: "You have new notification", type: type_notif, _id: id }); 
+								}
+			              });        
 			            })
 			            .exec((err, update) => {
 			              err ? reject({message: err.message})
