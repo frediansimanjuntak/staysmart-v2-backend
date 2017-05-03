@@ -18,7 +18,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id")
+			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.tenant.bank_account.bank letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back letter_of_intent.data.landlord.bank_account.bank")
 			.populate({
 				path: 'landlord',
 				model: 'Users',
@@ -51,37 +51,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 					path: 'attachment.refund_confirm',
 					model: 'Attachments'
 				}]
-			})
-			.populate({
-				path: 'letter_of_intent.data.tenant',
-				populate: [{
-					path: 'identification_proof.front',
-					model: 'Attachments'
-				},
-				{
-					path: 'identification_proof.back',
-					model: 'Attachments'
-				},
-				{
-					path: 'bank_account.bank',
-					model: 'Banks'
-				}]
-			})
-			.populate({
-				path: 'letter_of_intent.data.landlord',
-				populate: [{
-					path: 'identification_proof.front',
-					model: 'Attachments'
-				},
-				{
-					path: 'identification_proof.back',
-					model: 'Attachments'
-				},
-				{
-					path: 'bank_account.bank',
-					model: 'Banks'
-				}]
-			})
+			})			
 			.populate({
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
