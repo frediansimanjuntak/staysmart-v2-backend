@@ -50,9 +50,37 @@ const opts = {
   cert: fs.readFileSync(__dirname + '/../server/cert/server.crt')
 }
 
+var server = https.createServer(opts, app)
+var io = require('socket.io')(server);
+// var ioo = require('socket.io-client');
+
+export class socketIo{
+  static notif(data){
+    let body:any = data;    
+    let userId = body.user;
+    io.on('connect', onConnect);
+    function onConnect(socket){
+    setInterval(function(){
+        socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id}); 
+    }, 1000);
+    }
+  }
+}
+// io.on('connect', onConnect);
+// let tes = '123456'
+// function onConnect(socket){
+//   setInterval(function(){
+//       socket.emit('notification_'+tes, { hello: 'world' }); 
+//   }, 1000);
+// }
+
+// var socket = ioo('https://localhost:5000');
+// socket.on('notification_590a9e408eb848305c5a307c', function (data) {
+//   console.log("test", data);
+// });
+
 // run using https
-https.createServer(opts, app)
-     .listen(PORT, () => {
+server.listen(PORT, () => {
        console.log(`up and running @: ${os.hostname()} on port: ${PORT}`);
        console.log(`enviroment: ${process.env.NODE_ENV}`);
      });

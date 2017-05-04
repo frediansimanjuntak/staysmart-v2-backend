@@ -23,5 +23,17 @@ export class NotificationsRoutes {
 		router
 			.route('/notifications/update/:id')
 			.post(auth.isAuthenticated(),NotificationsController.updateNotifications);
+
+		router
+			.route('/notifications/read')
+			.post(auth.isAuthenticated(),NotificationsController.readNotifications);
+
+		router
+			.route('/notifications/click/:id')
+			.post(auth.isAuthenticated(),NotificationsController.clickNotifications);
+
+		router
+			.route('/notifications/limit/:limit')
+			.get(auth.isAuthenticated(),NotificationsController.getAllLimit);
 	}
 } 
