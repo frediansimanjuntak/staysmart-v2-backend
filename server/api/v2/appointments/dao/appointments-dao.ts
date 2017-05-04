@@ -214,7 +214,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                     
                                     var notification = {
                                       "user": appointment.landlord._id,
-                                      "message": "Appointment proposed for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
+                                      "message": "Viewing Received for "+unit+" "+appointment.property.development.name+" at "+body.date+" from "+body.time[i]+" to "+body.time2[i],
                                       "type": "appointment_proposed",
                                       "ref_id": appointmentId
                                     };
@@ -299,7 +299,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                     
                     var notification = {
                       "user": appointment.property.tenant,
-                      "message": "Appointment "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.chosen_time.date+" from "+appointment.chosen_time.from+" to "+appointment.chosen_time.to,
+                      "message": "Viewing "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.chosen_time.date+" from "+appointment.chosen_time.from+" to "+appointment.chosen_time.to,
                       "type": "appointment_proposed",
                       "ref_id": id
                     };
