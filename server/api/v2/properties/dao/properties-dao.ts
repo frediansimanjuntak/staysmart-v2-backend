@@ -77,7 +77,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           else{
             radius = 1500;
           }
-          var latlng = search.latlng.split(",");
+          var latlng = search.latlng.split("%2C");
           var lnglat = [];
           lnglat.push(Number(latlng[1]));
           lnglat.push(Number(latlng[0]));
