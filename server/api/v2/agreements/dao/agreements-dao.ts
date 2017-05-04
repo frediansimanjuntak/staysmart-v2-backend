@@ -12,8 +12,6 @@ import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import {mail} from '../../../../email/mail';
 
-var io = require('socket.io')();
-
 agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
@@ -134,8 +132,6 @@ agreementsSchema.static('getAllAgreement', ():Promise<any> => {
 		let _query = {};
 		Agreements.getAgreement(_query).then(res => {
 			resolve(res);
-			io.sockets.emit('an event sent to all connected clients');
-			io.emit('an event sent to all connected clients');
 		})
 		.catch(err => {
 			reject({message: err.message});
@@ -447,6 +443,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 		if (!_.isObject(data)) {
 			return reject(new TypeError('TA is not a valid object.'));
 		}
+		console.log(data);
 		let body:any = data;
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
@@ -2287,12 +2284,7 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 				                "type": type_notif,
 				                "ref_id": id
 				              };
-			              Notifications.createNotifications(notification).then((res) => {
-			              		io.on('connect', onConnect);
-								function onConnect(socket){		
-									socket.emit('notification', { message: "You have new notification", type: type_notif, _id: id }); 
-								}
-			              });        
+			              Notifications.createNotifications(notification);        
 			            })
 			            .exec((err, update) => {
 			              err ? reject({message: err.message})

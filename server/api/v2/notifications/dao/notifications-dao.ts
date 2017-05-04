@@ -2,6 +2,8 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import notificationsSchema from '../model/notifications-model';
+import {socketIo} from '../../../../server';
+var io = require('socket.io')();
 
 notificationsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -13,6 +15,41 @@ notificationsSchema.static('getAll', ():Promise<any> => {
           .exec((err, notifications) => {
             err ? reject({message: err.message})
                 : resolve(notifications);
+          });
+    });
+});
+
+notificationsSchema.static('getAllLimit', (limit:string, userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query = {"user": userId};
+        let limitNum = parseInt(limit);
+        Notifications
+          .find(_query)
+          .populate("user")
+          .limit( limitNum )
+          .sort({created_at: 'desc'})
+          .exec((err, notifications) => {
+            if(err){
+              reject(err);
+            }
+            if(notifications){
+              Notifications
+                .find({"user": userId, "read": false})
+                .exec((err, res) => {
+                  if(err){
+                    reject(err);
+                  }
+                  if(res){
+                    let data = {
+                      "code": 200,
+                      "message": "success",
+                      "total_unread": res.length,
+                      "data": notifications
+                    }
+                    resolve(data);
+                  }
+                })
+            }
           });
     });
 });
@@ -56,8 +93,13 @@ notificationsSchema.static('createNotifications', (notifications:Object):Promise
       
       var _notifications = new Notifications(notifications);
           _notifications.save((err, saved)=>{
-            err ? reject({message: err.message})
-                : resolve(saved);
+            if(err){
+              reject({message: err.message})
+            }
+            if(saved){
+              socketIo.notif(saved);
+              resolve(saved);
+            }            
           });
     });
 });
@@ -75,6 +117,38 @@ notificationsSchema.static('deleteNotifications', (id:string):Promise<any> => {
                 : resolve();
           });
         
+    });
+});
+
+notificationsSchema.static('readNotifications', (userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Notifications
+          .update({"user": userId, "read": false},{
+            $set: {
+              "read": true,
+              "read_at": new Date()
+            }
+          }, {multi: true})
+          .exec((err, update) => {
+            err ? reject({message: err.message})
+                : resolve(update);
+          });
+    });
+});
+
+notificationsSchema.static('clickNotifications', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Notifications
+          .findByIdAndUpdate(id,{
+            $set: {
+              "clicked": true,
+              "clicked_at": new Date()
+            }
+          })
+          .exec((err, update) => {
+            err ? reject({message: err.message})
+                : resolve(update);
+          });
     });
 });
 

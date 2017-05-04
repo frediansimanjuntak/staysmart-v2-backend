@@ -15,7 +15,9 @@ var NotificationsSchema = new mongoose.Schema({
 	type: {type: String},
 	ref_id: {type: String},
 	read_at: {type: Date},
+	read: {type: Boolean, default: false},
 	clicked: {type: Boolean, default: false},
+	clicked_at: {type: Date},
 	created_at: {type: Date, default: Date.now}
 });
 
