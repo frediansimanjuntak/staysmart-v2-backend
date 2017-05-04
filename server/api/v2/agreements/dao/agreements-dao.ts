@@ -16,7 +16,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.tenant.bank_account.bank letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back letter_of_intent.data.landlord.bank_account.bank")
+			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
 			.populate({
 				path: 'landlord',
 				model: 'Users',
@@ -442,9 +442,19 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
 			return reject(new TypeError('TA is not a valid object.'));
+		}		
+
+		function clean(obj) {
+		  for (var propName in obj) { 
+		    if (obj[propName] === null || obj[propName] === undefined) {
+		      delete obj[propName];
+		    }
+		  }
 		}
-		console.log(data);
-		let body:any = data;
+
+		let body:any = clean(data);
+		console.log(body);
+		
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
@@ -772,8 +782,18 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 
+		function clean(obj) {
+		  for (var propName in obj) { 
+		    if (obj[propName] === null || obj[propName] === undefined) {
+		      delete obj[propName];
+		    }
+		  }
+		}
+
+		let body:any = clean(data);
+		console.log(body);
+
 		let type = "tenancy_agreement";
-		let body:any = data;
 		let bankNo = body.no;
 		let IDUser = userId.toString();
 		Agreements
