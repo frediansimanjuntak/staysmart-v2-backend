@@ -262,7 +262,6 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 				.exec((err, properties) => {
 					if(err){
 						reject({message: err.message});
-						newrelic.noticeError(err);
 					}
 					if(properties){
 						let propertyId = properties._id;
@@ -273,41 +272,39 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 						}
 						if(landlordId != userId){
 							Agreements
-								.find({"property": body.property, "tenant": userId})
+								.findOne({"property": body.property, "tenant": userId})
 								.exec((err, agreement) => {
 									if(err){
 										reject({message: err.message});
-										newrelic.noticeError(err);
 									}
 									if(agreement){
-										if(agreement.length == 0){
-											if(propertyStatus == "published" || propertyStatus == "initiated"){
-												var _agreements = new Agreements(agreements);
-												_agreements.property = propertyId;
-												_agreements.tenant =  userId;
-												_agreements.landlord = landlordId;
-												if(body.appointment) {
-													_agreements.appointment = body.appointment;
-												}
-												_agreements.save((err, saved)=>{
-													err ? reject({message: err})
-														: resolve({_id: saved._id});
-												});
-											}
-											if(propertyStatus == "rented"){
-												reject({message: "this property has rented"})
-											}
+										let roomId;
+										if(agreement.room_id){
+											roomId = agreement.room_id;
 										}
-										else if(agreement.length > 0){
-											_.each(agreement, (res) => {
-												let roomId;
-												if(res.room_id){
-													roomId = res.room_id;
-												}
-												resolve({_id: res._id, room_id: roomId, message: "agreement has been made"})
-											})											
+										resolve({_id: agreement._id, room_id: roomId, message: "agreement has been made"})
+									}
+									else{
+										if(propertyStatus == "published" || propertyStatus == "initiated"){
+											var _agreements = new Agreements(agreements);
+											_agreements.property = propertyId;
+											_agreements.tenant =  userId;
+											_agreements.landlord = landlordId;
+											if(body.appointment) {
+												_agreements.appointment = body.appointment;
+											}
+											if(body.room_id){
+												_agreements.room_id = body.room_id;
+											}
+											_agreements.save((err, saved)=>{
+												err ? reject({message: err})
+													: resolve({_id: saved._id});
+											});
 										}
-									}							
+										if(propertyStatus == "rented"){
+											reject({message: "this property has rented"})
+										}
+									}															
 								});	
 						}										
 					}
@@ -444,15 +441,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			return reject(new TypeError('TA is not a valid object.'));
 		}		
 
-		function clean(obj) {
-		  for (var propName in obj) { 
-		    if (obj[propName] === null || obj[propName] === undefined) {
-		      delete obj[propName];
-		    }
-		  }
-		}
-
-		let body:any = clean(data);
+		let body:any = data;
 		console.log(body);
 		
 		let typeDataa = "letter_of_intent";
@@ -782,15 +771,7 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 
-		function clean(obj) {
-		  for (var propName in obj) { 
-		    if (obj[propName] === null || obj[propName] === undefined) {
-		      delete obj[propName];
-		    }
-		  }
-		}
-
-		let body:any = clean(data);
+		let body:any = data;
 		console.log(body);
 
 		let type = "tenancy_agreement";

@@ -218,7 +218,7 @@ export class report {
 				}
 			break;
 			case 'form_data.tenant_sign':
-				getData = '<img src=' + getData + ' alt="" width="100px" height="100px"> ';
+				getData = '<img src=' + getData + ' alt="" > ';
 			break;
 			case 'form_data.payment_proof':
 			  // let paymentProof = objectFunction['payment'](getData);
@@ -302,7 +302,7 @@ export class report {
 			  }
 			  break;
 			case 'form_data.landlord_sign':
-				getData = '<img src=' + getData + ' alt="" width="100px" height="100px"> ';
+				getData = '<img src=' + getData + ' alt="" > ';
 			break;
 			// temporary case
 			case 'toCurrency form_data.gfd_amount':
@@ -404,4 +404,3 @@ export class report {
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 };
-

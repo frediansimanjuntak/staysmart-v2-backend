@@ -159,143 +159,106 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
     });
 });
 
-chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> => {
+chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        property_id.toString();
-    	Properties
-    		.findById(property_id, (err, property) => {
-                let landlordId = property.owner.user;
-    			var members = [];
-    			members.push(property.owner.user);
-                var manager = '';
-    			if(property.manager){
-    				members.push(property.manager);	
-                    manager = property.manager;
-    			}
-		    	ChatRooms
-		    		.findOne({"tenant": uid, "property": property_id}, (err, result) => {
-		    			if(!result){
-                            let roomName = uid+'-'+property.owner.user+'-'+property_id;
-		    				DreamTalk.createRoom(uid, roomName, members, property_id, property.owner.user, manager).then(result => {
-					        	if(result.res.message){
-					        		resolve({message: result.res});
-					        	}
-					        	else{
-					        		let room = JSON.parse(result.res.body);
-					        		var _chat_rooms = new ChatRooms();
-					        			_chat_rooms.room_id = room._id;
-					                    _chat_rooms.property = property_id;
-					                    _chat_rooms.landlord = property.owner.user;
+        let body:any = data;
+        let propertyId = body.property_id;
+
+        Properties
+            .findById(propertyId)
+            .exec((err, property) => {
+                if(err){
+                    reject({message: err.message});
+                }
+                if(property){
+                    let landlordId = property.owner.user;
+                    var members = [];
+                    members.push(property.owner.user);
+                    var manager = '';
+                    if(property.manager){
+                        members.push(property.manager);    
+                        manager = property.manager;
+                    }
+                    ChatRooms
+                        .findOne({"tenant": uid, "property": propertyId})
+                        .exec((err, chats) => {
+                            if(err){
+                                reject(err);
+                            }
+                            if(chats){
+                                resolve(chats);
+                            }
+                            else{
+                                let roomName = uid + '-' + property.owner.user + '-' + propertyId;
+                                DreamTalk.createRoom(uid, roomName, members, propertyId, property.owner.user, manager)
+                                .then((result) => {
+                                    if(result.res.message){
+                                        resolve({message: result.res});
+                                    }
+                                    else{
+                                        let room = JSON.parse(result.res.body);
+                                        var _chat_rooms = new ChatRooms();
+                                        _chat_rooms.room_id = room._id;
+                                        _chat_rooms.property = propertyId;
+                                        _chat_rooms.landlord = property.owner.user;
                                         _chat_rooms.status = 'enquiries';
                                         if(members.length > 1) {
                                             _chat_rooms.manager = property.manager;    
                                         }
-					                    _chat_rooms.tenant = uid;
-					                    _chat_rooms.save((err, saved)=>{
-					                        if(err){
-					                            reject({message: err.message});
-					                        }
-					                        else if(saved){
-                                                Agreements
-                                                    .findOne({"property": property_id, "tenant": uid})
-                                                    .exec((err, agreement) => {
-                                                        if(err){
-                                                            reject({message: err.message});
-                                                        }
-                                                        else{
-                                                            if(agreement == null){
-                                                                var _agreements = new Agreements();
-                                                                _agreements.property = property_id;
-                                                                _agreements.tenant =  uid;
-                                                                _agreements.landlord = landlordId;
-                                                                _agreements.room_id = saved._id;
-                                                                _agreements.save((err, done)=>{
-                                                                    if(err){
-                                                                        reject({message: err.message});
-                                                                    }
-                                                                    if(done){
-                                                                        ChatRooms
-                                                                            .update({"_id": saved._id}, {
-                                                                                $set: {
-                                                                                    "agreement": done._id
-                                                                                }
-                                                                            })
-                                                                            .exec((err, updated) => {
-                                                                                err ? reject({message: err.message})
-                                                                                    : resolve(updated);
-                                                                            })
-                                                                    }
-                                                                });
-                                                            }
-                                                            if(agreement != null){
-                                                                agreement.room_id = saved._id;
-                                                                agreement.save((err, done)=>{
-                                                                    if(err){
-                                                                        reject({message: err.message});
-                                                                    }
-                                                                    if(done){
-                                                                        ChatRooms
-                                                                            .update({"_id": saved._id}, {
-                                                                                $set: {
-                                                                                    "agreement": done._id
-                                                                                }
-                                                                            })
-                                                                            .exec((err, updated) => {
-                                                                                err ? reject({message: err.message})
-                                                                                    : resolve(updated);
-                                                                            })
-                                                                    }
-                                                                });
-                                                            }
-                                                        }
-                                                })
-					                            console.log(saved);
-					                            Users
-					                                .findByIdAndUpdate(uid, {
-					                                    $push: {
-					                                        "chat_rooms": saved._id
-					                                    }
-					                                })
-					                                .exec((err, users) => {
-					                                    if(err) {
-                                                            reject({message: err.message});
-                                                        }
-					                                });
-
-				                                if(members.length > 1) {
-                                                    Users
-                                                        .findByIdAndUpdate(property.manager, {
-                                                            $push: {
-                                                                "chat_rooms": saved._id
-                                                            }
-                                                        })
-                                                        .exec((err, users) => {
-                                                            if(err) {
-                                                                reject({message: err.message});
-                                                            }
-                                                        });
-                                                }
-			                            		Users
-					                                .findByIdAndUpdate(property.owner.user, {
-					                                    $push: {
-					                                        "chat_rooms": saved._id
-					                                    }
-					                                })
-					                                .exec((err, users) => {
-					                                    err ? reject({message: err.message})
-					                                        : resolve({'data': saved, 'message': 'room created'});
-					                                });	
-			                            	    
+                                        _chat_rooms.tenant = uid;
+                                        _chat_rooms.save((err, saved) => {
+                                            if(err){
+                                                reject(err);
                                             }
-					                    });
-					        	}
-					        });
-		    			}
-		    			else{
-		    				resolve({'data': result, 'message': 'room exist'});
-		    			}
-		    		})
-	    	})
+                                            if(saved){
+
+                                                let agreementData = {
+                                                    "property": propertyId,
+                                                    "room_id": saved._id
+                                                }
+                                                Agreements.createAgreements(agreementData, uid)
+                                                .then((res) => {
+                                                    let idAgreement = res._id;
+                                                    saved.agreement = idAgreement;
+                                                    saved.save((err, result) => {
+                                                        if(err){
+                                                            reject(err);
+                                                        }
+                                                        if(result){
+                                                            let userIds = [];
+                                                            userIds.push(uid);
+                                                            userIds.push(property.owner.user);
+                                                            if(members.length > 1) {
+                                                                userIds.push(property.manager);
+                                                            }
+
+                                                            Users
+                                                                .update({"_id": {$in: userIds}}, {
+                                                                    $push: {
+                                                                        "chat_rooms": saved._id
+                                                                    }
+                                                                }, {multi: true})
+                                                                .exec((err, users) => {
+                                                                    err ? reject({message: err})
+                                                                        : resolve(result);
+                                                                }); 
+                                                        }
+                                                    })
+                                                })
+                                                .catch((err) => {
+                                                    reject(err);
+                                                })                                                                                            
+                                            }
+                                        });
+                                    }
+                                })
+                                .catch((err) => {
+                                    reject(err);
+                                })                                 
+                            }
+                        })
+                }
+            })
     });
 });
 
