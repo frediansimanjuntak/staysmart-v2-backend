@@ -11,6 +11,11 @@ var headers = {
 	'X-Client-Secret': 'sc6zBzxb1XQ1H7BHRWKuhAYc_WsZ6mpOFu-gRDZB ',
 	'Content-Type': 'application/json'
 };
+// var headers = {
+// 	'X-Client-ID': 'xyb6HBZQK8Jq2YX3h',
+// 	'X-Client-Secret': 'pGnYqGHHdvoy4NOyDzXH6VW7rIjd-evVxnjgotH8',
+// 	'Content-Type': 'application/json'
+// };
 var ddp = new DDPClient({
 	autoReconnect : true,
 	autoReconnectTimer : 500,

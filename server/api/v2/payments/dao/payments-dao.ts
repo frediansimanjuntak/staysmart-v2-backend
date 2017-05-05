@@ -39,6 +39,7 @@ paymentsSchema.static('createPayments', (payments:Object):Promise<any> => {
         let body:any = payments;
 
         var _payments = new Payments(payments);
+        
           _payments.save((err, saved)=>{
             err ? reject({message: err.message})
                 : resolve(saved);
@@ -84,7 +85,8 @@ paymentsSchema.static('transferLandlord', (idpayment:string, data:Object):Promis
                 $set: {
                     "transfer_landlord.transfer": true,
                     "transfer_landlord.date_transferred": new Date(),
-                    "transfer_landlord.attachment": body.attachment
+                    "transfer_landlord.attachment": body.attachment,
+                    "transfer_landlord.remark": body.remark
                 }
             })
             .exec((err, res)=> {
