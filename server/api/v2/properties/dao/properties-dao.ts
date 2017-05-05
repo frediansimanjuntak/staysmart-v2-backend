@@ -71,11 +71,12 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         let search:any = searchComponent;
         if(search.latlng != 'all') 
         {
+          let radius;
           if(search.radius != 'all') {
-            var radius = search.radius;
+            radius = (search.radius)/1000;
           }
           else{
-            radius = 1500;
+            radius = 1.5;
           }
           var latlng = search.latlng.split(",");
           var lnglat = [];
@@ -241,7 +242,6 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
           .exec((err, result) => {
             err ? reject({message: err.message})
                 : resolve(result);
-                console.log(result);
           });
     });
 });
@@ -333,7 +333,6 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
 propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let body:any = properties;
-        console.log(body);
         let propertyObj = {$set: {}};
         for(var param in body) {
           propertyObj.$set[param] = body[param];

@@ -1,4 +1,4 @@
-"use strict";
+	"use strict";
 
 import * as express from 'express';
 import {ChatsController} from '../controller/chats-controller';

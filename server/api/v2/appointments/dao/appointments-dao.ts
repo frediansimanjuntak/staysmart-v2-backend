@@ -58,7 +58,6 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
           .exec((err, appointments) => {
               if(err) {
                 reject({message: err.message});
-                newrelic.noticeError(err);
               }
               else{
                 resolve(appointments);
@@ -186,7 +185,6 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                           _appointments.save((err, saved)=>{
                             if(err) {
                               reject({message: err.message});
-                              newrelic.noticeError(err);
                             }
                             else if(saved){
                               let appointmentId = saved._id;
@@ -278,7 +276,6 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
         .exec((err, update) => {
             if(err) {
               reject({message: err.message});
-              newrelic.noticeError();
             }
             else if(update) {
               if(status == 'accepted' || status == 'rejected')

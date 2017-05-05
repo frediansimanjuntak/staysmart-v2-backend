@@ -47,9 +47,9 @@ export class ChatsController {
 
 	static createRoom(req: express.Request, res: express.Response):void {
 		let _uid = req["user"]._id;
-		let _property_id = req.body.property_id;
+		let _data = req.body;
 		ChatsDAO
-		['createRoom'](_uid, _property_id)
+		['createRoom'](_uid, _data)
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
