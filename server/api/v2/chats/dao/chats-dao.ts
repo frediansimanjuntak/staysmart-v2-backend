@@ -366,35 +366,42 @@ chatsSchema.static('updateRoom', (roomId:string, status:string):Promise<any> => 
     });
 });
 
-chatsSchema.static('deleteRoom', (roomId:string, userId: string):Promise<any> => {
+chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+        let idUser = userId.toString();
+
         ChatRooms
             .findById(roomId)
             .exec((err, chat_room) => {
-                if(userId == chat_room.landlord || userId == chat_room.tenant || userId == chat_room.manager) {
-                    if(chat_room.landlord){
-                        DreamTalk.deleteRoom(roomId, chat_room.landlord);
-                    }
-                    if(chat_room.tenant){
-                        DreamTalk.deleteRoom(roomId, chat_room.tenant);
-                    }
-                    if(chat_room.manager){
-                        DreamTalk.deleteRoom(roomId, chat_room.manager);
-                    }
-                    ChatRooms
-                        .findByIdAndRemove(roomId)
-                        .exec((err, result) => {
-                            if(err) {
-                                reject({message: err.message});
-                            }
-                            else{
-                                resolve({message: 'chat room deleted.'});
-                            }
-                        })
+                if(err){
+                    reject(err);
                 }
-                else{
-                    reject({message: 'you do not have access to this room.'});
-                }
+                if(chat_room){
+                    if(chat_room.landlord == idUser || chat_room.tenant == idUser || chat_room.manager == idUser) {
+                        if(chat_room.landlord){
+                            DreamTalk.deleteRoom(roomId, chat_room.landlord);
+                        }
+                        if(chat_room.tenant){
+                            DreamTalk.deleteRoom(roomId, chat_room.tenant);
+                        }
+                        if(chat_room.manager){
+                            DreamTalk.deleteRoom(roomId, chat_room.manager);
+                        }
+                        ChatRooms
+                            .findByIdAndRemove(roomId)
+                            .exec((err, result) => {
+                                if(err) {
+                                    reject({message: err.message});
+                                }
+                                else{
+                                    resolve({message: 'chat room deleted.'});
+                                }
+                            })
+                    }
+                    else{
+                        reject({message: 'you do not have access to this room.'});
+                    }
+                }                
             })
     });
 });
