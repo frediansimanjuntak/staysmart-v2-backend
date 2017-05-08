@@ -377,15 +377,18 @@ chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => 
                     reject(err);
                 }
                 if(chat_room){
-                    if(chat_room.landlord == idUser || chat_room.tenant == idUser || chat_room.manager == idUser) {
-                        if(chat_room.landlord){
-                            DreamTalk.deleteRoom(roomId, chat_room.landlord);
+                    let landlord = chat_room.landlord.toString();
+                    let tenant = chat_room.tenant.toString();
+                    let manager = chat_room.manager.toString();
+                    if(landlord == idUser || tenant == idUser || manager == idUser) {
+                        if(landlord){
+                            DreamTalk.deleteRoom(roomId, landlord);
                         }
-                        if(chat_room.tenant){
-                            DreamTalk.deleteRoom(roomId, chat_room.tenant);
+                        if(tenant){
+                            DreamTalk.deleteRoom(roomId, tenant);
                         }
-                        if(chat_room.manager){
-                            DreamTalk.deleteRoom(roomId, chat_room.manager);
+                        if(manager){
+                            DreamTalk.deleteRoom(roomId, manager);
                         }
                         ChatRooms
                             .findByIdAndRemove(roomId)
@@ -412,35 +415,42 @@ chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> =>
         let body:any = data;
         console.log(body);
         for(var i = 0; i < body.ids.length; i++){
-            let roomId = body.ids[i];
+            let roomId = body.ids[i].toString();
             ChatRooms
             .findById(roomId)
             .exec((err, chat_room) => {
-                 console.log(chat_room);
-                if(role == "admin") {
-                    if(chat_room.landlord){
-                        DreamTalk.deleteRoom(roomId, chat_room.landlord);
-                    }
-                    if(chat_room.tenant){
-                        DreamTalk.deleteRoom(roomId, chat_room.tenant);
-                    }
-                    if(chat_room.manager){
-                        DreamTalk.deleteRoom(roomId, chat_room.manager);
-                    }
-                    ChatRooms
-                        .findByIdAndRemove(roomId)
-                        .exec((err, result) => {
-                            if(err) {
-                                reject({message: err.message});
-                            }
-                            else{
-                                resolve({message: 'chat room deleted.'});
-                            }
-                        })
+                if(err){
+                    reject(err);
                 }
-                else{
-                    reject({message: 'you do not have access to this room.'});
-                }
+                if(chat_room){
+                    let landlord = chat_room.landlord.toString();
+                    let tenant = chat_room.tenant.toString();
+                    let manager = chat_room.manager.toString();
+                    if(role == "admin") {
+                        if(landlord){
+                            DreamTalk.deleteRoom(roomId, landlord);
+                        }
+                        if(tenant){
+                            DreamTalk.deleteRoom(roomId, tenant);
+                        }
+                        if(manager){
+                            DreamTalk.deleteRoom(roomId, manager);
+                        }
+                        ChatRooms
+                            .findByIdAndRemove(roomId)
+                            .exec((err, result) => {
+                                if(err) {
+                                    reject({message: err.message});
+                                }
+                                else{
+                                    resolve({message: 'chat room deleted.'});
+                                }
+                            })
+                    }
+                    else{
+                        reject({message: 'you do not have access to this room.'});
+                    }
+                }                
             })
         }
         

@@ -1581,9 +1581,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 										Agreements.updateReceivePayment(data);
 										Agreements.notification(id, type_notif);										
 										Agreements.email(id, typeMail);
-									}
-
-									
+									}									
 								}
 							})
 							.catch((err) => {
