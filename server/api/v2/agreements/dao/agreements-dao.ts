@@ -437,9 +437,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			return reject(new TypeError('TA is not a valid object.'));
 		}		
 
-		let body:any = data;
-		console.log(body);
-		
+		let body:any = data;		
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
@@ -614,7 +612,7 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 								reject({message: err.message});
 							}
 							if(saved){
-								if(agreement.appointment._id){
+								if(agreement.appointment){
 									Appointments
 										.findById(agreement.appointment._id)
 										.exec((err, res) => {
@@ -1390,7 +1388,6 @@ agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-
 		Payments
 			.findById(id)
 			.exec((err, res) => {
@@ -1403,7 +1400,7 @@ agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
 					}
 					if(res.status == "pending"){
 						resolve(res);
-					}
+					}					
 				}
 			})
 	});
@@ -1414,9 +1411,8 @@ agreementsSchema.static('paymentReceiveAmount', (id:string, code:string, receive
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-
 		Payments
-			.update({"_id": id, "fee": {$elemMatch: {"code_name": "std"}}}, {
+			.update({"_id": id, "fee": {$elemMatch: {"code_name": code}}}, {
 				$set: {
 					"fee.$.received_amount": receiveAmount,
 					"fee.$.needed_refund": neededRefund,
@@ -1438,6 +1434,7 @@ agreementsSchema.static('updateReceivePayment', (data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		var ObjectID = mongoose.Types.ObjectId;	
 		var body:any = data;
+		let idPayment = body.paymentID.toString();
 		let neededRefundGfd;
 		let neededRefundStd;
 		let neededRefundScd;
@@ -1464,24 +1461,30 @@ agreementsSchema.static('updateReceivePayment', (data:Object):Promise<any> => {
 				neededRefundScd = true;
 			}
 		}
+		
 		//receive amount Std
 		if(body.receiveAmountStd){
-			Agreements.paymentReceiveAmount(body.paymentID, "std", body.receiveAmountStd, neededRefundStd, body.payment_confirm, body.status, body.remarks);
+			Agreements.paymentReceiveAmount(idPayment, "std", body.receiveAmountStd, neededRefundStd, body.payment_confirm, body.status, body.remarks).then((res) => {
+				resolve(res);
+			})
+			.catch((err) => {
+				reject(err)
+			})
 		}
 
 		//receive amount Gfd
 		if(body.receiveAmountGfd){
-			Agreements.paymentReceiveAmount(body.paymentID, "gfd", body.receiveAmountGfd, neededRefundGfd, body.payment_confirm, body.status, body.remarks);
+			Agreements.paymentReceiveAmount(idPayment, "gfd", body.receiveAmountGfd, neededRefundGfd, body.payment_confirm, body.status, body.remarks);
 		}
 
 		//receive amount Scd
 		if(body.receiveAmountScd){
-			Agreements.paymentReceiveAmount(body.paymentID, "scd", body.receiveAmountScd, neededRefundScd, body.payment_confirm, body.status, body.remarks);
+			Agreements.paymentReceiveAmount(idPayment, "scd", body.receiveAmountScd, neededRefundScd, body.payment_confirm, body.status, body.remarks);
 		}
 
 		//refund payment
 		if(body.refundPayment){
-			Agreements.addRefund(body.paymentID, body.refundPayment);
+			Agreements.addRefund(idPayment, body.refundPayment);
 		}
 		    	
 	});
@@ -1499,7 +1502,6 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 		let receivePayment = body.receive_payment;
 		let type_notif = body.type_notif;
 		let typeMail = body.type_mail;	
-
 		Agreements
 			.findById(id)
 			.exec((err, agreement) => {
@@ -1510,8 +1512,8 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 					let loiData = agreement.letter_of_intent.data;
 					let taData = agreement.tenancy_agreement.data;
 					let landlordId = agreement.landlord;
-					let paymentLoiID = loiData.payment;
-					let paymentTaID = taData.payment;
+					let paymentLoiID = loiData.payment.toString();
+					let paymentTaID = taData.payment.toString();
 					let gfd = loiData.gfd_amount;
 					let std = loiData.sd_amount;
 					let scd = loiData.security_deposit;
@@ -1537,7 +1539,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 										temp = receivePayment - receiveGfd;
 										if(temp - std > 0){
 											receiveStd = std;
-											refund = receiveStd - std;
+											refund = temp - std;
 										}
 										if(temp - std <= 0){
 											receiveStd = temp;
@@ -1548,7 +1550,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 										temp = receivePayment - receiveStd;
 										if(temp - gfd > 0){
 											receiveGfd = gfd;
-											refund = receiveGfd - gfd;
+											refund = temp - gfd;
 										}
 										if(temp - gfd <= 0){
 											receiveGfd = temp;
@@ -1686,7 +1688,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 			"status_ta": statusTa,
 			"type_mail": typeMail,
 			"type_notif" : type_notif
-		}		
+		};		
 		Agreements.paymentProcess(id, dataAccept).then(res => {
 			resolve(res);
 		})
@@ -1731,7 +1733,7 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 			"status_ta": statusTa,
 			"type_mail": typeMail,
 			"type_notif" : type_notif
-		}		
+		};		
 		Agreements.paymentProcess(id, dataReject).then(res => {
 			resolve(res);
 		})
