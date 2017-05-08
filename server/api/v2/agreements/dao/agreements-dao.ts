@@ -304,6 +304,9 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 										if(propertyStatus == "rented"){
 											reject({message: "this property has rented"})
 										}
+										else{
+											reject({message: "this property not published"})
+										}
 									}															
 								});	
 						}										
