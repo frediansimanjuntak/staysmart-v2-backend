@@ -2084,17 +2084,17 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 							if(type == "initiateTA"){
 								message = "Tenancy Agreement (TA) received for" + unit + " " + devResult.name;
 								type_notif = "received_LOI";
-								user = landlordId;
+								user = tenantId;
 							}
 			            	if(type == "rejectTA"){
 								message = "Tenancy Agreement (TA) rejected for" + unit + " " + devResult.name;
 								type_notif = "rejected_LOI";
-								user = tenantId;
+								user = landlordId;
 							}
 							if(type == "acceptTA"){
 								message = "Tenancy Agreement (TA) accepted for" + unit + " " + devResult.name;
 								type_notif = "accepted_LOI";
-								user = tenantId;
+								user = landlordId;
 							}
 							if(type == "initiateIL"){
 								message = "Inventory List received for" + unit + " " + devResult.name;
