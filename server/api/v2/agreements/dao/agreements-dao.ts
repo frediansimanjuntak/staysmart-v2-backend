@@ -1350,9 +1350,9 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 							if(type == "letter_of_intent"){
 								agreement.letter_of_intent.data.payment = paymentId;
 							}
-							agreement.saved((err, saved) => {
+							agreement.save((err, saved) => {
 								err ? reject({message: err.message})
-					      			: resolve({payment_id: saved._id, message:"payment created"});
+					      			: resolve({payment_id: paymentId, message:"payment created"});
 					      		})
 						}
 					})											
@@ -1434,6 +1434,7 @@ agreementsSchema.static('updateReceivePayment', (data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		var ObjectID = mongoose.Types.ObjectId;	
 		var body:any = data;
+		console.log(data);
 		let idPayment = body.paymentID.toString();
 		let neededRefundGfd;
 		let neededRefundStd;
@@ -1461,32 +1462,17 @@ agreementsSchema.static('updateReceivePayment', (data:Object):Promise<any> => {
 				neededRefundScd = true;
 			}
 		}
-		
-		//receive amount Std
-		if(body.receiveAmountStd){
-			Agreements.paymentReceiveAmount(idPayment, "std", body.receiveAmountStd, neededRefundStd, body.payment_confirm, body.status, body.remarks).then((res) => {
-				resolve(res);
-			})
-			.catch((err) => {
-				reject(err)
-			})
-		}
-
-		//receive amount Gfd
-		if(body.receiveAmountGfd){
-			Agreements.paymentReceiveAmount(idPayment, "gfd", body.receiveAmountGfd, neededRefundGfd, body.payment_confirm, body.status, body.remarks);
-		}
-
-		//receive amount Scd
-		if(body.receiveAmountScd){
-			Agreements.paymentReceiveAmount(idPayment, "scd", body.receiveAmountScd, neededRefundScd, body.payment_confirm, body.status, body.remarks);
-		}
+		//stamp duty payment
+		Agreements.paymentReceiveAmount(idPayment, "std", body.receiveAmountStd, neededRefundStd, body.payment_confirm, body.status, body.remarks)
+		//gfd payment
+		Agreements.paymentReceiveAmount(idPayment, "gfd", body.receiveAmountGfd, neededRefundGfd, body.payment_confirm, body.status, body.remarks)
+		//security deposit payment
+		Agreements.paymentReceiveAmount(idPayment, "scd", body.receiveAmountScd, neededRefundScd, body.payment_confirm, body.status, body.remarks)
 
 		//refund payment
 		if(body.refundPayment){
-			Agreements.addRefund(idPayment, body.refundPayment);
-		}
-		    	
+			Agreements.addRefund(idPayment, body.refundPayment)
+		}		    	
 	});
 });
 
@@ -1513,7 +1499,10 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 					let taData = agreement.tenancy_agreement.data;
 					let landlordId = agreement.landlord;
 					let paymentLoiID = loiData.payment.toString();
-					let paymentTaID = taData.payment.toString();
+					let paymentTaID;
+					if(taData.payment){
+						paymentTaID = taData.payment.toString();
+					}					 
 					let gfd = loiData.gfd_amount;
 					let std = loiData.sd_amount;
 					let scd = loiData.security_deposit;
@@ -1530,7 +1519,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 							agreement.letter_of_intent.data.status = body.status_loi;
 							Agreements.paymentCekStatus(paymentLoiID).then((res) => {
 								if(res.message){
-									resolve(res);
+									reject(res);
 								}
 								else{
 									let totalFee = std + gfd;
@@ -1555,6 +1544,10 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 										if(temp - gfd <= 0){
 											receiveGfd = temp;
 										}
+									}
+									if(body.status_payment == "rejected"){
+										receiveGfd = 0;
+										receiveStd = 0;
 									}
 									var data ={
 										"paymentID": paymentLoiID,								
@@ -1603,16 +1596,18 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 								else{
 									let totalFee = scd;
 									if (scd != 0){
-										receiveStd = std;
 										receiveScd = scd;
 										temp = receivePayment - receiveScd;
 										if (temp > 0){
 											refund = temp;
 										}
 									}
+
+									if(body.status_payment == "rejected"){
+										receiveScd = 0;
+									}
 									var data ={
 										"paymentID": paymentTaID,
-										"receiveAmountStd": receiveStd,
 										"receiveAmountScd": receiveScd,
 										"payment_confirm": body.payment_confirm,
 										"refundPayment": refund,
@@ -1664,7 +1659,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 		let typeMail;
 		let statusTa;
 		let statusLoi;
-
+		console.log(body);
 		if(type == "letter_of_intent"){
 			typeMail = "acceptLoiPayment";
 			type_notif = "acceptLoiPayment";
@@ -1710,6 +1705,7 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 		let typeMail;		
 		let statusTa;
 		let statusLoi;
+		console.log(body);
 		if(type == "letter_of_intent"){
 			typeMail = "rejectLoiPayment";
 			type_notif = "rejectLoiPayment";
