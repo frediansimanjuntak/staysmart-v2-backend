@@ -80,17 +80,27 @@ paymentsSchema.static('transferLandlord', (idpayment:string, data:Object):Promis
     return new Promise((resolve:Function, reject:Function) => {
         let body:any = data;
         Payments
-            .update({"_id": idpayment}, {
-                $set: {
-                    "transfer_landlord.transfer": true,
-                    "transfer_landlord.date_transferred": new Date(),
-                    "transfer_landlord.attachment": body.attachment
-                }
-            })
-            .exec((err, res)=> {
-                err ? reject({message: err.message})
-                    : resolve(res);
-            })                    
+          .findById(idpayment)
+          .exec((err, res) => {
+            if(err){
+              reject(err);
+            }
+            if(res){
+              let transferStatus = res.transfer_landlord.transfer;
+              if(transferStatus == true){
+                reject({message: "Payment has transferred"})
+              }
+              else{
+                res.transfer_landlord.transfer = true;
+                res.transfer_landlord.date_transferred = new Date();
+                res.transfer_landlord.attachment = body.attachment;
+                res.save((err, saved) => {
+                  err ? reject({message: err.message})
+                      : resolve(saved);
+                })
+              }
+            }            
+          })                
     });
 });
 

@@ -369,14 +369,17 @@ export class reportDAO{
 				this.reportLOIPrint(id)
 					.then(res => {
 						// console.log(res);
-						pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
-						  if (err){
-						  	reject(err)
-						  }
-						  if(resultt){
-						  	resolve(resultt);
-						 	console.log(resultt);
-						  }						   
+						// pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
+						//   if (err){
+						//   	reject(err)
+						//   }
+						//   if(resultt){
+						//   	resolve(resultt);
+						//  	console.log(resultt);
+						//   }						   
+						// });
+						pdf.create(res, options, (err, buffer)=>{
+							resolve(buffer);
 						});
 					})
 					.catch(err => {

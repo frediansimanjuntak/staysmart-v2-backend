@@ -130,6 +130,10 @@ export class AgreementsRoutes {
 			.route('/transfer/landlord/:id')
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.transferToLandlord);
 
+		router
+			.route('/transfer/landlord/penalty/:id')
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.transferPenaltyToLandlord);
+
 		//odometer
 		router
 			.route('/odometer')

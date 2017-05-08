@@ -37,7 +37,8 @@ var PaymentsSchema = new mongoose.Schema({
 	transfer_landlord: {
 		transfer: {type: Boolean, default: false},
 		date_transferred: {type: Date},
-		attachment: {type: String}
+		attachment: {type: String},
+		remark: {type: String}
 	},
 	status: {type: String, enum: ['pending', 'accepted', 'rejected']},
 	remarks: {type: String}
