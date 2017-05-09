@@ -73,7 +73,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         {
           let radius;
           if(search.radius != 'all') {
-            radius = (search.radius)/1000;
+            radius = (search.radius) / 1000 * 0.621371;
           }
           else{
             radius = 1.5;
@@ -82,7 +82,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           var lnglat = [];
           lnglat.push(Number(latlng[1]));
           lnglat.push(Number(latlng[0]));
-          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/3963.2 ] } } });
+          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/6371 ] } } });
         }
         if(search.pricemin != 'all') 
         {
