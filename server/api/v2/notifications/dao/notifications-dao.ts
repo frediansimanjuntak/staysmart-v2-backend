@@ -92,15 +92,15 @@ notificationsSchema.static('createNotifications', (notifications:Object):Promise
       let body:any = notifications;
       
       var _notifications = new Notifications(notifications);
-          _notifications.save((err, saved)=>{
-            if(err){
-              reject({message: err.message})
-            }
-            if(saved){
-              socketIo.notif(saved);
-              resolve(saved);
-            }            
-          });
+      _notifications.save((err, saved)=>{
+        if(err){
+          reject({message: err.message})
+        }
+        if(saved){
+          socketIo.notif(saved);
+          resolve(saved);
+        }            
+      });
     });
 });
 

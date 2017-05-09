@@ -266,62 +266,51 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
         if (!_.isString(status)) {
           return reject(new TypeError('Status is not a valid string.'));
         }
-
         Appointments
-        .findByIdAndUpdate(id, {
-          $set: {
-            "status": status
-          }
-        })
-        .exec((err, update) => {
-            if(err) {
-              reject({message: err.message});
+          .findById(id)
+          .populate("landlord tenant")
+          .populate({
+            path: 'property',
+            populate: {
+              path: 'development',
+              model: 'Developments',
+            },
+          })
+          .exec((err, appointment)=> {
+            if(err){
+              reject(err);
             }
-            else if(update) {
-              if(status == 'accepted' || status == 'rejected')
-              {
-                Appointments
-                  .findById(id)
-                  .populate("landlord tenant")
-                  .populate({
-                    path: 'property',
-                    populate: {
-                      path: 'development',
-                      model: 'Developments',
-                    },
-                  })
-                  .exec((err, appointment) => {
-                    var devID = appointment.property.development;  
-                    var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
-                    
-                    var notification = {
-                      "user": appointment.property.tenant,
-                      "message": "Viewing "+status+" for "+unit+" "+appointment.property.development.name+" at "+appointment.chosen_time.date+" from "+appointment.chosen_time.from+" to "+appointment.chosen_time.to,
-                      "type": "appointment_proposed",
-                      "ref_id": id
-                    };
-                    Notifications.createNotifications(notification);  
-
-                    var emailTo = appointment.tenant.email;
-                    var fullname = appointment.tenant.username;
-                    var full_address = appointment.property.address.full_address;
-                    var landlord_username = appointment.landlord.username;
-                    var from = 'Staysmart';
-
-                    if(status == 'accepted') {
-                      mail.confirmAppointment(emailTo, fullname, full_address, landlord_username, from);
-                    }
-                    else if(status == 'rejected') {
-                      mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from);
-                    }
-                    resolve({message: 'appointment updated'});
-                  })
+            if(appointment){
+              let devID = appointment.property.development;  
+              let unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+              let emailTo = appointment.tenant.email;
+              let fullname = appointment.tenant.username;
+              let full_address = appointment.property.address.full_address;
+              let landlord_username = appointment.landlord.username;
+              let from = 'Staysmart';
+              let notification = {
+                "user": appointment.property.tenant,
+                "message": "Viewing " + status + " for " + unit + " " + appointment.property.development.name + " at " + appointment.chosen_time.date + " from " + appointment.chosen_time.from + " to " + appointment.chosen_time.to,
+                "type": "appointment_proposed",
+                "ref_id": id
+              };
+              appointment.status = status;
+              Notifications.createNotifications(notification);
+              if(status == 'accepted') {
+                mail.confirmAppointment(emailTo, fullname, full_address, landlord_username, from);
               }
-              else{
-                resolve({message: 'appointment updated'});
-              }
+              if(status == 'rejected') {
+                mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from);
+              }              
+              appointment.save((err, saved)=>{
+                err ? reject({message: err.message})
+                    : resolve(saved);
+              })
             }
-        });
+            else{
+              reject({message: "No Data in Appointment"});
+            }
+          });        
     });
 });
 
