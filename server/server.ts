@@ -3,10 +3,6 @@
 "use strict";
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
-
-// if (process.env.NODE_ENV === "production")
-// require("newrelic");
-
 import * as express from "express";
 import * as os from "os";
 import * as fs from 'fs';
