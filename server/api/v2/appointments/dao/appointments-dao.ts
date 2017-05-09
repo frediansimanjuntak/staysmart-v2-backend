@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
-import * as newrelic from 'newrelic';
+// import * as newrelic from 'newrelic';
 import appointmentsSchema from '../model/appointments-model';
 import Users from '../../users/dao/users-dao'
 import Properties from '../../properties/dao/properties-dao'
