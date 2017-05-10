@@ -921,6 +921,54 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 	});
 });
 
+agreementsSchema.static('updatePropertyStatus', (id:string, status:string, agreement:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Properties
+			.findById(id)
+			.exec((err, property) => {
+				if(err){
+					reject(err);
+				}
+				if(property){
+					if(property.agreements.data){
+						property.agreements.history.push({"date": new Date(), "data": property.agreements.data});
+					}
+					property.status = status;
+					property.agreements.data = agreement;
+					property.save((err, saved) => {
+						err ? reject({message: err.message})
+							: resolve(saved);
+					});
+				}
+			})
+	});
+});
+
+agreementsSchema.static('updateUserRented', (id:string, until:string, property:string, agreement:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Users
+			.findById(id)
+			.exec((err, user) => {
+				if(err){
+					reject(err);
+				}
+				if(user){
+					user.rented_properties.push({"until": until, "property": property, "agreement": agreement});
+					user.save((err, saved) => {
+						err ? reject({message: err.message})
+							: resolve(saved);
+					});
+				}
+			})
+	});
+});
+
 agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -935,7 +983,7 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 					reject (err);
 				}
 				else if (agreement){					
-					let propertyId = agreement.property._id;
+					let propertyId = agreement.property._id.toString();
 					let tenantId = agreement.tenant._id;
 					let landlordId = agreement.landlord._id;
 
@@ -954,34 +1002,8 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 						let termLease = agreement.letter_of_intent.data.term_lease;
 						let longTerm = termLease + termLeaseExtend;
 						let until = dateCommencement.setDate(dateCommencement.getMonth() + longTerm);
-						Properties
-						.findByIdAndUpdate(propertyId, {
-							$set: {
-								"status": "rented"
-							}
-						})
-						.exec((err, updated) => {
-							if(err){
-								reject({message: err.message});
-							}
-							if(updated){
-								Users
-									.findByIdAndUpdate(tenantId, {
-										$push: {
-											"rented_properties": {
-												"until": until,
-												"property": propertyId,
-												"agreement": id
-											}
-										}
-									})
-									.exec((err, updated) => {
-										if(err){
-											reject({message: err.message});
-										}
-									});
-							}
-						});
+						Agreements.updatePropertyStatus(propertyId, "rented", id.toString());
+						Agreements.updateUserRented(propertyId, until, propertyId, id.toString());						
 						agreement.tenancy_agreement.data.status = "admin-confirmation";
 						agreement.tenancy_agreement.data.created_at = new Date();
 						agreement.save((err, saved)=>{
