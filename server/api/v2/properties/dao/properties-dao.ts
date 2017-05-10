@@ -2,12 +2,13 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import propertiesSchema from '../model/properties-model';
-import Amenities from '../../amenities/dao/amenities-dao'
-import Attachments from '../../attachments/dao/attachments-dao'
-import Users from '../../users/dao/users-dao'
-import Companies from '../../companies/dao/companies-dao'
-import Developments from '../../developments/dao/developments-dao'
-import Notifications from '../../notifications/dao/notifications-dao'
+import Amenities from '../../amenities/dao/amenities-dao';
+import Attachments from '../../attachments/dao/attachments-dao';
+import Users from '../../users/dao/users-dao';
+import Agreements from '../../agreements/dao/agreements-dao'
+import Companies from '../../companies/dao/companies-dao';
+import Developments from '../../developments/dao/developments-dao';
+import Notifications from '../../notifications/dao/notifications-dao';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 var split = require('split-string');
@@ -56,6 +57,10 @@ propertiesSchema.static('getAll', ():Promise<any> => {
             }
           })
           .exec((err, properties) => {
+            if(err){
+              reject(err);
+            }
+            
             err ? reject({message: err.message})
                 : resolve(properties);
           });

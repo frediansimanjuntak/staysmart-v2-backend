@@ -173,6 +173,16 @@ var PropertiesSchema = new mongoose.Schema({
 		],
 	},
 	status: {type: String, enum:['draft','pending','published','initiated','rented'], default: 'pending'},
+	agreements: {
+		data: {
+			type: Schema.Types.ObjectId,
+			ref: 'Agreements'
+		},
+		histories: [{
+			date: {type: Date},
+			data: {}
+		}]
+	},
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},
