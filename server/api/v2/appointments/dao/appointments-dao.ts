@@ -283,19 +283,20 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
             if(appointment){
               let devID = appointment.property.development;  
               let unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
+              let user = appointment.tenant._id;
               let emailTo = appointment.tenant.email;
               let fullname = appointment.tenant.username;
               let full_address = appointment.property.address.full_address;
               let landlord_username = appointment.landlord.username;
               let from = 'Staysmart';
               let notification = {
-                "user": appointment.property.tenant,
+                "user": user,
                 "message": "Viewing " + status + " for " + unit + " " + appointment.property.development.name + " at " + appointment.chosen_time.date + " from " + appointment.chosen_time.from + " to " + appointment.chosen_time.to,
                 "type": "appointment_proposed",
                 "ref_id": id
               };
               appointment.status = status;
-              Notifications.createNotifications(notification);
+              Notifications.createNotifications(notification); 
               if(status == 'accepted') {
                 mail.confirmAppointment(emailTo, fullname, full_address, landlord_username, from);
               }
