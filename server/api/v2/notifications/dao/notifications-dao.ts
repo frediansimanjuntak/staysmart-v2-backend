@@ -87,10 +87,7 @@ notificationsSchema.static('createNotifications', (notifications:Object):Promise
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(notifications)) {
         return reject(new TypeError('Notification is not a valid object.'));
-      }
-      var ObjectID = mongoose.Types.ObjectId;  
-      let body:any = notifications;
-      
+      }      
       var _notifications = new Notifications(notifications);
       _notifications.save((err, saved)=>{
         if(err){
