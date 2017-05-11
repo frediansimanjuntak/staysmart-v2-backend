@@ -56,9 +56,7 @@ export class socketIo{
     let userId = body.user;
     io.on('connect', onConnect);
     function onConnect(socket){
-    setInterval(function(){
-        socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id}); 
-    }, 1000);
+      socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id});
     }
   }
 }
