@@ -445,10 +445,41 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 					.findByIdAndRemove(id)
 					.exec((err, deleted) => {
 						err ? reject(err)
-						: resolve({message: 'user deleted'});
+							: resolve({message: 'user deleted'});
 					});
 			}
 		});
+	});
+});
+
+usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Users
+			.findById(id)
+			.exec((err, user) => {
+				if(err){
+					reject(err);
+				}
+				if(user){
+					user.authenticate(oldpass, (err, ok) => {
+				        if(err) {
+				          reject(err);
+				        }
+				        if(ok) {
+				          	user.password = newpass;
+				        	user.save((err, res) => {
+				        		err ? reject(err)
+									: resolve({message: 'data updated'});
+				        	});
+				        } else {
+				        	reject({message: "old password didn't match"});				        	
+				        }
+				    });
+				}
+			})
 	});
 });
 
@@ -466,36 +497,41 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 
 				Users
 					.findById(id, (err, user)=>{
-						if(body.username) {
-							user.username = body.username;
+						if(err){
+							reject(err);
 						}
-						if(body.email) {
-							user.email = body.email;
-						}
-						if(body.phone) {
-							user.phone = body.phone;
-						}
-						if(body.picture) {
-							user.picture = body.picture;
-						}
-						if(body.oldpassword && body.newpassword) {
-							if(user.password == user.encryptPassword(body.oldpassword)){
-								if(body.newpassword){
-									user.password = body.newpassword;
-								}
-								else{
-									reject({message: 'no new password'})
-								}
+						if(user){
+							if(body.username) {
+								user.username = body.username;
 							}
-							else if(user.password != user.encryptPassword(body.oldpassword)){
-								reject({message: "old password didn't match with password in database"});
+							if(body.email) {
+								user.email = body.email;
 							}
-						}
-							            
-						user.save((err, saved) => {
-				        err ? reject(err)
-				            : resolve({message: 'data updated'});
-			    	    });
+							if(body.phone) {
+								user.phone = body.phone;
+							}
+							if(body.picture) {
+								user.picture = body.picture;
+							}
+							user.save((err, saved) => {
+								if(err){
+									reject(err);
+								}
+								if(saved){
+									if(body.oldpassword && body.newpassword) {
+										Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+											resolve(res);
+										})
+										.catch((err) => {
+											reject(err);
+										})
+									}
+									else{
+										resolve({message: 'data updated'});
+									}
+								}
+				    	    });
+						}						
 					})
 			}
 		});
