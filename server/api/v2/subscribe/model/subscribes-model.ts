@@ -6,7 +6,10 @@ var Schema = mongoose.Schema;
 
 var SubscribesSchema = new mongoose.Schema({
 	email: {type: String, lowercase: true},	
-	created_at: {type: Date, default: Date.now}
+	name: {type: String},
+	extra: {},
+	created_at: {type: Date, default: Date.now},
+
 });
 
 export default SubscribesSchema;

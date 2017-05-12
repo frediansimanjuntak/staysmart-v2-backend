@@ -49,6 +49,10 @@ subscribesSchema.static('createSubscribes', (subscribes:Object):Promise<any> => 
 					}
 					if(res.length < 1){
 						var _subscribes = new Subscribes(subscribes);
+						if(body.blog_id){
+							_subscribes.extra.type = "blog",
+							_subscribes.extra.reference_id = body.blog_id 
+						}
 						_subscribes.save((err, saved)=>{
 							err ? reject({message: err.message})
 								: resolve(subscribes);
