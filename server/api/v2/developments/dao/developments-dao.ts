@@ -23,31 +23,35 @@ developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<a
     return new Promise((resolve:Function, reject:Function) => {
         Properties.searchProperties(searchComponent).then(properties => {
           var dev = [];
-          var count_match = 0;
-          var dev_id;
+                    
           for(var i = 0; i < properties.length; i++){
-            let dev_data = properties[i].development;
-            
-            if(dev.length > 0) {
+            let property = properties[i];
+            let development = property.development;
+            if (dev.length == 0){
+              dev.push({'development': development, 'count': 1});
+            }
+            else if (dev.length > 0){         
+              let countMatch = 0;
+              let developId;
+              let index;     
               for(var j = 0; j < dev.length; j++){
-                if(dev[j].development._id == dev_data._id) {
-                  count_match += 1;
-                  dev_id = dev[j].development._id;
-                }                 
-              }
-              if(count_match > 0) {
-                for(var k = 0; k < dev.length; k++){
-                  if(dev[k].development._id == dev_id) {
-                    dev[k].count += 1;
-                  }
+                let devId = dev[j].development._id;
+                let count = dev[j].count;
+                if(devId == development._id){
+                    countMatch += 1;
+                    developId = devId;
+                    index = j;
+                }
+                else{
+                  countMatch = countMatch;
                 }
               }
-              else{
-                dev.push({'development': dev_data, 'count': 1}); 
+              if(countMatch > 0){
+                dev[index].count += 1;
               }
-            }
-            else{
-              dev.push({'development': dev_data, 'count': 1});
+              else{
+                dev.push({'development': development, 'count': 1}); 
+              }
             }
           }
           resolve(dev);
