@@ -53,7 +53,7 @@ export class reportDAO{
 				})
 				.exec((err, agreement) => {
 					let property = agreement.property;
-					let landlord = agreement.landlord;
+					let landlord = agreement.landlord; 
 					let tenant = agreement.tenant;
 					let loi = agreement.letter_of_intent.data;
 					let ta = agreement.tenancy_agreement.data;
