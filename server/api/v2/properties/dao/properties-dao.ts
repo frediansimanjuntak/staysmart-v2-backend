@@ -17,7 +17,7 @@ propertiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({})
-          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+          .populate("pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
           .populate({
             path: 'owner.user',
             populate: [{
@@ -48,6 +48,13 @@ propertiesSchema.static('getAll', ():Promise<any> => {
                   model: 'Attachments'
                 }]
             }]
+          })
+          .populate({
+            path: 'development',
+            populate: {
+              path: 'properties',
+              model: 'Properties'
+            }
           })
           .populate({
             path: 'amenities',
