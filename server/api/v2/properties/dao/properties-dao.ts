@@ -63,13 +63,10 @@ propertiesSchema.static('getAll', ():Promise<any> => {
               model: 'Attachments'
             }
           })
-          .exec((err, properties) => {
-            if(err){
-              reject(err);
-            }
-            
+          .exec((err, properties) => {            
             err ? reject({message: err.message})
                 : resolve(properties);
+                console.log(properties);
           });
     });
 });
@@ -203,7 +200,14 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
                   path: 'shareholders.identification_proof.back',
                   model: 'Attachments'
                 }]
-            })
+            })          
+          .populate({
+            path: 'development',
+            populate: {
+              path: 'properties',
+              model: 'Properties'
+            }
+          })
           .populate({
             path: 'amenities',
             populate: {
