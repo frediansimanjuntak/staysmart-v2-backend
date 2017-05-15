@@ -706,12 +706,12 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 		Agreements
 			.findById(id)
 			.populate("landlord tenant letter_of_intent.data.payment")
-			.exec((err, agreement) => {
-				let landlordID = agreement.landlord._id;
+			.exec((err, agreement) => {				
 				if(err){
 					reject({message: err.message});
 				}
 				else if(agreement){
+					let landlordID = agreement.landlord._id;
 					if(landlordID != IDUser){
 						resolve({message: "forbidden"});
 					}
@@ -725,22 +725,20 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 						}
 
 						if(paymentStatus == "pending" || paymentStatus == "payment-confirmed"){
-							for(var i = 0; i < paymentFee.length; i++){
-								Payments
-									.update({"_id": paymentId, "fee":{ $elemMatch: {"needed_refund": false}}}, {
-										$set: {
-											"fee.$.needed_refund": true,
-											"fee.$.updated_at": new Date(),
-											"remarks": body.reason,
-											"status": "rejected"
-										},
-									}, {multi: true})
-									.exec((err, update) => {
-					            	if(err){
-					            		reject({message: err.message});
-					            	}
-					            });			
-							}
+							Payments
+								.update({"_id": paymentId, "fee":{ $elemMatch: {"needed_refund": false}}}, {
+									$set: {
+										"fee.$.needed_refund": true,
+										"fee.$.updated_at": new Date(),
+										"remarks": body.reason,
+										"status": "rejected"
+									},
+								}, {multi: true})
+								.exec((err, update) => {
+				            	if(err){
+				            		reject({message: err.message});
+				            	}
+				            });			
 							agreement.letter_of_intent.data.status = "rejected";
 							agreement.save((err, saved)=>{
 								if(err){
@@ -755,7 +753,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 										typeMail = "rejectLoiLandlord";
 									}
 									Agreements.email(id, typeMail);
-									resolve({message: "Loi rejected"})
+									resolve(saved);
 								}
 							});							
 						}
@@ -1042,7 +1040,7 @@ agreementsSchema.static('rejectTA', (id:string, userId:string, role:string, ta:O
 				}
 				if(agreement){
 					let landlordId = agreement.landlord._id;
-					let tenantId = agreement.tenant._id;
+					let tenantId = agreement.tenant._id.toString();
 
 					if(tenantId != IDUser){
 						reject({message:"forbidden"});
