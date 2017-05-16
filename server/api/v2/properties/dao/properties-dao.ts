@@ -365,7 +365,6 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
 
 propertiesSchema.static('createPropertiesWithoutOwner', (propertiesObject:Object, userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      var ObjectID = mongoose.Types.ObjectId;  
       let body:any = propertiesObject;
       Developments
         .findById(body.development)
@@ -386,12 +385,13 @@ propertiesSchema.static('createPropertiesWithoutOwner', (propertiesObject:Object
                     reject({message: 'property for this floor and unit in this development already exist.'});
                   }
                   else{
-                    var _properties = new Properties(propertiesObject);
+                    var _properties = new Properties(body);
                     _properties.slug = slug;
-                    _properties.confirmation.status = 'draft';
+                    _properties.status = 'draft';
+                    _properties.confirmation.status = 'approved';
                     _properties.created_by = userId;
                     _properties.save((err, saved)=>{
-                      err ? reject({message: err.message})
+                      err ? reject(err)
                           : resolve(saved);
                     });
                   }
