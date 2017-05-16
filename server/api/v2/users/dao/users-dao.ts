@@ -97,6 +97,14 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 						path: 'icon',
 						model: 'Attachments'
 					}
+				},
+				{
+					path: 'owner.user',
+					model: 'Users'
+				},
+				{
+					path: 'manager',
+					model: 'Users'
 				}]	
 			})
 			.populate({
@@ -202,6 +210,14 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 							path: 'icon',
 							model: 'Attachments'
 						}
+					},
+					{
+						path: 'owner.user',
+						model: 'Users'
+					},
+					{
+						path: 'manager',
+						model: 'Users'
 					}]			
 			})
 			.populate({
