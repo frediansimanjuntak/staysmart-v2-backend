@@ -189,14 +189,8 @@ var PropertiesSchema = new mongoose.Schema({
 		date: {type: Date},
 		data: {}
 	}],
-	created_at: {type: Date}
-}, {
-	toObject: {
-		virtuals: true
-	},
-	toJSON: {
-		virtuals: true
-	}
+	created_by: {type: String},
+	created_at: {type: Date, default: Date.now}
 });
 
 export default PropertiesSchema;
