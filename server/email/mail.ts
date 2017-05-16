@@ -35,20 +35,20 @@ export class mail{
 		})
 	}
 
-	static blogSubscribe(emailTo, name, blogTitle, url){
+	static blogSubscribe(emailTo, name, blogTitle, url, urlUnsubscribe){
 		return new Promise((resolve:Function, reject:Function) => {
 			var emailSubject = 'Blog Subscribe';
-			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+name+',<br><br><p style="align:justify;">You get the latest comment or update on blog "'+blogTitle+'"</p><p style="align:justify;">You can view this blog <a target="_blank" href="'+url+'">here</a>. </p>Thanks,<br>Staysmart Team</body></html>';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+name+',<br><br><p style="align:justify;">You get the latest comment or update on blog "'+blogTitle+'"</p><p style="align:justify;">You can view this blog <a target="_blank" href="'+url+'">here</a>. </p><p style="align:justify;> Unsubscribe this Blog <a target="_blank" href="'+urlUnsubscribe+'">here</a> </p>Thanks,<br>Staysmart Team</body></html>';
 			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
 				resolve(res);
 			});	
 		})
 	}
 
-	static blogComment(emailTo, blogTitle, url){
+	static blogComment(emailTo, blogTitle, url, urlUnsubscribe){
 		return new Promise((resolve:Function, reject:Function) => {
 			var emailSubject = 'Blog Comment';
-			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+emailTo+',<br><br><p style="align:justify;">Thank you for your comment on "'+blogTitle+'"</p><p style="align:justify;">You can view your comment <a target="_blank" href="'+url+'">here</a>. </p>Thanks,<br>Staysmart Team</body></html>';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+emailTo+',<br><br><p style="align:justify;">Thank you for your comment on "'+blogTitle+'"</p><p style="align:justify;">You can view your comment <a target="_blank" href="'+url+'">here</a>.</p><p style="align:justify;> Unsubscribe this comment <a target="_blank" href="'+urlUnsubscribe+'">here</a> </p>Thanks,<br>Staysmart Team</body></html>';
 			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
 				resolve(res);
 			});	
@@ -65,10 +65,10 @@ export class mail{
 		})
 	}
 
-	static blogCommentOnReply(emailTo, emailReplied, blogTitle, url){
+	static blogCommentOnReply(emailTo, emailReplied, blogTitle, url, urlUnsubscribe){
 		return new Promise((resolve:Function, reject:Function) => {
 			var emailSubject = 'Blog Comment Reply';
-			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+emailTo+',<br><br><p style="align:justify;">'+emailReplied+' Has reply your comment on "'+blogTitle+'"</p><p style="align:justify;">You can view the comment <a target="_blank" href="'+url+'">here</a>. </p>Thanks,<br>Staysmart Team</body></html>';
+			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body>Hi '+emailTo+',<br><br><p style="align:justify;">'+emailReplied+' Has reply your comment on "'+blogTitle+'"</p><p style="align:justify;">You can view the comment <a target="_blank" href="'+url+'">here</a>.</p><p style="align:justify;> Unsubscribe this comment <a target="_blank" href="'+urlUnsubscribe+'">here</a>.</p> </p>Thanks,<br>Staysmart Team</body></html>';
 			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
 				resolve(res);
 			});	
