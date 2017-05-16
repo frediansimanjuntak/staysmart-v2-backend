@@ -100,7 +100,7 @@ commentsSchema.static('sendSubscribeBlog', (idBlog:string, email:string):Promise
 									let email = res.email;
 									let name = res.name;
 									let url = config.url.blog + blogSlug;
-									let urlUnsubscribe = config.url.blog_unsubscribe + "&email=" + email + "&blog_id=" + blog;
+									let urlUnsubscribe = config.url.blog_unsubscribe+ blog + "&email=" + email;
 									mail.blogSubscribe(email, name, blogTitle, url, urlUnsubscribe).then(send => {
 										resolve({message: "email sent"});
 									})
@@ -133,7 +133,7 @@ commentsSchema.static('sendSubscribeComment', (idBlog:string):Promise<any> => {
 							let email = result.email;
 							let blogTitle = result.blog.title;
 							let url = config.url.blog_comment + result._id;
-							let urlUnsubscribe = config.url.blog_unsubscribe + "&email=" + email + "&comment_id=" + result._id; 
+							let urlUnsubscribe = config.url.blog_unsubscribe+ idBlog + "&email=" + email + "&comment_id=" + result._id; 
 							mail.blogCommentOnReply(email, email, blogTitle, url, urlUnsubscribe);
 							resolve(com);
 						})
