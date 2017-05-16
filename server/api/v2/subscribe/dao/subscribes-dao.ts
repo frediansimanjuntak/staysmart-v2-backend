@@ -44,10 +44,10 @@ subscribesSchema.static('createSubscribes', (subscribes:Object):Promise<any> => 
 					reject({message: err.message});
 				}
 				if(res){
-					if(res.length >= 1){
+					if(res.length > 0){
 						resolve({message: "your email already added to subscribe"})
 					}
-					if(res.length < 1){
+					if(res.length == 0){
 						var _subscribes = new Subscribes(subscribes);
 						if(body.blog_id){
 							_subscribes.extra.type = "blog",
@@ -83,7 +83,7 @@ subscribesSchema.static('unSubscribes', (subscribes:Object):Promise<any> => {
 					reject({message: err.message});
 				}
 				if(res){
-					if(res.length >= 1){
+					if(res.length > 0){
 						_.each(res, (result) => {
 							let id = result._id;
 							Subscribes
@@ -94,7 +94,7 @@ subscribesSchema.static('unSubscribes', (subscribes:Object):Promise<any> => {
 						      });
 						})												
 					}
-					if(res.length < 1){
+					if(res.length == 0){
 						resolve({message: "This email is not registered"})
 					}
 				}
