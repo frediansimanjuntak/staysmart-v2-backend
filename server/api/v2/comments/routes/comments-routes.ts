@@ -27,5 +27,9 @@ export class CommentsRoutes {
 		router
 			.route('/comments/send_subscribe/:idblog')
 			.post(CommentsController.sendSubscribeBlog);
+
+		router
+			.route('/unsubscribes')
+			.put(CommentsController.unSubscribeBlog);
 	}
 }
