@@ -54,26 +54,38 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 commentsSchema.static('unSubscribeBlog', (blogObject:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let body:any = blogObject;
-		if(body.comment_id){
-			Comments
-				.update({"_id": body.comment_id}, {
-					$set: {
-						"subscribes": false
+
+		Blogs
+			.findById(body.blog_id)
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					let blogTitle = res.title;
+					if(body.comment_id){
+						Comments
+							.update({"_id": body.comment_id}, {
+								$set: {
+									"subscribes": false
+								}
+							})
+							.exec((err, updated) => {
+								err ? reject({message: err.message})
+									: resolve({data: 'Successfully to unsubscribe Blog "'+ blogTitle +'" comments'});
+							})
 					}
-				})
-				.exec((err, updated) => {
-					err ? reject({message: err.message})
-						: resolve(updated);
-				})
-		}
-		else{
-			Subscribes.unSubscribes(blogObject).then((res) => {
-				resolve(res);
+					else{
+						Subscribes.unSubscribes(blogObject).then((res) => {
+							resolve({data: 'Successfully to unsubscribe Blog "'+ blogTitle +'"'});
+						})
+						.catch((err) => {
+							reject({message: err.message});
+						})
+					}
+				}
 			})
-			.catch((err) => {
-				reject(err);
-			})
-		}
+		
 	});
 });
 
