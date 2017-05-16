@@ -46,41 +46,34 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 			})
 			.exec((err, comments) => {
 				err ? reject({message: err.message})
-				: resolve(comments);
+					: resolve(comments);
 			});
 	});
 });
 
-commentsSchema.static('unSubscribeBlog', (idBlog:string, email:string):Promise<any> => {
+commentsSchema.static('unSubscribeBlog', (blogObject:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		Comments
-			.find({"blog": idBlog, "email": email})
-			.populate("blog")
-			.exec((err, res) => {
-				if(err){
-					reject(err);
-				}
-				if(res){
-					if(res.length == 0){
-						reject({message: "Email is not comment in this blog"})
+		let body:any = blogObject;
+		if(body.blog_id){
+			Subscribes.unSubscribes(blogObject).then((res) => {
+				resolve(res);
+			})
+			.catch((err) => {
+				reject(err);
+			})
+		}
+		else if(body.comment_id){
+			Comments
+				.update({"_id": body.comment_id}, {
+					$set: {
+						"subscribes": false
 					}
-					else{
-						_.each(res, (result) => {
-						let blogTitle = result.blog.title;
-						let blogSlug = result.blog.slug;
-						let email = result.email;
-						let name = result.name;
-						var url = config.url.blog + blogSlug;
-						mail.blogSubscribe(email, name, blogTitle, url).then(send => {
-							resolve({message: "email sent"});
-						})
-						.catch(err => {
-							reject(err);
-						});						
-					})
-					}					
-				}
-			})		
+				})
+				.exec((err, updated) => {
+					err ? reject({message: err.message})
+						: resolve(updated);
+				})
+		}
 	});
 });
 
