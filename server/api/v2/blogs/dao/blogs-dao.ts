@@ -101,7 +101,16 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
             },
             {
               path: 'replies',
-              model: 'Comments'
+              model: 'Comments',
+              populate: {
+                path: 'user',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username picture'
+              },
             }]
           },{
             path: 'created_by',
