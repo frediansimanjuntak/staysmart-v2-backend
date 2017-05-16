@@ -99,8 +99,9 @@ commentsSchema.static('sendSubscribeBlog', (idBlog:string, email:string):Promise
 									let blogSlug = res.blog.slug;
 									let email = res.email;
 									let name = res.name;
-									var url = config.url.blog + blogSlug;
-									mail.blogSubscribe(email, name, blogTitle, url).then(send => {
+									let url = config.url.blog + blogSlug;
+									let urlUnsubscribe = config.url.blog_unsubscribe + "&email=" + email + "&blog_id=" + blog;
+									mail.blogSubscribe(email, name, blogTitle, url, urlUnsubscribe).then(send => {
 										resolve({message: "email sent"});
 									})
 									.catch(err => {
@@ -129,10 +130,11 @@ commentsSchema.static('sendSubscribeComment', (idBlog:string):Promise<any> => {
 					}
 					if(com.length >= 0){
 						_.each(com, (result) => {
-							var email = result.email;
-							var blogTitle = result.blog.title;
-							var url = config.url.blog_comment + result._id;
-							mail.blogCommentOnReply(email, email, blogTitle, url);
+							let email = result.email;
+							let blogTitle = result.blog.title;
+							let url = config.url.blog_comment + result._id;
+							let urlUnsubscribe = config.url.blog_unsubscribe + "&email=" + email + "&comment_id=" + result._id; 
+							mail.blogCommentOnReply(email, email, blogTitle, url, urlUnsubscribe);
 							resolve(com);
 						})
 					}
@@ -152,10 +154,11 @@ commentsSchema.static('sendBlogComment', (id:string):Promise<any> => {
 					reject(err);
 				}
 				if(comment){
-					var email = comment.email;
-					var blogTitle = comment.blog.title;
-					var url = config.url.blog_comment + id;
-					mail.blogComment(email, blogTitle, url);
+					let email = comment.email;
+					let blogTitle = comment.blog.title;
+					let url = config.url.blog + id;
+					let urlUnsubscribe = config.url.blog_unsubscribe + "&email=" + email + "&comment_id=" + id; 
+					mail.blogComment(email, blogTitle, url, urlUnsubscribe);
 					resolve(comment);
 				}
 			})		
