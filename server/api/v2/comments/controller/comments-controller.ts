@@ -61,4 +61,12 @@ export class CommentsController {
 		.then(comments => res.status(201).json(comments))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static unSubscribeBlog(req: express.Request, res: express.Response):void {
+		let reply = req.body;
+		CommentsDAO
+		['unSubscribeBlog'](reply)
+		.then(comments => res.status(201).json(comments))
+		.catch(error => res.status(400).json(error));
+	}
 }
