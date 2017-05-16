@@ -69,8 +69,15 @@ subscribesSchema.static('unSubscribes', (subscribes:Object):Promise<any> => {
 			return reject(new TypeError('Subscribes is not a valid object.'));
 		}
 		let body:any = subscribes;
+		let _query;
+		if(body.blog_id){
+			_query = {"email": body.email, "extra.type": "blog", "extra.reference_id": body.blog_id};
+		}
+		else{
+			_query = {"email": body.email};
+		}
 		Subscribes
-			.find({"email": body.email})
+			.find(_query)
 			.exec((err, res) => {
 				if(err){
 					reject({message: err.message});
