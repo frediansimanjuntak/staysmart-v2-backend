@@ -1034,6 +1034,7 @@ agreementsSchema.static('rejectTA', (id:string, userId:string, role:string, ta:O
 
 		Agreements
 			.findById(id)
+			.populate("room_id landlord tenant property appointment")
 			.exec((err, agreement) => {
 				if(err){
 					reject({message: err.message});
