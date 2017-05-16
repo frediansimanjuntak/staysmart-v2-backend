@@ -717,14 +717,15 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 					}
 					else if(landlordID == IDUser || role == 'admin'){
 						let payment = agreement.letter_of_intent.data.payment;
+						let statusLoi = agreement.letter_of_intent.data.status;
 						let paymentId = payment._id;
 						let paymentStatus = payment.status;
 						let paymentFee = payment.fee;
 						if(paymentStatus == "rejected"){
-							resolve({message: "this payment has rejected"})
+							resolve({message: "this payment has rejected"});
 						}
 
-						if(paymentStatus == "pending" || paymentStatus == "payment-confirmed"){
+						if(paymentStatus == "pending" || paymentStatus == "accepted" || statusLoi == "payment-confirmed"){
 							Payments
 								.update({"_id": paymentId, "fee":{ $elemMatch: {"needed_refund": false}}}, {
 									$set: {
