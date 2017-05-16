@@ -391,8 +391,24 @@ propertiesSchema.static('createPropertiesWithoutOwner', (propertiesObject:Object
                     _properties.confirmation.status = 'approved';
                     _properties.created_by = userId;
                     _properties.save((err, saved)=>{
-                      err ? reject(err)
-                          : resolve(saved);
+                      if(err){
+                        reject(err);
+                      }
+                      if(saved){
+                        Developments
+                          .update({"_id":saved.development}, {
+                            $push: {
+                              "properties": saved._id
+                            },
+                            $inc:{
+                              "number_of_units": 1
+                            }
+                          })
+                          .exec((err, update) => {
+                            err ? reject({message: err.message})
+                                : resolve(saved);
+                          })
+                      }                          
                     });
                   }
                 }
