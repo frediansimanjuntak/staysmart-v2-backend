@@ -54,15 +54,7 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 commentsSchema.static('unSubscribeBlog', (blogObject:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let body:any = blogObject;
-		if(body.blog_id){
-			Subscribes.unSubscribes(blogObject).then((res) => {
-				resolve(res);
-			})
-			.catch((err) => {
-				reject(err);
-			})
-		}
-		else if(body.comment_id){
+		if(body.comment_id){
 			Comments
 				.update({"_id": body.comment_id}, {
 					$set: {
@@ -73,6 +65,14 @@ commentsSchema.static('unSubscribeBlog', (blogObject:Object):Promise<any> => {
 					err ? reject({message: err.message})
 						: resolve(updated);
 				})
+		}
+		else{
+			Subscribes.unSubscribes(blogObject).then((res) => {
+				resolve(res);
+			})
+			.catch((err) => {
+				reject(err);
+			})
 		}
 	});
 });
