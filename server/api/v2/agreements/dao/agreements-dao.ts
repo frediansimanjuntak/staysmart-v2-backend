@@ -920,50 +920,67 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 	});
 });
 
-agreementsSchema.static('updatePropertyStatus', (id:string, status:string, agreement:string):Promise<any> => {
+agreementsSchema.static('createHistoryProperty', (id:string, typeDataa:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		
+		var historyObj = {$push: {}};  
+		historyObj.$push[typeDataa+'.histories'] = {"date": new Date(), "data": data};
+
+		Properties
+			.findByIdAndUpdate(id, historyObj)
+			.exec((err, saved) => {
+			err ? reject({message: err.message})
+				: resolve(saved);
+			});
+    });
+});
+
+agreementsSchema.static('updatePropertyStatus', (id:string, userId:string, until:string, status:string, agreement:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
 		Properties
 			.findById(id)
 			.exec((err, property) => {
 				if(err){
 					reject(err);
+					console.log("eror1", err);
 				}
 				if(property){
 					if(property.agreements.data){
-						property.agreements.history.push({"date": new Date(), "data": property.agreements.data});
+						Agreements.createHistoryProperty(id, "agreement", property.agreements.data);
+					}
+					if(property.rented.data.by){
+						Agreements.createHistoryProperty(id, "rented", property.rented.data);
 					}
 					property.status = status;
 					property.agreements.data = agreement;
+					property.rented.data.by = userId;
+					property.rented.data.until = until;
 					property.save((err, saved) => {
 						err ? reject({message: err.message})
 							: resolve(saved);
+							console.log("eror2", err);
+							console.log(saved);
 					});
 				}
 			})
 	});
 });
 
-agreementsSchema.static('updateUserRented', (id:string, until:string, property:string, agreement:string):Promise<any> => {
+agreementsSchema.static('updateUserRented', (userId:string, until:string, property:string, agreement:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
 		Users
-			.findById(id)
-			.exec((err, user) => {
-				if(err){
-					reject(err);
+			.findByIdAndUpdate(userId, {
+				$push: {
+					"rented_properties": {
+						"until": until,
+						"property": property,
+						"agreement": agreement
+					}
 				}
-				if(user){
-					user.rented_properties.push({"until": until, "property": property, "agreement": agreement});
-					user.save((err, saved) => {
-						err ? reject({message: err.message})
-							: resolve(saved);
-					});
-				}
+			})
+			.exec((err, updated) => {
+				err ? reject({message: err.message})
+					: resolve(updated);
 			})
 	});
 });
@@ -989,20 +1006,7 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 					if(tenantId != IDUser){
 						resolve({message: "forbidden"})
 					}
-					else if(tenantId == IDUser){
-						let termLeaseExtend
-						if(agreement.letter_of_intent.data.term_lease_extend){
-							termLeaseExtend = agreement.letter_of_intent.data.term_lease_extend;
-						}
-						else if(!agreement.letter_of_intent.data.term_lease_extend){
-							termLeaseExtend = 0;
-						}						
-						let dateCommencement = agreement.letter_of_intent.data.date_commencement;
-						let termLease = agreement.letter_of_intent.data.term_lease;
-						let longTerm = termLease + termLeaseExtend;
-						let until = dateCommencement.setDate(dateCommencement.getMonth() + longTerm);
-						Agreements.updatePropertyStatus(propertyId, "rented", id.toString());
-						Agreements.updateUserRented(propertyId, until, propertyId, id.toString());						
+					else if(tenantId == IDUser){				
 						agreement.tenancy_agreement.data.status = "admin-confirmation";
 						agreement.tenancy_agreement.data.created_at = new Date();
 						agreement.save((err, saved)=>{
@@ -1474,6 +1478,7 @@ agreementsSchema.static('updateReceivePayment', (data:Object):Promise<any> => {
 				neededRefundGfd = true;
 				neededRefundStd = true;
 			}
+			
 		}
 		if(body.typeInput == "ta"){
 			if(body.status == "accepted"){
@@ -1486,17 +1491,17 @@ agreementsSchema.static('updateReceivePayment', (data:Object):Promise<any> => {
 				neededRefundStd = true;
 				neededRefundScd = true;
 			}
+			
 		}
 		//stamp duty payment
-		Agreements.paymentReceiveAmount(idPayment, "std", body.receiveAmountStd, neededRefundStd, body.payment_confirm, body.status, body.remarks)
+		Agreements.paymentReceiveAmount(idPayment, "std", body.receiveAmountStd, neededRefundStd, body.payment_confirm, body.status, body.remarks);
 		//gfd payment
-		Agreements.paymentReceiveAmount(idPayment, "gfd", body.receiveAmountGfd, neededRefundGfd, body.payment_confirm, body.status, body.remarks)
+		Agreements.paymentReceiveAmount(idPayment, "gfd", body.receiveAmountGfd, neededRefundGfd, body.payment_confirm, body.status, body.remarks);
 		//security deposit payment
-		Agreements.paymentReceiveAmount(idPayment, "scd", body.receiveAmountScd, neededRefundScd, body.payment_confirm, body.status, body.remarks)
-
+		Agreements.paymentReceiveAmount(idPayment, "scd", body.receiveAmountScd, neededRefundScd, body.payment_confirm, body.status, body.remarks);
 		//refund payment
 		if(body.refundPayment){
-			Agreements.addRefund(idPayment, body.refundPayment)
+			Agreements.addRefund(idPayment, body.refundPayment);
 		}		    	
 	});
 });
@@ -1523,6 +1528,8 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 					let loiData = agreement.letter_of_intent.data;
 					let taData = agreement.tenancy_agreement.data;
 					let landlordId = agreement.landlord;
+					let tenantId = agreement.tenant;
+					let propertyId = agreement.property;
 					let paymentLoiID = loiData.payment.toString();
 					let paymentTaID;
 					if(taData.payment){
@@ -1531,13 +1538,24 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 					let gfd = loiData.gfd_amount;
 					let std = loiData.sd_amount;
 					let scd = loiData.security_deposit;
+					let termLeaseExtend
+					if(loiData.term_lease_extend){
+						termLeaseExtend = loiData.term_lease_extend;
+					}
+					else if(!loiData.term_lease_extend){
+						termLeaseExtend = 0;
+					}
+					let dateCommencement = loiData.date_commencement;
+					let termLease = loiData.term_lease;
+					let longTerm = termLease + termLeaseExtend;
+					let until = dateCommencement.setDate(dateCommencement.getMonth() + longTerm);
 					let receiveGfd;
 					let receiveStd;
 					let receiveScd;
 					let refund;
 					let temp;
 					if(type == "letter_of_intent"){
-						if(loiData.status == "draft"){
+						if(loiData.status == "draft" || loiData.status == "expired"){
 							resolve({message: "LOI status is draft"})
 						}
 						else{
@@ -1609,8 +1627,8 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 						
 					}
 					if(type == "tenancy_agreement"){
-						if(taData.status == "draft"){
-							resolve({message: "TA status is draft"})
+						if(taData.status == "draft" || taData.status == "expired"){
+							resolve({message: "TA status is draft or expired"})
 						}
 						else{
 							agreement.tenancy_agreement.data.status = body.status_ta;
@@ -1643,6 +1661,8 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 
 									if(body.status_payment == "accepted"){
 										if(receivePayment >= totalFee){
+											Agreements.updatePropertyStatus(propertyId, tenantId, until, "rented", id.toString());
+											Agreements.updateUserRented(tenantId, until, propertyId, id.toString());	
 											Agreements.updateReceivePayment(data);
 											Agreements.notification(id, type_notif);										
 											Agreements.email(id, typeMail);
@@ -1676,6 +1696,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
+
 		let ObjectID = mongoose.Types.ObjectId;
 		let body:any = data;
 		let type:any = body.type;
@@ -1684,7 +1705,6 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 		let typeMail;
 		let statusTa;
 		let statusLoi;
-		console.log(body);
 		if(type == "letter_of_intent"){
 			typeMail = "acceptLoiPayment";
 			type_notif = "acceptLoiPayment";
@@ -1730,7 +1750,6 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 		let typeMail;		
 		let statusTa;
 		let statusLoi;
-		console.log(body);
 		if(type == "letter_of_intent"){
 			typeMail = "rejectLoiPayment";
 			type_notif = "rejectLoiPayment";
@@ -2057,8 +2076,7 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 		                    dataArr.push(data);
 						}					
 					resolve(dataArr)
-					}
-					
+					}					
 				}
 			})
 	});

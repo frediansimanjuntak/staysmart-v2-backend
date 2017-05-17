@@ -183,13 +183,29 @@ var PropertiesSchema = new mongoose.Schema({
 			data: {}
 		}]
 	},
+	rented: {
+		data: {
+			by: {
+				type: Schema.Types.ObjectId,
+				ref: 'Users'
+			},
+			until:{type: Date}
+		},
+		histories: [{
+			date: {type: Date},
+			data: {}
+		}]					
+	},
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},
 		date: {type: Date},
 		data: {}
 	}],
-	created_by: {type: String},
+	created_by: {
+		type: Schema.Types.ObjectId,
+		ref: 'Users'
+	},
 	created_at: {type: Date, default: Date.now}
 });
 
