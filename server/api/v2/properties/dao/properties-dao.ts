@@ -2,12 +2,13 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import propertiesSchema from '../model/properties-model';
-import Amenities from '../../amenities/dao/amenities-dao'
-import Attachments from '../../attachments/dao/attachments-dao'
-import Users from '../../users/dao/users-dao'
-import Companies from '../../companies/dao/companies-dao'
-import Developments from '../../developments/dao/developments-dao'
-import Notifications from '../../notifications/dao/notifications-dao'
+import Amenities from '../../amenities/dao/amenities-dao';
+import Attachments from '../../attachments/dao/attachments-dao';
+import Users from '../../users/dao/users-dao';
+import Agreements from '../../agreements/dao/agreements-dao'
+import Companies from '../../companies/dao/companies-dao';
+import Developments from '../../developments/dao/developments-dao';
+import Notifications from '../../notifications/dao/notifications-dao';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 var split = require('split-string');
@@ -16,7 +17,7 @@ propertiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({})
-          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+          .populate("pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by rented.data.by agreements.data")
           .populate({
             path: 'owner.user',
             populate: [{
@@ -49,15 +50,23 @@ propertiesSchema.static('getAll', ():Promise<any> => {
             }]
           })
           .populate({
+            path: 'development',
+            populate: {
+              path: 'properties',
+              model: 'Properties'
+            }
+          })
+          .populate({
             path: 'amenities',
             populate: {
               path: 'icon',
               model: 'Attachments'
             }
           })
-          .exec((err, properties) => {
-            err ? reject(err)
+          .exec((err, properties) => {            
+            err ? reject({message: err.message})
                 : resolve(properties);
+                console.log(properties);
           });
     });
 });
@@ -65,23 +74,24 @@ propertiesSchema.static('getAll', ():Promise<any> => {
 propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var today = new Date();
-        let _query = {"confirmation.status": "approved", "details.available": {$lte: today}};
+        let _query = {"confirmation.status": "approved", "details.available": {$lte: today}, "status": "published"};
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
         if(search.latlng != 'all') 
         {
+          let radius;
           if(search.radius != 'all') {
-            var radius = search.radius;
+            radius = (search.radius) / 1000 * 0.621371;
           }
           else{
-            radius = 1500;
+            radius = 1.5;
           }
           var latlng = search.latlng.split(",");
           var lnglat = [];
           lnglat.push(Number(latlng[1]));
           lnglat.push(Number(latlng[0]));
-          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/3963.2 ] } } });
+          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/6371 ] } } });
         }
         if(search.pricemin != 'all') 
         {
@@ -138,7 +148,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             path: 'picture',
             model: 'Attachments'
           },
-          select: 'username email picture landlord.data.name tenant.data.name'
+          select: 'username email phone picture landlord.data.name tenant.data.name'
         })
         property.populate({
           path: 'amenities',
@@ -148,7 +158,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           }
         })
         property.exec((err, properties) => {
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(properties);
         });
     });
@@ -158,7 +168,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .findById(id)
-          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by rented.data.by agreements.data")
           .populate({
             path: 'owner.user',
             populate: [{
@@ -173,7 +183,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
               path: 'landlord.data.identification_proof.back',
               model: 'Attachments' 
             }],
-            select: 'username email picture landlord.data reported'
+            select: 'username email phone picture landlord.data reported'
           })
           .populate({
               path: 'owner.company',
@@ -187,10 +197,17 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
                   model: 'Attachments'
                 },
                 {
-                  path: 'shareholders.identification_proof.front',
+                  path: 'shareholders.identification_proof.back',
                   model: 'Attachments'
                 }]
-            })
+            })          
+          .populate({
+            path: 'development',
+            populate: {
+              path: 'properties',
+              model: 'Properties'
+            }
+          })
           .populate({
             path: 'amenities',
             populate: {
@@ -199,7 +216,7 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
             }
           })
           .exec((err, properties) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(properties);
           });
     });
@@ -216,10 +233,10 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
               path: 'picture',
               model: 'Attachments'
             },
-            select: 'username email picture landlord.data.name tenant.data.name'
+            select: 'username email phone picture landlord.data.name tenant.data.name'
           })
           .exec((err, properties) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(properties);
           });
     });
@@ -229,23 +246,30 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({"owner.user": userId, "status": "draft"})
-          .populate("development amenities pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
+          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
+          .populate({
+            path: 'amenities',
+            populate: {
+              path: 'icon',
+              model: 'Attachments'
+            }
+          })
           .populate({
             path: 'owner.user',
             populate: {
               path: 'picture',
               model: 'Attachments'
             },
-            select: 'username email picture landlord.data.name tenant.data.name'
+            select: 'username email phone picture landlord.data.name tenant.data.name'
           })
           .exec((err, result) => {
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(result);
           });
     });
 });
 
-propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
+propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Object, userEmail:string, userFullname:string, userRole:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(propertiesObject)) {
         return reject(new TypeError('Property not a valid object.'));
@@ -254,84 +278,154 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
         reject({message: 'Please login first before continue.'});
       }
       else{
-        var ObjectID = mongoose.Types.ObjectId;  
-        let body:any = propertiesObject;
-        Developments
-          .findById(body.development)
-          .exec((err, development) => {
-            if(err) {
-              reject(err);
-            }
-            else if(development) {
-              let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
-              Properties
-                .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
-                .exec((err, properties) => {
-                  if(err) {
-                    reject(err);
-                  }
-                  else if(properties) {
-                    if(properties.length > 0) {
-                      reject({message: 'property for this floor and unit in this development already exist.'});
+        if(userRole == "admin"){
+          Properties.createPropertiesWithoutOwner(propertiesObject, userId).then((result) => {
+            resolve(result);
+          })
+          .catch((err) => {
+            reject(err);
+          })
+        }
+        else if(userRole == "user"){
+          var ObjectID = mongoose.Types.ObjectId;  
+          let body:any = propertiesObject;
+          Developments
+            .findById(body.development)
+            .exec((err, development) => {
+              if(err) {
+                reject({message: err.message});
+              }
+              else if(development) {
+                let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
+                Properties
+                  .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
+                  .exec((err, properties) => {
+                    if(err) {
+                      reject({message: err.message});
                     }
-                    else{
-                      var _properties = new Properties(propertiesObject);
-                          _properties.slug = slug;
-                          _properties.owner.user = userId;
-                          _properties.confirmation.status = 'pending';
-                          _properties.save((err, saved)=>{
-                            if(err) {
-                              reject(err);
-                            }
-                            else if(saved){
-                              let propertyID = saved._id;
-                              Properties.insertData(propertiesObject, propertyID, userId).then(res => {
-                                Users
-                                  .update({"_id":userId}, {
-                                    $push: {
-                                      "owned_properties": propertyID
-                                    }
-                                  })
-                                  .exec((err, saved) => {
-                                      if(err) {
-                                        reject(err);
+                    else if(properties) {
+                      if(properties.length > 0) {
+                        reject({message: 'property for this floor and unit in this development already exist.'});
+                      }
+                      else{
+                        var _properties = new Properties(propertiesObject);
+                            _properties.slug = slug;
+                            _properties.owner.user = userId;
+                            _properties.confirmation.status = 'pending';
+                            _properties.save((err, saved)=>{
+                              if(err) {
+                                reject({message: err.message});
+                              }
+                              else if(saved){
+                                let propertyID = saved._id;
+                                Properties.insertData(propertiesObject, propertyID, userId).then(res => {
+                                  Users
+                                    .update({"_id":userId}, {
+                                      $push: {
+                                        "owned_properties": propertyID
                                       }
-                                      else if(saved) {
-                                        if(!body.address.full_address) {
-                                          reject({message:'no full address'});
+                                    })
+                                    .exec((err, saved) => {
+                                        if(err) {
+                                          reject({message: err.message});
                                         }
-                                        else{
-                                          var full_address = body.address.full_address;
-                                          var from = 'Staysmart';
-                                          if(body.status && body.status != 'draft') {
-                                            mail.submitProperty(userEmail, userFullname, full_address, from);
-                                            resolve({message: 'property created'});    
-                                          }
-                                          else if(body.status && body.status == 'draft'){
-                                            resolve({message: 'property draft created'});
+                                        else if(saved) {
+                                          if(!body.address.full_address) {
+                                            reject({message:'no full address'});
                                           }
                                           else{
-                                            mail.submitProperty(userEmail, userFullname, full_address, from);
-                                            resolve({message: 'property created'});
+                                            var full_address = body.address.full_address;
+                                            var from = 'Staysmart';
+                                            if(body.status && body.status != 'draft') {
+                                              mail.submitProperty(userEmail, userFullname, full_address, from);
+                                              resolve({message: 'property created'});    
+                                            }
+                                            else if(body.status && body.status == 'draft'){
+                                              resolve({message: 'property draft created'});
+                                            }
+                                            else{
+                                              mail.submitProperty(userEmail, userFullname, full_address, from);
+                                              resolve({message: 'property created'});
+                                            }
                                           }
                                         }
-                                      }
+                                    });
                                   });
-                                });
-                            }
-                          });
+                              }
+                            });
+                      }
                     }
-                  }
-                })
-            }
-          })
+                  })
+              }
+            })
+        }        
       }
+    });
+});
+
+propertiesSchema.static('createPropertiesWithoutOwner', (propertiesObject:Object, userId:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      let body:any = propertiesObject;
+      Developments
+        .findById(body.development)
+        .exec((err, development) => {
+          if(err) {
+            reject({message: err.message});
+          }
+          else if(development) {
+            let slug = Developments.slug(body.address.floor+'-'+body.address.unit+' '+development.name);
+            Properties
+              .find({"development": body.development, "address.floor": body.address.floor, "address.unit": body.address.unit})
+              .exec((err, properties) => {
+                if(err) {
+                  reject({message: err.message});
+                }
+                else if(properties) {
+                  if(properties.length > 0) {
+                    reject({message: 'property for this floor and unit in this development already exist.'});
+                  }
+                  else{
+                    var _properties = new Properties(body);
+                    _properties.slug = slug;
+                    _properties.status = 'draft';
+                    _properties.confirmation.status = 'approved';
+                    _properties.created_by = userId;
+                    _properties.save((err, saved)=>{
+                      if(err){
+                        reject(err);
+                      }
+                      if(saved){
+                        Developments
+                          .update({"_id":saved.development}, {
+                            $push: {
+                              "properties": saved._id
+                            },
+                            $inc:{
+                              "number_of_units": 1
+                            }
+                          })
+                          .exec((err, update) => {
+                            err ? reject({message: err.message})
+                                : resolve(saved);
+                          })
+                      }                          
+                    });
+                  }
+                }
+              })
+          }
+        })
     });
 });
 
 propertiesSchema.static('updateProperties', (id:string, properties:Object, userId:Object, userEmail:string, userFullname:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let body:any = properties;
+        let propertyObj = {$set: {}};
+        for(var param in body) {
+          propertyObj.$set[param] = body[param];
+        }
+
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
             reject({message: res.message});
@@ -341,7 +435,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
               .findById(id)
               .exec((err, property_result) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
                 else{
                   let old_status = property_result.status;
@@ -349,10 +443,10 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                   var type = 'data';
                   Properties.createPropertyHistory(id, action, type).then(history => {
                     Properties
-                      .findByIdAndUpdate(id, properties)
+                      .findByIdAndUpdate(id, propertyObj)
                       .exec((err, update) => {
                             if(err) {
-                              reject(err);
+                              reject({message: err.message});
                             }
                             else{
                               Properties.insertData(properties, id, userId).then(res => {
@@ -430,7 +524,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
               })
               .exec((err, saved) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
                 else if(saved) {
                   if(type == 'data') {
@@ -444,7 +538,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
                         }
                       })
                       .exec((err, update) => {
-                        err ? reject(err)
+                        err ? reject({message: err.message})
                         : resolve({message: 'updated'});
                       });
                   }
@@ -456,8 +550,8 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
                         }
                       })
                       .exec((err, update) => {
-                        err ? reject(err)
-                        : resolve({message: 'updated'});
+                        err ? reject({message: err.message})
+                            : resolve({message: 'updated'});
                       }); 
                   }
                 }
@@ -481,7 +575,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.living[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -489,7 +583,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.dining[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -497,7 +591,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.bed[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -505,7 +599,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.toilet[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -513,7 +607,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 Attachments
                   .findByIdAndRemove(result.pictures.kitchen[i])
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve(deleted);
                   });
               }
@@ -525,14 +619,14 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                 }
               })
               .exec((err, deleted) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve(deleted);
               });
 
             Properties
               .findByIdAndRemove(id)
               .exec((err, deleted) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve(deleted);
               });
           }
@@ -550,7 +644,7 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
           .populate("owner.user")  
           .exec((err, properties) => {
             if(err) {
-              reject(err);
+              reject({message: err.message});
             }
             else{
               if(properties.status != 'draft') {
@@ -559,82 +653,88 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                 var full_address = properties.address.full_address;
                 var url = config.url.approveProperty;
                 var from = 'Staysmart';
+                if(confirmation == 'approve' || confirmation == 'reject'){
+                  if(confirmation == 'approve') {
+                    var confirmation_result = 'approved';
+                    mail.approveProperty(emailTo, full_name, full_address, url, from);
+                  }
+                  if(confirmation == 'reject'){
+                    confirmation_result = 'rejected';
+                    mail.rejectProperty(emailTo, full_name, full_address, from);
+                  }
+                  let body:any = proof;
+                  Properties
+                    .update({"_id": id}, {
+                      $set: {
+                        "confirmation.status": confirmation_result,
+                        "confirmation.proof": body.proofId,
+                        "confirmation.by": userId,
+                        "confirmation.date": new Date(),
+                        "confirmation.remarks": body.remarks
+                      }
+                    })
+                    .exec((err, update) => {
+                      if(err) {
+                        reject({message: err.message});
+                      }
+                      else{
+                        Properties
+                          .findById(id, (err, result) => {
+                            result.status = 'published';
+                            result.save((err, update) => {
+                              if(err) {
+                                reject({message: err.message});
+                              }
+                            });
+                            var devID = result.development;
+                            var unit = '#'+result.address.floor+'-'+result.address.unit;
+                            if(result.status != 'draft' && confirmation == 'approve') {
+                              Developments
+                                .update({"_id":result.development}, {
+                                  $push: {
+                                    "properties": id
+                                  },
+                                  $inc:{
+                                    "number_of_units": 1
+                                  }
+                                })
+                                .exec((err, update) => {
+                                    if(err) {
+                                      reject({message: err.message});
+                                    }
+                                    else{
+                                      Developments
+                                        .findById(devID)
+                                        .exec((err, data) => {
+                                          if(err) {
+                                            reject({message: err.message});
+                                          }
+                                          else{
+                                            var notification = {
+                                              "user": result.owner.user,
+                                              "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
+                                              "type": confirmation_result+"_property",
+                                              "ref_id": id
+                                            };
 
-                if(confirmation == 'approve') {
-                  var confirmation_result = 'approved';
-                  mail.approveProperty(emailTo, full_name, full_address, url, from);
-                }
-                else if(confirmation == 'reject'){
-                  confirmation_result = 'rejected';
-                  mail.rejectProperty(emailTo, full_name, full_address, from);
-                }
-                let body:any = proof;
-                Properties
-                  .update({"_id": id}, {
-                    $set: {
-                      "confirmation.status": confirmation_result,
-                      "confirmation.proof": body.proofId,
-                      "confirmation.by": userId,
-                      "confirmation.date": new Date()
-                    }
-                  })
-                  .exec((err, update) => {
-                    if(err) {
-                      reject(err);
-                    }
-                    else{
-                      Properties
-                        .findById(id, (err, result) => {
-                          result.status = 'published';
-                          result.save((err, update) => {
-                            if(err) {
-                              reject(err);
+                                            Notifications.createNotifications(notification);
+                                          }
+                                        });
+                                      resolve({message: 'confirmation updated'});
+                                    }
+                                });
                             }
-                          });
-                          var devID = result.development;
-                          var unit = '#'+result.address.floor+'-'+result.address.unit;
-                          if(result.status != 'draft' && confirmation == 'approve') {
-                            Developments
-                              .update({"_id":result.development}, {
-                                $push: {
-                                  "properties": id
-                                },
-                                $inc:{
-                                  "number_of_units": 1
-                                }
-                              })
-                              .exec((err, update) => {
-                                  if(err) {
-                                    reject(err);
-                                  }
-                                  else{
-                                    Developments
-                                      .findById(devID)
-                                      .exec((err, data) => {
-                                        if(err) {
-                                          reject(err);
-                                        }
-                                        else{
-                                          var notification = {
-                                            "user": result.owner.user,
-                                            "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
-                                            "type": confirmation_result+"_property",
-                                            "ref_id": id
-                                          };
-
-                                          Notifications.createNotifications(notification);
-                                        }
-                                      });
-                                    resolve({message: 'confirmation updated'});
-                                  }
-                              });
-                          }
-                          else{
-                            resolve({message: 'property status is draft.'});
-                          }
-                        })
-                    }
-                  });
+                            else{
+                              resolve({message: 'property status is draft.'});
+                            }
+                          })
+                      }
+                    });
+                }
+                else{
+                  reject({message: "wrong confirmation type"})
+                }
+                
               }
               else{
                 resolve({message: 'property status is draft.'});
@@ -656,7 +756,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
         .select("shortlisted_property")
         .exec((err, res) => {
           if(err){
-            reject(err);
+            reject({message: err.message});
           }
           if(res){
             if(res.length > 0){
@@ -670,7 +770,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
                   }
                 })
                 .exec((err, update) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve({message: "Success shortlisted this property"});
                 });
             }          
@@ -689,7 +789,7 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
         .select("shortlisted_property")
         .exec((err, res) => {
           if(err){
-            reject(err);
+            reject({message: err.message});
           }
           if(res){
             if(res.length == 0){
@@ -703,7 +803,7 @@ propertiesSchema.static('unShortlistProperty', (id:string, userId:string):Promis
                   }
                 })
                 .exec((err, update) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve({message: "Success to unshortlisted this property"});
                 });
             }          
@@ -743,7 +843,7 @@ propertiesSchema.static('unsetTemp', (propertyId:string, type:string):Promise<an
       Properties
         .findByIdAndUpdate(propertyId, unsetObj)
         .exec((err, update) => {
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(update);
         });
   });
@@ -762,7 +862,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
           })
           .exec((err, res) => {
             if(err) {
-              reject(err);
+              reject({message: err.message});
             }
           });
       }
@@ -788,7 +888,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                 })
                 .exec((err, update) => {
                     if(err) {
-                      reject(err);
+                      reject({message: err.message});
                     }
                 });
                 
@@ -805,13 +905,13 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                       })
                       .exec((err, update) => {
                           if(err) {
-                            reject(err);
+                            reject({message: err.message});
                           }
                       });
                   }
                 }
                 else{
-                  var shareholder_data = body.shareholder;
+                  var shareholder_data = body.shareholders;
                   Companies
                     .findByIdAndUpdate(companyId, {
                       $set: {
@@ -820,7 +920,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                     })
                     .exec((err, update) => {
                         if(err) {
-                          reject(err);
+                          reject({message: err.message});
                         }
                     });
                 }
@@ -838,7 +938,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
               if(err) {
-                reject(err);
+                reject({message: err.message});
               }  
             });
         }
@@ -851,7 +951,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
             });
         }
@@ -868,7 +968,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
             });
         }
@@ -881,7 +981,7 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
             })
             .exec((err, update) => {
                 if(err) {
-                  reject(err);
+                  reject({message: err.message});
                 }
             });
         }

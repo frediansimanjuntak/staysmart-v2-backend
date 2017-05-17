@@ -12,9 +12,17 @@ export class AppointmentsRoutes {
 			.post(auth.isAuthenticated(),AppointmentsController.createAppointments);
 
 		router
+			.route('/appointments/me')
+			.get(auth.isAuthenticated(),AppointmentsController.getByUser);
+
+		router
 			.route('/appointments/:id')
 			.get(auth.isAuthenticated(),AppointmentsController.getById)
 			.delete(auth.isAuthenticated(),AppointmentsController.deleteAppointments);
+
+		router
+			.route('/appointments/property/:id')
+			.get(auth.isAuthenticated(),AppointmentsController.getByProperty);
 
 		router
 			.route('/appointments/update/:id/:status')

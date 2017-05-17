@@ -2,9 +2,102 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import chatsSchema from '../model/chats-model';
-import Users from '../../users/dao/users-dao'
-import Properties from '../../properties/dao/properties-dao'
+import Users from '../../users/dao/users-dao';
+import Agreements from '../../agreements/dao/agreements-dao'
+import Properties from '../../properties/dao/properties-dao';
 import {DreamTalk} from '../../../../global/chat.service';
+
+chatsSchema.static('getChatRooms', (query:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        ChatRooms
+            .find(query)
+            .populate("agreement")
+            .populate({
+                path: 'landlord',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username email picture landlord.data'
+            })
+            .populate({
+                path: 'tenant',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username email picture landlord.data'
+            })
+            .populate({
+                path: 'manager',
+                model: 'Users',
+                populate: {
+                  path: 'picture',
+                  model: 'Attachments'
+                },
+                select: 'username email picture landlord.data'
+            })
+            .populate({
+                path: 'property',
+                model: 'Properties',
+                populate: {
+                  path: 'development',
+                  model: 'Developments'
+                }
+            })
+            .exec((err, res) => {
+                err ? reject({message: err.message})
+                    : resolve(res);
+            })
+    });
+});
+
+chatsSchema.static('getAll', ():Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query = {};
+        ChatRooms.getChatRooms(_query).then(res => {
+            resolve(res);
+        })
+        .catch((err) => {
+            reject({message: err.message});
+        })
+    });
+});
+
+chatsSchema.static('getById', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        let _query = {"_id": id};
+        ChatRooms.getChatRooms(_query).then(res => {
+            _.each(res, (result) => {
+                resolve(result);
+            })
+        })
+        .catch((err) => {
+            reject({message: err.message});
+        })
+    });
+});
+
+chatsSchema.static('getByUser', (userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        let _query = {$or: [{"tenant": userId},{"landlord":userId},{"manager":userId}] };
+        ChatRooms.getChatRooms(_query).then(res => {
+            resolve(res);
+            // _.each(res, (result) => {
+            //     resolve(result);
+            // })
+        })
+        .catch((err) => {
+            reject({message: err.message});
+        })        
+    });
+});
 
 chatsSchema.static('requestToken', (userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -28,7 +121,7 @@ chatsSchema.static('login', (token:string, userId:string, username:string):Promi
 	        		.findByIdAndUpdate(userId, pushObj)
 	        		.exec((err, result) => {
 	        			if(err) {
-                            reject(err);
+                            reject({message: err.message});
                         }
                         else{
                             resolve({'loginId': id, 'loginToken': token, 'loginTokenExpires': tokenExpires});            
@@ -66,89 +159,106 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
     });
 });
 
-chatsSchema.static('createRoom', (uid:Object, property_id:string):Promise<any> => {
+chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        property_id.toString();
-    	Properties
-    		.findById(property_id, (err, property) => {
-    			var members = [];
-    			members.push(property.owner.user);
-                var manager = '';
-    			if(property.manager){
-    				members.push(property.manager);	
-                    manager = property.manager;
-    			}
-		    	ChatRooms
-		    		.findOne({"tenant": uid, "property_id": property_id}, (err, result) => {
-		    			if(!result){
-                            let roomName = uid+'-'+property.owner.user+'-'+property_id;
-		    				DreamTalk.createRoom(uid, roomName, members, property_id, property.owner.user, manager).then(result => {
-					        	if(result.res.message){
-					        		resolve({message: result.res});
-					        	}
-					        	else{
-					        		let room = JSON.parse(result.res.body);
-					        		var _chat_rooms = new ChatRooms();
-					        			_chat_rooms.room_id = room._id;
-					                    _chat_rooms.property_id = property_id;
-					                    _chat_rooms.landlord = property.owner.user;
+        let body:any = data;
+        let propertyId = body.property_id;
+
+        Properties
+            .findById(propertyId)
+            .exec((err, property) => {
+                if(err){
+                    reject({message: err.message});
+                }
+                if(property){
+                    let landlordId = property.owner.user;
+                    var members = [];
+                    members.push(property.owner.user);
+                    var manager = '';
+                    if(property.manager){
+                        members.push(property.manager);    
+                        manager = property.manager;
+                    }
+                    ChatRooms
+                        .findOne({"tenant": uid, "property": propertyId})
+                        .exec((err, chats) => {
+                            if(err){
+                                reject(err);
+                            }
+                            if(chats){
+                                resolve(chats);
+                            }
+                            else{
+                                let roomName = uid + '-' + property.owner.user + '-' + propertyId;
+                                DreamTalk.createRoom(uid, roomName, members, propertyId, property.owner.user, manager)
+                                .then((result) => {
+                                    if(result.res.message){
+                                        resolve({message: result.res});
+                                    }
+                                    else{
+                                        let room = JSON.parse(result.res.body);
+                                        var _chat_rooms = new ChatRooms();
+                                        _chat_rooms.room_id = room._id;
+                                        _chat_rooms.property = propertyId;
+                                        _chat_rooms.landlord = property.owner.user;
                                         _chat_rooms.status = 'enquiries';
                                         if(members.length > 1) {
                                             _chat_rooms.manager = property.manager;    
                                         }
-					                    _chat_rooms.tenant = uid;
-					                    _chat_rooms.save((err, saved)=>{
-					                        if(err){
-					                            reject(err);
-					                        }
-					                        else if(saved){
-					                            console.log(saved);
-					                            Users
-					                                .findByIdAndUpdate(uid, {
-					                                    $push: {
-					                                        "chat_rooms": saved._id
-					                                    }
-					                                })
-					                                .exec((err, users) => {
-					                                    if(err) {
+                                        _chat_rooms.tenant = uid;
+                                        _chat_rooms.save((err, saved) => {
+                                            if(err){
+                                                reject(err);
+                                            }
+                                            if(saved){
+
+                                                let agreementData = {
+                                                    "property": propertyId,
+                                                    "room_id": saved._id
+                                                }
+                                                Agreements.createAgreements(agreementData, uid)
+                                                .then((res) => {
+                                                    let idAgreement = res._id;
+                                                    saved.agreement = idAgreement;
+                                                    saved.save((err, result) => {
+                                                        if(err){
                                                             reject(err);
                                                         }
-					                                });
+                                                        if(result){
+                                                            let userIds = [];
+                                                            userIds.push(uid);
+                                                            userIds.push(property.owner.user);
+                                                            if(members.length > 1) {
+                                                                userIds.push(property.manager);
+                                                            }
 
-				                                if(members.length > 1) {
-                                                    Users
-                                                        .findByIdAndUpdate(property.manager, {
-                                                            $push: {
-                                                                "chat_rooms": saved._id
-                                                            }
-                                                        })
-                                                        .exec((err, users) => {
-                                                            if(err) {
-                                                                reject(err);
-                                                            }
-                                                        });
-                                                }
-			                            		Users
-					                                .findByIdAndUpdate(property.owner.user, {
-					                                    $push: {
-					                                        "chat_rooms": saved._id
-					                                    }
-					                                })
-					                                .exec((err, users) => {
-					                                    err ? reject(err)
-					                                        : resolve({'data': saved, 'message': 'room created'});
-					                                });	
-			                            	    
+                                                            Users
+                                                                .update({"_id": {$in: userIds}}, {
+                                                                    $push: {
+                                                                        "chat_rooms": saved._id
+                                                                    }
+                                                                }, {multi: true})
+                                                                .exec((err, users) => {
+                                                                    err ? reject({message: err})
+                                                                        : resolve(result);
+                                                                }); 
+                                                        }
+                                                    })
+                                                })
+                                                .catch((err) => {
+                                                    reject(err);
+                                                })                                                                                            
                                             }
-					                    });
-					        	}
-					        });
-		    			}
-		    			else{
-		    				resolve({'data': result, 'message': 'room exist'});
-		    			}
-		    		})
-	    	})
+                                        });
+                                    }
+                                })
+                                .catch((err) => {
+                                    reject(err);
+                                })                                 
+                            }
+                        })
+                }
+            })
     });
 });
 
@@ -161,7 +271,7 @@ chatsSchema.static('archivedRoom', (roomId:string):Promise<any> => {
                 }
             })
             .exec((err, chat_rooms) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                     : resolve({message: 'room updated'});
             })
     });
@@ -202,13 +312,13 @@ chatsSchema.static('postMembers', (roomId:string, memberId:string):Promise<any> 
                     .find({"room_id": roomId})
                     .exec((err, chat_room) => {
                         if(err) {
-                            reject(err);
+                            reject({message: err.message});
                         }
                         else if(chat_room) {
                             for(var i = 0; i < chat_room.length; i++){
                                 chat_room[i].manager = memberId;
                                 chat_room[i].save((err, result) => {
-                                    err ? reject(err)
+                                    err ? reject({message: err.message})
                                         : resolve(result);
                                 });
                             }
@@ -246,7 +356,7 @@ chatsSchema.static('updateRoom', (roomId:string, status:string):Promise<any> => 
             })
             .exec((err, chat_rooms) => {
                 if(err) {
-                    reject(err);
+                    reject({message: err.message});
                 }
                 else if(chat_rooms) {
                     DreamTalk.updateRoom(roomId, extra);
@@ -256,36 +366,94 @@ chatsSchema.static('updateRoom', (roomId:string, status:string):Promise<any> => 
     });
 });
 
-chatsSchema.static('deleteRoom', (roomId:string, userId: string):Promise<any> => {
+chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+        let idUser = userId.toString();
+
         ChatRooms
             .findById(roomId)
             .exec((err, chat_room) => {
-                if(userId == chat_room.landlord || userId == chat_room.tenant || userId == chat_room.manager) {
-                    if(chat_room.landlord){
-                        DreamTalk.deleteRoom(roomId, chat_room.landlord);
-                    }
-                    if(chat_room.tenant){
-                        DreamTalk.deleteRoom(roomId, chat_room.tenant);
-                    }
-                    if(chat_room.manager){
-                        DreamTalk.deleteRoom(roomId, chat_room.manager);
-                    }
-                    ChatRooms
-                        .findByIdAndRemove(roomId)
-                        .exec((err, result) => {
-                            if(err) {
-                                reject(err);
-                            }
-                            else{
-                                resolve({message: 'chat room deleted.'});
-                            }
-                        })
+                if(err){
+                    reject(err);
                 }
-                else{
-                    reject({message: 'you do not have access to this room.'});
-                }
+                if(chat_room){
+                    let landlord = chat_room.landlord.toString();
+                    let tenant = chat_room.tenant.toString();
+                    let manager = chat_room.manager.toString();
+                    if(landlord == idUser || tenant == idUser || manager == idUser) {
+                        if(landlord){
+                            DreamTalk.deleteRoom(roomId, landlord);
+                        }
+                        if(tenant){
+                            DreamTalk.deleteRoom(roomId, tenant);
+                        }
+                        if(manager){
+                            DreamTalk.deleteRoom(roomId, manager);
+                        }
+                        ChatRooms
+                            .findByIdAndRemove(roomId)
+                            .exec((err, result) => {
+                                if(err) {
+                                    reject({message: err.message});
+                                }
+                                else{
+                                    resolve({message: 'chat room deleted.'});
+                                }
+                            })
+                    }
+                    else{
+                        reject({message: 'you do not have access to this room.'});
+                    }
+                }                
             })
+    });
+});
+
+chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+
+        let body:any = data;
+        console.log(body);
+        for(var i = 0; i < body.ids.length; i++){
+            let roomId = body.ids[i].toString();
+            ChatRooms
+            .findById(roomId)
+            .exec((err, chat_room) => {
+                if(err){
+                    reject(err);
+                }
+                if(chat_room){
+                    let landlord = chat_room.landlord.toString();
+                    let tenant = chat_room.tenant.toString();
+                    let manager = chat_room.manager.toString();
+                    if(role == "admin") {
+                        if(landlord){
+                            DreamTalk.deleteRoom(roomId, landlord);
+                        }
+                        if(tenant){
+                            DreamTalk.deleteRoom(roomId, tenant);
+                        }
+                        if(manager){
+                            DreamTalk.deleteRoom(roomId, manager);
+                        }
+                        ChatRooms
+                            .findByIdAndRemove(roomId)
+                            .exec((err, result) => {
+                                if(err) {
+                                    reject({message: err.message});
+                                }
+                                else{
+                                    resolve({message: 'chat room deleted.'});
+                                }
+                            })
+                    }
+                    else{
+                        reject({message: 'you do not have access to this room.'});
+                    }
+                }                
+            })
+        }
+        
     });
 });
 

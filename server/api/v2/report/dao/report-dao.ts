@@ -31,21 +31,29 @@ export class reportDAO{
 				})
 				.populate({
 					path: 'letter_of_intent.data.payment',
-					populate: {
+					populate: [{
 						path: 'attachment.payment',
-						model: 'Attachments'
-					}
+						model: 'Attachments',
+					},
+					{
+						path: 'attachment.payment_confirm',
+						model: 'Attachments'					
+					}]
 				})
 				.populate({
 					path: 'tenancy_agreement.data.payment',
-					populate: {
+					populate: [{
 						path: 'attachment.payment',
-						model: 'Attachments'
-					}
+						model: 'Attachments',
+					},
+					{
+						path: 'attachment.payment_confirm',
+						model: 'Attachments'					
+					}]
 				})
 				.exec((err, agreement) => {
 					let property = agreement.property;
-					let landlord = agreement.landlord;
+					let landlord = agreement.landlord; 
 					let tenant = agreement.tenant;
 					let loi = agreement.letter_of_intent.data;
 					let ta = agreement.tenancy_agreement.data;
@@ -112,9 +120,38 @@ export class reportDAO{
 							bankCode = ""
 						}					
 					}				
+					console.log(property.development._id);
 
 					var data = {
+						"property": {
+							"development": property.development.name,
+							"address": { 
+								"block_no": property.address.block_number,
+								"street_name": property.address.street_name,
+								"unit_no": property.address.floor,
+								"unit_no_2": property.address.unit,
+								"country": property.address.country,
+								"postal_code": property.address.postal_code
+							},
+							"details": {
+								"furnishing": property.details.furnishing
+							}
+						},
 						"form_data":{
+							"property": {
+								"development": property.development.name,
+								"address": { 
+									"block_no": property.address.block_number,
+									"street_name": property.address.street_name,
+									"unit_no": property.address.floor,
+									"unit_no_2": property.address.unit,
+									"country": property.address.country,
+									"postal_code": property.address.postal_code
+								},
+								"details": {
+									"furnishing": property.details.furnishing
+								}
+							},
 							"occupants": {
 								"name": loi.occupiers.name,
 								"id_no": loi.occupiers.identification_number
@@ -141,21 +178,7 @@ export class reportDAO{
 							"minor_repair_cost": loi.minor_repair_cost,
 							"status_sign": "accept",
 							"status": status,
-							"confirmation_date": confirmation_date,
-							"property": {
-								"development": property.development.name,
-								"address": {
-									"block_no": property.address.block_number,
-									"street_name": property.address.street_name,
-									"unit_no": property.address.floor,
-									"unit_no_2": property.address.unit,
-									"country": property.address.country,
-									"postal_code": property.address.postal_code
-								},
-								"details": {
-									"furnishing": property.details.furnishing
-								}
-							},
+							"confirmation_date": confirmation_date,							
 							"landlord":{
 								"full_name": landlord.landlord.data.name,
 								"id_number": landlord.landlord.data.identification_number,
@@ -173,7 +196,7 @@ export class reportDAO{
 						}
 					}
 					if(err){
-						reject(err);
+						reject({message: err.message});
 					}
 					else if(agreement){
 						resolve(data);
@@ -189,7 +212,7 @@ export class reportDAO{
 					if(agreement){
 						let loi = agreement.letter_of_intent.data;
 						let loiStatus = loi.status;
-						if (loiStatus == "pending" ||loiStatus == "draft" || loiStatus == "payment-confirmed") {
+						if (loiStatus == "pending" ||loiStatus == "draft" || loiStatus == "payment-confirmed" || loiStatus == "rejected") {
 							reportDAO.reportLOIPending(id).then(res => {
 								let result = juice(res);
 								resolve(res);	
@@ -197,14 +220,14 @@ export class reportDAO{
 							});
 						}
 						else if (loiStatus == "accepted") {
-							reportDAO.reportLOIPrint(id).then(res => {
+							reportDAO.reportLOIFinish(id).then(res => {
 								let result = juice(res);
-								resolve(res)
+								resolve(res);
 							});
-						}
+						}						
 					}					
 					else if(err){
-						reject(err);
+						reject({message: err.message});
 					}
 				})
 		})
@@ -239,6 +262,21 @@ export class reportDAO{
 		})		
 	}
 
+	static reportLOIFinish(id:string){
+		return new Promise((resolve:Function, reject:Function) => {
+			let reportHtml = __dirname + '/../../../../../server/template/report-template/comfirm-letterofintent-ckeditor.html'
+			var htmlString = fs.readFileSync(reportHtml).toString();
+
+			let type = "loi";
+			reportDAO.ReportData(id, type).then(result => {
+				let data = result;
+				report.replaceCode(htmlString, data).then(res =>{
+						resolve(res);
+					});
+			})	
+		})					
+	}
+
 	static reportLOIPrint(id:string){
 		return new Promise((resolve:Function, reject:Function) => {
 			let reportHtml = __dirname + '/../../../../../server/template/report-template/print-letterofintent.html'
@@ -251,8 +289,7 @@ export class reportDAO{
 						resolve(res);
 					});
 			})	
-		})
-					
+		})					
 	}
 
 	static reportTA(id: string){
@@ -269,7 +306,7 @@ export class reportDAO{
 								resolve(res);
 							});
 						}
-						else if (taStatus == "accepted" || taStatus == "admin-confirmation") {
+						else if (taStatus == "accepted" || taStatus == "admin-confirmation" || taStatus == "rejected") {
 							reportDAO.reportTAPrint(id).then(res => {
 								let result = juice(res);
 								resolve(res);
@@ -277,7 +314,7 @@ export class reportDAO{
 						}
 					}
 					else if(err){
-						reject(err);
+						reject({message: err.message});
 					}					
 				})
 		})
@@ -309,16 +346,14 @@ export class reportDAO{
 						resolve(res);
 					});
 			})	
-		})
-					
+		})					
 	}
 
-	static printReport(data:Object){
+	static printReport(id:string, data:Object){
 		return new Promise((resolve:Function, reject:Function) => {
 			let body:any = data;
-			let report = body.report;
-			let pdfName = body.pdf_name;
-			let html = report;
+			let type = body.type;
+			let report;
 			var options = { 
 				"format": "A4",
 				"border": {
@@ -329,11 +364,46 @@ export class reportDAO{
 					}
 				};
 
-			pdf.create(html, options).toFile('./'+pdfName+'.pdf', function(err, res) {
-			  if (err) return console.log(err);
-			  resolve(res);
-			  console.log(res); 
-			});	
+			if(type == "loi"){
+				let pdfName = "testLoi";
+				this.reportLOIPrint(id)
+					.then(res => {
+						// console.log(res);
+						// pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
+						//   if (err){
+						//   	reject(err)
+						//   }
+						//   if(resultt){
+						//   	resolve(resultt);
+						//  	console.log(resultt);
+						//   }						   
+						// });
+						pdf.create(res, options, (err, buffer)=>{
+							resolve(buffer);
+						});
+					})
+					.catch(err => {
+						reject(err);
+					})
+			}
+			if(type == "ta"){
+				let pdfName = "testTA";
+				this.reportTAPrint(id)
+					.then(res => {
+						pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
+						  if (err){
+						  	reject(err)
+						  }
+						  if(resultt){
+						  	resolve(resultt);
+						 	console.log(resultt);
+						  } 
+						});
+					})
+					.catch(err => {
+						reject(err);
+					})
+			}					
 		})					
 	}
 }

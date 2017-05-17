@@ -82,12 +82,17 @@ var objectFunction = {
   },
   ordinal: function(strDate, strFormat) { return moment(Date.parse(strDate)).format(strFormat).slice(-2); },
   devName: function(devId) {
-    let dev = Developments.findOne({ '_id': devId });
-    if (dev) {
-      return dev.name;
-    } else {
-      return "Development not found";
-    }
+  	Developments
+  		.findById(devId)
+  		.exec((err, res) => {
+  			if(err){
+  				return "Development not found";
+  			}
+  			if(res){
+  				return (res.name);
+  				// console.log(res.name);  				
+  			}
+  		})
   },
   payment: function(id) {
     if(id) {
@@ -213,7 +218,7 @@ export class report {
 				}
 			break;
 			case 'form_data.tenant_sign':
-				getData = '<img src=' + getData + ' alt="" width="100px" height="100px"> ';
+				getData = '<img src=' + getData + ' alt="" > ';
 			break;
 			case 'form_data.payment_proof':
 			  // let paymentProof = objectFunction['payment'](getData);
@@ -297,7 +302,7 @@ export class report {
 			  }
 			  break;
 			case 'form_data.landlord_sign':
-				getData = '<img src=' + getData + ' alt="" width="100px" height="100px"> ';
+				getData = '<img src=' + getData + ' alt="" > ';
 			break;
 			// temporary case
 			case 'toCurrency form_data.gfd_amount':
@@ -312,7 +317,7 @@ export class report {
 				let status ;
 				if (getData == 'accepted') {
 					status = 'accept / <strike>reject </strike>';
-				} 
+				}  
 				else if (getData == 'rejected') {
 					status = '<strike>accept </strike>/ reject ';
 				} 
@@ -399,4 +404,3 @@ export class report {
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 };
-

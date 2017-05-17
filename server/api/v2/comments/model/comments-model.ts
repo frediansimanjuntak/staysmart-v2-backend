@@ -19,6 +19,7 @@ var CommentsSchema = new mongoose.Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Blogs'
 	},
+	subscribes: {type: Boolean, default: false},
 	type: {type: String},
 	created_at: {type: Date, default: Date.now},
 	replies: [{

@@ -1,4 +1,4 @@
-"use strict";
+	"use strict";
 
 import * as express from 'express';
 import {ChatsController} from '../controller/chats-controller';
@@ -6,6 +6,14 @@ import * as auth from '../../../../auth/auth-service';
 
 export class ChatsRoutes {
 	static init(router: express.Router) {
+		router
+			.route('/chats')
+			.get(auth.isAuthenticated(),ChatsController.getAll);		
+
+		router
+			.route('/chats/users')
+			.get(auth.isAuthenticated(),ChatsController.getByUser);
+
 		router
 			.route('/chats/request_token')
 			.get(auth.isAuthenticated(),ChatsController.requestToken)
@@ -39,8 +47,12 @@ export class ChatsRoutes {
 			.post(auth.isAuthenticated(),ChatsController.createRoom)
 
 		router
+			.route('/chats/rooms/delete_many')
+			.post(auth.isAuthenticated(),ChatsController.deleteRoomMany)
+
+		router
 			.route('/chats/rooms/delete/:roomId')
-			.post(auth.isAuthenticated(),ChatsController.deleteRoom)
+			.delete(auth.isAuthenticated(),ChatsController.deleteRoom)
 
 		router
 			.route('/chats/room/archived/:roomId')
@@ -57,5 +69,9 @@ export class ChatsRoutes {
 		router
 			.route('/chats/answer/:id/:option')
 			.post(auth.isAuthenticated(),ChatsController.postAnswer)
+
+		router
+			.route('/chats/:id')
+			.get(auth.isAuthenticated(),ChatsController.getById);
 	}
 }

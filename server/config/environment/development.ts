@@ -29,7 +29,9 @@ export default {
   },
 
   url:{
-    reset_password: 'http://localhost:3000/reset-password-email/',
+    reset_password: 'http://ssnjs.shrimpventures.com/reset-password-email/',
+    blog: 'http://ssnjs.shrimpventures.com/blog-view',
+    blog_unsubscribe: 'http://ssnjs.shrimpventures.com/blog?unsubscribe=',
     blog_comment: '',
     approveProperty: '',
   },

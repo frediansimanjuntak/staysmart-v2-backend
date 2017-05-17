@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
-import * as newrelic from 'newrelic';
+// import * as newrelic from 'newrelic';
 import agreementsSchema from '../model/agreements-model';
 import Users from '../../users/dao/users-dao';
 import Payments from '../../payments/dao/payments-dao';
@@ -12,12 +12,29 @@ import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import {mail} from '../../../../email/mail';
 
-
 agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("landlord tenant property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments")
+			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate({
+				path: 'landlord',
+				model: 'Users',
+	            populate: {
+	              path: 'picture',
+	              model: 'Attachments'
+	            },
+	            select: 'username email picture landlord.data phone'
+			})
+			.populate({
+				path: 'tenant',
+				model: 'Users',
+	            populate: {
+	              path: 'picture',
+	              model: 'Attachments'
+	            },
+	            select: 'username email picture landlord.data phone'
+			})
 			.populate({
 				path: 'letter_of_intent.data.payment',
 				populate: [{
@@ -32,9 +49,9 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 					path: 'attachment.refund_confirm',
 					model: 'Attachments'
 				}]
-			})
+			})			
 			.populate({
-				path: 'letter_of_intent.data.payment',
+				path: 'tenancy_agreement.data.payment',
 				populate: [{
 					path: 'attachment.payment',
 					model: 'Attachments'
@@ -104,38 +121,33 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 				}]
 			})
 			.exec((err, agreements) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve(agreements);
 			});
 	});
 });
 
+agreementsSchema.static('getAllAgreement', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let _query = {};
+		Agreements.getAgreement(_query).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject({message: err.message});
+		})
+	});
+});
 
 agreementsSchema.static('getAll', (userId:string, role:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		
-		if(role == "admin"){
-			let _query = {};
-			Agreements.getAgreement(_query).then(res => {
-				if(res){
-					resolve(res);
-				}
-				else{
-					reject({message: "error"});
-				}
-			})
-		}
-		else{
-			let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
-			Agreements.getAgreement(_query).then(res => {
-				if(res){
-					resolve(res);
-				}
-				else{
-					reject({message: "error"});
-				}
-			})
-		}
+	return new Promise((resolve:Function, reject:Function) => {		
+		let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
+		Agreements.getAgreement(_query).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject({message: err.message});
+		})
 	});
 });
 
@@ -145,13 +157,11 @@ agreementsSchema.static('getByUser', (userId:string, role:string):Promise<any> =
 
 		let _query = {$or: [{"tenant": userId},{"landlord":userId}] };
 		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				resolve(res);
-			}
-			else{
-				reject({message: "error"});
-			}
+			resolve(res);
 		})		
+		.catch(err => {
+			reject({message: err.message});
+		})
 	});
 });
 
@@ -164,19 +174,17 @@ agreementsSchema.static('getById', (id:string, userId:string, role:string):Promi
 		let IDUser = userId.toString();
 		let _query = {"_id": id};
 		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				_.each(res, (result) => {
-					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
-						resolve(result);
-					}
-					else{
-						reject({message:"forbidden"});
-					}
-				})				 
-			}
-			else{
-				reject({message: "error"});
-			}
+			_.each(res, (result) => {
+				if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+					resolve(result);
+				}
+				else{
+					reject({message:"forbidden"});
+				}
+			})		
+		})
+		.catch(err => {
+			reject({message: err.message});
 		})
 	});
 });
@@ -185,12 +193,10 @@ agreementsSchema.static('getAllHistory', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {$and: [{"letter_of_intent.data.status": "accepted"},{"tenancy_agreement.data.status": "accepted"}]};
 		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				resolve(res);
-			}
-			else{
-				reject({message: "error"});
-			}
+			resolve(res);
+		})
+		.catch(err => {
+			reject({message: err.message});
 		})
 	});
 });
@@ -199,41 +205,44 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 
 		let _query = {};
-		Agreements.getAgreement(_query).then(res => {
-			if(res){
-				// resolve(res);
-				var taDocs = res;
-				var savedComission = 12100;
-				_.each(taDocs, function(ta) {					
-					let taData = ta.tenancy_agreement.data;
-					let loiData = ta.letter_of_intent.data;
-					let n;
-					let x;
-					let cal;
-					if (taData.status == 'accepted') {
-					  if (!loiData.renewal) {
-					    x = loiData.monthly_rental;
-					    if (loiData.term_lease <= 12) {
-					      n = 12;
-					    } else {
-					      n = loiData.term_lease;
-					    }
-					    if (x <= 4000) {
-					      cal = n/24 * x *2;
-					    } else if (x > 4000) {
-					      cal = n/24 * x;
-					    }
-					    savedComission += cal;
-					  }
-					}
-				});
-				console.log(savedComission);
-				resolve({odometer: savedComission});
-			}
-			else{
-				reject({message: "error"});	
-			}
-		})
+		Agreements
+			.find(_query)
+			.exec((err, res)=> {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					var taDocs = res;
+					var savedComission = 12100;
+					_.each(taDocs, function(ta) {					
+						let taData = ta.tenancy_agreement.data;
+						let loiData = ta.letter_of_intent.data;
+						let n;
+						let x;
+						let cal;
+						if (taData.status == 'accepted') {
+						  if (!loiData.renewal) {
+						    x = loiData.monthly_rental;
+						    if (loiData.term_lease <= 12) {
+						      n = 12;
+						    } else {
+						      n = loiData.term_lease;
+						    }
+						    if (x <= 4000) {
+						      cal = n/24 * x *2;
+						    } else if (x > 4000) {
+						      cal = n/24 * x;
+						    }
+						    savedComission += cal;
+						  }
+						}
+						else{
+							savedComission = savedComission;
+						}
+					});
+					resolve({odometer: savedComission});
+				}
+			})
 	});
 });
 
@@ -243,6 +252,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 			return reject(new TypeError('Agreement is not a valid object.'));
 		}
 		let body:any = agreements;
+		let IDUser = userId.toString();
 		if(!body.property) {
 			reject({message: 'no property id'});
 		}
@@ -251,44 +261,55 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 				.findById(body.property)
 				.exec((err, properties) => {
 					if(err){
-						reject(err);
-						newrelic.noticeError(err);
+						reject({message: err.message});
 					}
-					else{
+					if(properties){
 						let propertyId = properties._id;
 						let propertyStatus = properties.status;
 						let landlordId = properties.owner.user;
-						Agreements
-							.findOne({"property": body.property, "tenant": userId})
-							.exec((err, agreement) => {
-								if(err){
-									reject(err);
-									newrelic.noticeError(err);
-								}
-								else{
-									if(agreement == null){
+						if(landlordId == userId){
+							resolve({message: "You can not create agreement with your owned property"});
+						}
+						if(landlordId != userId){
+							Agreements
+								.findOne({"property": body.property, "tenant": userId})
+								.exec((err, agreement) => {
+									if(err){
+										reject({message: err.message});
+									}
+									if(agreement){
+										let roomId;
+										if(agreement.room_id){
+											roomId = agreement.room_id;
+										}
+										resolve({_id: agreement._id, room_id: roomId, message: "agreement has been made"})
+									}
+									else{
 										if(propertyStatus == "published" || propertyStatus == "initiated"){
-											var _agreements = new Agreements();
+											var _agreements = new Agreements(agreements);
 											_agreements.property = propertyId;
 											_agreements.tenant =  userId;
 											_agreements.landlord = landlordId;
 											if(body.appointment) {
 												_agreements.appointment = body.appointment;
 											}
+											if(body.room_id){
+												_agreements.room_id = body.room_id;
+											}
 											_agreements.save((err, saved)=>{
-												err ? reject(err)
-													: resolve({agreement_id: saved._id});
+												err ? reject({message: err})
+													: resolve({_id: saved._id});
 											});
 										}
-										else{
+										if(propertyStatus == "rented"){
 											reject({message: "this property has rented"})
 										}
-									}
-									else if(agreement != null){
-										resolve({agreement_id: agreement._id, message: "agreement has been made"})
-									}
-								}							
-							});					
+										else{
+											reject({message: "this property not published"})
+										}
+									}															
+								});	
+						}										
 					}
 				});		
 		}
@@ -303,7 +324,7 @@ agreementsSchema.static('deleteAgreements', (id:string):Promise<any> => {
 		Agreements
 			.findByIdAndRemove(id)
 			.exec((err, deleted) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve({message: "delete success"});
 			});
 	});
@@ -317,33 +338,35 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 		Agreements
 			.findByIdAndUpdate(id, agreements)
 			.exec((err, updated) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve(updated);
 			});
 	});
 });
 
 //LOI
-agreementsSchema.static('getLoi', (id:string, userId:string):Promise<any> => {
+agreementsSchema.static('getLoi', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		Agreements
-			.findById(id)
-			.select("letter_of_intent.data")
-			.populate("landlord tenant property letter_of_intent.data.tenant.bank_account.bank")
-			.populate({
-				path: 'letter_of_intent.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
-				}
-			})
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements.letter_of_intent.data);
-			});
+		let IDUser = userId.toString();
+		let _query = {"_id": id};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+						resolve(result.letter_of_intent.data);
+					}
+					else{
+						reject({message:"forbidden"});
+					}
+				})				 
+			}
+			else{
+				reject({message: "error"});
+			}
+		})		
 	});
 });
 
@@ -357,8 +380,7 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 			.findById(id)
 			.exec((err, appointment) => {
 				if(err){
-					reject(err);
-					newrelic.noticeError("error get appointment");
+					reject({message: err.message});
 				}
 				else{
 					let agreementId = appointment.agreement;
@@ -367,14 +389,13 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 						.findById(agreementId)
 						.exec((err, agreement) => {
 							if(err){
-								reject(err);
-								newrelic.noticeError("error get agreement");
+								reject({message: err.message});
 							}
 							if(agreement){
 								agreement.appointment = id;
 								agreement.save((err, saved) => {
 									if(err){
-										reject(err);
+										reject({message: err.message});
 									}
 									if(saved){
 										if(statusAppointment == "archived"){
@@ -385,17 +406,15 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 												}
 												else{
 													Agreements.getLoi(agreementId.toString(), userId).then(res => {
-														if(res){
-															if(res.created_at){
-																resolve({message: "forbidden"});
-															}
-															else{
-																resolve({message: "create Loi"});
-															}
+														if(res.created_at){
+															resolve({message: "forbidden"});
 														}
 														else{
-															reject({message: "error get LOI"});
+															resolve({message: "create Loi"});
 														}
+													})
+													.catch((err) => {
+														reject(err);
 													})
 												}
 											}
@@ -419,8 +438,9 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
 			return reject(new TypeError('TA is not a valid object.'));
-		}
-		let body:any = data;
+		}		
+
+		let body:any = data;		
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
@@ -454,43 +474,23 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 								})
 								.exec((err, updated) => {
 									if(err){
-										reject(err);
+										reject({message: err.message});
 									}
 								});
 						}
 						if(!tenantData.name){
-							Users
-								.findByIdAndUpdate(userId, {
-									$set: {
-										"tenant.data": body.tenant
-									}
-								})
-								.exec((err, updated) => {
-									if(err){
-										reject(err);
-									}
-								});
+							Agreements.userUpdateDataTenant(tenantID, tenant);
 						}
 						Users
-							.findOne({"_id": tenantID, "tenant.data.bank_account.no": inputBankNo}, (err, user) => {
-								if (user == null){
-									Users
-										.update({"_id": id}, {												
-											$set:{
-												"tenant.data.bank_account": {
-													"no": body.tenant.bank_account.no,
-													"name": body.tenant.bank_account.name,
-													"bank": body.tenant.bank_account.bank
-												}
-											}
-										})
-										.exec((err, updated) => {
-											if(err){
-												reject(err);
-											}
-										});
+							.findOne({"_id": tenantID, "tenant.data.bank_account.no": inputBankNo})
+							.exec((err, user) => {
+								if(err){
+									reject(err);
 								}
-							})
+								if(user){
+									Agreements.userUpdateDataTenant(tenantID, tenant)
+								}
+							})						
 						let monthly_rental = body.monthly_rental;
 						let term_lease = body.term_lease;
 						let security_deposit = 0;
@@ -528,15 +528,64 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 						Agreements
 							.update(_query, loiObj)
 							.exec((err, updated) => {
-								err ? reject(err)
+								err ? reject({message: err.message})
 									: resolve({message: "Loi created"});
 							});				
 					}
 				}
 				else if (err){
-					reject(err);
+					reject({message: err.message});
 				}	
 			})		
+	});
+});
+
+agreementsSchema.static('userUpdateDataTenant', (id:string, data:Object,):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+
+		let body:any = data;
+		Users
+			.findById(id)
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					if(res.tenant.data.name){
+						let tenantData = res.tenant.data;
+						Agreements.historyDataTenant(id, tenantData);
+					}
+					res.tenant.data = body.tenant;
+					res.save((err, saved) => {
+						err ? reject({message: err.message})
+            				: resolve(saved);
+					})
+				}
+			})		
+	});
+});
+
+agreementsSchema.static('historyDataTenant', (id:string, tenantData:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Users
+			.update({"_id": id}, {
+				$push: {
+					"tenant.histories": {
+						"date": new Date(),
+						"data": tenantData
+					}
+				}
+			})
+			.exec((err, update) => {
+                  err ? reject({message: err.message})
+                      : resolve(update);
+            });
 	});
 });
 
@@ -551,7 +600,7 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 			.populate("landlord tenant property appointment letter_of_intent.data.payment")
 			.exec((err, agreement) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				else if(agreement){
 					let tenantId = agreement.tenant._id;
@@ -563,20 +612,20 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 						agreement.letter_of_intent.data.status = "pending";
 						agreement.save((err, saved) => {
 							if(err){
-								reject(err);
+								reject({message: err.message});
 							}
 							if(saved){
-								if(agreement.appointment._id){
+								if(agreement.appointment){
 									Appointments
 										.findById(agreement.appointment._id)
 										.exec((err, res) => {
 											if(err){
-												reject(err);
+												reject({message: err.message});
 											}
 											if(res){
 												res.state = "initiate letter of intent";
 												res.save((err, saved) => {
-													err ? reject(err)
+													err ? reject({message: err.message})
 														: resolve(saved);
 												});
 											}
@@ -590,7 +639,7 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 									})
 									.exec((err, updated) => {
 										if(err){
-											reject(err)
+											reject({message: err.message})
 										}
 										else if(updated){
 											let type = "initiateLoi";
@@ -620,21 +669,28 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 			.findById(id)
 			.populate("landlord tenant property")
 			.exec((err, agreement) => {
-				let landlordId = agreement.landlord._id;
-				if (landlordId != IDUser){
+				let landlordId
+				if(agreement.landlord){
+					landlordId = agreement.landlord._id;
+					if (landlordId != IDUser){
+						resolve({message: "forbidden"});
+					}
+					else if(landlordId == IDUser){
+						agreement.letter_of_intent.data.status = "accepted";
+						agreement.save((err, saved) => {
+							Agreements.confirmation(id, data, type)
+							Agreements.notification(id, type_notif).then(res => {
+								let typeMail = "acceptedLoiLandlord";
+								Agreements.email(id, typeMail);
+								resolve(saved);
+							});
+						})
+					}
+				}	
+				else{
 					resolve({message: "forbidden"});
-				}
-				else if(landlordId == IDUser){
-					agreement.letter_of_intent.data.status = "accepted";
-					agreement.save((err, saved) => {
-						Agreements.confirmation(id, data, type)
-						Agreements.notification(id, type_notif).then(res => {
-							let typeMail = "acceptedLoiLandlord";
-							Agreements.email(id, typeMail);
-							resolve(saved);
-						});
-					})
-				}
+				}			
+				
 			})			
 	});
 });
@@ -650,46 +706,46 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 		Agreements
 			.findById(id)
 			.populate("landlord tenant letter_of_intent.data.payment")
-			.exec((err, agreement) => {
-				let landlordID = agreement.landlord._id;
+			.exec((err, agreement) => {				
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				else if(agreement){
+					let landlordID = agreement.landlord._id;
 					if(landlordID != IDUser){
 						resolve({message: "forbidden"});
 					}
 					else if(landlordID == IDUser || role == 'admin'){
 						let payment = agreement.letter_of_intent.data.payment;
+						let statusLoi = agreement.letter_of_intent.data.status;
 						let paymentId = payment._id;
 						let paymentStatus = payment.status;
 						let paymentFee = payment.fee;
 						if(paymentStatus == "rejected"){
-							resolve({message: "this payment has rejected"})
+							resolve({message: "this payment has rejected"});
 						}
 
-						if(paymentStatus == "pending" || paymentStatus == "accepted"){
-							for(var i = 0; i < paymentFee.length; i++){
-								Payments
-									.update({"_id": paymentId, "fee":{ $elemMatch: {"needed_refund": false}}}, {
-										$set: {
-											"fee.$.needed_refund": true,
-											"fee.$.updated_at": new Date(),
-											"remarks": body.reason
-										},
-									}, {multi: true})
-									.exec((err, update) => {
-					            	if(err){
-					            		reject(err);
-					            	}
-					            });			
-							}
+						if(paymentStatus == "pending" || paymentStatus == "accepted" || statusLoi == "payment-confirmed"){
+							Payments
+								.update({"_id": paymentId, "fee":{ $elemMatch: {"needed_refund": false}}}, {
+									$set: {
+										"fee.$.needed_refund": true,
+										"fee.$.updated_at": new Date(),
+										"remarks": body.reason,
+										"status": "rejected"
+									},
+								}, {multi: true})
+								.exec((err, update) => {
+				            	if(err){
+				            		reject({message: err.message});
+				            	}
+				            });			
 							agreement.letter_of_intent.data.status = "rejected";
 							agreement.save((err, saved)=>{
 								if(err){
-									reject(err)
+									reject({message: err.message})
 								}
-								else if (saved){
+								if (saved){
 									let typeMail;
 									if(role == 'admin'){
 										typeMail = "rejectLoiAdmin";
@@ -697,9 +753,8 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 									if(landlordID == IDUser){
 										typeMail = "rejectLoiLandlord";
 									}
-									Agreements.email(id, typeMail).then(res => {
-										resolve(res);
-									})
+									Agreements.email(id, typeMail);
+									resolve(saved);
 								}
 							});							
 						}
@@ -710,19 +765,28 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 });
 
 //TA
-agreementsSchema.static('getTA', (id:string, userId:string):Promise<any> => {
+agreementsSchema.static('getTA', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-
-		Agreements
-			.findById(id)
-			.select("tenancy_agreement.data")
-			.exec((err, agreements) => {
-				err ? reject(err)
-					: resolve(agreements.tenancy_agreement.data);
-			});
+		let IDUser = userId.toString();
+		let _query = {"_id": id};
+		Agreements.getAgreement(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					if(result.landlord._id == IDUser || result.tenant._id == IDUser || role == "admin"){
+						resolve(result.tenancy_agreement.data);
+					}
+					else{
+						reject({message:"forbidden"});
+					}
+				})				 
+			}
+			else{
+				reject({message: "error"});
+			}
+		})
 	});
 });
 
@@ -732,8 +796,10 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 
-		let type = "tenancy_agreement";
 		let body:any = data;
+		console.log(body);
+
+		let type = "tenancy_agreement";
 		let bankNo = body.no;
 		let IDUser = userId.toString();
 		Agreements
@@ -741,7 +807,7 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 			.populate("landlord tenant property")
 			.exec((err, agreement) => {				
 				if(err){
-					reject(err)
+					reject({message: err.message})
 				}
 				else if(agreement){
 					let landlordId = agreement.landlord._id;
@@ -751,7 +817,7 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 						resolve({message: "forbidden"});
 					}
 					else if(landlordId == IDUser){
-						if (!ta){
+						if(ta.created_at || ta.status == "rejected" || ta.status == "expired"){
 							Agreements.createHistory(id, type);
 							Agreements
 								.findByIdAndUpdate(id, {
@@ -761,10 +827,10 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 								})
 								.exec((err, updated) => {
 									if(err){
-										reject(err);
+										reject({message: err.message});
 									}
 								});
-						}
+						}						
 						if(landlordDataBank.no != bankNo){
 							Users
 								.update({"_id": landlordId}, {
@@ -784,7 +850,7 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 								})
 								.exec((err, updated) => {
 									if(err){
-										reject(err)
+										reject({message: err.message})
 									}
 								})
 						}
@@ -794,7 +860,7 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 						agreement.tenancy_agreement.data.status = "pending";
 						agreement.tenancy_agreement.data.created_at = new Date();
 						agreement.save((err, saved)=>{
-							err ? reject(err)
+							err ? reject({message: err.message})
 								: resolve(saved);
 						});
 					}
@@ -814,7 +880,7 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 			.populate("landlord tenant appointment property")
 			.exec((err, agreement) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				else if(agreement){
 					let propertyId = agreement.property._id;
@@ -823,17 +889,17 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 						reject({message:"forbidden"});
 					}
 					else if(landlordId == IDUser){
-						if(agreement.appointment._id){
+						if(agreement.appointment){
 							Appointments
 								.findById(agreement.appointment._id)
 								.exec((err, res) => {
 									if(err){
-										reject(err);
+										reject({message: err.message});
 									}
 									if(res){
 										res.state = "initiate tenancy agreement";
 										res.save((err, saved) => {
-											err ? reject(err)
+											err ? reject({message: err.message})
 												: resolve(saved);
 										});
 									}
@@ -854,6 +920,71 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 	});
 });
 
+agreementsSchema.static('createHistoryProperty', (id:string, typeDataa:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		
+		var historyObj = {$push: {}};  
+		historyObj.$push[typeDataa+'.histories'] = {"date": new Date(), "data": data};
+
+		Properties
+			.findByIdAndUpdate(id, historyObj)
+			.exec((err, saved) => {
+			err ? reject({message: err.message})
+				: resolve(saved);
+			});
+    });
+});
+
+agreementsSchema.static('updatePropertyStatus', (id:string, userId:string, until:string, status:string, agreement:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Properties
+			.findById(id)
+			.exec((err, property) => {
+				if(err){
+					reject(err);
+					console.log("eror1", err);
+				}
+				if(property){
+					if(property.agreements.data){
+						Agreements.createHistoryProperty(id, "agreement", property.agreements.data);
+					}
+					if(property.rented.data.by){
+						Agreements.createHistoryProperty(id, "rented", property.rented.data);
+					}
+					property.status = status;
+					property.agreements.data = agreement;
+					property.rented.data.by = userId;
+					property.rented.data.until = until;
+					property.save((err, saved) => {
+						err ? reject({message: err.message})
+							: resolve(saved);
+							console.log("eror2", err);
+							console.log(saved);
+					});
+				}
+			})
+	});
+});
+
+agreementsSchema.static('updateUserRented', (userId:string, until:string, property:string, agreement:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users
+			.findByIdAndUpdate(userId, {
+				$push: {
+					"rented_properties": {
+						"until": until,
+						"property": property,
+						"agreement": agreement
+					}
+				}
+			})
+			.exec((err, updated) => {
+				err ? reject({message: err.message})
+					: resolve(updated);
+			})
+	});
+});
+
 agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -868,58 +999,19 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 					reject (err);
 				}
 				else if (agreement){					
-					let propertyId = agreement.property._id;
+					let propertyId = agreement.property._id.toString();
 					let tenantId = agreement.tenant._id;
 					let landlordId = agreement.landlord._id;
 
 					if(tenantId != IDUser){
 						resolve({message: "forbidden"})
 					}
-					else if(tenantId == IDUser){
-						let termLeaseExtend
-						if(agreement.letter_of_intent.data.term_lease_extend){
-							termLeaseExtend = agreement.letter_of_intent.data.term_lease_extend;
-						}
-						else if(!agreement.letter_of_intent.data.term_lease_extend){
-							termLeaseExtend = 0;
-						}						
-						let dateCommencement = agreement.letter_of_intent.data.date_commencement;
-						let termLease = agreement.letter_of_intent.data.term_lease;
-						let longTerm = termLease + termLeaseExtend;
-						let until = dateCommencement.setDate(dateCommencement.getMonth() + longTerm);
-						Properties
-						.findByIdAndUpdate(propertyId, {
-							$set: {
-								"status": "rented"
-							}
-						})
-						.exec((err, updated) => {
-							if(err){
-								reject(err);
-							}
-							if(updated){
-								Users
-									.findByIdAndUpdate(tenantId, {
-										$push: {
-											"rented_properties": {
-												"until": until,
-												"property": propertyId,
-												"agreement": id
-											}
-										}
-									})
-									.exec((err, updated) => {
-										if(err){
-											reject(err);
-										}
-									});
-							}
-						});
+					else if(tenantId == IDUser){				
 						agreement.tenancy_agreement.data.status = "admin-confirmation";
 						agreement.tenancy_agreement.data.created_at = new Date();
 						agreement.save((err, saved)=>{
 							if(err){
-								reject(err);
+								reject({message: err.message});
 							}
 							else if(saved){
 								let type_notif = "acceptTA";
@@ -944,61 +1036,49 @@ agreementsSchema.static('rejectTA', (id:string, userId:string, role:string, ta:O
 		}
 		let IDUser = userId.toString();
 		let body:any = ta;
+
 		Agreements
 			.findById(id)
-			.populate("landlord tenant property tenancy_agreement.data.payment")
+			.populate("room_id landlord tenant property appointment")
 			.exec((err, agreement) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(agreement){
 					let landlordId = agreement.landlord._id;
-					let tenantId = agreement.tenant._id;
+					let tenantId = agreement.tenant._id.toString();
 
 					if(tenantId != IDUser){
 						reject({message:"forbidden"});
 					}
 					if(tenantId == IDUser || role == "admin"){
-						let payment = agreement.tenancy_agreement.data.payment._id;
-						let paymentStatus = agreement.tenancy_agreement.data.payment.status;
-						let paymentFee = agreement.tenancy_agreement.data.payment.fee;
-						let agreementStatus = agreement.status;
-						if(agreementStatus = "admin-confirmation"){
-							if(paymentStatus == "accepted" || paymentStatus == "pending"){
-								for(var i = 0; i < paymentFee.length; i++){
-									Payments
-										.update({"_id": payment, "fee":{ $elemMatch: {"needed_refund": false}}}, {
-											$set: {
-												"fee.$.needed_refund": true,
-												"fee.$.updated_at": new Date(),
-												"remarks": body.reason
-											},
-										}, {multi: true})
-										.exec((err, update) => {
-						            	if(err){
-						            		reject(err);
-						            	}
-						            });			
+						let loi = agreement.letter_of_intent.data;
+						let ta = agreement.tenancy_agreement.data;
+						let paymentIdLoi = loi.payment;	
+						if(loi.status == "accepted" || ta.status == "pending"){
+							Agreements.penaltyPayment(paymentIdLoi, body.remarks);										
+							agreement.tenancy_agreement.data.status = "rejected";
+							agreement.letter_of_intent.data.status = "rejected";
+							agreement.save((err, saved) => {
+								if(err){
+									reject({message: err.message});
 								}
-								agreement.tenancy_agreement.data.status = "rejected";
-								agreement.save((err, saved) => {
-									if(err){
-										reject(err);
+								else if(saved){
+									if(landlordId == IDUser){
+										let typeEmail = "rejectTa";
+										Agreements.email(id, typeEmail);
 									}
-									else if(saved){
-										if(landlordId == IDUser){
-											let typeEmail = "rejectTa";
-											Agreements.email(id, typeEmail);
-										}
-										if(role == "admin"){
-											let typeEmail = "rejectTaAdmin";
-											Agreements.email(id, typeEmail);
-										}
-										resolve(saved);
+									if(role == "admin"){
+										let typeEmail = "rejectTaAdmin";
+										Agreements.email(id, typeEmail);
 									}
-								})
-							}							
-						}						
+									resolve(saved);
+								}
+							})
+						}
+						else{
+							reject({message: "Loi status not accepted or TA status not pending"});
+						}													
 					}					
 				}
 			})
@@ -1018,7 +1098,7 @@ agreementsSchema.static('stampCertificateTA', (id:string, data:Object):Promise<a
 				}
 			})
 			.exec((err, updated) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve({message: "uploaded"});
 				let typeEmail = "stampCertificateTa";
 				Agreements.email(id, typeEmail);
@@ -1037,7 +1117,7 @@ agreementsSchema.static('getInventoryList', (id:string, userId:string):Promise<a
 			.select("inventory_list.data")
 			.populate("inventory_list.data.lists.items.attachments")
 			.exec((err, agreements) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve(agreements.inventory_list.data);
 			});
 	});
@@ -1051,14 +1131,13 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 		let body:any = data;
 		let type_notif = "initiateIL";
 		let IDUser = userId.toString();
-		console.log(body);
 
 		Agreements
 			.findById(id)
 			.populate("landlord tenant property")
 			.exec((err, agreement) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(agreement){
 					let landlordId = agreement.landlord._id;
@@ -1077,7 +1156,7 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 								agreement.inventory_list.data.created_at = new Date();	
 								agreement.save((err, saved) => {
 									if(err){
-										reject(err);
+										reject({message: err.message});
 									}
 									if(saved){
 										let type = "updateInventory";
@@ -1099,7 +1178,7 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 							agreement.inventory_list.data.lists = body.lists;
 							agreement.save((err, saved) => {
 								if(err) {
-									reject(err);
+									reject({message: err.message});
 								}
 								else if(saved) {
 									Agreements.notification(id, type_notif);
@@ -1124,7 +1203,7 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 		let ObjectID = mongoose.Types.ObjectId;
 		let type_notif = "confirmedIL";
 		let IDUser = userId.toString();
-		console.log(body);
+		
 		Agreements
 			.findById(id, (err, agreement) => {
 				let tenantId = agreement.tenant;
@@ -1142,7 +1221,7 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 											agreement.inventory_list.data.lists[j].items[l].tenant_check = "true";
 											agreement.save((err, result) => {
 												if(err) {
-													reject(err);
+													reject({message: err.message});
 												}
 											});	
 										}
@@ -1156,7 +1235,7 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 					agreement.inventory_list.data.status = "completed";
 					agreement.save((err, update) => {
 						if(err) {
-							reject(err);
+							reject({message: err.message});
 						}
 						else if(update) {
 							Agreements.notification(id, type_notif).then(res => {
@@ -1189,11 +1268,11 @@ agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<a
             
             var historyObj = {$push: {}};  
             historyObj.$push[typeDataa+'.histories'] = {"date": new Date(), "data": data};
-            
+
             Agreements
               .findByIdAndUpdate(id, historyObj)
               .exec((err, saved) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                 	: resolve(saved);
               });
           })
@@ -1220,7 +1299,7 @@ agreementsSchema.static('confirmation', (id:string, data:Object):Promise<any> =>
 		Agreements
 			.findByIdAndUpdate(id, confirmObj)
 			.exec((err, saved) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                 	: resolve(saved);
             });
 	});
@@ -1234,380 +1313,426 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 		let paymentFee = [];
 		let paymentType = "";
 		let payObj = {$set: {}};
+		console.log(body);
 
 		Agreements
-			.findById(id, (err, agreement) => {
-				let loiData = agreement.letter_of_intent.data;
-				let gfd = loiData.gfd_amount;
-				let std = loiData.sd_amount;
-				let scd = loiData.security_deposit;
-
-				if(type == "letter_of_intent"){
-					paymentFee = [{
-						"code_name": "std",
-						"name": "Stamp Duty",
-						"amount": std, 
-						"needed_refund": false, 
-						"refunded": false,
-						"created_at": new Date()
-					},
-					{
-						"code_name": "gfd",
-						"name": "Good Faith Deposit",
-						"amount": gfd, 
-						"needed_refund": false, 
-						"refunded": false,
-						"created_at": new Date()
-					}];
-					paymentType = "loi";
+			.findById(id)
+			.exec((err, agreement) => {
+				if(err){
+					reject(err);
 				}
-				else if (type ==  "tenancy_agreement"){
-					paymentFee = [{
-						"code_name": "scd",
-						"name": "Security Deposit",
-						"amount": scd, 
-						"needed_refund": false, 
-						"refunded": false,
-						"created_at": new Date()
-					}];
-					paymentType = "ta";
+				if(agreement){
+					let loiData = agreement.letter_of_intent.data;
+					let taData = agreement.tenancy_agreement.data;
+					let gfd = loiData.gfd_amount;
+					let std = loiData.sd_amount;
+					let scd = loiData.security_deposit;
+							
+					if(type == "letter_of_intent"){
+						if(loiData.payment){
+							resolve({message: "Already Payment"});									
+						}
+						if(!loiData.payment){
+								paymentFee = [{
+								"code_name": "std",
+								"name": "Stamp Duty",
+								"amount": std
+							},
+							{
+								"code_name": "gfd",
+								"name": "Good Faith Deposit",
+								"amount": gfd
+							}];
+							paymentType = "loi";
+						}
+					}
+					if (type ==  "tenancy_agreement"){
+						if(taData.payment){
+							resolve({message: "Already Payment"});
+						}
+						if(!taData.payment){
+							paymentFee = [{
+								"code_name": "scd",
+								"name": "Security Deposit",
+								"amount": scd
+							}];
+							paymentType = "ta";
+						}
+					}
+					var _payment = new Payments();
+					_payment.fee = paymentFee;
+					_payment.type = paymentType;
+					_payment.needed_refund = false;
+					_payment.refunded = false;
+					_payment.attachment.payment = body.attachment;
+					_payment.status = "pending";
+					_payment.created_at = new Date();
+					_payment.save((err, saved)=>{
+						if(err){
+							reject(err);
+						}
+						if(saved){
+							var paymentId = saved._id;
+							if (type ==  "tenancy_agreement"){
+								agreement.tenancy_agreement.data.payment = paymentId;
+							}
+							if(type == "letter_of_intent"){
+								agreement.letter_of_intent.data.payment = paymentId;
+							}
+							agreement.save((err, saved) => {
+								err ? reject({message: err.message})
+					      			: resolve({payment_id: paymentId, message:"payment created"});
+					      		})
+						}
+					})											
 				}
-				var _payment = new Payments();
-				_payment.type = paymentType;
-				_payment.fee = paymentFee;
-				_payment.attachment.payment = body.attachment;
-				_payment.status = "pending";
-				_payment.save();	
-
-				var paymentId = _payment._id;
-				if(type == "letter_of_intent"){
-					payObj.$set["letter_of_intent.data.payment"] = paymentId;
-				}
-				else if (type ==  "tenancy_agreement"){
-					payObj.$set["tenancy_agreement.data.payment"] = paymentId;
-				}
-
-				Agreements
-					.findByIdAndUpdate(id, payObj)
-					.exec((err, updated) => {
-			      		err ? reject(err)
-			      			: resolve(updated);
-			      	});	
-			})		
+			})	
 	});
 });
 
-agreementsSchema.static('feeUpdate', (data:Object):Promise<any> => {
+agreementsSchema.static('addRefund', (id:string, refundPayment:number):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		var ObjectID = mongoose.Types.ObjectId;	
-		var body:any = data;
-
-		if (body.typeInput == "loi"){
-			Payments
-				.update({"_id": body.paymentID, "fee": {$elemMatch: {"_id": new ObjectID(body.idStd)}}}, {
-					$set: {
-						"fee.$.received_amount": body.receivePaymentStd,
-						"fee.$.needed_refund": false,
-						"fee.$.refunded": false,
-						"fee.$.updated_at": new Date(),
-						"attachment.payment_confirm": body.payment_confirm,
-						"status": body.status
-					}
-				})
-				.exec((err, updated) => {
-		      		err ? reject(err)
-		      			: resolve(updated);
-		      	});	
-
-			Payments
-				.update({"_id":body.paymentID, "fee": {$elemMatch: {"_id": new ObjectID(body.idGfd)}}}, {
-					$set: {
-						"fee.$.received_amount": body.receivePaymentGfd,
-						"fee.$.needed_refund": false,
-						"fee.$.refunded": false,
-						"fee.$.updated_at": new Date(),
-						"attachment.payment_confirm": body.payment_confirm,
-						"status": body.status
-					}
-				})
-				.exec((err, updated) => {
-		      		err ? reject(err)
-		      			: resolve(updated);
-		      	});
-		}
-		
-		if(body.typeInput == "ta"){
-			Payments
-				.update({"_id":body.paymentID, "fee": {$elemMatch: {"_id": new ObjectID(body.idScd)}}}, {
-					$set: {
-						"fee.$.received_amount": body.receivePaymentScd,
-						"fee.$.needed_refund": false,
-						"fee.$.refunded": false,
-						"fee.$.updated_at": new Date(),
-						"attachment.payment_confirm": body.payment_confirm,
-						"status": body.status
-					}
-				})
-				.exec((err, updated) => {
-		      		err ? reject(err)
-		      			: resolve(updated);
-		      	});
-		}		    	
-	});
-});
-
-agreementsSchema.static('addRefund', (data:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-			
-		var body:any = data;
-
 		Payments
-			.update({"_id":body.paymentID}, {
+			.update({"_id":id}, {
 				$push: {
 					"fee":{
 						"code_name": "mmr",
 						"name": "refund",
 						"created_at": new Date(),
-						"received_amount": body.refundPayment,
+						"received_amount": refundPayment,
 						"needed_refund": true,
 						"refunded": false
 					}
 				}
 			})
 			.exec((err, updated) => {
-	      		err ? reject(err)
+	      		err ? reject({message: err.message})
 	      			: resolve(updated);
 	      	});
 	});
 });
 
-agreementsSchema.static('paymentConfirmedLoi', (id:string):Promise<any> => {
+agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Payments
+			.findById(id)
+			.exec((err, res) => {
+				if(err){
+					reject(err)
+				}
+				if(res){
+					if(res.status == "rejected" || res.status == "accepted"){
+						resolve({message: "Allready Accept or Reject this Payment"});
+					}
+					if(res.status == "pending"){
+						resolve(res);
+					}					
+				}
+			})
+	});
+});
+
+agreementsSchema.static('paymentReceiveAmount', (id:string, code:string, receiveAmount:number, neededRefund:boolean, payment_confirm:string, status:string, remarks:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Payments
+			.update({"_id": id, "fee": {$elemMatch: {"code_name": code}}}, {
+				$set: {
+					"fee.$.received_amount": receiveAmount,
+					"fee.$.needed_refund": neededRefund,
+					"fee.$.refunded": false,
+					"fee.$.updated_at": new Date(),
+					"attachment.payment_confirm": payment_confirm,
+					"status": status,
+					"remarks": remarks
+				}
+			})
+			.exec((err, updated) => {
+	      		err ? reject({message: err.message})
+	      			: resolve(updated);
+	      	});
+	});
+});
+
+agreementsSchema.static('updateReceivePayment', (data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		var ObjectID = mongoose.Types.ObjectId;	
+		var body:any = data;
+		console.log(data);
+		let idPayment = body.paymentID.toString();
+		let neededRefundGfd;
+		let neededRefundStd;
+		let neededRefundScd;
+
+		if(body.typeInput == "loi"){
+			if(body.status == "accepted"){
+				neededRefundGfd = false;
+				neededRefundStd = false;
+			}
+			else{
+				neededRefundGfd = true;
+				neededRefundStd = true;
+			}
+			
+		}
+		if(body.typeInput == "ta"){
+			if(body.status == "accepted"){
+				neededRefundGfd = false;
+				neededRefundStd = false;
+				neededRefundScd = false;
+			}
+			else{
+				neededRefundGfd = false;
+				neededRefundStd = true;
+				neededRefundScd = true;
+			}
+			
+		}
+		//stamp duty payment
+		Agreements.paymentReceiveAmount(idPayment, "std", body.receiveAmountStd, neededRefundStd, body.payment_confirm, body.status, body.remarks);
+		//gfd payment
+		Agreements.paymentReceiveAmount(idPayment, "gfd", body.receiveAmountGfd, neededRefundGfd, body.payment_confirm, body.status, body.remarks);
+		//security deposit payment
+		Agreements.paymentReceiveAmount(idPayment, "scd", body.receiveAmountScd, neededRefundScd, body.payment_confirm, body.status, body.remarks);
+		//refund payment
+		if(body.refundPayment){
+			Agreements.addRefund(idPayment, body.refundPayment);
+		}		    	
+	});
+});
+
+agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 
+		var ObjectID = mongoose.Types.ObjectId;
+		let body:any = data;
+		let type:any = body.type;
+		let receivePayment = body.receive_payment;
+		let type_notif = body.type_notif;
+		let typeMail = body.type_mail;	
 		Agreements
 			.findById(id)
 			.exec((err, agreement) => {
 				if(err){
-					reject(err)
+					reject({message: err.message})
 				}
 				else if (agreement){
-					agreement.letter_of_intent.data.status = "payment-confirmed";
+					let loiData = agreement.letter_of_intent.data;
+					let taData = agreement.tenancy_agreement.data;
+					let landlordId = agreement.landlord;
+					let tenantId = agreement.tenant;
+					let propertyId = agreement.property;
+					let paymentLoiID = loiData.payment.toString();
+					let paymentTaID;
+					if(taData.payment){
+						paymentTaID = taData.payment.toString();
+					}					 
+					let gfd = loiData.gfd_amount;
+					let std = loiData.sd_amount;
+					let scd = loiData.security_deposit;
+					let termLeaseExtend
+					if(loiData.term_lease_extend){
+						termLeaseExtend = loiData.term_lease_extend;
+					}
+					else if(!loiData.term_lease_extend){
+						termLeaseExtend = 0;
+					}
+					let dateCommencement = loiData.date_commencement;
+					let termLease = loiData.term_lease;
+					let longTerm = termLease + termLeaseExtend;
+					let until = dateCommencement.setDate(dateCommencement.getMonth() + longTerm);
+					let receiveGfd;
+					let receiveStd;
+					let receiveScd;
+					let refund;
+					let temp;
+					if(type == "letter_of_intent"){
+						if(loiData.status == "draft" || loiData.status == "expired"){
+							resolve({message: "LOI status is draft"})
+						}
+						else{
+							agreement.letter_of_intent.data.status = body.status_loi;
+							Agreements.paymentCekStatus(paymentLoiID).then((res) => {
+								if(res.message){
+									reject(res);
+								}
+								else{
+									let totalFee = std + gfd;
+									if(gfd <= std){
+										receiveGfd = gfd;
+										temp = receivePayment - receiveGfd;
+										if(temp - std > 0){
+											receiveStd = std;
+											refund = temp - std;
+										}
+										if(temp - std <= 0){
+											receiveStd = temp;
+										}
+									}
+									else{
+										receiveStd = std;
+										temp = receivePayment - receiveStd;
+										if(temp - gfd > 0){
+											receiveGfd = gfd;
+											refund = temp - gfd;
+										}
+										if(temp - gfd <= 0){
+											receiveGfd = temp;
+										}
+									}
+									if(body.status_payment == "rejected"){
+										receiveGfd = 0;
+										receiveStd = 0;
+									}
+									var data ={
+										"paymentID": paymentLoiID,								
+										"receiveAmountStd": receiveStd,
+										"receiveAmountGfd": receiveGfd,
+										"payment_confirm": body.payment_confirm,
+										"refundPayment": refund,
+										"typeInput": "loi",
+										"status": body.status_payment,
+										"remarks": body.remarks
+									};						
+
+									if(body.status_payment == "accepted"){
+										if(receivePayment >= totalFee){
+											Agreements.updateReceivePayment(data);
+											Agreements.notification(id, type_notif);										
+											Agreements.email(id, typeMail);
+										}
+										else{
+											resolve({message: "cannot process this payment, because your payment less than payment LOI"})
+										}
+									}
+									if(body.status_payment == "rejected"){
+										Agreements.updateReceivePayment(data);
+										Agreements.notification(id, type_notif);										
+										Agreements.email(id, typeMail);
+									}									
+								}
+							})
+							.catch((err) => {
+								reject(err);
+							})
+						}
+						
+					}
+					if(type == "tenancy_agreement"){
+						if(taData.status == "draft" || taData.status == "expired"){
+							resolve({message: "TA status is draft or expired"})
+						}
+						else{
+							agreement.tenancy_agreement.data.status = body.status_ta;
+							Agreements.paymentCekStatus(paymentTaID).then((res) => {
+								if(res.message){
+									resolve(res);
+								}
+								else{
+									let totalFee = scd;
+									if (scd != 0){
+										receiveScd = scd;
+										temp = receivePayment - receiveScd;
+										if (temp > 0){
+											refund = temp;
+										}
+									}
+
+									if(body.status_payment == "rejected"){
+										receiveScd = 0;
+									}
+									var data ={
+										"paymentID": paymentTaID,
+										"receiveAmountScd": receiveScd,
+										"payment_confirm": body.payment_confirm,
+										"refundPayment": refund,
+										"typeInput": "ta",
+										"status": body.status_payment,
+										"remarks": body.remarks
+									}	
+
+									if(body.status_payment == "accepted"){
+										if(receivePayment >= totalFee){
+											Agreements.updatePropertyStatus(propertyId, tenantId, until, "rented", id.toString());
+											Agreements.updateUserRented(tenantId, until, propertyId, id.toString());	
+											Agreements.updateReceivePayment(data);
+											Agreements.notification(id, type_notif);										
+											Agreements.email(id, typeMail);
+										}
+										else{
+											resolve({message: "cannot process this payment, because your payment less than payment TA"})
+										}
+									}
+									if(body.status_payment == "rejected"){
+										Agreements.penaltyPayment(paymentLoiID, body.remarks);
+										Agreements.penaltyPayment(paymentTaID, body.remarks);
+										Agreements.notification(id, type_notif);										
+										Agreements.email(id, typeMail);
+									}
+								}
+							})
+						}
+					}
 					agreement.save((err, saved) => {
-						if(err){
-							reject(err);
-						}
-						else if(saved){
-							resolve(saved);
-						}
-					})
+			      		err ? reject({message: err.message})
+			      			: resolve(saved);
+			      	});	
 				}
 			})		
 	});
 });
+
 
 agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
-		var ObjectID = mongoose.Types.ObjectId;
+
+		let ObjectID = mongoose.Types.ObjectId;
 		let body:any = data;
 		let type:any = body.type;
 		let receive_payment = body.receive_payment;
-		let paymentID;
-		let feeStd;
-		let feeGfd;
-		let feeScd;
-		let idStd;
-		let idGfd;
-		let idScd;
-		let feeData;
-		let receivePaymentStd;
-		let receivePaymentGfd;
-		let receivePaymentScd;
-		let refundPayment;
-		let reducePaymentStd;
-		let reducePaymentGfd;
-		let reducePaymentScd;
-		let totalFee;
-		let totalReceive;
-
-	    Agreements
-			.findById(id, (err, agreement) => {
-				let loiData = agreement.letter_of_intent.data;
-				let taData = agreement.tenancy_agreement.data;
-				let landlordId = agreement.landlord;
-				let gfd = loiData.gfd_amount;
-				let std = loiData.sd_amount;
-				let scd = loiData.security_deposit;
-
-				if (type == "letter_of_intent"){
-					agreement.letter_of_intent.data.status = "payment-confirmed";
-					paymentID = loiData.payment;
-					totalFee = std + gfd;
-					totalReceive = receive_payment;
-					Payments
-						.findOne({"_id": paymentID})
-						.select({"fee": {$elemMatch: {"code_name": "std"}}})
-						.exec((err, payment) => {
-							if(payment){
-								let fee1 = [].concat(payment.fee);
-								for(var i = 0; i < fee1.length; i++ ){
-									let _fee1 = fee1[i];
-									feeStd = _fee1.amount;
-									idStd = _fee1._id;
-								}
-							}
-							Payments
-								.findOne({"_id": paymentID})
-								.select({"fee": {$elemMatch: {"code_name": "gfd"}}})
-								.exec((err, paymentt) => {
-									if(paymentt){
-										let fee2 = [].concat(paymentt.fee);
-										for(var j = 0; j < fee2.length; j++ ){
-											let _fee2 = fee2[j];
-											feeGfd = _fee2.amount;
-											idGfd = _fee2._id;
-										}
-									}
-									if (feeGfd <= feeStd){
-										receivePaymentGfd = feeGfd;
-										reducePaymentGfd = receive_payment - receivePaymentGfd;
-										reducePaymentStd = feeStd - reducePaymentGfd;
-										if (reducePaymentStd >= 1){
-											receivePaymentStd = feeStd;
-											refundPayment = reducePaymentGfd - receivePaymentStd;
-										}
-									}
-									else{
-										receivePaymentStd = feeStd;
-										reducePaymentStd = receive_payment - receivePaymentStd;
-										reducePaymentGfd = reducePaymentStd - feeGfd; 
-										if (reducePaymentGfd >= 1){
-											receivePaymentGfd = feeGfd;
-											refundPayment = reducePaymentStd - receivePaymentGfd;
-										}
-									}
-									var data ={
-										"paymentID": paymentID,
-										"idStd": idStd,
-										"idGfd": idGfd,									
-										"receivePaymentStd": receivePaymentStd,
-										"receivePaymentGfd": receivePaymentGfd,
-										"payment_confirm": body.payment_confirm,
-										"refundPayment": refundPayment,
-										"typeInput": "loi",
-										"status": "accepted"
-									}					
-									if(totalReceive - totalFee == 0)
-									{	
-										Agreements.feeUpdate(data).then(res => {
-											Agreements.paymentConfirmedLoi(id);
-											let typeMail = "acceptLoiPayment";
-											Agreements.email(id, typeMail).then(res => {
-												resolve({message: "success"});
-											})								
-										});									
-									}
-									if (totalReceive - totalFee >= 1){									
-										Agreements.feeUpdate(data).then (res => {
-											Agreements.addRefund(data).then (res => {
-												Agreements.paymentConfirmedLoi(id);
-												let typeMail = "acceptLoiPayment";
-												Agreements.email(id, typeMail).then(res => {
-													resolve({message: "success"});
-												})
-											});											
-										});	
-									}
-								});															
-						});
-				}
-				if (type == "tenancy_agreement"){
-					agreement.tenancy_agreement.data.status = "accepted";
-					paymentID = taData.payment;
-					totalFee = scd;
-					totalReceive = receive_payment;
-					Payments
-						.findOne({"_id": paymentID})
-						.select({"fee": {$elemMatch: {"code_name": "scd"}}})
-						.exec((err, paymenttt) => {
-							let fee3 = [].concat(paymenttt.fee);
-							for(var k = 0; k < fee3.length; k++ ){
-								let _fee3 = fee3[k];
-								feeScd = _fee3.amount;
-								idScd = _fee3._id;
-							}
-							if (feeScd != 0){
-								receivePaymentScd = feeScd;
-								reducePaymentScd = receive_payment - receivePaymentScd;
-								if (reducePaymentScd >= 1){
-									refundPayment = reducePaymentScd;
-								}
-							}
-							var data ={
-								"paymentID": paymentID,
-								"idScd": idScd,
-								"receivePaymentScd": receivePaymentScd,
-								"payment_confirm": body.payment_confirm,
-								"refundPayment": refundPayment,
-								"typeInput": "ta",
-								"status": "accepted"
-							}					
-							if(totalReceive - totalFee == 0)
-							{	
-								Agreements.feeUpdate(data).then(res => {
-									let typeMail = "acceptTaPayment";
-									Agreements.email(id, typeMail).then(res => {
-										resolve({message: "success"});
-									})
-								});									
-							}
-							if (totalReceive - totalFee >= 1){									
-								Agreements.feeUpdate(data).then(res => {
-									Agreements.addRefund(data);	
-									let typeMail = "acceptTaPayment";
-									Agreements.email(id, typeMail).then(res => {
-										resolve({message: "success"});
-									})
-								});																			
-							}
-						});	
-				}
-				agreement.save((err, saved) => {
-		      		err ? reject(err)
-		      			: resolve(saved);
-		      	});				
-			})
-	});
-});
-
-agreementsSchema.static('feeNeededRefund', (id:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
+		let type_notif;
+		let typeMail;
+		let statusTa;
+		let statusLoi;
+		if(type == "letter_of_intent"){
+			typeMail = "acceptLoiPayment";
+			type_notif = "acceptLoiPayment";
+			statusLoi = "payment-confirmed";
 		}
-		Payments
-			.findById(id, (err, payments) => {
-				if(payments) {
-					for(var i = 0; i < payments.fee.length; i++){
-						Payments
-							.update({"_id": id, "fee":{ $elemMatch: {"needed_refund": false}}}, {
-								$set: {
-									"fee.$.needed_refund": true,
-									"fee.$.updated_at": new Date()
-								},
-							}, {multi: true})
-							.exec((err, update) => {
-				              err ? reject(err)
-				            	  : resolve(update);
-				            });			
-					}
-				}
-			})
+		if (type == "tenancy_agreement"){
+			typeMail = "acceptTaPayment";
+			type_notif = "acceptTaPayment";
+			statusTa = "accepted";
+		}
+
+		let dataAccept = {
+			"type": type,
+			"receive_payment": receive_payment,
+			"payment_confirm": body.payment_confirm,
+			"status_payment": "accepted",
+			"remarks": body.remarks,
+			"status_loi": statusLoi,
+			"status_ta": statusTa,
+			"type_mail": typeMail,
+			"type_notif" : type_notif
+		};		
+		Agreements.paymentProcess(id, dataAccept).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject(err);
+		})
 	});
 });
 
@@ -1616,58 +1741,79 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
+		
+		let ObjectID = mongoose.Types.ObjectId;
 		let body:any = data;
 		let type:any = body.type;
-		let paymentID;
-		let type_notif = "rejectLoi";
-		
-	    Agreements
-			.findById(id, (err, agreement) => {
-				let loiData = agreement.letter_of_intent.data;
-				let taData = agreement.tenancy_agreement.data;
+		let receive_payment = body.receive_payment;
+		let type_notif;
+		let typeMail;		
+		let statusTa;
+		let statusLoi;
+		if(type == "letter_of_intent"){
+			typeMail = "rejectLoiPayment";
+			type_notif = "rejectLoiPayment";
+			statusLoi = "rejected";
+		}
+		if (type == "tenancy_agreement"){
+			typeMail = "rejectTaPayment";
+			type_notif = "rejectTaPayment";
+			statusTa = "rejected";
+		}
 
-				if (type == "letter_of_intent"){
-					paymentID = loiData.payment.toString();					
-					Agreements.feeNeededRefund(paymentID).then(res =>{
-						agreement.letter_of_intent.data.status = "rejected";
-						agreement.save((err, saved) => {
+		let dataReject = {
+			"type": type,
+			"receive_payment": receive_payment,
+			"payment_confirm": body.payment_confirm,
+			"status_payment": "rejected",
+			"remarks": body.remarks,
+			"status_loi": statusLoi,
+			"status_ta": statusTa,
+			"type_mail": typeMail,
+			"type_notif" : type_notif
+		};		
+		Agreements.paymentProcess(id, dataReject).then(res => {
+			resolve(res);
+		})
+		.catch(err => {
+			reject(err);
+		})
+	});
+});
+
+agreementsSchema.static('penaltyPayment', (idPayment:string, remarks:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Payments
+			.findById(idPayment)
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					let fees = res.fee;
+					for(var i = 0; i < fees.length; i++){
+						let fee = fees[i];
+						let idFee = fee._id;
+						let codeFee = fee.code_name;
+						if (codeFee != "gfd"){
 							Payments
-								.update({"_id": id}, {
-									$set:{
-										"status": "rejected",
-										"remarks": body.remarks
+								.update({"_id": idPayment, "fee": {$elemMatch: {"_id": idFee}}},{
+									$set: {
+										"fee.$.needed_refund": true,
+										"fee.$.updated_at": new Date(),
+										"remarks": remarks,
+										"status": "rejected"
 									}
 								})
-								.exec((err, updated) => {
-									if(err){
-										reject(err)
-									}
-									else if(updated){
-										let typeMail = "rejectLoiPayment";
-										Agreements.email(id, typeMail).then(res => {
-											Agreements.notification(id, type_notif);
-											resolve({status: saved.letter_of_intent.data.status});
-										})
-									}
-								})						
-				      	});	
-					});
+								.exec((err, result) => {
+									err ? reject({message: err.message})
+					            	  	: resolve(result);
+								})
+						}
+					}
+					resolve({message: "penalty payment updated"})
 				}
-				if (type == "tenancy_agreement"){
-					agreement.tenancy_agreement.data.status = "rejected";
-					paymentID = taData.payment;
-					Agreements.feeNeededRefund(paymentID).then(res =>{
-						agreement.letter_of_intent.data.status = "rejected";
-						agreement.save((err, saved) => {
-				      		let typeMail = "rejectTaPayment";
-							Agreements.email(id, typeMail).then(res => {
-								Agreements.notification(id, type_notif);
-								resolve({status: saved.tenancy_agreement.data.status});
-							})
-				      	});	
-					});
-				}							
-			})		
+			})					
 	});
 });
 
@@ -1710,7 +1856,7 @@ agreementsSchema.static('refundPayment', (id:string, data:Object):Promise<any> =
 					for(var i = 0; i < payments.fee.length; i++){
 						let refunded = payments.fee[i].refunded;
 						Payments
-							.update({"_id": id, "fee":{ $elemMatch: {"needed_refund": false}}}, {
+							.update({"_id": id, "fee":{ $elemMatch: {"needed_refund": true}}}, {
 								$set: {
 									"fee.$.refunded": true,
 									"fee.$.updated_at": new Date(),
@@ -1718,13 +1864,220 @@ agreementsSchema.static('refundPayment', (id:string, data:Object):Promise<any> =
 								},
 							}, {multi: true})
 							.exec((err, update) => {
-				              err ? reject(err)
+				              err ? reject({message: err.message})
 				            	  : resolve(update);
 				            });									
 					}
 					resolve({"refund" : "success"})
 				}
 				resolve({"refund" : "no need refund"})
+			})
+	});
+});
+
+agreementsSchema.static('transferPenaltyToLandlord', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		let body:any = data;
+		Agreements
+			.findById(id)
+			.exec((err, agreement) => {
+				if(err){
+					reject({message: err.message});
+				}
+				if(agreement){
+					let paymentLoi = agreement.letter_of_intent.data.payment;
+					let paymentTa = agreement.tenancy_agreement.data.payment;
+					let taStatus = agreement.tenancy_agreement.data.status;
+
+					if(taStatus == "rejected" || taStatus == "expired"){
+						Payments.transferLandlord(paymentLoi, data).then((res)=>{
+							Payments.transferLandlord(paymentTa, data).then((res)=>{
+								resolve({message: "success transfer to landlord"})
+							})
+							.catch((err) => {
+								reject({message: err.message});
+							})
+						})
+						.catch((err) => {
+							reject({message: err.message});
+						})
+					}	
+					else{
+						reject({message: "payment is processing or accepted"});
+					}				
+				}
+			})
+	});
+});
+
+agreementsSchema.static('transferToLandlord', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		let body:any = data;
+		Agreements
+			.findById(id)
+			.exec((err, agreement) => {
+				if(err){
+					reject({message: err.message});
+				}
+				if(agreement){
+					let paymentLoi = agreement.letter_of_intent.data.payment;
+					let paymentTa = agreement.tenancy_agreement.data.payment;
+					let taStatus = agreement.tenancy_agreement.data.status;
+
+					if(taStatus == "accepted"){
+						Payments.transferLandlord(paymentLoi, data).then((res)=>{
+							Payments.transferLandlord(paymentTa, data).then((res)=>{
+								resolve({message: "success transfer to landlord"})
+							})
+							.catch((err) => {
+								reject({message: err.message});
+							})
+						})
+						.catch((err) => {
+							reject({message: err.message});
+						})
+					}
+					else{
+						reject({message: "status TA not accepted"})
+					}
+				}
+			})
+	});
+});
+
+agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+
+		let _query = {$and: [{"letter_of_intent.data.status": "accepted"},{"tenancy_agreement.data.status": "accepted"}]};
+
+		Agreements
+			.find(_query)
+			.populate("property landlord tenant tenancy_agreement.data.stamp_certificate")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'transfer_landlord.attachment',
+					model: 'Attachments'
+				}]
+			})
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					if(res.length == 0){
+						resolve(res)
+					}
+					if(res.length >= 1){
+						let dataArr = [];
+						for(var i = 0; i < res.length; i++){
+							let result = res[i];
+							let idagreement = result._id;
+							let ta = result.tenancy_agreement.data
+							let loi = result.	letter_of_intent.data;
+		                    let gfd = loi.gfd_amount;
+		                    let std = loi.sd_amount;
+		                    let scd = loi.security_deposit;
+		                    let stampFee = loi.sd_amount;   
+		                    let totalCollected = gfd + std + scd;
+		                    let monthlyRental = loi.monthly_rental;
+		                    let termLease = loi.term_lease;
+		                    let feeEarned;
+		                    if (termLease == 6){
+		                        feeEarned = 10/100 * (1/4 * monthlyRental);
+		                    }
+		                    if (termLease == 12){
+		                        feeEarned = 10/100 * (1/2 * monthlyRental);
+		                    }
+		                    if (termLease == 24){
+		                        feeEarned = 10/100 * (1 * monthlyRental);
+		                    }
+		                    let amountLandlord = totalCollected - stampFee - feeEarned;
+		                    let floor = result.property.address.floor;
+		                    let unit = result.property.address.unit;
+		                    let streetName = result.property.address.street_name;
+		                    let dateListed = result.property.confirmation.date;
+		                    let landlordName = result.landlord.username;
+		                    let tenantName = result.tenant.username;
+		                    let dateTaConcluded = ta.payment.attachment.payment_confirm.uploaded_at
+		                    let transferredLandlord;
+		                    let dateTransferredLandlord;
+		                    let transferReferenceLoi;
+		                    if(loi.payment.attachment.payment_confirm){
+		                    	transferReferenceLoi = loi.payment.attachment.payment_confirm;
+		                    }
+		                    let transferReferenceTa;
+		                    let attachmentTransferredLandlord;
+		                    if(ta.payment.attachment.payment_confirm){
+		                    	transferReferenceTa = ta.payment.attachment.payment_confirm;
+		                    }
+		                    if(loi.payment.transfer_landlord){
+		                    	transferredLandlord = loi.payment.transfer_landlord.transfer;
+			                    dateTransferredLandlord = loi.payment.transfer_landlord.date_transferred;
+			                    if(loi.payment.transfer_landlord.attachment){
+			                    	attachmentTransferredLandlord = loi.payment.transfer_landlord.attachment;
+			                    }			                    
+		                    }		                    
+		                    let stampCertificate = ta.stamp_certificate;
+
+		                    let data = {
+		                    	"idagreement": idagreement,
+		                    	"property": "# " + floor + " - " + unit + " " + streetName,
+		                    	"date_listed": dateListed,
+		                    	"landlord": landlordName,
+		                    	"tenant": tenantName,
+		                    	"rental": monthlyRental,
+		                    	"tenure": termLease,
+		                    	"dateTaConcluded": dateTaConcluded,
+		                    	"total_collected": totalCollected,
+		                    	"stamp_fee": stampFee,
+		                    	"fee_earned": feeEarned,
+		                    	"amount_transferred_landlord": amountLandlord,
+		                    	"transferred_landlord": transferredLandlord,
+		                    	"date_transffered": dateTransferredLandlord,
+		                    	"transfer_reference_loi": transferReferenceLoi,
+		                    	"transfer_reference_ta": transferReferenceTa,
+		                    	"attachment_transfer_landlord": attachmentTransferredLandlord,
+		                    	"stamp_certificate": stampCertificate
+		                    }
+		                    dataArr.push(data);
+						}					
+					resolve(dataArr)
+					}					
+				}
 			})
 	});
 });
@@ -1771,26 +2124,26 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 							if(type == "initiateTA"){
 								message = "Tenancy Agreement (TA) received for" + unit + " " + devResult.name;
 								type_notif = "received_LOI";
-								user = landlordId;
+								user = tenantId;
 							}
 			            	if(type == "rejectTA"){
 								message = "Tenancy Agreement (TA) rejected for" + unit + " " + devResult.name;
 								type_notif = "rejected_LOI";
-								user = tenantId;
+								user = landlordId;
 							}
 							if(type == "acceptTA"){
 								message = "Tenancy Agreement (TA) accepted for" + unit + " " + devResult.name;
 								type_notif = "accepted_LOI";
-								user = tenantId;
+								user = landlordId;
 							}
 							if(type == "initiateIL"){
 								message = "Inventory List received for" + unit + " " + devResult.name;
-								type_notif = "received_LOI";
+								type_notif = "received_Inventory";
 								user = tenantId;
 							}
 			            	if(type == "confirmedIL"){
 								message = "Inventory List confirmed for" + unit + " " + devResult.name;
-								type_notif = "rejected_LOI";
+								type_notif = "confirm_Inventory";
 								user = landlordId;
 							}
 				            var notification = {
@@ -1802,7 +2155,7 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 			              Notifications.createNotifications(notification);        
 			            })
 			            .exec((err, update) => {
-			              err ? reject(err)
+			              err ? reject({message: err.message})
 			              : resolve(update);
 			            });
 			})

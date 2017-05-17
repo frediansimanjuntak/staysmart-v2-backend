@@ -25,110 +25,40 @@ usersSchema.static('index', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('getAll', ():Promise<any> => {
+usersSchema.static('getUser', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		let _query = {};
 
 		Users
-			.find(_query)
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
-			.populate({
-				path: 'owned_properties',
-				populate: [{
-					path: 'development',
-					model: 'Developments'
-				},{
-					path: 'pictures.kitchen',
-					model: 'Attachments'
-				},{
-					path: 'pictures.toilet',
-					model: 'Attachments'
-				},{
-					path: 'pictures.bed',
-					model: 'Attachments'
-				},{
-					path: 'pictures.dining',
-					model: 'Attachments'
-				},{
-					path: 'pictures.living',
-					model: 'Attachments'
-				},{
-					path: 'amenities',
-					model: 'Amenities',
-					populate: {
-						path: 'icon',
-						model: 'Attachments'
-					}
-				}]	
-			})
-			.populate({
-				path: 'rented_properties',
-				populate: [{
-					path: 'development',
-					model: 'Developments'
-				},{
-					path: 'pictures.kitchen',
-					model: 'Attachments'
-				},{
-					path: 'pictures.toilet',
-					model: 'Attachments'
-				},{
-					path: 'pictures.bed',
-					model: 'Attachments'
-				},{
-					path: 'pictures.dining',
-					model: 'Attachments'
-				},{
-					path: 'pictures.living',
-					model: 'Attachments'
-				},{
-					path: 'amenities',
-					model: 'Amenities',
-					populate: {
-						path: 'icon',
-						model: 'Attachments'
-					}
-				}]
-			})
-			.exec((err, users) => {
-				err ? reject(err)
-				: resolve(users);
-			});
-	});
-});
-
-usersSchema.static('me', (userId:string):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		Users
-			.findOne({_id:userId}, '-salt -password')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements")
-			.populate("landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back")
+			.find(query, '-salt -password')
+			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back blocked_users")
 			.populate({
 				path: 'companies',
-				populate: {
+				populate: [{
 					path: 'documents',
 					model: 'Attachments'
-				}
+				},
+				{
+					path: 'shareholders.identification_proof.front',
+					model: 'Attachments'
+				},
+				{
+					path: 'shareholders.identification_proof.back',
+					model: 'Attachments'
+				}]
 			})
 			.populate({
-	          path: 'tenant.chat_rooms',
+	          path: 'chat_rooms',
 	          populate: [{
-	            path: 'propertyId',
+	            path: 'property',
 	            model: 'Properties',
 	            select: 'address'
-	          },{
+	          },
+	          {
 	            path: 'landlord',
 	            model: 'Users',
 	            select: 'landlord.data'
-	          }],
-	        })
-	        .populate({
-	          path: 'landlord.chat_rooms',
-	          populate: [{
-	            path: 'propertyId',
-	            model: 'Properties',
-	            select: 'address'
-	          },{
+	          },
+	          {
 	            path: 'tenant',
 	            model: 'Users',
 	            select: 'tenant.data'
@@ -139,28 +69,42 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				populate: [{
 					path: 'development',
 					model: 'Developments'
-				},{
+				},
+				{
 					path: 'pictures.kitchen',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.toilet',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.bed',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.dining',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.living',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'amenities',
 					model: 'Amenities',
 					populate: {
 						path: 'icon',
 						model: 'Attachments'
 					}
+				},
+				{
+					path: 'owner.user',
+					model: 'Users'
+				},
+				{
+					path: 'manager',
+					model: 'Users'
 				}]	
 			})
 			.populate({
@@ -168,22 +112,28 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				populate: [{
 					path: 'development',
 					model: 'Developments'
-				},{
+				},
+				{
 					path: 'pictures.kitchen',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.toilet',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.bed',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.dining',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.living',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'amenities',
 					model: 'Amenities',
 					populate: {
@@ -197,22 +147,28 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				populate: [{
 					path: 'development',
 					model: 'Developments'
-				},{
+				},
+				{
 					path: 'pictures.kitchen',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.toilet',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.bed',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.dining',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'pictures.living',
 					model: 'Attachments'
-				},{
+				},
+				{
 					path: 'amenities',
 					model: 'Amenities',
 					populate: {
@@ -222,33 +178,51 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 				}]	
 			})
 			.populate({
-				path: 'rented_properties',
+				path: 'rented_properties.property',
 				populate: [{
-					path: 'development',
-					model: 'Developments'
-				},{
-					path: 'pictures.kitchen',
-					model: 'Attachments'
-				},{
-					path: 'pictures.toilet',
-					model: 'Attachments'
-				},{
-					path: 'pictures.bed',
-					model: 'Attachments'
-				},{
-					path: 'pictures.dining',
-					model: 'Attachments'
-				},{
-					path: 'pictures.living',
-					model: 'Attachments'
-				},{
-					path: 'amenities',
-					model: 'Amenities',
-					populate: {
-						path: 'icon',
+						path: 'development',
+						model: 'Developments'
+					},
+					{
+						path: 'pictures.kitchen',
 						model: 'Attachments'
-					}
-				}]
+					},
+					{
+						path: 'pictures.toilet',
+						model: 'Attachments'
+					},
+					{
+						path: 'pictures.bed',
+						model: 'Attachments'
+					},
+					{
+						path: 'pictures.dining',
+						model: 'Attachments'
+					},
+					{
+						path: 'pictures.living',
+						model: 'Attachments'
+					},
+					{
+						path: 'amenities',
+						model: 'Amenities',
+						populate: {
+							path: 'icon',
+							model: 'Attachments'
+						}
+					},
+					{
+						path: 'owner.user',
+						model: 'Users'
+					},
+					{
+						path: 'manager',
+						model: 'Users'
+					}]			
+			})
+			.populate({
+				path: 'rented_properties.agreement',
+				model: 'Agreements'
 			})
 			.exec((err, users) => {
 				err ? reject(err)
@@ -257,32 +231,55 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 	});
 });
 
+usersSchema.static('getAll', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let _query = {};
+
+		Users.getUser(_query).then(res => {
+			if(res){				
+				resolve(res);
+			}
+			else{
+				reject({message: "error get data"});
+			}
+		})
+	});
+});
+
+usersSchema.static('me', (userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let _query = {"_id": userId};
+
+		Users.getUser(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					resolve(result);
+				})				
+			}
+			else{
+				reject({message: "error get data"});
+			}
+		})
+	});
+});
+
 usersSchema.static('getById', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		Users
-			.findById(id, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
-			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank agreements companies")
-			.populate({
-				path: 'owned_properties',
-				populate: {
-					path: 'development',
-					model: 'Developments'
-				}
-			})
-			.populate({
-				path: 'rented_properties',
-				populate: {
-					path: 'development',
-					model: 'Developments'
-				}
-			})
-			.exec((err, users) => {
-				err ? reject(err)
-				: resolve(users);
-			});
+		let _query = {"_id": id};
+
+		Users.getUser(_query).then(res => {
+			if(res){
+				_.each(res, (result) => {
+					resolve(result);
+				})
+			}
+			else{
+				reject({message: "error get data"});
+			}
+		})
 	});
 });
 
@@ -437,9 +434,13 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 				else if(update){
 					Users
 						.findById(id, (err, user) => {
-							SMS.sendActivationCode(user.phone, randomCode).then(res => {
+							if(err){
+								reject(err);
+							}
+							if(user){
+								SMS.sendActivationCode(user.phone, randomCode)
 								resolve({message: "code sent"});
-							});
+							}
 						})
 				}
 			});
@@ -460,10 +461,41 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 					.findByIdAndRemove(id)
 					.exec((err, deleted) => {
 						err ? reject(err)
-						: resolve({message: 'user deleted'});
+							: resolve({message: 'user deleted'});
 					});
 			}
 		});
+	});
+});
+
+usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Users
+			.findById(id)
+			.exec((err, user) => {
+				if(err){
+					reject(err);
+				}
+				if(user){
+					user.authenticate(oldpass, (err, ok) => {
+				        if(err) {
+				          reject(err);
+				        }
+				        if(ok) {
+				          	user.password = newpass;
+				        	user.save((err, res) => {
+				        		err ? reject(err)
+									: resolve({message: 'data updated'});
+				        	});
+				        } else {
+				        	reject({message: "old password didn't match"});				        	
+				        }
+				    });
+				}
+			})
 	});
 });
 
@@ -481,36 +513,41 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 
 				Users
 					.findById(id, (err, user)=>{
-						if(body.username) {
-							user.username = body.username;
+						if(err){
+							reject(err);
 						}
-						if(body.email) {
-							user.email = body.email;
-						}
-						if(body.phone) {
-							user.phone = body.phone;
-						}
-						if(body.picture) {
-							user.picture = body.picture;
-						}
-						if(body.oldpassword && body.newpassword) {
-							if(user.password == user.encryptPassword(body.oldpassword)){
-								if(body.newpassword){
-									user.password = body.newpassword;
-								}
-								else{
-									reject({message: 'no new password'})
-								}
+						if(user){
+							if(body.username) {
+								user.username = body.username;
 							}
-							else if(user.password != user.encryptPassword(body.oldpassword)){
-								reject({message: "old password didn't match with password in database"});
+							if(body.email) {
+								user.email = body.email;
 							}
-						}
-							            
-						user.save((err, saved) => {
-				        err ? reject(err)
-				            : resolve({message: 'data updated'});
-			    	    });
+							if(body.phone) {
+								user.phone = body.phone;
+							}
+							if(body.picture) {
+								user.picture = body.picture;
+							}
+							user.save((err, saved) => {
+								if(err){
+									reject(err);
+								}
+								if(saved){
+									if(body.oldpassword && body.newpassword) {
+										Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+											resolve(res);
+										})
+										.catch((err) => {
+											reject(err);
+										})
+									}
+									else{
+										resolve({message: 'data updated'});
+									}
+								}
+				    	    });
+						}						
 					})
 			}
 		});
@@ -678,19 +715,36 @@ usersSchema.static('blockUser', (id:string, userId:Object):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		if (!_.isObject(userId)) {
-			return reject(new TypeError('User Id is not a valid object.'));
-		}
-		Users
-			.findByIdAndUpdate(userId, {
-				$push: {
-					"blocked_users": id
+		let idUser = userId.toString();
+		if(id == idUser){
+			reject({message: "Connot Block by yourself"})
+		} 
+		if(id != idUser){
+			Users
+			.find({"_id": userId, "blocked_users": {$in: [id]}})
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					if(res.length == 0){
+						Users
+							.findByIdAndUpdate(userId, {
+								$push: {
+									"blocked_users": id 
+								}
+							})
+							.exec((err, update) => {
+								err ? reject(err)
+									: resolve(update);
+							});
+					}
+					if(res.length >= 1){
+						resolve({message: "Already User"})
+					}
 				}
 			})
-			.exec((err, update) => {
-				err ? reject(err)
-					: resolve(update);
-			});
+		}				
 	});
 });
 
@@ -699,19 +753,30 @@ usersSchema.static('unblockUser', (id:string, userId:Object):Promise<any> => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		if (!_.isObject(userId)) {
-			return reject(new TypeError('User Id is not a valid object.'));
-		}
 		Users
-			.findByIdAndUpdate(userId, {
-				$pull: {
-					"blocked_users": id
+			.find({"_id": userId, "blocked_users": {$in: [id]}})
+			.exec((err, res) => {
+				if(err){
+					reject(err);
 				}
-			})
-			.exec((err, update) => {
-				err ? reject(err)
-					: resolve(update);
-			});
+				if(res){
+					if(res.length == 0){
+						resolve({message: "Not found user in blocked list"})
+					}
+					if(res.length >= 1){
+						Users
+							.findByIdAndUpdate(userId, {
+								$pull: {
+									"blocked_users": id
+								}
+							})
+							.exec((err, update) => {
+								err ? reject(err)
+									: resolve(update);
+							});
+					}
+				}
+			})		
 	});
 });
 

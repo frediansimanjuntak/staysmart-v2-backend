@@ -13,7 +13,7 @@ companiesSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("documents created_by")
           .exec((err, companies) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(companies);
           });
     });
@@ -26,7 +26,7 @@ companiesSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("documents created_by")
           .exec((err, companies) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(companies);
           });
     });
@@ -44,7 +44,7 @@ companiesSchema.static('createCompanies', (companies:Object, created_by:string):
           _companies.created_by = created_by;
           _companies.save((err, saved)=>{
             if(err) {
-              reject(err);
+              reject({message: err.message});
             }
             else if(saved) {
               var companiesId = _companies._id;
@@ -56,7 +56,7 @@ companiesSchema.static('createCompanies', (companies:Object, created_by:string):
                 })
                 .exec((err, update) => {
                   if(err) {
-                    reject(err);
+                    reject({message: err.message});
                   }
                 });
               resolve({companiesId});        
@@ -89,7 +89,7 @@ companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Objec
                   }
                 })
                 .exec((err, update) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                   : resolve(update);
                 });  
             }
@@ -120,7 +120,7 @@ companiesSchema.static('deleteCompanies', (id:string, currentUser:string):Promis
                       .findByIdAndRemove(document)
                       .exec((err, deleted) => {
                         if(err) {
-                          reject(err);
+                          reject({message: err.message});
                         }
                       });
                   }
@@ -133,13 +133,13 @@ companiesSchema.static('deleteCompanies', (id:string, currentUser:string):Promis
                   })
                   .exec((err, update) => {
                     if(err) {
-                      reject(err);
+                      reject({message: err.message});
                     }
                     else{
                       Companies
                         .findByIdAndRemove(id)
                         .exec((err, deleted) => {
-                            err ? reject(err)
+                            err ? reject({message: err.message})
                                 : resolve(deleted);
                         });
                     }
@@ -165,7 +165,7 @@ companiesSchema.static('updateCompanies', (id:string, companies:Object, currentU
                 Companies
                   .findByIdAndUpdate(id, companies)
                   .exec((err, update) => {
-                    err ? reject(err)
+                    err ? reject({message: err.message})
                         : resolve(update);
                   });
               }

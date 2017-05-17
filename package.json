@@ -47,7 +47,6 @@
     "method-override": "^2.3.7",
     "mongoose": "^4.4.7",
     "morgan": "^1.5.2",
-    "newrelic": "^1.38.2",
     "passport": "^0.3.2",
     "passport-facebook": "^2.1.1",
     "passport-local": "^1.0.0",
@@ -57,6 +56,7 @@
     "serve-favicon": "^2.3.2",
     "sha256": "^0.2.0",
     "slug": "^0.9.1",
+    "socket.io": "^1.7.3",
     "split-string": "^1.0.0"
   },
   "devDependencies": {

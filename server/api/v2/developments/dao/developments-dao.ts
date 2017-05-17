@@ -13,7 +13,7 @@ developmentsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(developments);
           });
     });
@@ -23,39 +23,105 @@ developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<a
     return new Promise((resolve:Function, reject:Function) => {
         Properties.searchProperties(searchComponent).then(properties => {
           var dev = [];
-          var count_match = 0;
-          var dev_id;
+                    
           for(var i = 0; i < properties.length; i++){
-            let dev_data = properties[i].development;
-            
-            if(dev.length > 0) {
+            let property = properties[i];
+            let development = property.development;
+            if (dev.length == 0){
+              dev.push({'development': development, 'count': 1});
+            }
+            else if (dev.length > 0){         
+              let countMatch = 0;
+              let developId;
+              let index;     
               for(var j = 0; j < dev.length; j++){
-                if(dev[j].development._id == dev_data._id) {
-                  count_match += 1;
-                  dev_id = dev[j].development._id;
+                let devId = dev[j].development._id;
+                let count = dev[j].count;
+                if(devId == development._id){
+                    countMatch += 1;
+                    developId = devId;
+                    index = j;
                 }
                 else{
-                  count_match = 0;
+                  countMatch = countMatch;
                 }
-                   
               }
-              if(count_match > 0) {
-                for(var k = 0; k < dev.length; k++){
-                  if(dev[k].development._id == dev_id) {
-                    dev[k].count += 1;
-                  }
-                }
+              if(countMatch > 0){
+                dev[index].count += 1;
               }
               else{
-                dev.push({'development': dev_data, 'count': 1}); 
+                dev.push({'development': development, 'count': 1}); 
               }
-            }
-            else{
-              dev.push({'development': dev_data, 'count': 1});
             }
           }
           resolve(dev);
         })
+    });
+});
+
+developmentsSchema.static('getPropertyDraftWithoutOwnerDevelopment', (id:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body:any = data;
+
+        Developments
+          .findById(id)          
+          .populate("properties")
+          .select("properties")
+          .exec((err, developments) => {
+            if(err){
+              reject(err);
+            }
+            if(developments){ 
+              let dev;     
+              for(var i = 0; i < developments.properties.length; i++){
+                let property = developments.properties[i];
+                if(property.status == "draft" && !property.owner.user){
+                  if(property.address.floor == body.floor && property.address.unit == body.unit){
+                    dev = property;
+                  }
+                }
+              }
+              if(dev == null){
+                resolve({message: "no data"});
+              }  
+              else{
+                resolve(dev);
+              }
+            }
+          });
+    });
+});
+
+developmentsSchema.static('getPropertyWithOwnerDevelopment', (id:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body:any = data;
+
+        Developments
+          .findById(id)          
+          .populate("properties")
+          .select("properties")
+          .exec((err, developments) => {
+            if(err){
+              reject(err);
+            }
+            if(developments){
+              let dev;     
+              for(var i = 0; i < developments.properties.length; i++){
+                let property = developments.properties[i];
+                if(property.owner.user){
+                  if(property.address.floor == body.floor && property.address.unit == body.unit){
+                    dev = property;
+                  }
+                }
+              }  
+              if(dev == null){
+                resolve({message: "no data"});
+              }  
+              else{
+                resolve(dev);
+              }
+            }
+          });
     });
 });
 
@@ -66,7 +132,7 @@ developmentsSchema.static('getById', (id:string):Promise<any> => {
           .findById(id)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(developments);
           });
     });
@@ -80,7 +146,7 @@ developmentsSchema.static('getDevelopment', (unit:string):Promise<any> => {
           .where('number_of_units').gt(unit)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(developments);
           });
     });
@@ -98,7 +164,7 @@ developmentsSchema.static('createDevelopments', (developments:Object):Promise<an
       var _developments = new Developments(developments);
           _developments.slug = slug_name;
           _developments.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -130,7 +196,7 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
                   .findByIdAndRemove(properties)
                   .exec((err, deleted) => {
                     if(err) {
-                      reject(err);
+                      reject({message: err.message});
                     }
                   });
               }
@@ -138,13 +204,13 @@ developmentsSchema.static('deleteDevelopments', (id:string):Promise<any> => {
           })
           .exec((err, deleted) => {
               if(err) {
-                reject(err);
+                reject({message: err.message});
               } 
               else{
                 Developments
                   .findByIdAndRemove(id)
                   .exec((err, deleted) => {
-                      err ? reject(err)
+                      err ? reject({message: err.message})
                           : resolve();
                   });
               }
@@ -161,7 +227,7 @@ developmentsSchema.static('updateDevelopments', (id:string, developments:Object)
         Developments
         .findByIdAndUpdate(id, developments)
         .exec((err, update) => {
-          err ? reject(err)
+          err ? reject({message: err.message})
               : resolve(update);
         });
     });

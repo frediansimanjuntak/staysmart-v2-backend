@@ -33,6 +33,26 @@ export class DevelopmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getPropertyWithOwnerDevelopment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _developments = req.body;
+
+		DevelopmentsDAO
+		['getPropertyWithOwnerDevelopment'](_id, _developments)
+		.then(developments => res.status(200).json(developments))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getPropertyDraftWithoutOwnerDevelopment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _developments = req.body;
+
+		DevelopmentsDAO
+		['getPropertyDraftWithoutOwnerDevelopment'](_id, _developments)
+		.then(developments => res.status(200).json(developments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createDevelopments(req: express.Request, res: express.Response):void {
 		let _developments = req.body;
 		DevelopmentsDAO

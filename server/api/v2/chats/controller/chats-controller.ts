@@ -2,6 +2,31 @@ import * as express from 'express';
 import ChatsDAO from '../dao/chats-dao';
 
 export class ChatsController {
+	static getAll(req: express.Request, res: express.Response):void {
+
+		ChatsDAO
+		['getAll']()
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getById(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		ChatsDAO
+		['getById'](_id)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByUser(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id.toString();
+		ChatsDAO
+		['getByUser'](_userId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static requestToken(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id.toString();
 		let _username = req["user"].username;
@@ -22,9 +47,9 @@ export class ChatsController {
 
 	static createRoom(req: express.Request, res: express.Response):void {
 		let _uid = req["user"]._id;
-		let _property_id = req.body.property_id;
+		let _data = req.body;
 		ChatsDAO
-		['createRoom'](_uid, _property_id)
+		['createRoom'](_uid, _data)
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
@@ -112,6 +137,15 @@ export class ChatsController {
 		let _userId = req["user"]._id
 		ChatsDAO
 		['deleteRoom'](_roomId, _userId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static deleteRoomMany(req: express.Request, res: express.Response):void {
+		let _roomId = req.body;
+		let _roleId = req["user"].role;
+		ChatsDAO
+		['deleteRoomMany'](_roomId, _roleId)
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}

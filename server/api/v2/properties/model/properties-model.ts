@@ -131,7 +131,8 @@ var PropertiesSchema = new mongoose.Schema({
 				type: Schema.Types.ObjectId,
 				ref: 'Users'
 			},
-		date: {type: Date}
+		date: {type: Date},
+		remarks: {type: String}
 	},
 	temp: {
 		owner: 
@@ -172,107 +173,40 @@ var PropertiesSchema = new mongoose.Schema({
 		],
 	},
 	status: {type: String, enum:['draft','pending','published','initiated','rented'], default: 'pending'},
+	agreements: {
+		data: {
+			type: Schema.Types.ObjectId,
+			ref: 'Agreements'
+		},
+		histories: [{
+			date: {type: Date},
+			data: {}
+		}]
+	},
+	rented: {
+		data: {
+			by: {
+				type: Schema.Types.ObjectId,
+				ref: 'Users'
+			},
+			until:{type: Date}
+		},
+		histories: [{
+			date: {type: Date},
+			data: {}
+		}]					
+	},
 	histories: 
 	[{
 		action: {type: String, enum:['remove','update']},
 		date: {type: Date},
 		data: {}
 	}],
-	created_at: {type: Date}
-}, {
-	toObject: {
-		virtuals: true
+	created_by: {
+		type: Schema.Types.ObjectId,
+		ref: 'Users'
 	},
-	toJSON: {
-		virtuals: true
-	}
+	created_at: {type: Date, default: Date.now}
 });
-
-PropertiesSchema
-	.virtual('rented_until')
-	.get(function() {
-		if(this.status == 'rented') {
-			Users
-				.findOne({"rented_properties": {$elemMatch: {"property": this._id}}})
-				.exec((err, property) => {
-					if(err) {
-						return '';
-					}
-					else{
-						for(var i = 0; i < property.rented_properties.length; i++){
-							if(property.rented_properties[i].property == this._id) {
-								return property.rented_properties[i];
-							}
-							else{
-								return '';
-							}
-						}
-					}
-				})
-		}
-		else{
-			return '';	
-		}
-	});
-
-PropertiesSchema
-	.virtual('rented_by')
-	.get(function() {
-		if(this.status == 'rented') {
-			Users
-				.findOne({"rented_properties": {$elemMatch: {"property": this._id}}})
-				.exec((err, property) => {
-					if(err) {
-						return '';
-					}
-					else{
-						return {_id: property._id, username: property.username};
-					}
-				})
-		}
-		else{
-			return '';	
-		}
-	});
-
-PropertiesSchema
-	.virtual('ta_signed_date')
-	.get(function() {
-		Agreements
-			.findOne({"property": this._id})
-			.exec((err, agreement) => {
-				if(err) {
-					return null;
-				}
-				else{
-					if(agreement != null) {
-						if(agreement.tenancy_agreement) {
-							if(agreement.tenancy_agreement.data) {
-								if(agreement.tenancy_agreement.data.confirmation.tenant) {
-									if(agreement.tenancy_agreement.data.confirmation.tenant.date) {
-										return agreement.tenancy_agreement.data.confirmation.tenant.date;
-									}
-									else{
-										return null;
-									}
-								}
-								else{
-									return null;
-								}
-							}
-							else{
-								return null;
-							}
-						}
-						else{
-							return null;
-						}
-					}
-					else{
-						return null;
-					}
-				}
-			})
-	})
 
 export default PropertiesSchema;

@@ -15,7 +15,7 @@ blogCategoriesSchema.static('getAll', ():Promise<any> => {
             select: 'username'
           })
           .exec((err, blog_categories) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(blog_categories);
           });
     });
@@ -31,7 +31,7 @@ blogCategoriesSchema.static('getById', (id:string):Promise<any> => {
             select: 'username'
           })
           .exec((err, blog_categories) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(blog_categories);
           });
     });
@@ -43,7 +43,7 @@ blogCategoriesSchema.static('getBlogByCategory', (categoryName:string):Promise<a
         .findOne({"name":categoryName})
         .exec((err, category) => {
           if(err) {
-            reject(err);
+            reject({message: err.message});
           }
           else{
             Blogs
@@ -56,7 +56,7 @@ blogCategoriesSchema.static('getBlogByCategory', (categoryName:string):Promise<a
                 select: 'name'
               })
               .exec((err, blog_categories) => {
-                  err ? reject(err)
+                  err ? reject({message: err.message})
                       : resolve(blog_categories);
               });
           }
@@ -75,7 +75,7 @@ blogCategoriesSchema.static('createBlogCategories', (blog_categories:Object, cre
       var _blog_categories = new BlogCategories(blog_categories);
           _blog_categories.created_by = created_by;
           _blog_categories.save((err, saved)=>{
-            err ? reject(err)
+            err ? reject({message: err.message})
                 : resolve(saved);
           });
     });
@@ -90,7 +90,7 @@ blogCategoriesSchema.static('deleteBlogCategories', (id:string):Promise<any> => 
         BlogCategories
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve();
           });
         
@@ -106,7 +106,7 @@ blogCategoriesSchema.static('updateBlogCategories', (id:string, blog_categories:
         BlogCategories
         .findByIdAndUpdate(id, blog_categories)
         .exec((err, update) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(update);
           });
     });

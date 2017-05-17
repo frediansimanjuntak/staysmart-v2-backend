@@ -38,7 +38,7 @@ managersSchema.static('getAll', ():Promise<any> => {
                 }]
             })
             .exec((err, managers) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                     : resolve(managers);                     
             });
     });
@@ -76,7 +76,7 @@ managersSchema.static('getById', (id:string):Promise<any> => {
                 }]
             })
             .exec((err, managers) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                     : resolve(managers);
             });
     });
@@ -112,7 +112,7 @@ managersSchema.static('getOwnManager', (userId:string):Promise<any> => {
             })
             .exec((err, managers) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                     if(managers){                
                     resolve(managers);
@@ -140,7 +140,7 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
                 .findById(propertyID)
                 .exec((err, result) => {
                     if(err){
-                        reject(err);
+                        reject({message: err.message});
                     }
                     if(result){
                         let owner = result.owner.user;
@@ -153,7 +153,7 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
                                     .find({"property": propertyID, "manager": managerId})
                                     .exec((err, res) => {
                                         if(err){
-                                            reject(err);
+                                            reject({message: err.message});
                                         }
                                         if(res){
                                             if(res.length > 0){
@@ -167,7 +167,7 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
                                                 _managers.chat = body.chat;
                                                 _managers.status = "pending";
                                                 _managers.save((err, res) => {
-                                                    err ? reject(err)
+                                                    err ? reject({message: err.message})
                                                         : resolve(res);
                                                 })
                                             }
@@ -196,7 +196,7 @@ managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> 
             .populate("property")
             .exec((err, res) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(res){
                     if(res.length == 0){
@@ -214,7 +214,7 @@ managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> 
                                         result.status = status;
                                         result.save((err, saved) => {
                                             if(err){
-                                                reject(err);
+                                                reject({message: err.message});
                                             }    
                                             if(saved){
                                                 Users
@@ -224,7 +224,7 @@ managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> 
                                                         }
                                                     })
                                                     .exec((err, update) => {
-                                                        err ? reject(err)
+                                                        err ? reject({message: err.message})
                                                             : resolve(update);
                                                     });
                                                 Properties
@@ -235,7 +235,7 @@ managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> 
                                                     })
                                                     .exec((err, updated) => {
                                                         if(err){
-                                                            reject(err);
+                                                            reject({message: err.message});
                                                         }
                                                         if(updated){
                                                             if(result.chat == true){
@@ -243,7 +243,7 @@ managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> 
                                                                     .find({"property_id": propertyId})
                                                                     .exec((err, chat_room) => {
                                                                         if(err) {
-                                                                        reject(err);
+                                                                        reject({message: err.message});
                                                                         }
                                                                         else if(chat_room) {
                                                                             for(var i = 0; i < chat_room.length; i++){
@@ -286,7 +286,7 @@ managersSchema.static('rejectManagers', (id:string, userId:string):Promise<any> 
             .populate("property")
             .exec((err, res) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(res){
                     if(res.length == 0){
@@ -298,7 +298,7 @@ managersSchema.static('rejectManagers', (id:string, userId:string):Promise<any> 
                                 result.status = status;
                                 result.save((err, saved) => {
                                     if(err){
-                                        reject(err);
+                                        reject({message: err.message});
                                     }
                                     if(saved){
                                         Managers.notificationManager(id, status, userId);
@@ -337,7 +337,7 @@ managersSchema.static('changeStatusManagers', (id:string, status:string, userId:
                     })
                     .exec((err, update) => {
                         if(err) {
-                            reject(err);
+                            reject({message: err.message});
                         }
                     });   
 
@@ -350,20 +350,20 @@ managersSchema.static('changeStatusManagers', (id:string, status:string, userId:
                     })
                     .exec((err, update) => {
                         if(err) {
-                            reject(err);
+                            reject({message: err.message});
                         }
                         else if(update) {
                             Managers
                                 .findOne({"_id": id, "manager": userId, "chat": true}, (err, managerData) => {
                                     if(err) {
-                                        reject(err);
+                                        reject({message: err.message});
                                     }
                                     else{
                                         ChatRooms
                                             .find({"property_id":propertyId})
                                             .exec((err, chat_room) => {
                                                 if(err) {
-                                                reject(err);
+                                                reject({message: err.message});
                                                 }
                                                 else if(chat_room) {
                                                     for(var i = 0; i < chat_room.length; i++){
@@ -383,7 +383,7 @@ managersSchema.static('changeStatusManagers', (id:string, status:string, userId:
                             }
                         })
                         .exec((err, update) => {
-                            err ? reject(err)
+                            err ? reject({message: err.message})
                                 : resolve(update);
                         });
                 }  
@@ -406,7 +406,7 @@ managersSchema.static('notificationManager', (id:string, status:string, managerI
             .findOne({"_id": id, "manager": managerId})
             .exec((err, res) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(res){
                     let id = res._id;
@@ -444,7 +444,7 @@ managersSchema.static('notificationManager', (id:string, status:string, managerI
                                     Notifications.createNotifications(notification);        
                                 })
                             .exec((err, update) => {
-                                err ? reject(err)
+                                err ? reject({message: err.message})
                                     : resolve(update);
                             });
                         }) 
@@ -462,7 +462,7 @@ managersSchema.static('deleteManagers', (id:string):Promise<any> => {
         Managers
             .findByIdAndRemove(id)
             .exec((err, deleted) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                     : resolve();
             });
     });
@@ -479,7 +479,7 @@ managersSchema.static('deleteUserManagers', (idproperty:string):Promise<any> => 
             .populate("manager")
             .exec((err, res) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(res){
                     if(res.manager._id){
@@ -487,7 +487,7 @@ managersSchema.static('deleteUserManagers', (idproperty:string):Promise<any> => 
                         Managers
                             .remove({"manager": idUserManager})
                             .exec((err, removed) => {
-                                err ? reject(err)
+                                err ? reject({message: err.message})
                                     : resolve(removed);
                             })
                         Users
@@ -497,7 +497,7 @@ managersSchema.static('deleteUserManagers', (idproperty:string):Promise<any> => 
                                 }
                             })
                             .exec((err, update) => {
-                                err ? reject(err)
+                                err ? reject({message: err.message})
                                     : resolve(update);
                             });
 
@@ -508,7 +508,7 @@ managersSchema.static('deleteUserManagers', (idproperty:string):Promise<any> => 
                                 }
                             })
                             .exec((err, update) => {
-                                err ? reject(err)
+                                err ? reject({message: err.message})
                                     : resolve(update);
                             });
                     }
@@ -533,7 +533,7 @@ managersSchema.static('updateManagers', (id:string):Promise<any> => {
                 }
             })
             .exec((err, updated) => {
-                err ? reject(err)
+                err ? reject({message: err.message})
                     : resolve(updated);
             });
     });

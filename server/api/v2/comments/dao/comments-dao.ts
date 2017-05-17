@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import commentsSchema from '../model/comments-model';
 import Blogs from '../../blogs/dao/blogs-dao';
+import Subscribes from '../../subscribe/dao/subscribes-dao';
 import Users from '../../users/dao/users-dao';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
@@ -23,7 +24,7 @@ commentsSchema.static('getAll', ():Promise<any> => {
 				select: 'username picture'
 			})
 			.exec((err, comments) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 				: resolve(comments);
 			});
 	});
@@ -44,9 +45,135 @@ commentsSchema.static('getById', (id:string):Promise<any> => {
 				select: 'username picture'
 			})
 			.exec((err, comments) => {
-				err ? reject(err)
-				: resolve(comments);
+				err ? reject({message: err.message})
+					: resolve(comments);
 			});
+	});
+});
+
+commentsSchema.static('unSubscribeBlog', (blogObject:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = blogObject;
+
+		Blogs
+			.findById(body.blog_id)
+			.exec((err, res) => {
+				if(err){
+					reject(err);
+				}
+				if(res){
+					let blogTitle = res.title;
+					if(body.comment_id){
+						Comments
+							.update({"_id": body.comment_id}, {
+								$set: {
+									"subscribes": false
+								}
+							})
+							.exec((err, updated) => {
+								err ? reject({message: err.message})
+									: resolve({data: 'Successfully to unsubscribe Blog "'+ blogTitle +'" comments'});
+							})
+					}
+					else{
+						Subscribes.unSubscribes(blogObject).then((res) => {
+							resolve({data: 'Successfully to unsubscribe Blog "'+ blogTitle +'"'});
+						})
+						.catch((err) => {
+							reject({message: err.message});
+						})
+					}
+				}
+			})
+		
+	});
+});
+
+commentsSchema.static('sendSubscribeBlog', (idBlog:string, email:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Subscribes
+			.find({"extra.reference_id": idBlog})
+			.exec((err, subs) => {
+				if(err){
+					reject(err);
+				}
+				if(subs){
+					_.each(subs, (result) => {
+						let blog = result.extra.reference_id;
+						Blogs
+							.findById(blog)
+							.exec((err, res) => {
+								if(err){
+									reject(err);
+								}
+								if(res){
+									let blogTitle = res.blog.title;
+									let blogSlug = res.blog.slug;
+									let email = res.email;
+									let name = res.name;
+									let url = config.url.blog + blogSlug;
+									let urlUnsubscribe = config.url.blog_unsubscribe+ blog + "&email=" + email;
+									mail.blogSubscribe(email, name, blogTitle, url, urlUnsubscribe).then(send => {
+										resolve({message: "email sent"});
+									})
+									.catch(err => {
+										reject(err);
+									});	
+								}
+							})											
+					})
+				}
+			})			
+	});
+});
+
+commentsSchema.static('sendSubscribeComment', (idBlog:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Comments
+			.find({"blog": idBlog, "subscribes": true, "type": "comment/"})
+			.populate("blog")	
+			.exec((err, com) => {
+				if(err){
+					reject(err);
+				}
+				if(com){
+					if(com.length == 0){
+						resolve({message: "no data"});
+					}
+					if(com.length >= 0){
+						_.each(com, (result) => {
+							let email = result.email;
+							let blogTitle = result.blog.title;
+							let url = config.url.blog_comment + result._id;
+							let urlUnsubscribe = config.url.blog_unsubscribe+ idBlog + "&email=" + email + "&comment_id=" + result._id; 
+							mail.blogCommentOnReply(email, email, blogTitle, url, urlUnsubscribe);
+							resolve(com);
+						})
+					}
+					
+				}
+			})			
+	});
+});
+
+commentsSchema.static('sendBlogComment', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Comments
+			.findById(id)
+			.populate("blog")	
+			.exec((err, comment) => {
+				if(err){
+					reject(err);
+				}
+				if(comment){
+					let email = comment.email;
+					let blogTitle = comment.blog.title;
+					let url = config.url.blog + id;
+					let urlUnsubscribe = config.url.blog_unsubscribe + "&email=" + email + "&comment_id=" + id; 
+					mail.blogComment(email, blogTitle, url, urlUnsubscribe);
+					resolve(comment);
+				}
+			})		
 	});
 });
 
@@ -65,58 +192,55 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		else{
 			type = 'comment/';	
 		}
+
 		Users
 			.findOne({"email": body.email})
 			.exec((err, user) => {
-				var _comments = new Comments(comments);
-					if(user) {
-						_comments.user = user._id;	
+				if(err){
+					reject(err);
+				}
+				if(user){
+					var _comments = new Comments(comments);
+					if(user != null){
+						_comments.user = user._id;
 					}
 					_comments.type = type;
-					_comments.save((err, saved)=>{
-						if(err) {
+					_comments.save((err, saved) => {
+						if(err){
 							reject(err);
 						}
-						else if(saved) {
-							Blogs
-								.findById(body.blog, (err, blog) => {
-									if(err) {
-										reject(err);
-									}
-									else{
-										var email = body.email;
-										var blogTitle = blog.title;
-										var url = config.url.blog_comment+saved._id;
-										mail.blogComment(email, blogTitle, url);
-										if(body.commentID) {
-											Comments
-												.findByIdAndUpdate(body.commentID, {
-													$push: {
-														"replies": saved._id
-													}
-												})
-												.exec((err, update) => {
-													err ? reject(err)
-													: resolve({message: 'updated'});;
-												});						
+						if(saved){
+							Comments.sendSubscribeBlog(saved.blog);				
+							Comments.sendBlogComment(saved.id);
+							if(body.commentID){
+								Comments.sendSubscribeComment(saved.blog.toString());
+								Comments
+									.findByIdAndUpdate(body.commentID, {
+										$push: {
+											"replies": saved._id
 										}
-										else{
-											Blogs
-												.findByIdAndUpdate(body.blog, {
-													$push: {
-														"comments": saved._id
-													}
-												})
-												.exec((err, update) => {
-													err ? reject(err)
-													: resolve({message: 'updated'});
-												});	
+									})
+									.exec((err, update) => {
+										err ? reject({message: err.message})
+											: resolve({message: 'updated'});;
+									});	
+							}
+							else{
+								Blogs
+									.findByIdAndUpdate(body.blog, {
+										$push: {
+											"comments": saved._id
 										}
-									}
-								})
+									})
+									.exec((err, update) => {
+										err ? reject({message: err.message})
+											: resolve({message: 'updated'});
+									});	
+							}
 						}
-					});
-			})
+					})
+				}
+			})		
 	});
 });
 
@@ -140,14 +264,14 @@ commentsSchema.static('deleteReplies', (idComment:string, reply: Object, current
 						}
 					)
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 
 				Comments
 					.findByIdAndRemove(body.idReply)
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 			}
@@ -175,21 +299,21 @@ commentsSchema.static('deleteComments', (idComment:string, currentUser:string):P
 								Comments
 									.findByIdAndRemove(reply)
 									.exec((err, deleted) => {
-										err ? reject(err)
+										err ? reject({message: err.message})
 										: resolve(deleted);
 									});
 							}	
 						}
 					})
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 
 				Comments
 					.findByIdAndRemove(idComment)
 					.exec((err, deleted) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(deleted);
 					});
 			}
@@ -210,7 +334,7 @@ commentsSchema.static('updateComments', (id:string, comments:Object, currentUser
 				Comments
 					.findByIdAndUpdate(id, comments)
 					.exec((err, update) => {
-						err ? reject(err)
+						err ? reject({message: err.message})
 						: resolve(update);
 					});
 			}

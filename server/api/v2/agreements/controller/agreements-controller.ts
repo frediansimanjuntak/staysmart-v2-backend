@@ -2,6 +2,14 @@ import * as express from 'express';
 import AgreementsDAO from '../dao/agreements-dao';
 
 export class AgreementsController {
+	static getAllAgreement(req: express.Request, res: express.Response):void {		
+
+		AgreementsDAO
+		['getAllAgreement']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getAll(req: express.Request, res: express.Response):void {		
 		let _userId = req["user"]._id;
 		let _role = req["user"].role;
@@ -120,6 +128,15 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static penaltyPayment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['penaltyPayment'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getTotalRefundPayment(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 
@@ -143,9 +160,10 @@ export class AgreementsController {
 	static getLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getLoi'](_id, _userId)
+		['getLoi'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -218,9 +236,10 @@ export class AgreementsController {
 	static getTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getTA'](_id, _userId)
+		['getTA'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -261,9 +280,11 @@ export class AgreementsController {
 	static rejectTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		let _ta = req.body;
 
 		AgreementsDAO
-		['rejectTA'](_id, _userId)
+		['rejectTA'](_id, _userId, _role, _ta)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -292,9 +313,10 @@ export class AgreementsController {
 	static getInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;	
 		let _userId = req["user"]._id;	
+		let _role = req["user"].role;
 
 		AgreementsDAO
-		['getInventoryList'](_id, _userId)
+		['getInventoryList'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -318,6 +340,33 @@ export class AgreementsController {
 
 		AgreementsDAO
 		['tenantCheckInventoryList'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getCertificateStampDuty(req: express.Request, res: express.Response):void {
+		AgreementsDAO
+		['getCertificateStampDuty']()
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static transferToLandlord(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _data = req.body;
+
+		AgreementsDAO
+		['transferToLandlord'](_id, _data)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static transferPenaltyToLandlord(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _data = req.body;
+
+		AgreementsDAO
+		['transferPenaltyToLandlord'](_id, _data)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
