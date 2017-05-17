@@ -59,6 +59,72 @@ developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<a
     });
 });
 
+developmentsSchema.static('getPropertyDraftWithoutOwnerDevelopment', (id:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body:any = data;
+
+        Developments
+          .findById(id)          
+          .populate("properties")
+          .select("properties")
+          .exec((err, developments) => {
+            if(err){
+              reject(err);
+            }
+            if(developments){ 
+              let dev;     
+              for(var i = 0; i < developments.properties.length; i++){
+                let property = developments.properties[i];
+                if(property.status == "draft" && !property.owner.user){
+                  if(property.address.floor == body.floor && property.address.unit == body.unit){
+                    dev = property;
+                  }
+                }
+              }
+              if(dev == null){
+                resolve({message: "no data"});
+              }  
+              else{
+                resolve(dev);
+              }
+            }
+          });
+    });
+});
+
+developmentsSchema.static('getPropertyWithOwnerDevelopment', (id:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body:any = data;
+
+        Developments
+          .findById(id)          
+          .populate("properties")
+          .select("properties")
+          .exec((err, developments) => {
+            if(err){
+              reject(err);
+            }
+            if(developments){
+              let dev;     
+              for(var i = 0; i < developments.properties.length; i++){
+                let property = developments.properties[i];
+                if(property.owner.user){
+                  if(property.address.floor == body.floor && property.address.unit == body.unit){
+                    dev = property;
+                  }
+                }
+              }  
+              if(dev == null){
+                resolve({message: "no data"});
+              }  
+              else{
+                resolve(dev);
+              }
+            }
+          });
+    });
+});
+
 developmentsSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
