@@ -27,5 +27,13 @@ export class DevelopmentsRoutes {
 		router
 			.route('/developments/update/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.updateDevelopments);
+
+		router
+			.route('/developments/:id/property/owner/')
+			.post(auth.isAuthenticated(), DevelopmentsController.getPropertyWithOwnerDevelopment);
+
+		router
+			.route('/developments/:id/property/draft/no_owner')
+			.post(auth.isAuthenticated(), DevelopmentsController.getPropertyDraftWithoutOwnerDevelopment);
 	}
 } 
