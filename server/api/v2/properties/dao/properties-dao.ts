@@ -78,21 +78,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
-        if(search.latlng != 'all') 
-        {
-          let radius;
-          if(search.radius != 'all') {
-            radius = (search.radius) / 1000 * 0.621371;
-          }
-          else{
-            radius = 1.5;
-          }
-          var latlng = search.latlng.split(",");
-          var lnglat = [];
-          lnglat.push(Number(latlng[1]));
-          lnglat.push(Number(latlng[0]));
-          property.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/6371 ] } } });
-        }
+
         if(search.pricemin != 'all') 
         {
           property.where('details.price').gte(search.pricemin);
@@ -158,8 +144,48 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           }
         })
         property.exec((err, properties) => {
-          err ? reject({message: err.message})
-              : resolve(properties);
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if(search.latlng != 'all') 
+            {
+              let radius;
+              if(search.radius != 'all') {
+                radius = (search.radius) / 1000 * 0.621371;
+              }
+              else{
+                radius = 1.5;
+              }
+              var latlng = search.latlng.split(",");
+              var lnglat = [];
+              lnglat.push(Number(latlng[1]));
+              lnglat.push(Number(latlng[0]));
+              let developments = Developments.find({});
+              developments.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/6371 ] } } });
+              developments.exec((err, development) => {
+                if (err) {
+                  reject({message: err.message});
+                }
+                else {
+                  let properties_data;
+                  for(let i = 0; i < properties.length; i++) {
+                    for(let j = 0; j < development.length; j++){
+                      let prop_dev_id = properties[i].development._id.toString();
+                      let dev_id = development[j]._id.toString();
+                      if ( prop_dev_id == dev_id) {
+                        properties_data.push(properties[i]);
+                      }
+                    }
+                  }
+                  resolve(properties_data);
+                }
+              })
+            }
+            else {
+              resolve(properties);
+            }
+          }
         });
     });
 });
