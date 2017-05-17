@@ -14,8 +14,8 @@ export default {
   awsUrl: '.s3-ap-southeast-1.amazonaws.com/',
 
   dream_talk: {
-  	ws: 'wss://dt.shrimpventures.com/websocket',
-    url: 'https://dt.shrimpventures.com/api/v1'
+  	ws: 'wss://dt-s.shrimpventures.com/websocket',
+    url: 'https://dt-s.shrimpventures.com/api/v1'
   },
 
   sms: {
