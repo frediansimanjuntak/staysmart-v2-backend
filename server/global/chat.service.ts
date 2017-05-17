@@ -7,15 +7,17 @@ import Users from '../api/v2/users/dao/users-dao';
 
 var DDPClient = require('ddp');
 var headers = {
-	'X-Client-ID': 'epputqH4ZpoqkiAG6',
-	'X-Client-Secret': 'xpdWTdNaAyxYKxp6x46rHHvJ79t2QBvEsvGBmpxM ',
+	'X-Client-ID': 'TLXyM7hgjPS5BXtPk',
+	'X-Client-Secret': 'sc6zBzxb1XQ1H7BHRWKuhAYc_WsZ6mpOFu-gRDZB ',
 	'Content-Type': 'application/json'
 };
+//new ddp credential
 // var headers = {
-// 	'X-Client-ID': 'xyb6HBZQK8Jq2YX3h',
-// 	'X-Client-Secret': 'pGnYqGHHdvoy4NOyDzXH6VW7rIjd-evVxnjgotH8',
+// 	'X-Client-ID': 'epputqH4ZpoqkiAG6',
+// 	'X-Client-Secret': 'xpdWTdNaAyxYKxp6x46rHHvJ79t2QBvEsvGBmpxM ',
 // 	'Content-Type': 'application/json'
 // };
+
 var ddp = new DDPClient({
 	autoReconnect : true,
 	autoReconnectTimer : 500,
