@@ -7,8 +7,8 @@ import Users from '../api/v2/users/dao/users-dao';
 
 var DDPClient = require('ddp');
 var headers = {
-	'X-Client-ID': 'TLXyM7hgjPS5BXtPk',
-	'X-Client-Secret': 'sc6zBzxb1XQ1H7BHRWKuhAYc_WsZ6mpOFu-gRDZB ',
+	'X-Client-ID': 'epputqH4ZpoqkiAG6',
+	'X-Client-Secret': 'xpdWTdNaAyxYKxp6x46rHHvJ79t2QBvEsvGBmpxM ',
 	'Content-Type': 'application/json'
 };
 // var headers = {
