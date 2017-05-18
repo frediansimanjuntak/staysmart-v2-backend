@@ -211,7 +211,7 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 				if(err){
 					reject(err);
 				}
-				if(res){
+				else if(res){
 					var taDocs = res;
 					var savedComission = 12100;
 					_.each(taDocs, function(ta) {					
@@ -263,21 +263,21 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 					if(err){
 						reject({message: err.message});
 					}
-					if(properties){
+					else if(properties){
 						let propertyId = properties._id;
 						let propertyStatus = properties.status;
 						let landlordId = properties.owner.user;
 						if(landlordId == userId){
 							resolve({message: "You can not create agreement with your owned property"});
 						}
-						if(landlordId != userId){
+						else if(landlordId != userId){
 							Agreements
 								.findOne({"property": body.property, "tenant": userId})
 								.exec((err, agreement) => {
 									if(err){
 										reject({message: err.message});
 									}
-									if(agreement){
+									else if(agreement){
 										let roomId;
 										if(agreement.room_id){
 											roomId = agreement.room_id;
@@ -391,13 +391,13 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 							if(err){
 								reject({message: err.message});
 							}
-							if(agreement){
+							else if(agreement){
 								agreement.appointment = id;
 								agreement.save((err, saved) => {
 									if(err){
 										reject({message: err.message});
 									}
-									if(saved){
+									else if(saved){
 										if(statusAppointment == "archived"){
 											if(saved.appointment == id.toString() && agreement._id == agreementId.toString()){
 												let statusLoi = agreement.letter_of_intent.data.status;
@@ -463,7 +463,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 					if (tenantID != IDUser){
 						resolve({message: "forbidden"});
 					}
-					if (tenantID == IDUser){
+					else if (tenantID == IDUser){
 						if(loi.created_at || loi.status == "rejected" || loi.status == "expired"){
 							Agreements.createHistory(id, typeDataa);
 							Agreements
@@ -487,7 +487,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 								if(err){
 									reject(err);
 								}
-								if(user){
+								else if(user){
 									Agreements.userUpdateDataTenant(tenantID, tenant)
 								}
 							})						
@@ -545,7 +545,6 @@ agreementsSchema.static('userUpdateDataTenant', (id:string, data:Object,):Promis
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-
 		let body:any = data;
 		Users
 			.findById(id)
@@ -614,7 +613,7 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 							if(err){
 								reject({message: err.message});
 							}
-							if(saved){
+							else if(saved){
 								if(agreement.appointment){
 									Appointments
 										.findById(agreement.appointment._id)
@@ -622,7 +621,7 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 											if(err){
 												reject({message: err.message});
 											}
-											if(res){
+											else if(res){
 												res.state = "initiate letter of intent";
 												res.save((err, saved) => {
 													err ? reject({message: err.message})
@@ -745,7 +744,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 								if(err){
 									reject({message: err.message})
 								}
-								if (saved){
+								else if (saved){
 									let typeMail;
 									if(role == 'admin'){
 										typeMail = "rejectLoiAdmin";
@@ -942,9 +941,8 @@ agreementsSchema.static('updatePropertyStatus', (id:string, userId:string, until
 			.exec((err, property) => {
 				if(err){
 					reject(err);
-					console.log("eror1", err);
 				}
-				if(property){
+				else if(property){
 					if(property.agreements.data){
 						Agreements.createHistoryProperty(id, "agreement", property.agreements.data);
 					}
@@ -958,8 +956,6 @@ agreementsSchema.static('updatePropertyStatus', (id:string, userId:string, until
 					property.save((err, saved) => {
 						err ? reject({message: err.message})
 							: resolve(saved);
-							console.log("eror2", err);
-							console.log(saved);
 					});
 				}
 			})
@@ -1044,14 +1040,14 @@ agreementsSchema.static('rejectTA', (id:string, userId:string, role:string, ta:O
 				if(err){
 					reject({message: err.message});
 				}
-				if(agreement){
+				else if(agreement){
 					let landlordId = agreement.landlord._id;
 					let tenantId = agreement.tenant._id.toString();
 
 					if(tenantId != IDUser){
 						reject({message:"forbidden"});
 					}
-					if(tenantId == IDUser || role == "admin"){
+					else if(tenantId == IDUser || role == "admin"){
 						let loi = agreement.letter_of_intent.data;
 						let ta = agreement.tenancy_agreement.data;
 						let paymentIdLoi = loi.payment;	
@@ -1139,7 +1135,7 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 				if(err){
 					reject({message: err.message});
 				}
-				if(agreement){
+				else if(agreement){
 					let landlordId = agreement.landlord._id;
 					let tenantId = agreement.tenant._id;
 					let propertyId = agreement.property._id;
@@ -1321,7 +1317,7 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 				if(err){
 					reject(err);
 				}
-				if(agreement){
+				else if(agreement){
 					let loiData = agreement.letter_of_intent.data;
 					let taData = agreement.tenancy_agreement.data;
 					let gfd = loiData.gfd_amount;
@@ -1371,7 +1367,7 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 						if(err){
 							reject(err);
 						}
-						if(saved){
+						else if(saved){
 							var paymentId = saved._id;
 							if (type ==  "tenancy_agreement"){
 								agreement.tenancy_agreement.data.payment = paymentId;
@@ -1423,13 +1419,16 @@ agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
 				if(err){
 					reject(err)
 				}
-				if(res){
+				else if(res){
 					if(res.status == "rejected" || res.status == "accepted"){
 						resolve({message: "Allready Accept or Reject this Payment"});
 					}
-					if(res.status == "pending"){
+					else if(res.status == "pending"){
 						resolve(res);
-					}					
+					}	
+					else{
+						resolve({message: "No Data Payment"});
+					}				
 				}
 			})
 	});
@@ -1623,8 +1622,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 							.catch((err) => {
 								reject(err);
 							})
-						}
-						
+						}						
 					}
 					if(type == "tenancy_agreement"){
 						if(taData.status == "draft" || taData.status == "expired"){

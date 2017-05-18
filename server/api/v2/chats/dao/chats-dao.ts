@@ -287,7 +287,7 @@ chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
                             if(err){
                                 reject(err);
                             }
-                            if(chats){
+                            else if(chats){
                                 resolve(chats);
                             }
                             else{
