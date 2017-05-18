@@ -66,12 +66,105 @@ chatsSchema.static('getAll', ():Promise<any> => {
     });
 });
 
-chatsSchema.static('getById', (id:string):Promise<any> => {
+chatsSchema.static('getById', (id:string, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
         let _query = {"_id": id};
+        ChatRooms.getChatRooms(_query).then(res => {
+            _.each(res, (chats) => {
+                let type;
+                let idCheck;
+                let idUser;
+                let landlord = chats.landlord._id;
+                let tenant = chats.tenant._id;
+                if(!chats.blocked){
+                    if(landlord.toString() == userId.toString()){
+                        type = "landlord";
+                        idUser = landlord;
+                        idCheck = tenant;
+                    }
+                    if(tenant.toString() == userId.toString()){
+                        type = "tenant";
+                        idUser = tenant;
+                        idCheck = landlord;
+                    }
+                    ChatRooms.checkBlock(idCheck, idUser, id).then((res)=> {
+                        let blocked;
+                        if(res.blocked == true){
+                            blocked = true;
+                        }
+                        else{
+                            blocked = false;
+                        }
+                        ChatRooms
+                            .findById(id)
+                            .exec((err, chatRoom) => {
+                                if(err){
+                                    reject(err);
+                                }
+                                if(chatRoom){
+                                    chatRoom.blocked = blocked;
+                                    chatRoom.save((err, saved)=> {
+                                        err ? reject({message: err.message})
+                                            : resolve(saved);
+                                    })
+                                }
+                            })
+                    })
+                    .catch((err)=> {
+                        reject(err);
+                    })
+                }
+                else{
+                    resolve(chats);
+                }    
+            })
+        })
+        .catch((err) => {
+            reject({message: err.message});
+        })
+    });
+});
+
+chatsSchema.static('checkBlock', (idCheck:string, idUser:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Users
+            .findById(idCheck)                    
+            .exec((err, user) => {
+                if(err){
+                    reject(err);
+                }
+                if(user){
+                    console.log(user);
+                    let block;
+                    if(user.blocked_users.length == 0){
+                        block = false
+                    }
+                    else{
+                        for(var i = 0; i < user.blocked_users.length; i++){
+                            let userBlock = user.blocked_users[i];
+                            if(userBlock == idUser){
+                                block = true;
+                            }
+                            else{
+                                block = false;
+                            }
+                        }
+                    }                    
+                    resolve({blocked: block});
+                }
+            })
+    });
+});
+
+chatsSchema.static('getByRoomId', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        let _query = {"room_id": id};
         ChatRooms.getChatRooms(_query).then(res => {
             _.each(res, (result) => {
                 resolve(result);

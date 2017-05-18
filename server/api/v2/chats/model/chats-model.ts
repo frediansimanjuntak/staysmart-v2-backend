@@ -32,6 +32,7 @@ var ChatsSchema = new mongoose.Schema({
 		enum: ['enquiries', 'pending', 'rented'],
 		default: 'enquiries'
 	},
+	blocked: {type: Boolean, default: false},
 	archived: {type: Boolean, default: false},
 	created_at: {type: Date, default: Date.now},
 });

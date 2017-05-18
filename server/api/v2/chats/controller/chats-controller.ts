@@ -12,9 +12,19 @@ export class ChatsController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 
 		ChatsDAO
-		['getById'](_id)
+		['getById'](_id, _userId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByRoomId(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		ChatsDAO
+		['getByRoomId'](_id)
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
