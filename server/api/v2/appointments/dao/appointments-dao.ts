@@ -170,7 +170,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                       if(err){
                         reject(err);
                       }
-                      if(res){
+                      else if(res){
                         if(res.length == 0){
                           var _appointments = new Appointments(appointments);
                           _appointments.agreement = agreementId;
@@ -206,7 +206,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                   if(err){
                                     reject({message: err.message})
                                   }
-                                  if(appointment){
+                                  else if(appointment){
                                     var devID = appointment.property.development;
                                     var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
                                     
@@ -230,7 +230,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                             }
                           })
                         }
-                        if(res.length > 0){
+                        else if(res.length > 0){
                           resolve({message: "Already Appointment"})
                         }
                       }

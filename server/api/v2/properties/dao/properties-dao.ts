@@ -415,7 +415,7 @@ propertiesSchema.static('createPropertiesWithoutOwner', (propertiesObject:Object
                     var _properties = new Properties(body);
                     _properties.slug = slug;
                     _properties.status = 'draft';
-                    _properties.confirmation.status = 'approved';
+                    _properties.confirmation.status = 'pending';
                     _properties.created_by = userId;
                     _properties.save((err, saved)=>{
                       if(err){
