@@ -123,10 +123,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         {
           property.where('details.size_sqf').lte(search.sizemax);
         }
-        if(search.location != 'all') 
-        {
-          property.where('address.street_name', search.location);
-        }
+        
         property.populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
         property.populate({
           path: 'owner.user',
@@ -163,12 +160,16 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
               lnglat.push(Number(latlng[0]));
               let developments = Developments.find({});
               developments.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/6371 ] } } });
+              if(search.location != 'all') 
+              {
+                developments.where('address.street_name', search.location);
+              }
               developments.exec((err, development) => {
                 if (err) {
                   reject({message: err.message});
                 }
                 else {
-                  let properties_data;
+                  let properties_data = [];
                   for(let i = 0; i < properties.length; i++) {
                     for(let j = 0; j < development.length; j++){
                       let prop_dev_id = properties[i].development._id.toString();
