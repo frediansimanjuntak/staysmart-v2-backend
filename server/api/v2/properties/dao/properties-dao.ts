@@ -850,6 +850,9 @@ propertiesSchema.static('ownerProperty', (propertyId:string, userId:Object):Prom
               if(result.owner.user == user_id) {
                 resolve(true);
               }
+              else if(!result.owner.user){
+                resolve(true);
+              }
               else{
                 resolve({message: "Forbidden"});
               }
