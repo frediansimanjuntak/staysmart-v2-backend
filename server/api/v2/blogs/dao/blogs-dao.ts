@@ -127,28 +127,23 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
     });
 });
 
-blogsSchema.static('createBlogs', (blogs:Object, covers:Object, created_by:string):Promise<any> => {
+blogsSchema.static('createBlogs', (blogs:Object, created_by:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(blogs)) {
         return reject(new TypeError('Blogs is not a valid object.'));
       }
       
-      Attachments.createAttachments(covers).then(res => {
-        var idAttachment=res.idAtt;
-        
-        var ObjectID = mongoose.Types.ObjectId;  
-        let body:any = blogs;
-        var slug_name = Developments.slug(body.title);
-        
-        var _blogs = new Blogs(blogs);
-            _blogs.slug = slug_name;
-            _blogs.created_by = created_by;
-            _blogs.cover = idAttachment;
-            _blogs.save((err, saved)=>{
-              err ? reject({message: err.message})
-                  : resolve(saved);
-            });
-      });
+	var ObjectID = mongoose.Types.ObjectId;  
+	let body:any = blogs;
+	var slug_name = Developments.slug(body.title);
+
+	var _blogs = new Blogs(blogs);
+	    _blogs.slug = slug_name;
+	    _blogs.created_by = created_by;
+	    _blogs.save((err, saved)=>{
+	      err ? reject({message: err.message})
+	          : resolve(saved);
+	    });
     });
 });
 
@@ -180,7 +175,7 @@ blogsSchema.static('deleteBlogs', (id:string):Promise<any> => {
     });
 });
 
-blogsSchema.static('updateBlogs', (id:string, blogs:Object, covers:Object):Promise<any> => {
+blogsSchema.static('updateBlogs', (id:string, blogs:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(blogs)) {
           return reject(new TypeError('Blogs is not a valid object.'));
