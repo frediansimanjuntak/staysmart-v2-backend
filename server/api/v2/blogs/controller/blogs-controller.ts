@@ -29,7 +29,7 @@ export class BlogsController {
 		let _blogs = req.body;
 		let _created_by = req["user"]._id;
 		BlogsDAO
-		['createBlogs'](_blogs, _covers, _created_by)
+		['createBlogs'](_blogs, _created_by)
 		.then(blogs => res.status(201).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}
