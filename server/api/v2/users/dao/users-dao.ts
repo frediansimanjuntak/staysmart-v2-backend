@@ -6,6 +6,7 @@ import Agreements from '../../agreements/dao/agreements-dao'
 import Attachments from '../../attachments/dao/attachments-dao'
 import Banks from '../../banks/dao/banks-dao'
 import Companies from '../../companies/dao/companies-dao'
+import ChatRooms from '../../chats/dao/chats-dao'
 import Properties from '../../properties/dao/properties-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
@@ -710,7 +711,26 @@ usersSchema.static('unActiveUser', (id:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('blockUser', (id:string, userId:Object):Promise<any> => {
+usersSchema.static('updateChatsRoom', (id:string, block:boolean):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+
+		ChatRooms
+			.findByIdAndUpdate(id, {
+				$set: {
+					"blocked": block
+				}
+			})
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve(updated);
+			});
+	});
+});
+
+usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -735,12 +755,17 @@ usersSchema.static('blockUser', (id:string, userId:Object):Promise<any> => {
 								}
 							})
 							.exec((err, update) => {
-								err ? reject(err)
-									: resolve(update);
+								if(err){
+									reject(err);
+								}
+								if(update){
+									Users.updateChatsRoom(roomId, true);
+									resolve(update);
+								}
 							});
 					}
 					if(res.length >= 1){
-						resolve({message: "Already User"})
+						resolve({message: "This User Already Block"})
 					}
 				}
 			})
@@ -748,7 +773,7 @@ usersSchema.static('blockUser', (id:string, userId:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('unblockUser', (id:string, userId:Object):Promise<any> => {
+usersSchema.static('unblockUser', (id:string, userId:Object, roomId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -771,8 +796,13 @@ usersSchema.static('unblockUser', (id:string, userId:Object):Promise<any> => {
 								}
 							})
 							.exec((err, update) => {
-								err ? reject(err)
-									: resolve(update);
+								if(err){
+									reject(err);
+								}
+								if(update){
+									Users.updateChatsRoom(roomId, false);
+									resolve(update);
+								}
 							});
 					}
 				}

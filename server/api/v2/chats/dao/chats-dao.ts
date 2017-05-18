@@ -72,6 +72,7 @@ chatsSchema.static('getById', (id:string, userId:string):Promise<any> => {
             return reject(new TypeError('Id is not a valid string.'));
         }
         let _query = {"_id": id};
+        let userIdStr = userId.toString();
         ChatRooms.getChatRooms(_query).then(res => {
             _.each(res, (chats) => {
                 let type;
@@ -80,42 +81,31 @@ chatsSchema.static('getById', (id:string, userId:string):Promise<any> => {
                 let landlord = chats.landlord._id;
                 let tenant = chats.tenant._id;
                 if(!chats.blocked){
-                    if(landlord.toString() == userId.toString()){
-                        type = "landlord";
-                        idUser = landlord;
-                        idCheck = tenant;
-                    }
-                    if(tenant.toString() == userId.toString()){
-                        type = "tenant";
-                        idUser = tenant;
-                        idCheck = landlord;
-                    }
-                    ChatRooms.checkBlock(idCheck, idUser, id).then((res)=> {
-                        let blocked;
-                        if(res.blocked == true){
-                            blocked = true;
+                    if(landlord == userIdStr || tenant == userIdStr){
+                        if(landlord == userIdStr){
+                            type = "landlord";
+                            idUser = landlord;
+                            idCheck = tenant;
                         }
-                        else{
-                            blocked = false;
+                        if(tenant == userIdStr){
+                            type = "tenant";
+                            idUser = tenant;
+                            idCheck = landlord;
                         }
-                        ChatRooms
-                            .findById(id)
-                            .exec((err, chatRoom) => {
-                                if(err){
-                                    reject(err);
-                                }
-                                if(chatRoom){
-                                    chatRoom.blocked = blocked;
-                                    chatRoom.save((err, saved)=> {
-                                        err ? reject({message: err.message})
-                                            : resolve(saved);
+                        ChatRooms.checkBlock(idCheck, idUser).then((result)=> {
+                            ChatRooms.updateBlockedChat(id, result.blocked).then((res)=> {
+                                let _queryupdate = {"_id":res._id};
+                                ChatRooms.getChatRooms(_queryupdate).then(chats => {
+                                    _.each(chats, (data) => {
+                                        resolve(data);
                                     })
-                                }
-                            })
-                    })
-                    .catch((err)=> {
-                        reject(err);
-                    })
+                                })
+                            })                        
+                        })
+                    }
+                    else{
+                        reject({message: "forbidden"});
+                    }
                 }
                 else{
                     resolve(chats);
@@ -128,6 +118,25 @@ chatsSchema.static('getById', (id:string, userId:string):Promise<any> => {
     });
 });
 
+chatsSchema.static('updateBlockedChat', (id:string, blocked:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        ChatRooms
+            .findById(id)
+            .exec((err, chatRoom) => {
+                if(err){
+                    reject(err);
+                }
+                if(chatRoom){
+                    chatRoom.blocked = blocked;
+                    chatRoom.save((err, saved)=> {
+                        err ? reject({message: err.message})
+                            : resolve(saved);
+                    })
+                }
+            })
+    });
+});
+
 chatsSchema.static('checkBlock', (idCheck:string, idUser:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Users
@@ -137,7 +146,6 @@ chatsSchema.static('checkBlock', (idCheck:string, idUser:string):Promise<any> =>
                     reject(err);
                 }
                 if(user){
-                    console.log(user);
                     let block;
                     if(user.blocked_users.length == 0){
                         block = false
@@ -204,12 +212,13 @@ chatsSchema.static('requestToken', (userId:string, username:string):Promise<any>
 chatsSchema.static('login', (token:string, userId:string, username:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.login(token).then(result => {
+            console.log(result);
         	if(result.res){
 	        	var id = result.res.id;
-	        	var token = result.res.token;
+	        	var tokenLogin = result.res.token;
 	        	var tokenExpires = result.res.tokenExpires;
 	        	var pushObj = {$push:{}};
-	        	pushObj.$push['dreamtalk'] = {'loginId': id, 'loginToken': token, 'loginTokenExpires': tokenExpires};
+	        	pushObj.$push['dreamtalk'] = {'loginId': id, 'loginToken': tokenLogin, 'loginTokenExpires': tokenExpires};
 	        	Users
 	        		.findByIdAndUpdate(userId, pushObj)
 	        		.exec((err, result) => {
@@ -217,14 +226,14 @@ chatsSchema.static('login', (token:string, userId:string, username:string):Promi
                             reject({message: err.message});
                         }
                         else{
-                            resolve({'loginId': id, 'loginToken': token, 'loginTokenExpires': tokenExpires});            
+                            resolve({'loginId': id, 'loginToken': tokenLogin, 'loginTokenExpires': tokenExpires});            
                         }
 	        		})
         	}
         	else if(result.err){
                 console.log(result.err);
-        		DreamTalk.requestToken(userId, username).then(token => {
-                    var res_token = JSON.parse(token);
+        		DreamTalk.requestToken(userId, username).then(tokenReq => {
+                    var res_token = JSON.parse(tokenReq);
                     var user_token = res_token.token;
 
                     ChatRooms.login(user_token, userId, username).then(res => {
@@ -421,7 +430,7 @@ chatsSchema.static('postMembers', (roomId:string, memberId:string):Promise<any> 
         });
     });
 });
-//--
+
 chatsSchema.static('postAnswer', (id:string, userId:string, option:number):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.postAnswer(id, userId, option).then(result => {
@@ -462,7 +471,6 @@ chatsSchema.static('updateRoom', (roomId:string, status:string):Promise<any> => 
 chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let idUser = userId.toString();
-
         ChatRooms
             .findById(roomId)
             .exec((err, chat_room) => {
@@ -504,9 +512,7 @@ chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => 
 
 chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-
         let body:any = data;
-        console.log(body);
         for(var i = 0; i < body.ids.length; i++){
             let roomId = body.ids[i].toString();
             ChatRooms
@@ -516,9 +522,18 @@ chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> =>
                     reject(err);
                 }
                 if(chat_room){
-                    let landlord = chat_room.landlord.toString();
-                    let tenant = chat_room.tenant.toString();
-                    let manager = chat_room.manager.toString();
+                    let landlord;
+                    let tenant;
+                    let manager;
+                    if(chat_room.landlord){
+                        landlord = chat_room.landlord.toString();
+                    }
+                    if(chat_room.tenant){
+                        tenant = chat_room.tenant.toString();
+                    }
+                    if(chat_room.manager){
+                        manager = chat_room.manager.toString();
+                    }
                     if(role == "admin") {
                         if(landlord){
                             DreamTalk.deleteRoom(roomId, landlord);
@@ -545,8 +560,7 @@ chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> =>
                     }
                 }                
             })
-        }
-        
+        }        
     });
 });
 

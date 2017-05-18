@@ -49,11 +49,11 @@ export class UserRoutes {
 			.post(auth.isAuthenticated(), UsersController.unActiveUser);
 
 		router
-			.route('/users/block/:id')
+			.route('/users/block/:id/:roomid')
 			.put(auth.isAuthenticated(), UsersController.blockUser);
 
 		router
-			.route('/users/unblock/:id')
+			.route('/users/unblock/:id/:roomid')
 			.put(auth.isAuthenticated(), UsersController.unblockUser);
 
 		router
