@@ -313,12 +313,11 @@ chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
                                                 reject(err);
                                             }
                                             if(saved){
-
                                                 let agreementData = {
                                                     "property": propertyId,
                                                     "room_id": saved._id
                                                 }
-                                                Agreements.createAgreements(agreementData, uid)
+                                                Agreements.createAgreements(agreementData, uid.toString())
                                                 .then((res) => {
                                                     let idAgreement = res._id;
                                                     saved.agreement = idAgreement;
@@ -333,7 +332,6 @@ chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
                                                             if(members.length > 1) {
                                                                 userIds.push(property.manager);
                                                             }
-
                                                             Users
                                                                 .update({"_id": {$in: userIds}}, {
                                                                     $push: {
