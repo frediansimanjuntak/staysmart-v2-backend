@@ -237,12 +237,10 @@ usersSchema.static('getAll', ():Promise<any> => {
 		let _query = {};
 
 		Users.getUser(_query).then(res => {
-			if(res){				
-				resolve(res);
-			}
-			else{
-				reject({message: "error get data"});
-			}
+			resolve(res);
+		})
+		.catch((err)=> {
+			reject(err);
 		})
 	});
 });
@@ -252,14 +250,12 @@ usersSchema.static('me', (userId:string):Promise<any> => {
 		let _query = {"_id": userId};
 
 		Users.getUser(_query).then(res => {
-			if(res){
-				_.each(res, (result) => {
-					resolve(result);
-				})				
-			}
-			else{
-				reject({message: "error get data"});
-			}
+			_.each(res, (result) => {
+				resolve(result);
+			})	
+		})
+		.catch((err) => {
+			reject(err);
 		})
 	});
 });
@@ -272,14 +268,12 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 		let _query = {"_id": id};
 
 		Users.getUser(_query).then(res => {
-			if(res){
-				_.each(res, (result) => {
-					resolve(result);
-				})
-			}
-			else{
-				reject({message: "error get data"});
-			}
+			_.each(res, (result) => {
+				resolve(result);
+			})	
+		})
+		.catch((err) => {
+			reject(err);
 		})
 	});
 });
