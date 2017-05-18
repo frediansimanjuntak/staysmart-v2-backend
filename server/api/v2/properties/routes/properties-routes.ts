@@ -12,6 +12,10 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(),PropertiesController.createProperties);
 
 		router
+			.route('/properties/without_owner')
+			.post(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.createPropertiesWithoutOwner);
+
+		router
 			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroomCount/:bathroomCount/:available/:sizemin/:sizemax/:location/:radius')
 			.get(PropertiesController.searchProperties);
 

@@ -53,6 +53,15 @@ export class PropertiesController {
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static createPropertiesWithoutOwner(req: express.Request, res: express.Response):void {
+		let _properties = req.body;
+		let _userId = req["user"]._id;
+		PropertiesDAO
+		['createPropertiesWithoutOwner'](_properties, _userId)
+		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
 	
 	static updateProperties(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
