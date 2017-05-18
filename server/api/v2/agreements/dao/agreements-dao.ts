@@ -301,7 +301,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 													: resolve({_id: saved._id});
 											});
 										}
-										if(propertyStatus == "rented"){
+										else if(propertyStatus == "rented"){
 											reject({message: "this property has rented"})
 										}
 										else{
