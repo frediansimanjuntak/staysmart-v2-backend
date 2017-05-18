@@ -17,6 +17,11 @@ export default {
   	ws: 'wss://dt.shrimpventures.com/websocket',
     url: 'https://dt.shrimpventures.com/api/v1'
   },
+  // new ddp credential
+  // dream_talk: {
+  // 	ws: 'wss://dt-s.shrimpventures.com/websocket',
+  //   url: 'https://dt-s.shrimpventures.com/api/v1'
+  // },
 
   sms: {
     app_id: 'oLJ5MfvwtvjyvU0l',
