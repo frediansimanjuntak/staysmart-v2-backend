@@ -7,7 +7,7 @@ client/dev/bower_components
 typings
 dist
 *.log
-
+*.log.*
 *.cfg
 
 *.state
