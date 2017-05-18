@@ -110,7 +110,6 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
-
 	static activationUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _user = req.body;
@@ -141,9 +140,10 @@ export class UsersController {
 
 	static blockUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _roomId = req.params.roomid;
 		let _userId = req['user']._id;
 		UsersDAO
-		['blockUser'](_id, _userId)
+		['blockUser'](_id, _userId, _roomId)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
@@ -151,8 +151,9 @@ export class UsersController {
 	static unblockUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req['user']._id;
+		let _roomId = req.params.roomid;
 		UsersDAO
-		['unblockUser'](_id, _userId)
+		['unblockUser'](_id, _userId, _roomId)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
