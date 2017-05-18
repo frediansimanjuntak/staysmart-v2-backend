@@ -458,6 +458,9 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
             reject({message: res.message});
           }
           else if(res == true){
+            Properties.addOwnedProperty(id, userId.toString()).then((prop) => {
+              console.log(prop);
+            });
             Properties
               .findById(id)
               .exec((err, property_result) => {
@@ -481,43 +484,48 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                   Properties
                                     .findById(id)
                                     .exec((err, property) => {
-                                      var owned_type = property.owned_type;
-                                      if(property.temp) {
-                                        if(property.temp.owner || property.temp.shareholders.length > 0) {
-                                          var shareholders = property.temp.shareholders;
-                                          var owner = property.temp.owner;
-                                          
-                                          var companyId = property.owner.company;
-
-                                          if(shareholders.length > 0) {
-                                            if(owned_type == 'individual') {
-                                              Users.updateUserDataOwners(userId, shareholders);
-                                              var type = 'shareholders';
-                                              Properties.unsetTemp(id, type);
-                                            }
-                                            else{
-                                              Companies.addCompaniesShareholders(companyId, shareholders, userId);
-                                              var type = 'shareholders';
-                                              Properties.unsetTemp(id, type);
-                                            }
-                                              
-                                          }
-                                          if(owner.name) {
-                                            Users.updateUserData(userId, 'landlord', owner, userId);
-                                            var type = 'owner';
-                                            Properties.unsetTemp(id, type);
-                                          }
-                                          var full_address = body.address.full_address;
-                                          var from = 'Staysmart';
-                                          if(body.status && body.status != 'draft') {
-                                            mail.submitProperty(userEmail, userFullname, full_address, from);
-                                            resolve({res, message: 'property created'});
-                                          }
-                                        }
-                                        else{
-                                          resolve({message: 'Properties updated.'});
-                                        }
+                                      if(err){
+                                        reject(err);
                                       }
+                                      if(property){
+                                        var owned_type = property.owned_type;
+                                        if(property.temp) {
+                                          if(property.temp.owner || property.temp.shareholders.length > 0) {
+                                            var shareholders = property.temp.shareholders;
+                                            var owner = property.temp.owner;
+                                            
+                                            var companyId = property.owner.company;
+
+                                            if(shareholders.length > 0) {
+                                              if(owned_type == 'individual') {
+                                                Users.updateUserDataOwners(userId, shareholders);
+                                                var type = 'shareholders';
+                                                Properties.unsetTemp(id, type);
+                                              }
+                                              else{
+                                                Companies.addCompaniesShareholders(companyId, shareholders, userId);
+                                                var type = 'shareholders';
+                                                Properties.unsetTemp(id, type);
+                                              }
+                                                
+                                            }
+                                            if(owner.name) {
+                                              Users.updateUserData(userId, 'landlord', owner, userId);
+                                              var type = 'owner';
+                                              Properties.unsetTemp(id, type);
+                                            }
+                                            var full_address = body.address.full_address;
+                                            var from = 'Staysmart';
+                                            if(body.status && body.status != 'draft') {
+                                              mail.submitProperty(userEmail, userFullname, full_address, from);
+                                              resolve({res, message: 'property created'});
+                                            }
+                                          }
+                                          else{
+                                            resolve({message: 'Properties updated.'});
+                                          }
+                                        }
+                                      }                                      
                                     })
                                 }
                                 else{
@@ -531,6 +539,45 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
               })
           }
         });
+    });
+});
+
+propertiesSchema.static('addOwnedProperty', (id:string, idUser:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        var ObjectID = mongoose.Types.ObjectId;
+        Properties
+          .findById(id)
+          .exec((err, property) => {
+            if(err){
+              reject(err);
+            }
+            else if(property){
+              console.log(property);
+              if(!property.owner.user){
+                 Users
+                  .update({"_id": idUser}, {
+                    $push: {
+                      "owned_properties": id
+                    }
+                  })
+                  .exec((err, updated) => {
+                    if(err){
+                      reject(err);
+                    }
+                    else if(updated){
+                      property.owner.user = idUser;
+                      property.save((err, saved) => {
+                        err ? reject({message: err.message})
+                            : resolve(saved);
+                      })
+                    }                    
+                  })
+              } 
+              else{
+                resolve({message: "this property owner is already"});
+              }            
+            }
+          })
     });
 });
 
