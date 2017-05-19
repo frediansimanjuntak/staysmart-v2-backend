@@ -20,4 +20,3 @@ User
       console.log('finished populating users');
     });
   });
-

@@ -281,8 +281,21 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 										let roomId;
 										if(agreement.room_id){
 											roomId = agreement.room_id;
+											resolve({_id: agreement._id, room_id: roomId, message: "agreement has been made"})
 										}
-										resolve({_id: agreement._id, room_id: roomId, message: "agreement has been made"})
+										else{
+											let landlord = agreement.landlord.toString();
+											let tenant = agreement.tenant.toString();
+											let property = agreement.property.toString();
+											if(body.room_id){
+												Appointments.updateAppointmentsRoomId(landlord, tenant, property, body.room_id);
+												agreement.room_id = body.room_id;
+												agreement.save((err, saved) => {
+													err ? reject({message: err})
+														: resolve({_id: saved._id, room_id: saved.room_id, message: "agreement room Id updated"});
+												})
+											}											
+										}										
 									}
 									else{
 										if(propertyStatus == "published" || propertyStatus == "initiated"){

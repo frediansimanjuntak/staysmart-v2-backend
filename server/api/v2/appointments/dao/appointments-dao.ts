@@ -246,6 +246,21 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
     });
 });
 
+appointmentsSchema.static('updateAppointmentsRoomId', (landlord:string, tenant:string, property:string, room:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Appointments
+          .update({"landlord": landlord, "tenant": tenant, "property": property}, {
+            $set: {
+              "room_id": room
+            }
+          }, {multi: true})
+          .exec((err, updated) => {
+              err ? reject({message: err.message})
+                  : resolve(updated);
+          });
+    });
+});
+
 appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
