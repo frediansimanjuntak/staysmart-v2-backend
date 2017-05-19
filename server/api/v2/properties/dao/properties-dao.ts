@@ -149,17 +149,18 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             {
               let radius;
               if(search.radius != 'all') {
-                radius = (search.radius) / 1000 * 0.621371;
+                radius = (search.radius) * 0.000621371;
               }
               else{
-                radius = 1.5;
+                radius = 1.5 * 0.621371;
               }
+              let radiusQuery = radius / 6371;
               var latlng = search.latlng.split(",");
               var lnglat = [];
               lnglat.push(Number(latlng[1]));
               lnglat.push(Number(latlng[0]));
               let developments = Developments.find({});
-              developments.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radius/6371 ] } } });
+              developments.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radiusQuery ] } } });
               if(search.location != 'all') 
               {
                 developments.where('address.street_name', search.location);
