@@ -149,10 +149,10 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             {
               let radius;
               if(search.radius != 'all') {
-                radius = (search.radius) * 0.000621371;
+                radius = (search.radius) / 1000;
               }
               else{
-                radius = 1.5 * 0.621371;
+                radius = 1.5;
               }
               let radiusQuery = radius / 6371;
               var latlng = search.latlng.split(",");
