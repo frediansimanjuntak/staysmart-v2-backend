@@ -283,7 +283,7 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 											roomId = agreement.room_id;
 											resolve({_id: agreement._id, room_id: roomId, message: "agreement has been made"})
 										}
-										else{
+										else if(!agreement.room_id){
 											let landlord = agreement.landlord.toString();
 											let tenant = agreement.tenant.toString();
 											let property = agreement.property.toString();
@@ -294,6 +294,9 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 													err ? reject({message: err})
 														: resolve({_id: saved._id, room_id: saved.room_id, message: "agreement room Id updated"});
 												})
+											}
+											else{
+												resolve({_id: agreement._id, message: "agreement has been made"});
 											}											
 										}										
 									}
@@ -377,8 +380,11 @@ agreementsSchema.static('getLoi', (id:string, userId:string, role:string):Promis
 				})				 
 			}
 			else{
-				reject({message: "error"});
+				resolve({message: "no data"});
 			}
+		})
+		.catch((err)=> {
+			reject(err);
 		})		
 	});
 });
