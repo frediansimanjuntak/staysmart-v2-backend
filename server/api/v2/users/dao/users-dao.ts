@@ -106,6 +106,10 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 				{
 					path: 'manager',
 					model: 'Users'
+				},
+				{
+					path: 'rented.data.by',
+					model: 'Users'
 				}]	
 			})
 			.populate({
@@ -219,6 +223,18 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 					{
 						path: 'manager',
 						model: 'Users'
+					},
+					{
+						path: 'agreements.data',
+						model: 'Agreements',
+						populate: [{
+							path: 'landlord',
+							model: 'Users'
+						},
+						{
+							path: 'tenant',
+							model: 'Users'
+						}]						
 					}]			
 			})
 			.populate({
