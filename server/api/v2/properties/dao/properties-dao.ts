@@ -149,18 +149,18 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             {
               let radius;
               if(search.radius != 'all') {
-                radius = (search.radius) / 1000;
+                radius = (search.radius) * 0.000621371192;
               }
               else{
-                radius = 1.5;
+                radius = 1.5 * 0.621371192;
               }
-              let radiusQuery = radius / 6371;
+              let radiusQuery = radius / 3963.2;
               var latlng = search.latlng.split(",");
               var lnglat = [];
               lnglat.push(Number(latlng[1]));
               lnglat.push(Number(latlng[0]));
               let developments = Developments.find({});
-              developments.where({'address.coordinates': { $geoWithin: { $centerSphere: [ lnglat, radiusQuery ] } } });
+              developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
               if(search.location != 'all') 
               {
                 developments.where('address.street_name', search.location);
@@ -175,7 +175,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
                     for(let j = 0; j < development.length; j++){
                       let prop_dev_id = properties[i].development._id.toString();
                       let dev_id = development[j]._id.toString();
-                      if ( prop_dev_id == dev_id) {
+                      if ( properties[i].development.slug == development[j].slug) {
                         properties_data.push(properties[i]);
                       }
                     }
