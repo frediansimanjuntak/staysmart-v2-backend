@@ -5,9 +5,9 @@ import {PhantomController} from '../controller/phantom-controller';
 import * as auth from '../../../../auth/auth-service';
 
 export class PhantomRoutes{
-	static init(router: express.Router){
+	static init(router: express.Router){	
 		router
-			.route('/phantom/url/')
-			.post(PhantomController.readLink);
+			.route('/phantom')
+			.get(PhantomController.getHtml);
 	}
 }
