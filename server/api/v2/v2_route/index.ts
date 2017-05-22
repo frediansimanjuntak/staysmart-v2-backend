@@ -19,11 +19,12 @@ import {ManagersRoutes} from "../managers/routes/managers-routes";
 import {ReportRoutes} from "../report/routes/report-routes";
 import {UserReportsRoutes} from "../user_reports/routes/user_reports-routes";
 import {SubscribesRoutes} from "../subscribe/routes/subscribes-routes";
+import {PhantomRoutes} from "../phantom/routes/phantom-routes";
 
 var router = express.Router();
 
 UserRoutes.init(router);
-
+PhantomRoutes.init(router)
 FaqsRoutes.init(router);
 BlogsRoutes.init(router);
 BanksRoutes.init(router);
