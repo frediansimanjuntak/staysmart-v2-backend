@@ -68,8 +68,18 @@ export class AgreementsRoutes {
 		router
 			.route('/inventorylist/tenant_checked/:id')
 			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
+		
+		//delete history
+		//type = {letter_of_intent, tenancy_agreement, inventory_list}
+		router
+			.route('/delete/history/:type/:idAgreement/:idHistory')
+			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
 							
 		//LOI
+		router
+			.route('/loi')
+			.get(auth.isAuthenticated(), AgreementsController.getAllLoi);
+
 		router
 			.route('/loi/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getLoi)
@@ -96,6 +106,10 @@ export class AgreementsRoutes {
 			.post(auth.isAuthenticated(), AgreementsController.adminConfirmationLoi);
 
 		//TA
+		router
+			.route('/ta')
+			.get(auth.isAuthenticated(), AgreementsController.getAllTa);
+
 		router
 			.route('/ta/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getTA)

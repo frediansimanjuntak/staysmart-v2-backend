@@ -157,6 +157,15 @@ export class AgreementsController {
 	}
 
 	//LOI
+	static getAllLoi(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['getAllLoi'](_userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
@@ -233,6 +242,15 @@ export class AgreementsController {
 	}
 
 	//TA
+	static getAllTa(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['getAllTa'](_userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
@@ -368,6 +386,17 @@ export class AgreementsController {
 		AgreementsDAO
 		['transferPenaltyToLandlord'](_id, _data)
 		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static deleteHistory(req: express.Request, res: express.Response):void {
+		let _type = req.params.type;
+		let _idAgreement = req.params.idAgreement;
+		let _idHistory = req.params.idHistory;
+
+		AgreementsDAO
+		['deleteHistory'](_idAgreement, _idHistory, _type)
+		.then(agreement => res.status(201).json(agreement))
 		.catch(error => res.status(400).json(error));
 	}
 }
