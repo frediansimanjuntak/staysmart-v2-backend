@@ -33,4 +33,12 @@ export class AttachmentsController {
 		.then(() => res.status(200).end())
 		.catch(error => res.status(400).json(error));
 	}
+
+	static deleteManyAttachments(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		AttachmentsDAO
+		['deleteManyAttachments'](_data)
+		.then(attachments => res.status(201).json(attachments))
+		.catch(error => res.status(400).json(error));
+	}
 }
