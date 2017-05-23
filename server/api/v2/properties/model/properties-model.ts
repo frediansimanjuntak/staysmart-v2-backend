@@ -172,7 +172,7 @@ var PropertiesSchema = new mongoose.Schema({
 			}
 		],
 	},
-	status: {type: String, enum:['draft','pending','published','initiated','rented'], default: 'pending'},
+	status: {type: String, enum:['draft', 'pending', 'published', 'initiated', 'rented', 'rejected'], default: 'pending'},
 	agreements: {
 		data: {
 			type: Schema.Types.ObjectId,
