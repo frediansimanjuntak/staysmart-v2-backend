@@ -14,6 +14,10 @@ export class AttachmentsRoutes {
 		router
 			.route('/attachments/:id')
 			.get(auth.isAuthenticated(),AttachmentsController.getById)
-			.delete(auth.isAuthenticated(),AttachmentsController.deleteAttachments);
+			.delete(auth.isAuthenticated(),AttachmentsController.deleteAttachments);	
+		
+		router
+			.route('/attachments/delete/many')
+			.post(auth.isAuthenticated(),AttachmentsController.deleteManyAttachments);
 	}
 } 

@@ -177,6 +177,63 @@ commentsSchema.static('sendBlogComment', (id:string):Promise<any> => {
 	});
 });
 
+commentsSchema.static('checkEmailComment', (idComment:string, email:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users
+			.findOne({"email": email})
+			.exec((err, user) => {
+				if(err){
+					reject(err);
+				}
+				if(user){
+					Comments
+						.findByIdAndUpdate(idComment, {
+							$set: {
+								"user": user._id
+							}
+						})
+						.exec((err, result) => {
+							err	? reject(err)
+								: resolve(result);
+						})
+				}
+				else{
+					resolve({message: "email not registered"});
+				}
+			})		
+	});
+});
+
+commentsSchema.static('addCommentInBlog', (idBlog:string, idComment:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Blogs
+			.findByIdAndUpdate(idBlog, {
+				$push: {
+					"comments": idComment
+				}
+			})
+			.exec((err, update) => {
+				err ? reject({message: err.message})
+					: resolve({message: 'updated'});
+			});		
+	});
+});
+
+commentsSchema.static('addReplyInComment', (idReply:string, commentId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Comments
+			.findByIdAndUpdate(commentId, {
+				$push: {
+					"replies": idReply
+				}
+			})
+			.exec((err, update) => {
+				err ? reject({message: err.message})
+					: resolve({message: 'updated'});;
+			});	
+	});
+});
+
 commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(comments)) {
@@ -193,54 +250,30 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 			type = 'comment/';	
 		}
 
-		Users
-			.findOne({"email": body.email})
-			.exec((err, user) => {
-				if(err){
-					reject(err);
+		var _comments = new Comments(comments);
+		_comments.type = type;
+		_comments.save((err, saved) => {
+			if(err){
+				reject(err);
+			}
+			if(saved){
+				let idComment = saved._id;
+				let idBlog = saved.blog;
+				let email = saved.email;
+				Comments.checkEmailComment(idComment, email);
+				Comments.sendSubscribeBlog(idBlog);				
+				Comments.sendBlogComment(idComment);
+				if(body.commentID){
+					Comments.sendSubscribeComment(idBlog);
+					Comments.addReplyInComment(body.commentID, idComment);	
+					resolve(saved);
 				}
-				if(user){
-					var _comments = new Comments(comments);
-					if(user != null){
-						_comments.user = user._id;
-					}
-					_comments.type = type;
-					_comments.save((err, saved) => {
-						if(err){
-							reject(err);
-						}
-						if(saved){
-							Comments.sendSubscribeBlog(saved.blog);				
-							Comments.sendBlogComment(saved.id);
-							if(body.commentID){
-								Comments.sendSubscribeComment(saved.blog.toString());
-								Comments
-									.findByIdAndUpdate(body.commentID, {
-										$push: {
-											"replies": saved._id
-										}
-									})
-									.exec((err, update) => {
-										err ? reject({message: err.message})
-											: resolve({message: 'updated'});;
-									});	
-							}
-							else{
-								Blogs
-									.findByIdAndUpdate(body.blog, {
-										$push: {
-											"comments": saved._id
-										}
-									})
-									.exec((err, update) => {
-										err ? reject({message: err.message})
-											: resolve({message: 'updated'});
-									});	
-							}
-						}
-					})
+				else{
+					Comments.addCommentInBlog(idBlog, idComment);
+					resolve(saved);	
 				}
-			})		
+			}
+		})			
 	});
 });
 

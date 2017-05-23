@@ -106,6 +106,18 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
     });
 });
 
+attachmentsSchema.static('deleteManyAttachments', (data:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body:any = data;
+        Attachments
+          .remove( { _id : { $in: body.ids} } )
+          .exec((err, result) => {
+              err ? reject(err)
+                  : resolve(result);
+          })
+    });
+});
+
 attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
