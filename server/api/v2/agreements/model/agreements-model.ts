@@ -140,6 +140,7 @@ var AgreementsSchema = new mongoose.Schema({
 		},
 		histories: 
 		[{
+			delete: {type: Boolean, default: false},
 			date: {type: Date},
 			data: {}
 		}]
@@ -174,6 +175,7 @@ var AgreementsSchema = new mongoose.Schema({
 		},
 		histories: 
 		[{
+			delete: {type: Boolean, default: false},
 			date: {type: Date},
 			data: {}
 		}]
@@ -215,6 +217,7 @@ var AgreementsSchema = new mongoose.Schema({
 		},
 		histories: 
 		[{
+			delete: {type: Boolean, default: false},
 			date: {type: Date},
 			data: {}
 		}]

@@ -11,6 +11,7 @@ import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import {mail} from '../../../../email/mail';
+import {GlobalService} from '../../../../global/global.service';
 
 agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -361,6 +362,59 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 });
 
 //LOI
+agreementsSchema.static('getAllLoi', (userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let IDUser = userId.toString();
+		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
+		Agreements
+			.find(_query)
+			.select("letter_of_intent")
+			.populate("letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})
+			.populate({
+				path: "letter_of_intent.data.property",
+				model: 'Properties',
+	            populate: [{
+	              path: 'pictures.living',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.dining',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.bed',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.toilet',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.kitchen',
+	              model: 'Attachments'
+	            },{
+	              path: 'development',
+	              model: 'Developments'
+	            }]
+			})	
+			.exec((err, loi) => {
+				err ? reject({message: err.message})
+            		: resolve(loi);
+			})		
+	});
+});
+
 agreementsSchema.static('getLoi', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -459,7 +513,9 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			return reject(new TypeError('TA is not a valid object.'));
 		}		
 
-		let body:any = data;		
+		let bodies:any = data;	
+		let body:any = GlobalService.validObjectEmpty(data);
+		console.log(body);	
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
@@ -512,18 +568,12 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 							})						
 						let monthly_rental = body.monthly_rental;
 						let term_lease = body.term_lease;
-						let security_deposit = 0;
+						let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental)
 						let gfd_amount = monthly_rental;
-						let sd_amount = Math.round((monthly_rental * term_lease) * 0.4 / 100);
+						let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
 						let remark = body.remark_payment;
-
-						if (term_lease <= 12){
-							security_deposit = gfd_amount;
-						}
-						else if(term_lease > 12 && term_lease <= 24){
-							security_deposit = gfd_amount * 2;
-						}
-
+						let term_payment = GlobalService.calcTermPayment(term_lease);
+						// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
 						let _query = {"_id": id};
 						let loiObj = {$set: {}};
 					    for(var param in body) {
@@ -531,6 +581,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 					    }
 					    loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
 						loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
+						loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
 						loiObj.$set["letter_of_intent.data.term_lease_extend"] = 0;
 						loiObj.$set["letter_of_intent.data.lapse_offer"] = 0;
 						loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 0;
@@ -783,6 +834,59 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 });
 
 //TA
+agreementsSchema.static('getAllTa', (userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let IDUser = userId.toString();
+		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
+		Agreements
+			.find(_query)
+			.select("landlord tenant tenancy_agreement")
+			.populate("landlord tenant")
+			.populate({
+				path: "property",
+				model: 'Properties',
+	            populate: [{
+	              path: 'pictures.living',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.dining',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.bed',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.toilet',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.kitchen',
+	              model: 'Attachments'
+	            },{
+	              path: 'development',
+	              model: 'Developments'
+	            }]
+			})
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})				
+			.exec((err, loi) => {
+				err ? reject({message: err.message})
+            		: resolve(loi);
+			})		
+	});
+});
+
 agreementsSchema.static('getTA', (id:string, userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -1138,6 +1242,22 @@ agreementsSchema.static('getInventoryList', (id:string, userId:string):Promise<a
 	});
 });
 
+agreementsSchema.static('getInventoryList', (id:string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Agreements
+			.findById(id)
+			.select("inventory_list.data")
+			.populate("inventory_list.data.lists.items.attachments")
+			.exec((err, agreements) => {
+				err ? reject({message: err.message})
+					: resolve(agreements.inventory_list.data);
+			});
+	});
+});
+
 agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -1291,6 +1411,33 @@ agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<a
                 	: resolve(saved);
               });
           })
+    });
+});
+
+//delete History
+agreementsSchema.static('deleteHistory', (idAgreement:string, idHistory:string, typeDataa:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {            
+		var historyObj = {$set: {}};  
+		let _query
+
+		historyObj.$set[typeDataa+'.histories.delete'] = true;
+
+		if (typeDataa == "letter_of_intent"){
+			_query = {"_id": idAgreement, "letter_of_intent.histories": {$elemMatch: {"_id": idHistory}}};
+		}
+		if (typeDataa == "tenancy_agreement"){
+			_query = {"_id": idAgreement, "tenancy_agreement.histories": {$elemMatch: {"_id": idHistory}}};
+		}
+		if (typeDataa == "inventory_list"){
+			_query = {"_id": idAgreement, "inventory_list.histories": {$elemMatch: {"_id": idHistory}}};
+		}
+
+		Agreements
+			.findByIdAndUpdate(_query, historyObj)
+			.exec((err, saved) => {
+			err ? reject({message: err.message})
+				: resolve(saved);
+			});
     });
 });
 
@@ -1566,7 +1713,8 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 					let dateCommencement = loiData.date_commencement;
 					let termLease = loiData.term_lease;
 					let longTerm = termLease + termLeaseExtend;
-					let until = dateCommencement.setDate(dateCommencement.getMonth() + longTerm);
+					let dateUntil = dateCommencement.setMonth(dateCommencement.getMonth() + longTerm);
+					let until = new Date(dateUntil);
 					let receiveGfd;
 					let receiveStd;
 					let receiveScd;
