@@ -798,15 +798,13 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                 }
                 else{
                   reject({message: "wrong confirmation type"})
-                }
-                
+                }                
               }
               else{
                 resolve({message: 'property status is draft.'});
               }
             }
-          })
-        
+          })        
       });
   });
 });
