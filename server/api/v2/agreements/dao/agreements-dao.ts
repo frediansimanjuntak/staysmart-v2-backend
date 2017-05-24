@@ -368,8 +368,7 @@ agreementsSchema.static('getAllLoi', (userId:string):Promise<any> => {
 		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
 		Agreements
 			.find(_query)
-			.select("letter_of_intent")
-			.populate("letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate("landlord tenant property letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
 			.populate({
 				path: 'letter_of_intent.data.payment',
 				populate: [{
@@ -409,8 +408,44 @@ agreementsSchema.static('getAllLoi', (userId:string):Promise<any> => {
 	            }]
 			})	
 			.exec((err, loi) => {
-				err ? reject({message: err.message})
-            		: resolve(loi);
+				if(err){
+					reject(err);
+				}
+				if(loi){
+					let datas = [];
+					for(var i = 0; i < loi.length; i++){
+						let loiArr = loi[i];
+						console.log("history", loiArr.letter_of_intent.histories);
+						if(loiArr.letter_of_intent.data){
+							let data = {
+								"_idAgreement": loiArr._id,
+								"landlord": loiArr.landlord,
+								"tenant": loiArr.tenant,
+								"property": loiArr.property,
+								"letter_of_intent": loiArr.letter_of_intent.data
+							}
+							datas.push(data);
+						}
+						if(loiArr.letter_of_intent.histories.length > 0){
+							let histories = loiArr.letter_of_intent.histories;							
+							for(var j = 0; j < histories.length; j++){
+								let history = histories[j];
+								let data = {
+									"_idAgreement": loiArr._id,
+									"landlord": loiArr.landlord,
+									"tenant": loiArr.tenant,
+									"property": loiArr.property,
+									"_idHistories": history._id,
+									"delete": history.delete,
+									"history_date": history.date,
+									"letter_of_intent": history.data
+								}
+								datas.push(data);
+							}								
+						}
+					}
+					resolve(datas);
+				}
 			})		
 	});
 });
@@ -840,31 +875,7 @@ agreementsSchema.static('getAllTa', (userId:string):Promise<any> => {
 		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
 		Agreements
 			.find(_query)
-			.select("landlord tenant tenancy_agreement")
-			.populate("landlord tenant")
-			.populate({
-				path: "property",
-				model: 'Properties',
-	            populate: [{
-	              path: 'pictures.living',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.dining',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.bed',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.toilet',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.kitchen',
-	              model: 'Attachments'
-	            },{
-	              path: 'development',
-	              model: 'Developments'
-	            }]
-			})
+			.populate("landlord tenant property tenancy_agreement.data.stamp_certificate")
 			.populate({
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
@@ -879,10 +890,45 @@ agreementsSchema.static('getAllTa', (userId:string):Promise<any> => {
 					path: 'attachment.refund_confirm',
 					model: 'Attachments'
 				}]
-			})				
-			.exec((err, loi) => {
-				err ? reject({message: err.message})
-            		: resolve(loi);
+			})
+			.exec((err, ta) => {
+				if(err){
+					reject(err);
+				}
+				if(ta){
+					let datas = [];
+					for(var i = 0; i < ta.length; i++){
+						let taArr = ta[i];
+						if(taArr.tenancy_agreement.data){
+							let data = {
+								"_idAgreement": taArr._id,
+								"landlord": taArr.landlord,
+								"tenant": taArr.tenant,
+								"property": taArr.property,
+								"tenancy_agreement": taArr.tenancy_agreement.data
+							}
+							datas.push(data);
+						}
+						if(taArr.tenancy_agreement.histories.length > 0){
+							let histories = taArr.tenancy_agreement.histories;							
+							for(var j = 0; j < histories.length; j++){
+								let history = histories[j];
+								let data = {
+									"_idAgreement": taArr._id,
+									"landlord": taArr.landlord,
+									"tenant": taArr.tenant,
+									"property": taArr.property,
+									"_idHistories": history._id,
+									"delete": history.delete,
+									"history_date": history.date,
+									"tenancy_agreement": history.data
+								}
+								datas.push(data);
+							}								
+						}
+					}
+					resolve(datas);
+				}
 			})		
 	});
 });
@@ -1226,6 +1272,55 @@ agreementsSchema.static('stampCertificateTA', (id:string, data:Object):Promise<a
 });
 
 //inventory list
+agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let IDUser = userId.toString();
+		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
+		Agreements
+			.find(_query)
+			.populate("landlord tenant property")
+			.exec((err, il) => {
+				if(err){
+					reject(err);
+				}
+				if(il){
+					let datas = [];
+					for(var i = 0; i < il.length; i++){
+						let ilArr = il[i];
+						if(ilArr.inventory_list.data){
+							let data = {
+								"_idAgreement": ilArr._id,
+								"landlord": ilArr.landlord,
+								"tenant": ilArr.tenant,
+								"property": ilArr.property,
+								"tenancy_agreement": ilArr.inventory_list.data
+							}
+							datas.push(data);
+						}
+						if(ilArr.inventory_list.histories.length > 0){
+							let histories = ilArr.inventory_list.histories;							
+							for(var j = 0; j < histories.length; j++){
+								let history = histories[j];
+								let data = {
+									"_idAgreement": ilArr._id,
+									"landlord": ilArr.landlord,
+									"tenant": ilArr.tenant,
+									"property": ilArr.property,
+									"_idHistories": history._id,
+									"delete": history.delete,
+									"history_date": history.date,
+									"tenancy_agreement": history.data
+								}
+								datas.push(data);
+							}								
+						}
+					}
+					resolve(datas);
+				}
+			})		
+	});
+});
+
 agreementsSchema.static('getInventoryList', (id:string, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {

@@ -61,6 +61,10 @@ export class AgreementsRoutes {
 
 		//Inventory List
 		router
+			.route('/inventorylist')
+			.get(auth.isAuthenticated(), AgreementsController.getAllInventoryList);
+
+		router
 			.route('/inventorylist/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getInventoryList)
 			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
@@ -69,10 +73,9 @@ export class AgreementsRoutes {
 			.route('/inventorylist/tenant_checked/:id')
 			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
 		
-		//delete history
-		//type = {letter_of_intent, tenancy_agreement, inventory_list}
+		//delete history		
 		router
-			.route('/delete/history/:type/:idAgreement/:idHistory')
+			.route('/delete/history/:type/:idAgreement/:idHistory') //type = {letter_of_intent, tenancy_agreement, inventory_list}
 			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
 							
 		//LOI
