@@ -81,12 +81,16 @@ export class AgreementsRoutes {
 		//LOI
 		router
 			.route('/loi')
-			.get(auth.isAuthenticated(), AgreementsController.getAllLoi);
+			.get(auth.isAuthenticated(), AgreementsController.getAllLoi);		
 
 		router
 			.route('/loi/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getLoi)
 			.post(auth.isAuthenticated(), AgreementsController.createLoi);
+		
+		router
+			.route('/loi/history/:id')
+			.get(auth.isAuthenticated(), AgreementsController.getLoiHistories);
 
 		router
 			.route('/loi/appointment/:id')
@@ -117,6 +121,10 @@ export class AgreementsRoutes {
 			.route('/ta/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getTA)
 			.post(auth.isAuthenticated(), AgreementsController.createTA);
+		
+		router
+			.route('/ta/history/:id')
+			.get(auth.isAuthenticated(), AgreementsController.getTaHistories);
 
 		router
 			.route('/ta/send/:id')
