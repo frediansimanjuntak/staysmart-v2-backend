@@ -421,6 +421,7 @@ agreementsSchema.static('getAllLoi', (userId:string, role:string):Promise<any> =
 						let loiArr = loi[i];
 						if (loiArr.letter_of_intent.data) {
 							let status;
+							let history;
 							if (loiArr.tenancy_agreement.data.status) {
 								let taStatus = loiArr.tenancy_agreement.data.status;
 								if (taStatus == "draft" || taStatus == "rejected" || taStatus == "expired") {
@@ -433,13 +434,20 @@ agreementsSchema.static('getAllLoi', (userId:string, role:string):Promise<any> =
 							else {
 								status = false;
 							}
+							if(loiArr.letter_of_intent.histories.length == 0){
+								history = false;
+							}
+							else {
+								history = true;
+							}
 							let data = {
 								"_idAgreement": loiArr._id,
 								"landlord": loiArr.landlord,
 								"tenant": loiArr.tenant,
 								"property": loiArr.property,
 								"letter_of_intent": loiArr.letter_of_intent.data,
-								"tenancy_agreement": status
+								"tenancy_agreement": status,
+								"history": history
 							}
 							datas.push(data);
 						}
@@ -988,11 +996,18 @@ agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> =>
 						let taArr = ta[i];
 						if (taArr.tenancy_agreement.data) {
 							let status;
+							let history;
 							if (taArr.inventory_list.data.status) {
 								status = true;
 							}
 							else {
 								status = false;
+							}
+							if(taArr.tenancy_agreement.histories.length == 0){
+								history = false;
+							}
+							else {
+								history = true;
 							}
 							let data = {
 								"_idAgreement": taArr._id,
@@ -1000,27 +1015,11 @@ agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> =>
 								"tenant": taArr.tenant,
 								"property": taArr.property,
 								"tenancy_agreement": taArr.tenancy_agreement.data,
-								"inventory_list": status
+								"inventory_list": status,
+								"history": history
 							}
 							datas.push(data);
-						}
-						if (taArr.tenancy_agreement.histories.length > 0) {
-							let histories = taArr.tenancy_agreement.histories;							
-							for(var j = 0; j < histories.length; j++) {
-								let history = histories[j];
-								let data = {
-									"_idAgreement": taArr._id,
-									"landlord": taArr.landlord,
-									"tenant": taArr.tenant,
-									"property": taArr.property,
-									"_idHistories": history._id,
-									"delete": history.delete,
-									"history_date": history.date,
-									"tenancy_agreement": history.data
-								}
-								datas.push(data);
-							}								
-						}
+						}						
 					}
 					resolve(datas);
 				}
