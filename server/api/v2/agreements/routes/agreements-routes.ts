@@ -76,7 +76,7 @@ export class AgreementsRoutes {
 		//delete history		
 		router
 			.route('/delete/history/:type/:idAgreement/:idHistory') //type = {letter_of_intent, tenancy_agreement, inventory_list}
-			.post(auth.isAuthenticated(), AgreementsController.tenantCheckInventoryList);
+			.post(auth.isAuthenticated(), AgreementsController.deleteHistory);
 							
 		//LOI
 		router
