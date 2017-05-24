@@ -159,9 +159,19 @@ export class AgreementsController {
 	//LOI
 	static getAllLoi(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-
+		let _role = req["user"].role;
 		AgreementsDAO
-		['getAllLoi'](_userId)
+		['getAllLoi'](_userId, _role)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getLoiHistories(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		AgreementsDAO
+		['getLoiHistories'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -244,9 +254,19 @@ export class AgreementsController {
 	//TA
 	static getAllTa(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-
+		let _role = req["user"].role;
 		AgreementsDAO
-		['getAllTa'](_userId)
+		['getAllTa'](_userId, _role)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getTaHistories(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		AgreementsDAO
+		['getTaHistories'](_id, _userId, _role)
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
