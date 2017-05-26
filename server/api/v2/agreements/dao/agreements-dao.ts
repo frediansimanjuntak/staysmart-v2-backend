@@ -17,7 +17,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("property letter_of_intent.data.property letter_of_intent.data.appointment inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate("inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
 			.populate({
 				path: 'landlord',
 				model: 'Users',
@@ -35,59 +35,6 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	              model: 'Attachments'
 	            },
 	            select: 'username email picture landlord.data phone'
-			})
-			.populate({
-				path: 'letter_of_intent.data.payment',
-				populate: [{
-					path: 'attachment.payment',
-					model: 'Attachments'
-				},
-				{
-					path: 'attachment.payment_confirm',
-					model: 'Attachments'
-				},
-				{
-					path: 'attachment.refund_confirm',
-					model: 'Attachments'
-				}]
-			})			
-			.populate({
-				path: 'tenancy_agreement.data.payment',
-				populate: [{
-					path: 'attachment.payment',
-					model: 'Attachments'
-				},
-				{
-					path: 'attachment.payment_confirm',
-					model: 'Attachments'
-				},
-				{
-					path: 'attachment.refund_confirm',
-					model: 'Attachments'
-				}]
-			})
-			.populate({
-				path: 'property',
-				model: 'Properties',
-	            populate: [{
-	              path: 'pictures.living',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.dining',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.bed',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.toilet',
-	              model: 'Attachments'
-	            },{
-	              path: 'pictures.kitchen',
-	              model: 'Attachments'
-	            },{
-	              path: 'development',
-	              model: 'Developments'
-	            }]
 			})
 			.populate({
 				path: 'appointment',
@@ -121,6 +68,114 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 		            }]
 				}]
 			})
+			.populate({
+				path: 'property',
+				model: 'Properties',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            }]
+			})	
+			.populate({
+				path: 'letter_of_intent.data.appointment',
+				populate: [{
+					path: 'tenant',
+					model: 'Users'
+				}, {
+					path: 'landlord',
+					model: 'Users'
+				}, {
+					path: 'property',
+					model: 'Properties',
+		            populate: [{
+		              path: 'pictures.living',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.dining',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.bed',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.toilet',
+		              model: 'Attachments'
+		            },{
+		              path: 'pictures.kitchen',
+		              model: 'Attachments'
+		            },{
+		              path: 'development',
+		              model: 'Developments'
+		            }]
+				}]
+			})
+			.populate({
+				path: 'letter_of_intent.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})			
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})						
+			.populate({
+				path: 'letter_of_intent.data.property ',
+				model: 'Properties',
+	            populate: [{
+					path: 'development',
+	              	model: 'Developments'
+				},{
+	              path: 'pictures.living',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.dining',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.bed',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.toilet',
+	              model: 'Attachments'
+	            },{
+	              path: 'pictures.kitchen',
+	              model: 'Attachments'
+	            }]
+			})		
 			.exec((err, agreements) => {
 				err ? reject({message: err.message})
 					: resolve(agreements);
