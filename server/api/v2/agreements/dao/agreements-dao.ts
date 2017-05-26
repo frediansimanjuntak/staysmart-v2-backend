@@ -1092,7 +1092,7 @@ agreementsSchema.static('getTaHistories', (id:string, userId:string, role:string
 			_query = {"_id": id};
 		}
 		else {
-			_query = { $or: [{"landlord": userId}, {"tenant": userId}], "_id": id};
+			_query = {$and: [{ $or: [{"landlord": userId}, {"tenant": userId}] }, {"_id": id}]}
 		}		
 		Agreements
 			.find(_query)
