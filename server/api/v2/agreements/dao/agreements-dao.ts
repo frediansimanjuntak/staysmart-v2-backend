@@ -1095,7 +1095,7 @@ agreementsSchema.static('getTaHistories', (id:string, userId:string, role:string
 			_query = {$and: [{ $or: [{"landlord": userId}, {"tenant": userId}] }, {"_id": id}]}
 		}		
 		Agreements
-			.find(_query)
+			.findOne(_query)
 			.populate("landlord tenant property tenancy_agreement.data.stamp_certificate")
 			.populate({
 				path: 'tenancy_agreement.data.payment',
@@ -1535,7 +1535,7 @@ agreementsSchema.static('getInventoryListHistories', (id:string, userId:string, 
 			_query = {$and: [{ $or: [{"landlord": userId}, {"tenant": userId}] }, {"_id": id}]}
 		}		
 		Agreements
-			.find(_query)
+			.findOne(_query)
 			.populate("landlord tenant property tenancy_agreement.data.stamp_certificate")
 			.populate({
 				path: 'tenancy_agreement.data.payment',
