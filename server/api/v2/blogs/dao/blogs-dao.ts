@@ -120,9 +120,56 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
             },
             select: 'username picture'
           }])
+          .exec((err, blog) => {
+            if (err) {
+              reject(err);
+            }
+            else if (blog) {
+              Blogs.getBlogSimilar(blog.category).then((res) => {
+                resolve({"blog": blog, "similar": res});
+              })
+              .catch((err) => {
+                reject(err);
+              })
+            }
+          });
+    });
+});
+
+blogsSchema.static('getBlogSimilar', (slug:string, category:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query;
+        if (category) {
+          _query = {"category": category}
+        }
+        else {
+          _query = {}
+        }
+        Blogs
+          .find(_query)
+          .populate("cover category")
+          .sort({"created_at": -1})  
+          .limit(4)        
           .exec((err, blogs) => {
-              err ? reject({message: err.message})
-                  : resolve(blogs);
+              if (err) {
+                reject(err);
+              }
+              else if (blogs) {
+                if(blogs.length < 4){
+                  Blogs
+                    .find({})
+                    .populate("cover category")
+                    .sort({"created_at": -1})  
+                    .limit(4)        
+                    .exec((err, blogss) => {
+                      err ? reject({message: err.message})
+	                        : resolve(blogss);
+                    })
+                }
+                else {
+                  resolve(blogs);
+                }                
+              }
           });
     });
 });
@@ -131,19 +178,17 @@ blogsSchema.static('createBlogs', (blogs:Object, created_by:string):Promise<any>
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(blogs)) {
         return reject(new TypeError('Blogs is not a valid object.'));
-      }
-      
-	var ObjectID = mongoose.Types.ObjectId;  
-	let body:any = blogs;
-	var slug_name = Developments.slug(body.title);
-
-	var _blogs = new Blogs(blogs);
-	    _blogs.slug = slug_name;
-	    _blogs.created_by = created_by;
-	    _blogs.save((err, saved)=>{
-	      err ? reject({message: err.message})
-	          : resolve(saved);
-	    });
+      }      
+      let ObjectID = mongoose.Types.ObjectId;  
+      let body:any = blogs;
+      let slug_name = Developments.slug(body.title);
+      let _blogs = new Blogs(blogs);
+      _blogs.slug = slug_name;
+      _blogs.created_by = created_by;
+      _blogs.save((err, saved)=>{
+        err ? reject({message: err.message})
+            : resolve(saved);
+      });
     });
 });
 
@@ -154,7 +199,7 @@ blogsSchema.static('deleteBlogs', (id:string):Promise<any> => {
         }
         Blogs
           .findById(id, (err, blogs) => {
-            if(blogs.cover != null){
+            if (blogs.cover != null) {
               var ObjectID = mongoose.Types.ObjectId;
                   Attachments
                       .findByIdAndRemove(blogs.cover)
@@ -181,7 +226,7 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object):Promise<any> => {
           return reject(new TypeError('Blogs is not a valid object.'));
         }
         let body:any = blogs;
-        if(body.title != null){
+        if (body.title != null) {
           var slug_name = Developments.slug(body.title);
         }
         
@@ -189,25 +234,25 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object):Promise<any> => {
         for(var param in blogs) {
           blogObj.$set[param] = blogs[param];
         }
-        if(body.title != null) {
+        if (body.title != null) {
           blogObj.$set['slug'] = slug_name;
         }
 
         Blogs
           .findByIdAndUpdate(id, blogObj)
           .exec((err, update) => {
-             if(err) {
+             if (err) {
                reject({message: err.message});
              }
-             else if(update) {
+             else if (update) {
               Blogs
                 .findById(id)
                 .populate("created_by")
                 .exec((err, blog) => {
-                  if(err) {
+                  if (err) {
                     reject({message: err.message});
                   }
-                  else if(blog) {
+                  else if (blog) {
                     var emailTo = blog.created_by.email;
                     var blogTitle = blog.title;
                     
