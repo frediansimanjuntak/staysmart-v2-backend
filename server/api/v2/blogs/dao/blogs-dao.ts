@@ -163,11 +163,17 @@ blogsSchema.static('getBlogSimilar', (slug:string, category:string):Promise<any>
                   resolve(blogs);
                 }
                 else {
-                  if (different < 4) {
-                    blogData.push(blogs);
+                  if (blogs.length > 0) {
+                    for (var i = 0; i < blogs.length; i++) {
+                      let blog = blogs[i];
+                      blogData.push(blog);
+                    }                    
                   }                  
-                  Blogs.getNewBlog(slug, different).then((res) => {
-                    blogData.push(res);
+                  Blogs.getNewBlog(slug, category, different).then((res) => {
+                    for (var j = 0; j < res.length; j++) {
+                      let result = res[j];
+                      blogData.push(result);
+                    }   
                     resolve(blogData);
                   })
                   .catch((err) => {
@@ -179,9 +185,9 @@ blogsSchema.static('getBlogSimilar', (slug:string, category:string):Promise<any>
     });
 });
 
-blogsSchema.static('getNewBlog', (slug:string, limit:number):Promise<any> => {
+blogsSchema.static('getNewBlog', (slug:string, category:string, limit:number):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        let _query = {"slug": { $nin: [ slug ] }}
+        let _query = {"slug": { $nin: [ slug ] }, "category": { $nin: [ category ] }}
         Blogs
           .find(_query)
           .populate("cover category")
