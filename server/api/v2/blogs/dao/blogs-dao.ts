@@ -125,7 +125,7 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
               reject(err);
             }
             else if (blog) {
-              Blogs.getBlogSimilar(blog.category).then((res) => {
+              Blogs.getBlogSimilar(blog.slug, blog.category).then((res) => {
                 resolve({"blog": blog, "similar": res});
               })
               .catch((err) => {
@@ -140,10 +140,10 @@ blogsSchema.static('getBlogSimilar', (slug:string, category:string):Promise<any>
     return new Promise((resolve:Function, reject:Function) => {
         let _query;
         if (category) {
-          _query = {"category": category}
+          _query = {"category": category, "slug": { $nin: [ slug ] }}
         }
         else {
-          _query = {}
+          _query = {"slug": { $nin: [ slug ] }}
         }
         Blogs
           .find(_query)
@@ -155,20 +155,44 @@ blogsSchema.static('getBlogSimilar', (slug:string, category:string):Promise<any>
                 reject(err);
               }
               else if (blogs) {
-                if(blogs.length < 4){
-                  Blogs
-                    .find({})
-                    .populate("cover category")
-                    .sort({"created_at": -1})  
-                    .limit(4)        
-                    .exec((err, blogss) => {
-                      err ? reject({message: err.message})
-	                        : resolve(blogss);
-                    })
+                let blogData = [];
+                let defaultLengthBlog = 4;
+                let lengthBlog = blogs.length;
+                let different = defaultLengthBlog - lengthBlog;
+                if (different == 0) {
+                  resolve(blogs);
                 }
                 else {
-                  resolve(blogs);
-                }                
+                  if (different < 4) {
+                    blogData.push(blogs);
+                  }                  
+                  Blogs.getNewBlog(slug, different).then((res) => {
+                    blogData.push(res);
+                    resolve(blogData);
+                  })
+                  .catch((err) => {
+                    reject(err);
+                  })
+                }
+              }
+          });
+    });
+});
+
+blogsSchema.static('getNewBlog', (slug:string, limit:number):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query = {"slug": { $nin: [ slug ] }}
+        Blogs
+          .find(_query)
+          .populate("cover category")
+          .sort({"created_at": -1})  
+          .limit(limit)        
+          .exec((err, blogs) => {
+              if (err) {
+                reject(err);
+              }
+              else if (blogs) {
+                resolve(blogs);               
               }
           });
     });
