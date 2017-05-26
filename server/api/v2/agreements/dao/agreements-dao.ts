@@ -1064,16 +1064,18 @@ agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> =>
 							else {
 								history = true;
 							}
-							let data = {
-								"_idAgreement": taArr._id,
-								"landlord": taArr.landlord,
-								"tenant": taArr.tenant,
-								"property": taArr.property,
-								"tenancy_agreement": taArr.tenancy_agreement.data,
-								"inventory_list": status,
-								"history": history
-							}
-							datas.push(data);
+							if(taArr.tenancy_agreement.data.status){
+								let data = {
+									"_idAgreement": taArr._id,
+									"landlord": taArr.landlord,
+									"tenant": taArr.tenant,
+									"property": taArr.property,
+									"tenancy_agreement": taArr.tenancy_agreement.data,
+									"inventory_list": status,
+									"history": history
+								}
+								datas.push(data);
+							}							
 						}						
 					}
 					resolve(datas);
@@ -1723,7 +1725,7 @@ agreementsSchema.static('deleteHistory', (idAgreement:string, idHistory:string, 
 		var historyObj = {$set: {}};  
 		let _query
 
-		historyObj.$set[typeDataa+'.histories.delete'] = true;
+		historyObj.$set[typeDataa+'.histories.$.delete'] = true;
 
 		if (typeDataa == "letter_of_intent") {
 			_query = {"_id": idAgreement, "letter_of_intent.histories": {$elemMatch: {"_id": idHistory}}};
