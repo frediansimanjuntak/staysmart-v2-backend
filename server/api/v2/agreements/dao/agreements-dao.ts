@@ -1775,10 +1775,8 @@ agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<a
 agreementsSchema.static('deleteHistory', (idAgreement:string, idHistory:string, typeDataa:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {            
 		var historyObj = {$set: {}};  
-		let _query
-
+		let _query;
 		historyObj.$set[typeDataa+'.histories.$.delete'] = true;
-
 		if (typeDataa == "letter_of_intent") {
 			_query = {"_id": idAgreement, "letter_of_intent.histories": {$elemMatch: {"_id": idHistory}}};
 		}
@@ -1788,9 +1786,8 @@ agreementsSchema.static('deleteHistory', (idAgreement:string, idHistory:string, 
 		if (typeDataa == "inventory_list") {
 			_query = {"_id": idAgreement, "inventory_list.histories": {$elemMatch: {"_id": idHistory}}};
 		}
-
 		Agreements
-			.findByIdAndUpdate(_query, historyObj)
+			.update(_query, historyObj)
 			.exec((err, saved) => {
 			err ? reject({message: err.message})
 				: resolve(saved);
