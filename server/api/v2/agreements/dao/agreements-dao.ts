@@ -1503,7 +1503,7 @@ agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
 								"landlord": ilArr.landlord,
 								"tenant": ilArr.tenant,
 								"property": ilArr.property,
-								"tenancy_agreement": ilArr.inventory_list.data
+								"inventory_list": ilArr.inventory_list.data
 							}
 							datas.push(data);
 						}
@@ -1519,7 +1519,7 @@ agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
 									"_idHistories": history._id,
 									"delete": history.delete,
 									"history_date": history.date,
-									"tenancy_agreement": history.data
+									"inventory_list": history.data
 								}
 								datas.push(data);
 							}								
