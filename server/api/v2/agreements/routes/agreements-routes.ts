@@ -68,6 +68,10 @@ export class AgreementsRoutes {
 			.route('/inventorylist/:id')
 			.get(auth.isAuthenticated(), AgreementsController.getInventoryList)
 			.post(auth.isAuthenticated(), AgreementsController.createInventoryList);
+		
+		router
+			.route('/inventorylist/history/:id')
+			.get(auth.isAuthenticated(), AgreementsController.getInventoryListHistories);
 
 		router
 			.route('/inventorylist/tenant_checked/:id')
@@ -81,7 +85,7 @@ export class AgreementsRoutes {
 		//LOI
 		router
 			.route('/loi')
-			.get(auth.isAuthenticated(), AgreementsController.getAllLoi);		
+			.get(auth.isAuthenticated(), AgreementsController.getAllLoi);
 
 		router
 			.route('/loi/:id')

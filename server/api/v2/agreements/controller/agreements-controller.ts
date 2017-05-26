@@ -356,6 +356,16 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getInventoryListHistories(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		AgreementsDAO
+		['getInventoryListHistories'](_id, _userId, _role)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getInventoryList(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;	
 		let _userId = req["user"]._id;	
