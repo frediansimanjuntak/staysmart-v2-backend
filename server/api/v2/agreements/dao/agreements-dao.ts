@@ -1497,25 +1497,77 @@ agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
 					let datas = [];
 					for(var i = 0; i < il.length; i++) {
 						let ilArr = il[i];
-						if (ilArr.inventory_list.data) {
-							let data = {
-								"_idAgreement": ilArr._id,
-								"landlord": ilArr.landlord,
-								"tenant": ilArr.tenant,
-								"property": ilArr.property,
-								"inventory_list": ilArr.inventory_list.data
+						let history;
+						if(ilArr.inventory_list.histories.length == 0){
+								history = false;
 							}
-							datas.push(data);
-						}
-						if (ilArr.inventory_list.histories.length > 0) {
-							let histories = ilArr.inventory_list.histories;							
-							for(var j = 0; j < histories.length; j++) {
-								let history = histories[j];
+							else {
+								history = true;
+							}
+						if (ilArr.inventory_list.data) {
+							if (ilArr.inventory_list.data.status) {
 								let data = {
 									"_idAgreement": ilArr._id,
 									"landlord": ilArr.landlord,
 									"tenant": ilArr.tenant,
 									"property": ilArr.property,
+									"history": history,
+									"inventory_list": ilArr.inventory_list.data
+								}
+								datas.push(data);
+							}							
+						}
+					}
+					resolve(datas);
+				}
+			})		
+	});
+});
+
+agreementsSchema.static('getInventoryListHistories', (id:string, userId:string, role:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let IDUser = userId.toString();
+		let _query;
+		if (role == "admin") {
+			_query = {"_id": id};
+		}
+		else {
+			_query = {$and: [{ $or: [{"landlord": userId}, {"tenant": userId}] }, {"_id": id}]}
+		}		
+		Agreements
+			.find(_query)
+			.populate("landlord tenant property tenancy_agreement.data.stamp_certificate")
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})
+			.exec((err, il) => {
+				if (err) {
+					reject(err);
+				}
+				if (il) {
+					let datas = [];			
+					if (il.inventory_list){
+						if (il.inventory_list.histories.length > 0) {
+							let histories = il.inventory_list.histories;							
+							for(var j = 0; j < histories.length; j++) {
+								let history = histories[j];
+								let data = {
+									"_idAgreement": il._id,
+									"landlord": il.landlord,
+									"tenant": il.tenant,
+									"property": il.property,
 									"_idHistories": history._id,
 									"delete": history.delete,
 									"history_date": history.date,
