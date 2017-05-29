@@ -568,28 +568,33 @@ agreementsSchema.static('getLoiHistories', (id:string, userId:string, role:strin
 				if (err) {
 					reject(err);
 				}
-				if (loi) {
+				else if (loi) {
 					let datas = [];
 					if(loi.letter_of_intent){
 						if (loi.letter_of_intent.histories.length > 0) {
 							let histories = loi.letter_of_intent.histories;							
 							for (var j = 0; j < histories.length; j++) {
 								let history = histories[j];
-								let data = {
-									"_idAgreement": loi._id,
-									"landlord": loi.landlord,
-									"tenant": loi.tenant,
-									"property": loi.property,
-									"_idHistories": history._id,
-									"delete": history.delete,
-									"history_date": history.date,
-									"letter_of_intent": history.data
-								}
-								datas.push(data);
+								if (history.delete == false) {
+									let data = {
+										"_idAgreement": loi._id,
+										"landlord": loi.landlord,
+										"tenant": loi.tenant,
+										"property": loi.property,
+										"_idHistories": history._id,
+										"delete": history.delete,
+										"history_date": history.date,
+										"letter_of_intent": history.data
+									}
+									datas.push(data);							
+								}								
 							}								
 						}
 					}					
 					resolve(datas);
+				}
+				else {
+					reject({message: "no data exists in your account"});
 				}
 			})		
 	});
@@ -1116,28 +1121,33 @@ agreementsSchema.static('getTaHistories', (id:string, userId:string, role:string
 				if (err) {
 					reject(err);
 				}
-				if (ta) {
+				else if (ta) {
 					let datas = [];			
 					if (ta.tenancy_agreement){
 						if (ta.tenancy_agreement.histories.length > 0) {
 							let histories = ta.tenancy_agreement.histories;							
 							for(var j = 0; j < histories.length; j++) {
 								let history = histories[j];
-								let data = {
-									"_idAgreement": ta._id,
-									"landlord": ta.landlord,
-									"tenant": ta.tenant,
-									"property": ta.property,
-									"_idHistories": history._id,
-									"delete": history.delete,
-									"history_date": history.date,
-									"tenancy_agreement": history.data
-								}
-								datas.push(data);
+								if (history.delete == false) {
+									let data = {
+										"_idAgreement": ta._id,
+										"landlord": ta.landlord,
+										"tenant": ta.tenant,
+										"property": ta.property,
+										"_idHistories": history._id,
+										"delete": history.delete,
+										"history_date": history.date,
+										"tenancy_agreement": history.data
+									}
+									datas.push(data);								
+								}								
 							}								
 						}
 					}
 					resolve(datas);
+				}
+				else {
+					reject({message: "no data exists in your account"});
 				}
 			})		
 	});
@@ -1556,28 +1566,33 @@ agreementsSchema.static('getInventoryListHistories', (id:string, userId:string, 
 				if (err) {
 					reject(err);
 				}
-				if (il) {
+				else if (il) {
 					let datas = [];			
 					if (il.inventory_list){
 						if (il.inventory_list.histories.length > 0) {
 							let histories = il.inventory_list.histories;							
 							for(var j = 0; j < histories.length; j++) {
 								let history = histories[j];
-								let data = {
-									"_idAgreement": il._id,
-									"landlord": il.landlord,
-									"tenant": il.tenant,
-									"property": il.property,
-									"_idHistories": history._id,
-									"delete": history.delete,
-									"history_date": history.date,
-									"inventory_list": history.data
-								}
-								datas.push(data);
+								if (history.delete == false) {
+									let data = {
+										"_idAgreement": il._id,
+										"landlord": il.landlord,
+										"tenant": il.tenant,
+										"property": il.property,
+										"_idHistories": history._id,
+										"delete": history.delete,
+										"history_date": history.date,
+										"inventory_list": history.data
+									}
+									datas.push(data);								
+								}								
 							}								
 						}
 					}
 					resolve(datas);
+				}				
+				else {
+					reject({message: "no data exists in your account"});
 				}
 			})		
 	});
