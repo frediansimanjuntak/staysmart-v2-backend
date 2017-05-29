@@ -264,7 +264,7 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
               err ? reject({message: err.message})
-                  : resolve({message:"delete success"});
+                  : resolve({message: "delete success"});
           });
     });
 });
