@@ -90,30 +90,40 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         if(search.bedroomCount != 'all') 
         {
           var bedroom = split(search.bedroomCount, {sep: ','});
-          for(var i = 0; i < bedroom.length; i++){
-            if(bedroom[i] == 5) {
-                property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}, {'details.bedroom': { $gte: bedroom[i]}}]); 
-            }  
-            else{
-              property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}]);  
+          if(bedroom.length == 1) {
+            property.where('details.bedroom', bedroom[0]);
+          }
+          else {
+            for(var i = 0; i < bedroom.length; i++){
+              if(bedroom[i] == 5) {
+                  property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}, {'details.bedroom': { $gte: bedroom[i]}}]); 
+              }  
+              else{
+                property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}]);  
+              }
             }
           }
         }
         if(search.bathroomCount != 'all') 
         {
           var bathroom = split(search.bathroomCount, {sep: ','});
-          for(var i = 0; i < bathroom.length; i++){
-            if(bathroom[i] == 5) {
-                property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}, {'details.bathroom': { $gte: bathroom[i]}}]);  
-            }  
-            else{
-              property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}]);  ;  
+          if(bathroom.length == 1) {
+            property.where('details.bathroom', bathroom[0]);
+          }
+          else {
+            for(var i = 0; i < bathroom.length; i++){
+              if(bathroom[i] == 5) {
+                  property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}, {'details.bathroom': { $gte: bathroom[i]}}]);  
+              }  
+              else{
+                property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}]);
+              }
             }
           }
         }
         if(search.available != 'all') 
         {
-          property.where('details.available').gte(search.available);
+          property.where('details.available').lte(search.available);
         }
         if(search.sizemin != 'all') 
         {
@@ -156,10 +166,8 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
               }
               let radiusQuery = radius / 3963.2;
               var latlng = search.latlng.split(",");
-              var lnglat = [];
-              lnglat.push(Number(latlng[1]));
-              lnglat.push(Number(latlng[0]));
               let developments = Developments.find({});
+              // developments.where({address: { $nearSphere: [Number(latlng[1]), Number(latlng[0])], $maxDistance: radiusQuery } });
               developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
               if(search.location != 'all') 
               {
