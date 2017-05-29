@@ -3,7 +3,6 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import notificationsSchema from '../model/notifications-model';
 import {socketIo} from '../../../../server';
-var io = require('socket.io')();
 
 notificationsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {

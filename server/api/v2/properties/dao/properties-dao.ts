@@ -11,6 +11,7 @@ import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
+import {socketIo} from '../../../../server';
 var split = require('split-string');
 
 propertiesSchema.static('getAll', ():Promise<any> => {
@@ -90,30 +91,40 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         if(search.bedroomCount != 'all') 
         {
           var bedroom = split(search.bedroomCount, {sep: ','});
-          for(var i = 0; i < bedroom.length; i++){
-            if(bedroom[i] == 5) {
-                property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}, {'details.bedroom': { $gte: bedroom[i]}}]); 
-            }  
-            else{
-              property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}]);  
+          if(bedroom.length == 1) {
+            property.where('details.bedroom', bedroom[0]);
+          }
+          else {
+            for(var i = 0; i < bedroom.length; i++){
+              if(bedroom[i] == 5) {
+                  property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}, {'details.bedroom': { $gte: bedroom[i]}}]); 
+              }  
+              else{
+                property.where('details.bedroom').or([{'details.bedroom': bedroom[i]}]);  
+              }
             }
           }
         }
         if(search.bathroomCount != 'all') 
         {
           var bathroom = split(search.bathroomCount, {sep: ','});
-          for(var i = 0; i < bathroom.length; i++){
-            if(bathroom[i] == 5) {
-                property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}, {'details.bathroom': { $gte: bathroom[i]}}]);  
-            }  
-            else{
-              property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}]);  ;  
+          if(bathroom.length == 1) {
+            property.where('details.bathroom', bathroom[0]);
+          }
+          else {
+            for(var i = 0; i < bathroom.length; i++){
+              if(bathroom[i] == 5) {
+                  property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}, {'details.bathroom': { $gte: bathroom[i]}}]);  
+              }  
+              else{
+                property.where('details.bathroom').or([{'details.bathroom': bathroom[i]}]);
+              }
             }
           }
         }
         if(search.available != 'all') 
         {
-          property.where('details.available').gte(search.available);
+          property.where('details.available').lte(search.available);
         }
         if(search.sizemin != 'all') 
         {
@@ -156,10 +167,8 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
               }
               let radiusQuery = radius / 3963.2;
               var latlng = search.latlng.split(",");
-              var lnglat = [];
-              lnglat.push(Number(latlng[1]));
-              lnglat.push(Number(latlng[0]));
               let developments = Developments.find({});
+              // developments.where({address: { $nearSphere: [Number(latlng[1]), Number(latlng[0])], $maxDistance: radiusQuery } });
               developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
               if(search.location != 'all') 
               {
@@ -297,6 +306,23 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     });
 });
 
+propertiesSchema.static('getTotalListing', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Properties
+			.find({"status": "pending", "confirmation.status": "pending"})
+			.exec((err, properties) => {
+				if (err) {
+					reject(err);
+				}
+				else if (properties) {
+					let data = { total: properties.length }
+					socketIo.counterUser(data);
+					resolve(properties);
+				}
+			})
+	});
+});
+
 propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Object, userEmail:string, userFullname:string, userRole:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(propertiesObject)) {
@@ -356,6 +382,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                                           var full_address = body.address.full_address;
                                           var from = 'Staysmart';
                                           if(body.status && body.status != 'draft') {
+                                            Properties.getTotalListing()
                                             mail.submitProperty(userEmail, userFullname, full_address, from);
                                             resolve({message: 'property created'});    
                                           }
@@ -508,6 +535,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                             var full_address = body.address.full_address;
                                             var from = 'Staysmart';
                                             if(body.status && body.status != 'draft') {
+                                              Properties.getTotalListing();
                                               mail.submitProperty(userEmail, userFullname, full_address, from);
                                               resolve({res, message: 'property created'});
                                             }
