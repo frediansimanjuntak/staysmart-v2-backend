@@ -56,10 +56,10 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
             }]
           })
           .exec((err, appointments) => {
-              if(err) {
+              if (err) {
                 reject({message: err.message});
               }
-              else{
+              else {
                 resolve(appointments);
               }
           });
@@ -68,7 +68,6 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
 
 appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-
         var ObjectID = mongoose.Types.ObjectId;  
         let _query = {};
         Appointments.getAppointment(_query).then(res => {
@@ -82,7 +81,6 @@ appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
 
 appointmentsSchema.static('getByProperty', (idproperty:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-
         var ObjectID = mongoose.Types.ObjectId;  
         let _query = {"property": idproperty};
         Appointments.getAppointment(_query).then(res => {
@@ -96,7 +94,6 @@ appointmentsSchema.static('getByProperty', (idproperty:string):Promise<any> => {
 
 appointmentsSchema.static('getByUser', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-
         var ObjectID = mongoose.Types.ObjectId;  
         let _query = {$or: [{"landlord": ObjectID(userId)}, {"tenant": ObjectID(userId)}]};
         Appointments.getAppointment(_query).then(res => {
@@ -112,16 +109,15 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
           return reject(new TypeError('Id is not a valid string.'));
-        }
- 
+        } 
         let IDUser = userId.toString();
         let _query = {"_id": id};
         Appointments.getAppointment(_query).then(res => {
-          _.each(res, function(result){
-            if(result.landlord._id == IDUser || result.tenant._id == IDUser){
+          _.each(res, function(result) {
+            if (result.landlord._id == IDUser || result.tenant._id == IDUser) {
               resolve(result);
             }
-            else{
+            else {
               reject({message:"forbidden"});
             } 
           }) 
@@ -134,48 +130,46 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
 
 appointmentsSchema.static('createAppointments', (appointments:Object, tenant:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-
       let tenantId = tenant.toString();
-      let body:any = appointments;
-      
+      let body:any = appointments;      
       Properties
         .findById(body.property)
         .populate("owner.user development")
         .exec((err, property) => {
-          if(err){
+          if (err) {
             reject({message: err.message});
           }
-          if(property){
+          else if (property) {
             let landlordId = property.owner.user._id;
             let propertyId = property._id;
             let data = {
               "property": body.property
             };
-            if(landlordId == tenantId){
+            if (landlordId == tenantId) {
               resolve({message: "You can not create appointment with your owned property"});
             }
-            if(landlordId != tenantId){
+            else if (landlordId != tenantId) {
               Agreements.createAgreements(data, tenant).then(res => {
                 let agreementId = res._id;
                 let roomId;
-                if(res.room_id){
+                if (res.room_id) {
                   roomId = res.room_id;
                 }                
-                for(var i = 0; i < body.time.length; i++){
+                for(var i = 0; i < body.time.length; i++) {
                   let timeFrom = body.time[i];
                   let timeTo = body.time2[i];
                   Appointments
                     .find({"chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo})
                     .exec((err, res) => {
-                      if(err){
+                      if (err) {
                         reject(err);
                       }
-                      else if(res){
-                        if(res.length == 0){
+                      else if (res) {
+                        if (res.length == 0) {
                           var _appointments = new Appointments(appointments);
                           _appointments.agreement = agreementId;
                           _appointments.landlord = landlordId;
-                          if(roomId){
+                          if (roomId) {
                             _appointments.room_id = roomId;
                           }
                           _appointments.tenant = tenantId;
@@ -183,13 +177,13 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                           _appointments.chosen_time.from = timeFrom;
                           _appointments.chosen_time.to = timeTo;
                           _appointments.save((err, saved)=>{
-                            if(err) {
+                            if (err) {
                               reject({message: err.message});
                             }
-                            else if(saved){
+                            else if (saved) {
                               let appointmentId = saved._id;
                               let roomChatId;
-                              if(saved.room_id){
+                              if (saved.room_id) {
                                 roomChatId = saved.room_id;
                               }
                               Appointments
@@ -203,10 +197,10 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                   },
                                 })
                                 .exec((err, appointment) => {
-                                  if(err){
+                                  if (err) {
                                     reject({message: err.message})
                                   }
-                                  else if(appointment){
+                                  else if (appointment) {
                                     var devID = appointment.property.development;
                                     var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
                                     
@@ -230,7 +224,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                             }
                           })
                         }
-                        else if(res.length > 0){
+                        else if (res.length > 0) {
                           resolve({message: "Already Appointment"})
                         }
                       }
@@ -266,7 +260,6 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-
         Appointments
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
@@ -292,10 +285,10 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
             },
           })
           .exec((err, appointment)=> {
-            if(err){
+            if (err) {
               reject(err);
             }
-            if(appointment){
+            else if (appointment) {
               let devID = appointment.property.development;  
               let unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
               let user = appointment.tenant._id;
@@ -312,10 +305,10 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
               };
               appointment.status = status;
               Notifications.createNotifications(notification); 
-              if(status == 'accepted') {
+              if (status == 'accepted') {
                 mail.confirmAppointment(emailTo, fullname, full_address, landlord_username, from);
               }
-              if(status == 'rejected') {
+              if (status == 'rejected') {
                 mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from);
               }              
               appointment.save((err, saved)=>{
@@ -323,7 +316,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                     : resolve(saved);
               })
             }
-            else{
+            else {
               reject({message: "No Data in Appointment"});
             }
           });        
