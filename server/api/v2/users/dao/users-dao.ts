@@ -14,6 +14,7 @@ import {signToken} from '../../../../auth/auth-service';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {GlobalService} from '../../../../global/global.service';
+import {socketIo} from '../../../../server';
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -384,6 +385,7 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 				reject(err);
 			}
 			else if(saved){
+				Users.getTotalUserSignupToday();
 				resolve({userId: saved._id});
 			}
 		});
@@ -417,9 +419,32 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 					var from = 'Staysmart';
 					SMS.sendActivationCode(body.phone, randomCode);
 					mail.signUp(_user.email, fullname, from);
+					Users.getTotalUserSignupToday();
 					resolve({userId: saved._id, token});
 				}
 			});
+	});
+});
+
+usersSchema.static('getTotalUserSignupToday', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let today = new Date();
+		let date = today.getDate();
+		let nextDate = date + 1;
+		let month = today.getMonth();
+		let year = today.getFullYear();
+		Users
+			.find({"created_at": {"$gte": new Date(year, month, date), "$lt": new Date(year, month, nextDate)}})
+			.exec((err, users) => {
+				if (err) {
+					reject(err);
+				}
+				else if (users) {
+					let data = { total: users.length }
+					socketIo.counterUser(data);
+					resolve(users);
+				}
+			})
 	});
 });
 

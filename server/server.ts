@@ -56,7 +56,14 @@ export class socketIo{
     let userId = body.user;
     io.on('connect', onConnect);
     function onConnect(socket){
-      socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id});
+      socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id });
+    }
+  }
+  static counterUser(data){
+    let body:any = data;    
+    io.on('connect', onConnect);
+    function onConnect(socket){
+      socket.emit('counter_user', { message: 'You got new user', total_user_today: body.total });
     }
   }
 }
