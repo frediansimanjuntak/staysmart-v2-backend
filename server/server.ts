@@ -66,6 +66,13 @@ export class socketIo{
       socket.emit('counter_user', { message: 'You got new user', total_user_today: body.total });
     }
   }
+  static counterListing(data){
+    let body:any = data;    
+    io.on('connect', onConnect);
+    function onConnect(socket){
+      socket.emit('counter_listing', { message: 'You got new user', total_listing_today: body.total });
+    }
+  }
 }
 // io.on('connect', onConnect);
 // let tes = '123456'

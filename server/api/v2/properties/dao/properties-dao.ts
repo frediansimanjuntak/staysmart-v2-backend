@@ -11,6 +11,7 @@ import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
+import {socketIo} from '../../../../server';
 var split = require('split-string');
 
 propertiesSchema.static('getAll', ():Promise<any> => {
@@ -305,6 +306,23 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     });
 });
 
+propertiesSchema.static('getTotalListing', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Properties
+			.find({"status": "pending", "confirmation.status": "pending"})
+			.exec((err, properties) => {
+				if (err) {
+					reject(err);
+				}
+				else if (properties) {
+					let data = { total: properties.length }
+					socketIo.counterUser(data);
+					resolve(properties);
+				}
+			})
+	});
+});
+
 propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Object, userEmail:string, userFullname:string, userRole:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(propertiesObject)) {
@@ -364,6 +382,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                                           var full_address = body.address.full_address;
                                           var from = 'Staysmart';
                                           if(body.status && body.status != 'draft') {
+                                            Properties.getTotalListing()
                                             mail.submitProperty(userEmail, userFullname, full_address, from);
                                             resolve({message: 'property created'});    
                                           }
@@ -516,6 +535,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                             var full_address = body.address.full_address;
                                             var from = 'Staysmart';
                                             if(body.status && body.status != 'draft') {
+                                              Properties.getTotalListing();
                                               mail.submitProperty(userEmail, userFullname, full_address, from);
                                               resolve({res, message: 'property created'});
                                             }
