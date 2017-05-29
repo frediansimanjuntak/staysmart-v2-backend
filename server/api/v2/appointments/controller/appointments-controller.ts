@@ -48,7 +48,7 @@ export class AppointmentsController {
 		let _id = req.params.id;
 		AppointmentsDAO
 		['deleteAppointments'](_id)
-		.then(() => res.status(200).end())
+		.then((appointment) => res.status(200).end(appointment))
 		.catch(error => res.status(400).json(error));
 	}
 
