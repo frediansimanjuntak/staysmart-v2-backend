@@ -82,7 +82,20 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
-
+        if(search.latlng != 'all' && search.location != 'all') 
+        {
+          let radius;
+          if(search.radius != 'all') {
+            radius = (search.radius) * 0.000621371192;
+          }
+          else{
+            radius = 1.5 * 0.621371192;
+          }
+          let radiusQuery = radius / 3963.2;
+          var latlng = search.latlng.split(",");
+          property.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
+          property.where('address.street_name', search.location);
+        }
         if(search.pricemin != 'all') 
         {
           property.where('details.price').gte(search.pricemin);
@@ -159,7 +172,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             reject({message: err.message});
           }
           else {
-            if(search.latlng != 'all') 
+            if(search.latlng != 'all' && search.location == 'all') 
             {
               let radius;
               if(search.radius != 'all') {
@@ -171,12 +184,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
               let radiusQuery = radius / 3963.2;
               var latlng = search.latlng.split(",");
               let developments = Developments.find({});
-              // developments.where({address: { $nearSphere: [Number(latlng[1]), Number(latlng[0])], $maxDistance: radiusQuery } });
               developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
-              if(search.location != 'all') 
-              {
-                developments.where('address.street_name', search.location);
-              }
               developments.exec((err, development) => {
                 if (err) {
                   reject({message: err.message});
