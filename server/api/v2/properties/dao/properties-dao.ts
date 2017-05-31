@@ -212,8 +212,32 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
     });
 });
 
-propertiesSchema.static('getById', (id:string):Promise<any> => {
+propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+      if (user != "") {
+        Properties
+          .update({ "_id": id}, {
+            $addToSet: {
+              "seen.by":  user
+            }
+          })
+          .exec((err, update) => {
+            if (err) {
+              reject(err);
+            }
+            else {
+              resolve(update);
+            }
+          });
+      }
+    });
+});
+
+propertiesSchema.static('getById', (id:string, user:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      console.log(user);
+        Properties.updatePropertySeen(id, user);
+
         Properties
           .findById(id)
           .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by rented.data.by agreements.data")
