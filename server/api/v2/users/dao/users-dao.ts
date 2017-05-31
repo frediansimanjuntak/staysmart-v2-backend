@@ -8,6 +8,7 @@ import Banks from '../../banks/dao/banks-dao'
 import Companies from '../../companies/dao/companies-dao'
 import ChatRooms from '../../chats/dao/chats-dao'
 import Properties from '../../properties/dao/properties-dao'
+import Managers from '../../managers/dao/managers-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
@@ -15,6 +16,7 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {GlobalService} from '../../../../global/global.service';
 import {socketIo} from '../../../../server';
+var split = require('split-string');
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -262,13 +264,111 @@ usersSchema.static('getAll', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('me', (userId:string):Promise<any> => {
+usersSchema.static('me', (userId:string, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {"_id": userId};
-
+		let header: any = headers;
 		Users.getUser(_query).then(res => {
 			_.each(res, (result) => {
-				resolve(result);
+				if (header.from && header.from == 'Mobile') {
+					let auth = header.authorization;
+					let auth_code = auth.slice(7);
+					let front_landlord;
+					let back_landlord;
+					let front_tenant;
+					let back_tenant;
+					if (result.landlord.data.identification_proof.front){
+						front_landlord = result.landlord.data.identification_proof.front.url	
+					}
+					else {
+						front_landlord = null;
+					}
+					if (result.landlord.data.identification_proof.back != null) {
+						let back_landlord = result.landlord.data.identification_proof.back.url;
+					}
+					else {
+						let back_landlord = null;
+					}
+					if (result.tenant.data.identification_proof.front){
+						front_tenant = result.tenant.data.identification_proof.front.url	
+					}
+					else {
+						front_tenant = null;
+					}
+					if (result.tenant.data.identification_proof.back != null) {
+						let back_tenant = result.tenant.data.identification_proof.back.url;
+					}
+					else {
+						let back_tenant = null;
+					}
+					let type;
+					if (result.companies.length > 0) {
+						type = 'company';
+					}
+					else {
+						type = 'individu';
+					}
+					let status = result.verification.verified;
+					if (status == true) {
+						status = 'verified';
+					}
+					else {
+						status = 'unverified';
+					}
+					let landlord_data = {
+						full_name: result.landlord.data.name,
+						type: result.landlord.data.identification_type,
+						id_number: result.landlord.data.identification_number,
+						user: result._id,
+						identity_front: front_landlord,
+						identity_back: back_landlord,
+						owner: result.landlord.data.owners,
+						type_landlord: type
+					};
+					let tenant_data = {
+						user: result._id,
+						phone: result.phone,
+						confirmation_status: status,
+						data: {
+							identity_back: back_tenant,
+							identity_front: front_tenant,
+							name: result.tenant.data.name,
+							id_no: result.tenant.data.identification_number,
+							type: result.tenant.data.identification_type
+						}
+					};
+					Managers
+						.find({"manager": result._id, "status": "pending"}, '-_id property')
+						.exec((err, res) => {
+							if (err) {
+								reject({message: err.message});
+							}
+							else {
+								resolve({
+									authorization: auth_code,
+									_id: result._id,
+									profil: {
+										forgot: {
+											code: result.reset_password.token,
+											expire: result.reset_password.expired_at
+										}
+									},
+									username: result.username,
+									email: result.email,
+									roles: result.role,
+									landlord: landlord_data,
+									tenant: tenant_data,
+									picture: result.picture.url,
+									owned_property: result.owned_properties,
+									managed_property: result.managed_properties,
+									appointed_property: res
+								});
+							}
+						})
+				}
+				else {
+					resolve(result);	
+				}
 			})	
 		})
 		.catch((err) => {
@@ -407,7 +507,12 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 			_user.username = body.username;
 			_user.email = body.email;
 			_user.password = body.password;
-			_user.phone = body.phone;
+			if (body.code) {
+				_user.phone = body.code+''+body.phone;
+			}
+			else {
+				_user.phone = body.phone;	
+			}
 			_user.role = 'user';
 			_user.save((err, saved)=>{
 				if(err){
@@ -420,7 +525,7 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 					SMS.sendActivationCode(body.phone, randomCode);
 					mail.signUp(_user.email, fullname, from);
 					Users.getTotalUserSignupToday();
-					resolve({userId: saved._id, token});
+					resolve({userId: saved._id, token, user_data: saved});
 				}
 			});
 	});

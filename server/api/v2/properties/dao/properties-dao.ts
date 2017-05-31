@@ -290,6 +290,32 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
     });
 });
 
+propertiesSchema.static('getUserProperties', (userId:Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      let property = Properties.find({"owner.user": userId});
+      property.populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+        property.populate({
+          path: 'owner.user',
+          populate: {
+            path: 'picture',
+            model: 'Attachments'
+          },
+          select: 'username email phone picture landlord.data.name tenant.data.name'
+        })
+        property.populate({
+          path: 'amenities',
+          populate: {
+            path: 'icon',
+            model: 'Attachments'
+          }
+        })
+      property.exec((err, properties) => {
+        err ? reject({message: err.message})
+            : resolve(properties);
+      });
+  });
+});
+
 propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties

@@ -19,9 +19,9 @@ export class UsersController {
 
 	static me(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-
+		let _headers = req.headers;
 		UsersDAO
-		['me'](_userId)
+		['me'](_userId, _headers)
 		.then(users => res.status(200).json(users))
 		.catch(error => res.status(400).json(error));
 	}
