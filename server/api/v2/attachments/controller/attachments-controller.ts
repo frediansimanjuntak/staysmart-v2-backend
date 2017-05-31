@@ -30,7 +30,7 @@ export class AttachmentsController {
 		let _id = req.params.id;
 		AttachmentsDAO
 		['deleteAttachments'](_id)
-		.then(() => res.status(200).end())
+		.then(attachments => res.status(200).json(attachments))
 		.catch(error => res.status(400).json(error));
 	}
 

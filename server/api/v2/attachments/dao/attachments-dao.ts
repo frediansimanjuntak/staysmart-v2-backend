@@ -127,8 +127,12 @@ attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
         Attachments
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve({message: "delete success"});
+              if (err == null && deleted == null) {
+              	reject({error: true, message: 'No attachment with that id.'});
+              }
+              else if(err == null && deleted != null) {
+              	resolve({error: false, message: 'delete success.'});
+              }
           });
 
     });
