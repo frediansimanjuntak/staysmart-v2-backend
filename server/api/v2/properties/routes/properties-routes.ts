@@ -20,6 +20,10 @@ export class PropertiesRoutes {
 			.get(PropertiesController.searchProperties);
 
 		router
+			.route('/me/properties')
+			.get(auth.isAuthenticated(),PropertiesController.getUserProperties);
+
+		router
 			.route('/properties/draft')
 			.get(auth.isAuthenticated(),PropertiesController.getDraft);
 		

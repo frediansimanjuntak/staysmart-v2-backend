@@ -23,7 +23,9 @@ router.post('/', function(req, res, next) {
     }
     if(user._id && user.role && user.username) {
       var token = signToken(user._id, user.role, user.username);
-      res.json({ token });
+      res.json({ 
+        token, user
+      });
     }
     else{
       res.json({message: 'please login first.'});

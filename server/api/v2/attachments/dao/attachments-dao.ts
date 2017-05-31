@@ -30,11 +30,12 @@ attachmentsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> => {
+attachmentsSchema.static('createAttachments', (attachments:Object, request:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(attachments)) {
         return reject(new TypeError('Attachment is not a valid object.'));
       }
+      let data: any = request;
       var files = [].concat(attachments);
       var idAtt = [];
       var urlAtt =[];
@@ -57,6 +58,9 @@ attachmentsSchema.static('createAttachments', (attachments:Object):Promise<any> 
                 console.log(fileDetails);
                 var fileName = fileDetails.name.replace(/ /g,"%20");
                 var _attachment = new Attachments(attachments);
+                if (data.body) {
+      				_attachment.metadata = data.body;
+      			}
                 _attachment.name = fileDetails.name;
                 _attachment.type = fileDetails.type;
                 _attachment.key = 'attachment/'+fileName;
@@ -127,8 +131,12 @@ attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
         Attachments
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject(err)
-                  : resolve({message: "delete success"});
+              if (err == null && deleted == null) {
+              	reject({error: true, message: 'No attachment with that id.'});
+              }
+              else if(err == null && deleted != null) {
+              	resolve({error: false, message: 'delete success.'});
+              }
           });
 
     });

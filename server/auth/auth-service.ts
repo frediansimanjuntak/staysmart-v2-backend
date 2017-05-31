@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 var expressJwt = require('express-jwt')
 import * as compose from 'composable-middleware';
 import User from '../api/v2/users/dao/users-dao';
+import Attachment from '../api/v2/attachments/dao/attachments-dao';
 
 var validateJwt = expressJwt({
   secret: config.secrets.session
@@ -51,8 +52,18 @@ export function isAuthenticated() {
           if(!user) {
             return res.status(401).end();
           }
-          req.user = user;
-          next();
+          if(user.picture) {
+            Attachment.findById(user.picture).exec()
+            .then(picture => {
+              user.picture = picture.url;
+              req.user = user;
+              next();
+            })
+          }
+          else {
+            req.user = user;
+            next();
+          }
         })
         .catch(err => next({message: "error", err}));
     });

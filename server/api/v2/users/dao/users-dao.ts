@@ -8,6 +8,7 @@ import Banks from '../../banks/dao/banks-dao'
 import Companies from '../../companies/dao/companies-dao'
 import ChatRooms from '../../chats/dao/chats-dao'
 import Properties from '../../properties/dao/properties-dao'
+import Managers from '../../managers/dao/managers-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
@@ -15,7 +16,8 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {GlobalService} from '../../../../global/global.service';
 import {socketIo} from '../../../../server';
-
+var split = require('split-string');
+import {userHelper} from '../../../../helper/user.helper';
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
@@ -148,7 +150,7 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 					}
 				}]	
 			})
-	        .populate({
+			.populate({
 				path: 'shortlisted_properties',
 				populate: [{
 					path: 'development',
@@ -262,13 +264,14 @@ usersSchema.static('getAll', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('me', (userId:string):Promise<any> => {
+usersSchema.static('me', (userId:string, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {"_id": userId};
-
 		Users.getUser(_query).then(res => {
 			_.each(res, (result) => {
-				resolve(result);
+				userHelper.meHelper(result, headers).then(res_data => {
+					resolve(res_data);
+				});
 			})	
 		})
 		.catch((err) => {
@@ -407,7 +410,12 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 			_user.username = body.username;
 			_user.email = body.email;
 			_user.password = body.password;
-			_user.phone = body.phone;
+			if (body.code) {
+				_user.phone = body.code+''+body.phone;
+			}
+			else {
+				_user.phone = body.phone;	
+			}
 			_user.role = 'user';
 			_user.save((err, saved)=>{
 				if(err){
@@ -420,7 +428,7 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 					SMS.sendActivationCode(body.phone, randomCode);
 					mail.signUp(_user.email, fullname, from);
 					Users.getTotalUserSignupToday();
-					resolve({userId: saved._id, token});
+					resolve({userId: saved._id, token, user_data: saved});
 				}
 			});
 	});
