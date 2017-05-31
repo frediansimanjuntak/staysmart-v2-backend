@@ -110,4 +110,35 @@ export class userHelper{
 			}
 		});
 	}
+
+	static signUpHelper(userId, token, userData, headers) {
+		return new Promise((resolve:Function, reject:Function) => {
+			let data: any = userData;
+			let header: any = headers;
+			if (header.from && header.from == 'Mobile') {
+				let auth = header.authorization;
+				let auth_code = auth.slice(7);
+				let tenant_data = {
+					user: data._id,
+					phone: data.phone,
+					verification: {
+						code: data.verification.code,
+						expire: data.verification.expires
+					}
+				};
+				resolve({
+					authorization: auth_code,
+					_id: data._id,
+					username: data.username,
+					email: data.email,
+					roles: data.role,
+					tenant: tenant_data,
+					picture: data.picture.url
+				});
+			}
+			else {
+				resolve({userId: userId, token});
+			}
+		});
+	}
 }

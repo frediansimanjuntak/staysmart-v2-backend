@@ -72,9 +72,9 @@ export class UsersController {
 
 	static signUp(req: express.Request, res: express.Response):void {
 		let _user = req.body;
-
+		let _headers = req.headers;
 		UsersDAO
-		['signUp'](_user)
+		['signUp'](_user, _headers)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}

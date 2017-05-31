@@ -395,7 +395,7 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('signUp', (user:Object):Promise<any> => {
+usersSchema.static('signUp', (user:Object, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
@@ -428,7 +428,9 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 					SMS.sendActivationCode(body.phone, randomCode);
 					mail.signUp(_user.email, fullname, from);
 					Users.getTotalUserSignupToday();
-					resolve({userId: saved._id, token, user_data: saved});
+					userHelper.signUpHelper(saved._id, token, saved, headers).then(result => {
+						resolve(result);
+					});
 				}
 			});
 	});
