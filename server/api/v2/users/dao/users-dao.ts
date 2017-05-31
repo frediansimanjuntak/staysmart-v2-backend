@@ -702,7 +702,7 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
+usersSchema.static('activationUser', (id:string, user:Object, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -724,8 +724,14 @@ usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 								}
 							})
 							.exec((err, update) => {
-								err ? reject(err)
-										: resolve({message: 'user verified.'});
+								if (err) {
+									reject(err);
+								}
+								else {
+									userHelper.activationHelper(id, headers).then(result => {
+										resolve(result);
+									});
+								} 
 							});
 					}
 					else{
