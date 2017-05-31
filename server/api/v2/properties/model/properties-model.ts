@@ -202,11 +202,31 @@ var PropertiesSchema = new mongoose.Schema({
 		date: {type: Date},
 		data: {}
 	}],
+	seen: {
+		by: [{
+			type: Schema.Types.ObjectId,
+			ref: 'Users'
+		}]
+	},
 	created_by: {
 		type: Schema.Types.ObjectId,
 		ref: 'Users'
 	},
 	created_at: {type: Date, default: Date.now}
+}, 
+{
+	toObject: {
+		virtuals: true
+	},
+	toJSON: {
+		virtuals: true
+	}
 });
+
+PropertiesSchema
+	.virtual("seen.counts")
+	.get(function() {
+		return this.seen.by.length;
+	});
 
 export default PropertiesSchema;

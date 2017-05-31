@@ -3,8 +3,10 @@ import PropertiesDAO from '../dao/properties-dao';
 
 export class PropertiesController {
 	static getAll(req: express.Request, res: express.Response):void {
+		let _headers = req.headers;
+		let _userId = req["user"]._id;
 		PropertiesDAO
-		['getAll']()
+		['getAll'](_headers, _userId)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -19,8 +21,24 @@ export class PropertiesController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _user = "";
 		PropertiesDAO
-		['getById'](_id)
+		['getById'](_id, _user)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByIdMobile(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _user;
+		if (req["user"]) {
+			_user = req["user"]._id;
+		}
+		else {
+			_user = "";
+		}
+		PropertiesDAO
+		['getById'](_id, _user)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

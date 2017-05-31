@@ -36,6 +36,11 @@ export class PropertiesRoutes {
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
 
+		//view property for mobile, need login to get req["user"]._id and used it to update seen
+		router
+			.route('/properties/:id/view')
+			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile)
+
 		router
 			.route('/properties/update/:id')
 			.put(auth.isAuthenticated(),PropertiesController.updateProperties);
