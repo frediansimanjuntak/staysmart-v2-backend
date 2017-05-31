@@ -12,9 +12,10 @@ import Notifications from '../../notifications/dao/notifications-dao';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {socketIo} from '../../../../server';
+import {propertyHelper} from '../../../../helper/property.helper';
 var split = require('split-string');
 
-propertiesSchema.static('getAll', ():Promise<any> => {
+propertiesSchema.static('getAll', (headers: Object, userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({})
@@ -65,9 +66,14 @@ propertiesSchema.static('getAll', ():Promise<any> => {
             }
           })
           .exec((err, properties) => {            
-            err ? reject({message: err.message})
-                : resolve(properties);
-                console.log(properties);
+            if (err) {
+              reject({message: err.message})
+            }
+            else {
+              propertyHelper.getAll(properties, userId, headers).then(result => {
+                resolve(result);  
+              });
+            }
           });
     });
 });

@@ -3,8 +3,10 @@ import PropertiesDAO from '../dao/properties-dao';
 
 export class PropertiesController {
 	static getAll(req: express.Request, res: express.Response):void {
+		let _headers = req.headers;
+		let _userId = req["user"]._id;
 		PropertiesDAO
-		['getAll']()
+		['getAll'](_headers, _userId)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
