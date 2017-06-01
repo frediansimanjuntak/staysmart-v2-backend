@@ -41,6 +41,10 @@ export class UserRoutes {
 			.get(auth.isAuthenticated(), UsersController.me);
 
 		router
+			.route('/me/:type')
+			.get(auth.isAuthenticated(), UsersController.meData);
+
+		router
 			.route('/users/activate/:id')
 			.post(auth.isAuthenticated(), UsersController.activationUser);
 
