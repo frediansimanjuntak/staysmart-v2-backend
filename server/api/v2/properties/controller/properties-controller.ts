@@ -21,9 +21,10 @@ export class PropertiesController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _headers = req.headers;
 		let _user = "";
 		PropertiesDAO
-		['getById'](_id, _user)
+		['getById'](_id, _user, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -53,8 +54,9 @@ export class PropertiesController {
 
 	static getUserProperties(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
+		let _headers = req.headers;
 		PropertiesDAO
-		['getUserProperties'](_userId)
+		['getUserProperties'](_userId, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

@@ -71,6 +71,7 @@ export class propertyHelper{
 										block_no: properties[p].address.block_number,
 										street_name: properties[p].address.street_name,
 										postal_code: properties[p].address.postal_code,
+										full_address: properties[p].address.full_address,
 										country: properties[p].address.country,
 										type: properties[p].address.type,
 										coordinates: properties[p].address.coordinates
@@ -96,6 +97,83 @@ export class propertyHelper{
 							resolve(properties_data);
 						}
 					})
+			}
+			else {
+				resolve(properties);
+			}
+		});
+	}
+
+	static getById(properties, headers) {
+		return new Promise((resolve:Function, reject:Function) => {
+			let header: any = headers;
+			if (header.from && header.from == 'Mobile') {
+				for(var l = 0; l < properties.pictures.living.length; l++) {
+					properties.pictures.living[l] = properties.pictures.living[l].url;
+				}
+
+				for(var d = 0; d < properties.pictures.dining.length; d++) {
+					properties.pictures.dining[d] = properties.pictures.dining[d].url;
+				}
+
+				for(var b = 0; b < properties.pictures.bed.length; b++) {
+					properties.pictures.bed[b] = properties.pictures.bed[b].url;
+				}
+
+				for(var t = 0; t < properties.pictures.toilet.length; t++) {
+					properties.pictures.toilet[t] = properties.pictures.toilet[t].url;
+				}
+
+				for(var k = 0; k < properties.pictures.kitchen.length; k++) {
+					properties.pictures.kitchen[k] = properties.pictures.kitchen[k].url;
+				}
+				let amenities = [];
+				for(var a = 0; a < properties.amenities.length; a++) {
+					amenities.push({
+						name: properties.amenities[a].name,
+						url: properties.amenitites[a].icon.url
+					});
+				}
+				resolve({
+					_id: properties._id,
+					development: properties.development.name,
+					landlord: {
+						_id: '',
+						full_name: properties.owner.user.landlord.data.name
+					},
+					user: {
+						_id: properties.owner.user._id,
+						username: properties.owner.user.username,
+						pictures: properties.owner.user.picture.url
+					},
+					address: {
+						unit_no: properties.address.floor,
+						unit_no_2: properties.address.unit,
+						block_no: properties.address.block_number,
+						street_name: properties.address.street_name,
+						postal_code: properties.address.postal_code,
+						coordinates: properties.address.coordinates,
+						country: properties.address.country,
+						full_address: properties.address.full_address,
+						type: properties.address.type
+					},
+					details: {
+						size: properties.details.size_sqf,
+						size_sqm: properties.details.size_sqm,
+						bedroom: properties.details.bedroom,
+						bathroom: properties.details.bathroom,
+						price: properties.details.price,
+						psqft: properties.details.psqft,
+						available: properties.details.available,
+						furnishing: properties.details.furnishing,
+						description: properties.details.description,
+						type: properties.details.type
+					},
+					seen: properties.seen,
+					amenities: amenities,
+					pictures: properties.pictures,
+					room: ''
+				});
 			}
 			else {
 				resolve(properties);

@@ -239,9 +239,8 @@ propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<a
     });
 });
 
-propertiesSchema.static('getById', (id:string, user:string):Promise<any> => {
+propertiesSchema.static('getById', (id:string, user:string, headers: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      console.log(user);
         Properties.updatePropertySeen(id, user);
 
         Properties
@@ -294,8 +293,14 @@ propertiesSchema.static('getById', (id:string, user:string):Promise<any> => {
             }
           })
           .exec((err, properties) => {
-            err ? reject({message: err.message})
-                : resolve(properties);
+            if (err) {
+              reject({message: err.message})
+            }
+            else {
+              propertyHelper.getById(properties, headers).then(result => {
+                resolve(result);  
+              });
+            }
           });
     });
 });
@@ -320,7 +325,7 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('getUserProperties', (userId:Object):Promise<any> => {
+propertiesSchema.static('getUserProperties', (userId: Object, headers: Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       let property = Properties.find({"owner.user": userId});
       property.populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
@@ -340,8 +345,14 @@ propertiesSchema.static('getUserProperties', (userId:Object):Promise<any> => {
           }
         })
       property.exec((err, properties) => {
-        err ? reject({message: err.message})
-            : resolve(properties);
+        if (err) {
+          reject({message: err.message});
+        }
+        else {
+          propertyHelper.getAll(properties, userId, headers).then(result => {
+            resolve(result);  
+          });
+        }
       });
   });
 });
