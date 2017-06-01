@@ -1193,6 +1193,35 @@ propertiesSchema.static('step1', (property: Object, userId: Object):Promise<any>
   });
 });
 
+propertiesSchema.static('step2', (property: Object, userId: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              Properties
+                .findByIdAndUpdate(result[0]._id, {
+                  $set: {
+                    'pictures': property
+                  }
+                })
+                .exec((err, udpate) => {
+                  err ? reject({message: err.message})
+                      : resolve({message: 'Success'});
+                });
+            }
+          }
+        })
+  });
+});
+
 let Properties = mongoose.model('Properties', propertiesSchema);
 
 export default Properties;

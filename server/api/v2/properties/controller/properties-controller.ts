@@ -98,6 +98,15 @@ export class PropertiesController {
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static step2(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		PropertiesDAO
+		['step2'](_properties, _userId)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
 	
 	static updateProperties(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
