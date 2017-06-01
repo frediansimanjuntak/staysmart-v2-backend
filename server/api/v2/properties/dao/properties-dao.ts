@@ -1264,6 +1264,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                           Properties
                             .findByIdAndUpdate(result[0]._id, {
                               $set: {
+                                'owned_type': 'individual',
                                 'temp.owner.name': data.full_name,
                                 'temp.owner.identification_type': data.type,
                                 'temp.owner.identification_number': data.id_number,
@@ -1299,6 +1300,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                             Properties
                               .findByIdAndUpdate(result[0]._id, {
                                 $set: {
+                                  'owned_type': 'individual',
                                   'temp.owner.name': data.full_name,
                                   'temp.owner.identification_type': data.type,
                                   'temp.owner.identification_number': data.id_number,
@@ -1318,6 +1320,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                         Properties
                           .findByIdAndUpdate(result[0]._id, {
                             $set: {
+                              'owned_type': 'individual',
                               'temp.owner.name': data.full_name,
                               'temp.owner.identification_type': data.type,
                               'temp.owner.identification_number': data.id_number,
@@ -1354,6 +1357,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                         Properties
                           .findByIdAndUpdate(result[0]._id, {
                             $set: {
+                              'owned_type': 'individual',
                               'temp.owner.name': data.full_name,
                               'temp.owner.identification_type': data.type,
                               'temp.owner.identification_number': data.id_number,
@@ -1388,6 +1392,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                           Properties
                             .findByIdAndUpdate(result[0]._id, {
                               $set: {
+                                'owned_type': 'individual',
                                 'temp.owner.name': data.full_name,
                                 'temp.owner.identification_type': data.type,
                                 'temp.owner.identification_number': data.id_number,
@@ -1406,6 +1411,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                       Properties
                         .findByIdAndUpdate(result[0]._id, {
                           $set: {
+                            'owned_type': 'individual',
                             'temp.owner.name': data.full_name,
                             'temp.owner.identification_type': data.type,
                             'temp.owner.identification_number': data.id_number,
@@ -1423,6 +1429,35 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
               else {
                 reject({message: 'Front is required'});
               }
+            }
+          }
+        })
+  });
+});
+
+propertiesSchema.static('step5', (userId: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              Properties
+                .findByIdAndUpdate(result[0]._id, {
+                  $set: {
+                    'status': 'pending'
+                  }
+                })
+                .exec((err, udpate) => {
+                  err ? reject({message: err.message})
+                      : resolve({message: 'Success'});
+                });
             }
           }
         })
