@@ -3,9 +3,10 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import developmentsSchema from '../model/developments-model';
 import Properties from "../../properties/dao/properties-dao";
+import {developmentHelper} from '../../../../helper/development.helper';
 var split = require('split-string');
 
-developmentsSchema.static('getAll', ():Promise<any> => {
+developmentsSchema.static('getAll', (headers: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -13,8 +14,14 @@ developmentsSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject({message: err.message})
-                  : resolve(developments);
+             if (err) {
+               reject({message: err.message});
+             }
+             else {
+               developmentHelper.getAll(developments, headers).then(result => {
+                 resolve(result);
+               })
+             }
           });
     });
 });
@@ -125,15 +132,21 @@ developmentsSchema.static('getPropertyWithOwnerDevelopment', (id:string, data:Ob
     });
 });
 
-developmentsSchema.static('getById', (id:string):Promise<any> => {
+developmentsSchema.static('getById', (id:string, userId:Object, headers: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Developments
           .findById(id)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject({message: err.message})
-                  : resolve(developments);
+            if (err) {
+               reject({message: err.message});
+            }
+            else {
+               developmentHelper.getById(developments, userId, headers).then(result => {
+                 resolve(result);
+               })
+            }
           });
     });
 });

@@ -545,6 +545,42 @@ usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string)
 	});
 });
 
+usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:string, confpass:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Users
+			.findById(id)
+			.exec((err, user) => {
+				if(err){
+					reject(err);
+				}
+				if(user){
+					user.authenticate(oldpass, (err, ok) => {
+				        if(err) {
+				          reject(err);
+				        }
+				        if(ok) {
+				        	if (newpass == confpass) {
+				        		user.password = newpass;
+					        	user.save((err, res) => {
+					        		err ? reject(err)
+										: resolve({message: 'Success please re-login'});
+					        	});
+				        	}
+				        	else {
+				        		reject({message: "Password confirmation failed."});
+				        	}
+				        } else {
+				        	reject({message: "old password didn't match"});				        	
+				        }
+				    });
+				}
+			})
+	});
+});
+
 usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {

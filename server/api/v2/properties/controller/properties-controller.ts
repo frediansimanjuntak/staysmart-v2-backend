@@ -21,9 +21,10 @@ export class PropertiesController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _headers = req.headers;
 		let _user = "";
 		PropertiesDAO
-		['getById'](_id, _user)
+		['getById'](_id, _user, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -53,8 +54,9 @@ export class PropertiesController {
 
 	static getUserProperties(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
+		let _headers = req.headers;
 		PropertiesDAO
-		['getUserProperties'](_userId)
+		['getUserProperties'](_userId, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -85,6 +87,42 @@ export class PropertiesController {
 		PropertiesDAO
 		['createPropertiesWithoutOwner'](_properties, _userId)
 		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step1(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		PropertiesDAO
+		['step1'](_properties, _userId)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step2(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		PropertiesDAO
+		['step2'](_properties, _userId)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step3(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		let _files = req["files"];
+		PropertiesDAO
+		['step3'](_properties, _userId, _files)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step5(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		PropertiesDAO
+		['step5'](_userId)
+		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 	

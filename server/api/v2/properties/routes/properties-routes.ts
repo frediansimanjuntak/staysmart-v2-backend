@@ -32,6 +32,22 @@ export class PropertiesRoutes {
 			.get(PropertiesController.getBySlug);
 
 		router
+			.route('/properties/new/step1')
+			.post(auth.isAuthenticated(),PropertiesController.step1);
+
+		router
+			.route('/properties/new/step2')
+			.post(auth.isAuthenticated(),PropertiesController.step2);
+
+		router
+			.route('/properties/new/step3')
+			.post(auth.isAuthenticated(),PropertiesController.step3);
+
+		router
+			.route('/properties/new/step5')
+			.post(auth.isAuthenticated(),PropertiesController.step5);
+
+		router
 			.route('/properties/:id')
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);

@@ -17,7 +17,7 @@ export class BlogsRoutes {
 
 		router
 			.route('/blogs/:id')
-			.get(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.getById)
+			.get(auth.isAuthenticated(), BlogsController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.deleteBlogs);
 
 		router

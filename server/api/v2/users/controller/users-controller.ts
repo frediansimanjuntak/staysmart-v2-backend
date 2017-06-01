@@ -100,6 +100,17 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static changeUserPassword(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _oldpass = req.body.old_password;
+		let _newpass = req.body.password;
+		let _confpass = req.body.password_confirmation;
+		UsersDAO
+		['changeUserPassword'](_userId, _oldpass, _newpass, _confpass)
+		.then(users => res.status(200).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 	
 	static deleteUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
