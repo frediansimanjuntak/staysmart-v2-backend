@@ -19,9 +19,11 @@ export class DevelopmentsController {
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
+		let _headers = req.headers;
 		let _id = req.params.id;
+		let _userId = req["user"]._id;
 		DevelopmentsDAO
-		['getById'](_id)
+		['getById'](_id, _userId, _headers)
 		.then(developments => res.status(200).json(developments))
 		.catch(error => res.status(400).json(error));
 	}

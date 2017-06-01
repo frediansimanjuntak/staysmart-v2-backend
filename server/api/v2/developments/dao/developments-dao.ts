@@ -132,15 +132,21 @@ developmentsSchema.static('getPropertyWithOwnerDevelopment', (id:string, data:Ob
     });
 });
 
-developmentsSchema.static('getById', (id:string):Promise<any> => {
+developmentsSchema.static('getById', (id:string, userId:Object, headers: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Developments
           .findById(id)
           .populate("properties")
           .exec((err, developments) => {
-              err ? reject({message: err.message})
-                  : resolve(developments);
+            if (err) {
+               reject({message: err.message});
+            }
+            else {
+               developmentHelper.getById(developments, userId, headers).then(result => {
+                 resolve(result);
+               })
+            }
           });
     });
 });
