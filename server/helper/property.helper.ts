@@ -31,80 +31,67 @@ export class propertyHelper{
 									else {
 										favourite = false;
 									}
-									properties_data.push({
-										_id: properties[p]._id,
-										development: properties[p].development.name,
-										user: {
-											_id: userId,
-											username: user.username,
-											pictures: user.picture.url
-										},
-										address: {
-											unit_no: properties[p].address.floor,
-											unit_no_2: properties[p].address.unit, 
-											block_no: properties[p].address.block_number,
-											street_name: properties[p].address.street_name,
-											postal_code: properties[p].address.postal_code,
-											country: properties[p].address.country,
-											type: properties[p].address.type,
-											coordinates: properties[p].address.coordinates
-										},
-										pictures: properties[p].pictures,
-										favourite: favourite,
-										amenities: properties[p].amenities,
-										details: {
-											size: properties[p].details.size_sqf, 
-											size_sqm: properties[p].details.size_sqm,
-											bedroom: properties[p].details.bedroom,
-											bathroom: properties[p].details.bathroom, 
-											price: properties[p].details.price,
-											psqft: properties[p].details.psqft,
-											available: properties[p].details.available,
-											furnishing: properties[p].details.furnishing,
-											description: properties[p].details.description,
-											type: properties[p].details.type
-										},
-										seen: properties[p].seen
-									});
 								}
 								else {
 									favourite = false;
-									properties_data.push({
-										_id: properties[p]._id,
-										development: properties[p].development.name,
-										user: {
-											_id: userId,
-											username: user.username,
-											pictures: user.picture.url
-										},
-										address: {
-											unit_no: properties[p].address.floor,
-											unit_no_2: properties[p].address.unit, 
-											block_no: properties[p].address.block_number,
-											street_name: properties[p].address.street_name,
-											postal_code: properties[p].address.postal_code,
-											country: properties[p].address.country,
-											type: properties[p].address.type,
-											coordinates: properties[p].address.coordinates
-										},
-										pictures: properties[p].pictures,
-										favourite: favourite,
-										amenities: properties[p].amenities,
-										details: {
-											size: properties[p].details.size_sqf, 
-											size_sqm: properties[p].details.size_sqm,
-											bedroom: properties[p].details.bedroom,
-											bathroom: properties[p].details.bathroom, 
-											price: properties[p].details.price,
-											psqft: properties[p].details.psqft,
-											available: properties[p].details.available,
-											furnishing: properties[p].details.furnishing,
-											description: properties[p].details.description,
-											type: properties[p].details.type
-										},
-										seen: properties[p].seen
-									});
+									
 								}
+
+								for(var l = 0; l < properties[p].pictures.living.length; l++) {
+									properties[p].pictures.living[l] = properties[p].pictures.living[l].url;
+								}
+
+								for(var d = 0; d < properties[p].pictures.dining.length; d++) {
+									properties[p].pictures.dining[d] = properties[p].pictures.dining[d].url;
+								}
+
+								for(var b = 0; b < properties[p].pictures.bed.length; b++) {
+									properties[p].pictures.bed[b] = properties[p].pictures.bed[b].url;
+								}
+
+								for(var t = 0; t < properties[p].pictures.toilet.length; t++) {
+									properties[p].pictures.toilet[t] = properties[p].pictures.toilet[t].url;
+								}
+
+								for(var k = 0; k < properties[p].pictures.kitchen.length; k++) {
+									properties[p].pictures.kitchen[k] = properties[p].pictures.kitchen[k].url;
+								}
+
+								properties_data.push({
+									_id: properties[p]._id,
+									development: properties[p].development.name,
+									user: {
+										_id: userId,
+										username: user.username,
+										pictures: user.picture.url
+									},
+									address: {
+										unit_no: properties[p].address.floor,
+										unit_no_2: properties[p].address.unit, 
+										block_no: properties[p].address.block_number,
+										street_name: properties[p].address.street_name,
+										postal_code: properties[p].address.postal_code,
+										country: properties[p].address.country,
+										type: properties[p].address.type,
+										coordinates: properties[p].address.coordinates
+									},
+									pictures: properties[p].pictures,
+									favourite: favourite,
+									amenities: properties[p].amenities,
+									details: {
+										size: properties[p].details.size_sqf, 
+										size_sqm: properties[p].details.size_sqm,
+										bedroom: properties[p].details.bedroom,
+										bathroom: properties[p].details.bathroom, 
+										price: properties[p].details.price,
+										psqft: properties[p].details.psqft,
+										available: properties[p].details.available,
+										furnishing: properties[p].details.furnishing,
+										description: properties[p].details.description,
+										type: properties[p].details.type
+									},
+									seen: properties[p].seen
+								});
 							}
 							resolve(properties_data);
 						}
