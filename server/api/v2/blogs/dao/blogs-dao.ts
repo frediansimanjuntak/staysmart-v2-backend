@@ -8,8 +8,9 @@ import BlogCategories from '../../blog_categories/dao/blog_categories-dao';
 import Users from '../../users/dao/users-dao';
 import Developments from '../../developments/dao/developments-dao';
 import {mail} from '../../../../email/mail';
+import {blogHelper} from '../../../../helper/blog.helper';
 
-blogsSchema.static('getAll', ():Promise<any> => {
+blogsSchema.static('getAll', (headers: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -40,13 +41,19 @@ blogsSchema.static('getAll', ():Promise<any> => {
             select: 'username picture'
           }])
           .exec((err, blogs) => {
-              err ? reject({message: err.message})
-                  : resolve(blogs);
+            if (err) {
+              reject({message: err.message});
+            }
+            else {
+              blogHelper.getAll(blogs, headers).then(result => {
+                resolve(result);
+              });
+            }
           });
     });
 });
 
-blogsSchema.static('getById', (id:string):Promise<any> => {
+blogsSchema.static('getById', (id:string, headers: Object, userEmail: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Blogs
@@ -76,8 +83,14 @@ blogsSchema.static('getById', (id:string):Promise<any> => {
             select: 'username picture'
           }])
           .exec((err, blogs) => {
-              err ? reject({message: err.message})
-                  : resolve(blogs);
+            if (err) {
+              reject({message: err.message});
+            }
+            else {
+              blogHelper.getById(blogs, userEmail, headers).then(result => {
+                resolve(result);
+              });
+            }
           });
     });
 });

@@ -20,8 +20,9 @@ export class AttachmentsController {
 	static createAttachments(req: express.Request, res: express.Response):void {
 		let _attachments = req["files"].attachment;
 		if (req["files"].file) _attachments = req["files"].file;
+		let _req = req;
 		AttachmentsDAO
-		['createAttachments'](_attachments)
+		['createAttachments'](_attachments, _req)
 		.then(attachments => res.status(201).json(attachments))
 		.catch(error => res.status(400).json(error));
 	}
@@ -30,7 +31,7 @@ export class AttachmentsController {
 		let _id = req.params.id;
 		AttachmentsDAO
 		['deleteAttachments'](_id)
-		.then(() => res.status(200).end())
+		.then(attachments => res.status(200).json(attachments))
 		.catch(error => res.status(400).json(error));
 	}
 

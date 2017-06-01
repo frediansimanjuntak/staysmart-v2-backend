@@ -3,8 +3,10 @@ import PropertiesDAO from '../dao/properties-dao';
 
 export class PropertiesController {
 	static getAll(req: express.Request, res: express.Response):void {
+		let _headers = req.headers;
+		let _userId = req["user"]._id;
 		PropertiesDAO
-		['getAll']()
+		['getAll'](_headers, _userId)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -19,8 +21,25 @@ export class PropertiesController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _headers = req.headers;
+		let _user = "";
 		PropertiesDAO
-		['getById'](_id)
+		['getById'](_id, _user, _headers)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getByIdMobile(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _user;
+		if (req["user"]) {
+			_user = req["user"]._id;
+		}
+		else {
+			_user = "";
+		}
+		PropertiesDAO
+		['getById'](_id, _user)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -33,9 +52,17 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getUserProperties(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _headers = req.headers;
+		PropertiesDAO
+		['getUserProperties'](_userId, _headers)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getDraft(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-		console.log(_userId);
 		PropertiesDAO
 		['getDraft'](_userId)
 		.then(properties => res.status(200).json(properties))
@@ -60,6 +87,42 @@ export class PropertiesController {
 		PropertiesDAO
 		['createPropertiesWithoutOwner'](_properties, _userId)
 		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step1(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		PropertiesDAO
+		['step1'](_properties, _userId)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step2(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		PropertiesDAO
+		['step2'](_properties, _userId)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step3(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		let _files = req["files"];
+		PropertiesDAO
+		['step3'](_properties, _userId, _files)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step5(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		PropertiesDAO
+		['step5'](_userId)
+		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 	

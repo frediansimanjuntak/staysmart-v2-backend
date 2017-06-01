@@ -3,24 +3,28 @@ import BlogsDAO from '../dao/blogs-dao';
 
 export class BlogsController {
 	static getAll(req: express.Request, res: express.Response):void {
+		let _headers = req.headers;
 		BlogsDAO
-		['getAll']()
+		['getAll'](_headers)
 		.then(blogs => res.status(200).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _headers = req.headers;
+		let _userEmail = req["user"].email;
 		BlogsDAO
-		['getById'](_id)
+		['getById'](_id, _headers, _userEmail)
 		.then(blogs => res.status(200).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getBySlug(req: express.Request, res: express.Response):void {
 		let _slug = req.params.slug;
+		let _headers = req.headers;
 		BlogsDAO
-		['getBySlug'](_slug)
+		['getBySlug'](_slug, _headers)
 		.then(blogs => res.status(200).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}

@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 var expressJwt = require('express-jwt')
 import * as compose from 'composable-middleware';
 import User from '../api/v2/users/dao/users-dao';
+import Attachment from '../api/v2/attachments/dao/attachments-dao';
 
 var validateJwt = expressJwt({
   secret: config.secrets.session
@@ -21,10 +22,16 @@ export function isAuthenticated() {
       // allow access_token to be passed through query parameter as well
       if(req.query && req.query.hasOwnProperty('access_token')) {
         req.headers.authorization = `Bearer ${req.query.access_token}`;
+        req.headers['x-auth-token'] = `Bearer ${req.query.access_token}`;
       }
      // IE11 forgets to set Authorization header sometimes. Pull from cookie instead.
       if(req.query && typeof req.headers.authorization === 'undefined') {
-        req.headers.authorization = `Bearer ${req.cookies.token}`;
+        if (req.headers['x-auth-token']) {
+          req.headers.authorization = `Bearer ${req.headers['x-auth-token']}`;
+        }
+        else {
+          req.headers.authorization = `Bearer ${req.cookies.token}`;  
+        }
       }
      
       validateJwt(req, res, function(err, validate){
@@ -51,8 +58,18 @@ export function isAuthenticated() {
           if(!user) {
             return res.status(401).end();
           }
-          req.user = user;
-          next();
+          if(user.picture) {
+            Attachment.findById(user.picture).exec()
+            .then(picture => {
+              user.picture = picture.url;
+              req.user = user;
+              next();
+            })
+          }
+          else {
+            req.user = user;
+            next();
+          }
         })
         .catch(err => next({message: "error", err}));
     });

@@ -19,9 +19,19 @@ export class UsersController {
 
 	static me(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-
+		let _headers = req.headers;
 		UsersDAO
-		['me'](_userId)
+		['me'](_userId, _headers)
+		.then(users => res.status(200).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static meData(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _headers = req.headers;
+		let _param = req.params.type;
+		UsersDAO
+		['meData'](_userId, _param, _headers)
 		.then(users => res.status(200).json(users))
 		.catch(error => res.status(400).json(error));
 	}
@@ -72,9 +82,9 @@ export class UsersController {
 
 	static signUp(req: express.Request, res: express.Response):void {
 		let _user = req.body;
-
+		let _headers = req.headers;
 		UsersDAO
-		['signUp'](_user)
+		['signUp'](_user, _headers)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
@@ -100,6 +110,17 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static changeUserPassword(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _oldpass = req.body.old_password;
+		let _newpass = req.body.password;
+		let _confpass = req.body.password_confirmation;
+		UsersDAO
+		['changeUserPassword'](_userId, _oldpass, _newpass, _confpass)
+		.then(users => res.status(200).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 	
 	static deleteUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
@@ -113,9 +134,9 @@ export class UsersController {
 	static activationUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _user = req.body;
-
+		let _headers = req.headers;
 		UsersDAO
-		  ['activationUser'](_id, _user)
+		  ['activationUser'](_id, _user, _headers)
 		  .then(users => res.status(201).json(users))
 		  .catch(error => res.status(400).json(error));
 	}

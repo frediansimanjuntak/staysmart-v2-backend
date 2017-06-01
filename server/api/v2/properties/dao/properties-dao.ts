@@ -12,9 +12,10 @@ import Notifications from '../../notifications/dao/notifications-dao';
 import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {socketIo} from '../../../../server';
+import {propertyHelper} from '../../../../helper/property.helper';
 var split = require('split-string');
 
-propertiesSchema.static('getAll', ():Promise<any> => {
+propertiesSchema.static('getAll', (headers: Object, userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({})
@@ -65,9 +66,14 @@ propertiesSchema.static('getAll', ():Promise<any> => {
             }
           })
           .exec((err, properties) => {            
-            err ? reject({message: err.message})
-                : resolve(properties);
-                console.log(properties);
+            if (err) {
+              reject({message: err.message})
+            }
+            else {
+              propertyHelper.getAll(properties, userId, headers).then(result => {
+                resolve(result);  
+              });
+            }
           });
     });
 });
@@ -212,8 +218,31 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
     });
 });
 
-propertiesSchema.static('getById', (id:string):Promise<any> => {
+propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+      if (user != "") {
+        Properties
+          .update({ "_id": id}, {
+            $addToSet: {
+              "seen.by":  user
+            }
+          })
+          .exec((err, update) => {
+            if (err) {
+              reject(err);
+            }
+            else {
+              resolve(update);
+            }
+          });
+      }
+    });
+});
+
+propertiesSchema.static('getById', (id:string, user:string, headers: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Properties.updatePropertySeen(id, user);
+
         Properties
           .findById(id)
           .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by rented.data.by agreements.data")
@@ -264,8 +293,14 @@ propertiesSchema.static('getById', (id:string):Promise<any> => {
             }
           })
           .exec((err, properties) => {
-            err ? reject({message: err.message})
-                : resolve(properties);
+            if (err) {
+              reject({message: err.message})
+            }
+            else {
+              propertyHelper.getById(properties, headers).then(result => {
+                resolve(result);  
+              });
+            }
           });
     });
 });
@@ -288,6 +323,38 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
                 : resolve(properties);
           });
     });
+});
+
+propertiesSchema.static('getUserProperties', (userId: Object, headers: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      let property = Properties.find({"owner.user": userId});
+      property.populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
+        property.populate({
+          path: 'owner.user',
+          populate: {
+            path: 'picture',
+            model: 'Attachments'
+          },
+          select: 'username email phone picture landlord.data.name tenant.data.name'
+        })
+        property.populate({
+          path: 'amenities',
+          populate: {
+            path: 'icon',
+            model: 'Attachments'
+          }
+        })
+      property.exec((err, properties) => {
+        if (err) {
+          reject({message: err.message});
+        }
+        else {
+          propertyHelper.getAll(properties, userId, headers).then(result => {
+            resolve(result);  
+          });
+        }
+      });
+  });
 });
 
 propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
@@ -1096,6 +1163,306 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
   });
 });
 
+propertiesSchema.static('step1', (property: Object, userId: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      let body: any = property;
+      let _properties = new Properties();
+          _properties.development = body.development;
+          _properties.address.floor = body.address.unit_no;
+          _properties.address.unit = body.address.unit_no_2;
+          _properties.address.block_number = body.address.block_no;
+          _properties.address.street_name = body.address.street_name;
+          _properties.address.postal_code = body.address.postal_code;
+          _properties.address.coordinates = body.address.coordinates;
+          _properties.details.size_sqf = body.details.size;
+          _properties.details.size_sqm = body.details.size_sqm;
+          _properties.details.bedroom = body.details.bedroom;
+          _properties.details.bathroom = body.details.bathroom;
+          _properties.details.price = body.details.price;
+          _properties.details.psqft = body.details.psqft;
+          _properties.details.available = body.details.available;
+          _properties.details.furnishing = body.details.furnishing;
+          _properties.details.description = body.details.description;
+          _properties.amenities = body.amenities;
+          _properties.owner.user = userId;
+          _properties.status = 'draft';
+          _properties.save((err, save) => {
+            err ? reject({message: err.message})
+                : resolve({message: 'Success'});
+          });
+  });
+});
+
+propertiesSchema.static('step2', (property: Object, userId: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              Properties
+                .findByIdAndUpdate(result[0]._id, {
+                  $set: {
+                    'pictures': property
+                  }
+                })
+                .exec((err, udpate) => {
+                  err ? reject({message: err.message})
+                      : resolve({message: 'Success'});
+                });
+            }
+          }
+        })
+  });
+});
+
+propertiesSchema.static('step3', (property: Object, userId: Object, files: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              let image: any = files;
+              let data: any = property;
+              if (image.front) {
+                Attachments.createAttachments(image.front, {}).then(res => {
+                  let file_front = res.idAtt[0];
+                  if (image.back) {
+                    Attachments.createAttachments(image.back, {}).then(res => {
+                      let file_back = res.idAtt[0];
+                      if (image.owner_back && !image.owner_front) {
+                        reject({message: 'Owner_front is required.'});
+                      }
+                      else if (image.owner_front && !image.owner_back) {
+                        Attachments.createAttachments(image.owner_front, {}).then(res => {
+                          let file_owner_front = res.idAtt;
+                          let owner = [];
+                          for(var i = 0; i < file_owner_front.length; i++) {
+                            owner.push({
+                              name: data.owner_full_name[i],
+                              identification_type: data.owner_type[i],
+                              identification_number: data.owner_id_number[i],
+                              identification_proof: {
+                                front: file_owner_front[i]
+                              }
+                            });
+                          }
+
+                          Properties
+                            .findByIdAndUpdate(result[0]._id, {
+                              $set: {
+                                'owned_type': 'individual',
+                                'temp.owner.name': data.full_name,
+                                'temp.owner.identification_type': data.type,
+                                'temp.owner.identification_number': data.id_number,
+                                'temp.owner.identification_proof.front': file_front,
+                                'temp.owner.identification_proof.back': file_back,
+                                'temp.shareholders': owner
+                              }
+                            })
+                            .exec((err, udpate) => {
+                              err ? reject({message: err.message})
+                                  : resolve({message: 'Success'});
+                            });
+                        });
+                      }
+                      else if (image.owner_front && image.owner_back) {
+                        Attachments.createAttachments(image.owner_front, {}).then(res => {
+                          let file_owner_front = res.idAtt;
+                          Attachments.createAttachments(image.owner_back, {}).then(res => {
+                            let file_owner_back = res.idAtt;
+                            let owner = [];
+                            for(var i = 0; i < file_owner_front.length; i++) {
+                              owner.push({
+                                name: data.owner_full_name[i],
+                                identification_type: data.owner_type[i],
+                                identification_number: data.owner_id_number[i],
+                                identification_proof: {
+                                  front: file_owner_front[i],
+                                  back: file_owner_back[i]
+                                }
+                              });
+                            }
+
+                            Properties
+                              .findByIdAndUpdate(result[0]._id, {
+                                $set: {
+                                  'owned_type': 'individual',
+                                  'temp.owner.name': data.full_name,
+                                  'temp.owner.identification_type': data.type,
+                                  'temp.owner.identification_number': data.id_number,
+                                  'temp.owner.identification_proof.front': file_front,
+                                  'temp.owner.identification_proof.back': file_back,
+                                  'temp.shareholders': owner
+                                }
+                              })
+                              .exec((err, udpate) => {
+                                err ? reject({message: err.message})
+                                    : resolve({message: 'Success'});
+                              });
+                          });
+                        });
+                      }
+                      else {
+                        Properties
+                          .findByIdAndUpdate(result[0]._id, {
+                            $set: {
+                              'owned_type': 'individual',
+                              'temp.owner.name': data.full_name,
+                              'temp.owner.identification_type': data.type,
+                              'temp.owner.identification_number': data.id_number,
+                              'temp.owner.identification_proof.front': file_front,
+                              'temp.owner.identification_proof.back': file_back
+                            }
+                          })
+                          .exec((err, udpate) => {
+                            err ? reject({message: err.message})
+                                : resolve({message: 'Success'});
+                          });
+                      }
+                    });
+                  }
+                  else {
+                    if (image.owner_back && !image.owner_front) {
+                      reject({message: 'Owner_front is required.'});
+                    }
+                    else if (image.owner_front && !image.owner_back) {
+                      Attachments.createAttachments(image.owner_front, {}).then(res => {
+                        let file_owner_front = res.idAtt;
+                        let owner = [];
+                        for(var i = 0; i < file_owner_front.length; i++) {
+                          owner.push({
+                            name: data.owner_full_name[i],
+                            identification_type: data.owner_type[i],
+                            identification_number: data.owner_id_number[i],
+                            identification_proof: {
+                              front: file_owner_front[i]
+                            }
+                          });
+                        }
+
+                        Properties
+                          .findByIdAndUpdate(result[0]._id, {
+                            $set: {
+                              'owned_type': 'individual',
+                              'temp.owner.name': data.full_name,
+                              'temp.owner.identification_type': data.type,
+                              'temp.owner.identification_number': data.id_number,
+                              'temp.owner.identification_proof.front': file_front,
+                              'temp.shareholders': owner
+                            }
+                          })
+                          .exec((err, udpate) => {
+                            err ? reject({message: err.message})
+                                : resolve({message: 'Success'});
+                          });
+                        });
+                    }
+                    else if (image.owner_front && image.owner_back) {
+                      Attachments.createAttachments(image.owner_front, {}).then(res => {
+                        let file_owner_front = res.idAtt;
+                        Attachments.createAttachments(image.owner_back, {}).then(res => {
+                          let file_owner_back = res.idAtt;
+                          let owner = [];
+                          for(var i = 0; i < file_owner_front.length; i++) {
+                            owner.push({
+                              name: data.owner_full_name[i],
+                              identification_type: data.owner_type[i],
+                              identification_number: data.owner_id_number[i],
+                              identification_proof: {
+                                front: file_owner_front[i],
+                                back: file_owner_back[i]
+                              }
+                            });
+                          }
+
+                          Properties
+                            .findByIdAndUpdate(result[0]._id, {
+                              $set: {
+                                'owned_type': 'individual',
+                                'temp.owner.name': data.full_name,
+                                'temp.owner.identification_type': data.type,
+                                'temp.owner.identification_number': data.id_number,
+                                'temp.owner.identification_proof.front': file_front,
+                                'temp.shareholders': owner
+                              }
+                            })
+                            .exec((err, udpate) => {
+                              err ? reject({message: err.message})
+                                  : resolve({message: 'Success'});
+                            });
+                        });
+                      });
+                    }
+                    else {
+                      Properties
+                        .findByIdAndUpdate(result[0]._id, {
+                          $set: {
+                            'owned_type': 'individual',
+                            'temp.owner.name': data.full_name,
+                            'temp.owner.identification_type': data.type,
+                            'temp.owner.identification_number': data.id_number,
+                            'temp.owner.identification_proof.front': file_front
+                          }
+                        })
+                        .exec((err, udpate) => {
+                          err ? reject({message: err.message})
+                              : resolve({message: 'Success'});
+                        });
+                    }
+                  }
+                });
+              }
+              else {
+                reject({message: 'Front is required'});
+              }
+            }
+          }
+        })
+  });
+});
+
+propertiesSchema.static('step5', (userId: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              Properties
+                .findByIdAndUpdate(result[0]._id, {
+                  $set: {
+                    'status': 'pending'
+                  }
+                })
+                .exec((err, udpate) => {
+                  err ? reject({message: err.message})
+                      : resolve({message: 'Success'});
+                });
+            }
+          }
+        })
+  });
+});
 
 let Properties = mongoose.model('Properties', propertiesSchema);
 

@@ -8,6 +8,7 @@ import Banks from '../../banks/dao/banks-dao'
 import Companies from '../../companies/dao/companies-dao'
 import ChatRooms from '../../chats/dao/chats-dao'
 import Properties from '../../properties/dao/properties-dao'
+import Managers from '../../managers/dao/managers-dao'
 import {EmailService} from '../../../../global/email.service'
 import {SMS} from '../../../../global/sms.service'
 import {signToken} from '../../../../auth/auth-service';
@@ -15,7 +16,8 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {GlobalService} from '../../../../global/global.service';
 import {socketIo} from '../../../../server';
-
+var split = require('split-string');
+import {userHelper} from '../../../../helper/user.helper';
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
@@ -148,7 +150,7 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 					}
 				}]	
 			})
-	        .populate({
+			.populate({
 				path: 'shortlisted_properties',
 				populate: [{
 					path: 'development',
@@ -262,18 +264,38 @@ usersSchema.static('getAll', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('me', (userId:string):Promise<any> => {
+usersSchema.static('me', (userId:string, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {"_id": userId};
-
 		Users.getUser(_query).then(res => {
-			_.each(res, (result) => {
-				resolve(result);
-			})	
+			let result = res[0] ? res[0] : {};
+			if (result) {
+				userHelper.meHelper(result, headers).then(res_data => {
+					resolve(res_data);
+				});
+			}
+			else {
+				reject({ message: 'User data not found.' });
+			}
 		})
 		.catch((err) => {
 			reject(err);
 		})
+	});
+});
+
+usersSchema.static('meData', (userId:string, param:string, headers:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users.me(userId, headers).then(res => {
+			let type = ['tenant', 'landlord'];
+
+			if (type.indexOf(param) > -1) {
+				resolve(res[param]);
+			}
+			else {
+				reject({ message: 'wrong type.' });
+			}
+		});
 	});
 });
 
@@ -392,7 +414,7 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('signUp', (user:Object):Promise<any> => {
+usersSchema.static('signUp', (user:Object, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
@@ -407,7 +429,12 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 			_user.username = body.username;
 			_user.email = body.email;
 			_user.password = body.password;
-			_user.phone = body.phone;
+			if (body.code) {
+				_user.phone = body.code+''+body.phone;
+			}
+			else {
+				_user.phone = body.phone;	
+			}
 			_user.role = 'user';
 			_user.save((err, saved)=>{
 				if(err){
@@ -420,7 +447,9 @@ usersSchema.static('signUp', (user:Object):Promise<any> => {
 					SMS.sendActivationCode(body.phone, randomCode);
 					mail.signUp(_user.email, fullname, from);
 					Users.getTotalUserSignupToday();
-					resolve({userId: saved._id, token});
+					userHelper.signUpHelper(saved._id, token, saved, headers).then(result => {
+						resolve(result);
+					});
 				}
 			});
 	});
@@ -526,6 +555,42 @@ usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string)
 				        		err ? reject(err)
 									: resolve({message: 'data updated'});
 				        	});
+				        } else {
+				        	reject({message: "old password didn't match"});				        	
+				        }
+				    });
+				}
+			})
+	});
+});
+
+usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:string, confpass:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		Users
+			.findById(id)
+			.exec((err, user) => {
+				if(err){
+					reject(err);
+				}
+				if(user){
+					user.authenticate(oldpass, (err, ok) => {
+				        if(err) {
+				          reject(err);
+				        }
+				        if(ok) {
+				        	if (newpass == confpass) {
+				        		user.password = newpass;
+					        	user.save((err, res) => {
+					        		err ? reject(err)
+										: resolve({message: 'Success please re-login'});
+					        	});
+				        	}
+				        	else {
+				        		reject({message: "Password confirmation failed."});
+				        	}
 				        } else {
 				        	reject({message: "old password didn't match"});				        	
 				        }
@@ -692,7 +757,7 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
+usersSchema.static('activationUser', (id:string, user:Object, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -714,8 +779,14 @@ usersSchema.static('activationUser', (id:string, user:Object):Promise<any> => {
 								}
 							})
 							.exec((err, update) => {
-								err ? reject(err)
-										: resolve({message: 'user verified.'});
+								if (err) {
+									reject(err);
+								}
+								else {
+									userHelper.activationHelper(id, headers).then(result => {
+										resolve(result);
+									});
+								} 
 							});
 					}
 					else{
