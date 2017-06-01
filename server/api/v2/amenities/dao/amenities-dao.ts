@@ -3,8 +3,9 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import amenitiesSchema from '../model/amenities-model';
 import Attachments from '../../attachments/dao/attachments-dao'
+import {amenityHelper} from '../../../../helper/amenity.helper';
 
-amenitiesSchema.static('getAll', ():Promise<any> => {
+amenitiesSchema.static('getAll', (headers: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -12,8 +13,14 @@ amenitiesSchema.static('getAll', ():Promise<any> => {
           .find(_query)
           .populate("icon")
           .exec((err, amenities) => {
-              err ? reject({message: err.message})
-                  : resolve(amenities);
+             if (err) {
+               reject({message: err.message});
+             }
+             else {
+                amenityHelper.getAll(amenities, headers).then(result => {
+                 resolve(result);
+                })
+             }
           });
     });
 });
