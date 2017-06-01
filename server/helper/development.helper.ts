@@ -29,8 +29,8 @@ export class developmentHelper{
 			if (header.from && header.from == 'Mobile') {
 				propertyHelper.getAll(developments.properties, userId, headers).then(res => {
 					resolve({
-						_id: developments._id;
-						name: developments.name;
+						_id: developments._id,
+						name: developments.name,
 						number_of_units: developments.number_of_units,
 						created_at: developments.created_at,
 						tenure: developments.tenure,
@@ -40,7 +40,7 @@ export class developmentHelper{
 						type_of_area: developments.type_of_area,
 						description: developments.description,
 						age: developments.age,
-						units: res;
+						units: res,	
 					});
 				});
 			}

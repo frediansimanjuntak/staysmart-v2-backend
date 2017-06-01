@@ -34,13 +34,14 @@ export class blogHelper{
 			let header: any = headers;
 			if (header.from && header.from == 'Mobile') {
 				blogs.cover = blogs.cover.url;
-				Subscribe
-					.find({"email": userEmail, "extra.type":"blog", "extra.reference_id": blogs._id}).
+				Subscribes
+					.find({"email": userEmail, "extra.type":"blog", "extra.reference_id": blogs._id})
 					.exec((err, result) => {
 						if (err) {
 							reject(err);
 						}
 						else {
+							let subscribe;
 							if (result.length == 0) {
 								subscribe = false;
 							}

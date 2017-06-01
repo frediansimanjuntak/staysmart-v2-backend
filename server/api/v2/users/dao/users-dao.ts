@@ -268,15 +268,33 @@ usersSchema.static('me', (userId:string, headers:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {"_id": userId};
 		Users.getUser(_query).then(res => {
-			_.each(res, (result) => {
+			let result = res[0] ? res[0] : {};
+			if (result) {
 				userHelper.meHelper(result, headers).then(res_data => {
 					resolve(res_data);
 				});
-			})	
+			}
+			else {
+				reject({ message: 'User data not found.' });
+			}
 		})
 		.catch((err) => {
 			reject(err);
 		})
+	});
+});
+
+usersSchema.static('meData', (userId:string, param:string, headers:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users.me(userId, headers).then(res => {
+			let type = ['tenant', 'landlord'];
+			if (type.indexOf(param)) {
+				resolve(res[param]);
+			}
+			else {
+				reject({ message: 'wrong type.' });
+			}
+		});
 	});
 });
 

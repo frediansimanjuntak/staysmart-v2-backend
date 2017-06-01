@@ -85,7 +85,7 @@ export class userHelper{
 						}
 						else {
 							resolve({
-								authorization: auth_code,
+								token: auth_code,
 								_id: result._id,
 								profil: {
 									forgot: {
@@ -129,7 +129,7 @@ export class userHelper{
 					}
 				};
 				resolve({
-					authorization: auth_code,
+					token: auth_code,
 					_id: data._id,
 					username: data.username,
 					email: data.email,
@@ -215,7 +215,7 @@ export class userHelper{
 									}
 									else {
 										resolve({
-											authorization: auth_code,
+											token: auth_code,
 											_id: data._id,
 											username: data.username,
 											email: data.email,
