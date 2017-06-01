@@ -16,6 +16,10 @@ export class UserRoutes {
 			.post(UsersController.signUp);
 
 		router
+			.route('/change/password')
+			.post(auth.isAuthenticated(), UsersController.changeUserPassword);
+
+		router
 			.route('/users/:id')
 			.get(auth.isAuthenticated(), UsersController.getById)
 			.delete(auth.isAuthenticated(), UsersController.deleteUser);

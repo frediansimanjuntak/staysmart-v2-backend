@@ -86,10 +86,18 @@ export class propertyHelper{
 										bathroom: properties[p].details.bathroom, 
 										price: properties[p].details.price,
 										psqft: properties[p].details.psqft,
+										psqm: properties[p].details.psqm,
 										available: properties[p].details.available,
 										furnishing: properties[p].details.furnishing,
 										description: properties[p].details.description,
-										type: properties[p].details.type
+										type: properties[p].details.type,
+										completion_date: properties[p].details.completion_date,
+										planning_region: properties[p].details.planning_region,
+										planning_area: properties[p].details.planning_area,
+										type_of_sale: properties[p].details.type_of_sale,
+										purchaser_address_indicator: properties[p].details.purchaser_address_indicator,
+										sale_date: properties[p].details.sale_date,
+										property_type: properties[p].details.property_type
 									},
 									seen: properties[p].seen
 								});
