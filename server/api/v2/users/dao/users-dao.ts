@@ -288,7 +288,8 @@ usersSchema.static('meData', (userId:string, param:string, headers:Object):Promi
 	return new Promise((resolve:Function, reject:Function) => {
 		Users.me(userId, headers).then(res => {
 			let type = ['tenant', 'landlord'];
-			if (type.indexOf(param)) {
+
+			if (type.indexOf(param) > -1) {
 				resolve(res[param]);
 			}
 			else {

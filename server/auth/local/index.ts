@@ -40,6 +40,7 @@ router.post('/', function(req, res, next) {
       else {
         res.json({ 
           token: token,
+          'x-auth-token': token,
           _id: user._id,
           profil : user.nutchat,
           username: user.username,

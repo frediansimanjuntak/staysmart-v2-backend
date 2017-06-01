@@ -42,6 +42,7 @@ router.post('/', function(req, res, next) {
       else {
         res.json({ 
           token: token, 
+          'x-auth-token': token,
           userId: user._id, 
           data: data,
           authorization: token,

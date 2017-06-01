@@ -54,16 +54,57 @@ export class userHelper{
 				else {
 					status = 'unverified';
 				}
-				let landlord_data = {
-					full_name: result.landlord.data.name,
-					type: result.landlord.data.identification_type,
-					id_number: result.landlord.data.identification_number,
-					user: result._id,
-					identity_front: front_landlord,
-					identity_back: back_landlord,
-					owner: result.landlord.data.owners,
-					type_landlord: type
-				};
+				let landlord_data;
+				if (result.companies.length > 0) {
+					let company = [];
+					for ( var c = 0; c < result.companies.length; c++ ) {
+						let company_data = result.companies[c];
+						for ( var d = 0; d < company_data.documents; d++ ) {
+							company_data.documents[d] = company_data.documents[d].url;
+						}
+						let shareholder = [];
+						for ( var s = 0; s < company_data.shareholders.length; s++ ) {
+							shareholder.push({
+								full_name: company_data.shareholders[s].name,
+								id_number: company_data.shareholders[s].identification_number,
+								identity_front: company_data.shareholders[s].identification_proof.front.url,
+								type: 'other'
+							});
+						}
+						company.push({
+							_id: company_data._id,
+							name: company_data.name,
+							company_number: company_data.registration_number,
+							company_document: company_data.documents,
+							shareholder: shareholder,
+							landlord: company_data.created_by,
+							created_at: company_data.created_at
+						});
+					}
+					landlord_data = {
+						full_name: result.landlord.data.name,
+						type: result.landlord.data.identification_type,
+						id_number: result.landlord.data.identification_number,
+						user: result._id,
+						identity_front: front_landlord,
+						identity_back: back_landlord,
+						owner: result.landlord.data.owners,
+						type_landlord: type,
+						company: company
+					};
+				}
+				else {
+					landlord_data = {
+						full_name: result.landlord.data.name,
+						type: result.landlord.data.identification_type,
+						id_number: result.landlord.data.identification_number,
+						user: result._id,
+						identity_front: front_landlord,
+						identity_back: back_landlord,
+						owner: result.landlord.data.owners,
+						type_landlord: type
+					};
+				}
 				let tenant_data = {
 					_id: '',
 					user: result._id,
@@ -85,7 +126,7 @@ export class userHelper{
 						}
 						else {
 							resolve({
-								token: auth_code,
+								'x-auth-token': auth_code,
 								_id: result._id,
 								profil: {
 									forgot: {
@@ -129,7 +170,7 @@ export class userHelper{
 					}
 				};
 				resolve({
-					token: auth_code,
+					'x-auth-token': auth_code,
 					_id: data._id,
 					username: data.username,
 					email: data.email,
@@ -215,7 +256,7 @@ export class userHelper{
 									}
 									else {
 										resolve({
-											token: auth_code,
+											'x-auth-token': auth_code,
 											_id: data._id,
 											username: data.username,
 											email: data.email,

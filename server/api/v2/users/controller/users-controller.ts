@@ -29,8 +29,9 @@ export class UsersController {
 	static meData(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		let _headers = req.headers;
+		let _param = req.params.type;
 		UsersDAO
-		['meData'](_userId, _headers)
+		['meData'](_userId, _param, _headers)
 		.then(users => res.status(200).json(users))
 		.catch(error => res.status(400).json(error));
 	}
