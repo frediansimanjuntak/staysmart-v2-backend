@@ -40,6 +40,10 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(),PropertiesController.step2);
 
 		router
+			.route('/properties/new/step3')
+			.post(auth.isAuthenticated(),PropertiesController.step3);
+
+		router
 			.route('/properties/:id')
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);

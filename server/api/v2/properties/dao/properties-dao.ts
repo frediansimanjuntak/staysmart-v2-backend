@@ -1222,6 +1222,213 @@ propertiesSchema.static('step2', (property: Object, userId: Object):Promise<any>
   });
 });
 
+propertiesSchema.static('step3', (property: Object, userId: Object, files: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              let image: any = files;
+              let data: any = property;
+              if (image.front) {
+                Attachments.createAttachments(image.front, {}).then(res => {
+                  let file_front = res.idAtt[0];
+                  if (image.back) {
+                    Attachments.createAttachments(image.back, {}).then(res => {
+                      let file_back = res.idAtt[0];
+                      if (image.owner_back && !image.owner_front) {
+                        reject({message: 'Owner_front is required.'});
+                      }
+                      else if (image.owner_front && !image.owner_back) {
+                        Attachments.createAttachments(image.owner_front, {}).then(res => {
+                          let file_owner_front = res.idAtt;
+                          let owner = [];
+                          for(var i = 0; i < file_owner_front.length; i++) {
+                            owner.push({
+                              name: data.owner_full_name[i],
+                              identification_type: data.owner_type[i],
+                              identification_number: data.owner_id_number[i],
+                              identification_proof: {
+                                front: file_owner_front[i]
+                              }
+                            });
+                          }
+
+                          Properties
+                            .findByIdAndUpdate(result[0]._id, {
+                              $set: {
+                                'temp.owner.name': data.full_name,
+                                'temp.owner.identification_type': data.type,
+                                'temp.owner.identification_number': data.id_number,
+                                'temp.owner.identification_proof.front': file_front,
+                                'temp.owner.identification_proof.back': file_back,
+                                'temp.shareholders': owner
+                              }
+                            })
+                            .exec((err, udpate) => {
+                              err ? reject({message: err.message})
+                                  : resolve({message: 'Success'});
+                            });
+                        });
+                      }
+                      else if (image.owner_front && image.owner_back) {
+                        Attachments.createAttachments(image.owner_front, {}).then(res => {
+                          let file_owner_front = res.idAtt;
+                          Attachments.createAttachments(image.owner_back, {}).then(res => {
+                            let file_owner_back = res.idAtt;
+                            let owner = [];
+                            for(var i = 0; i < file_owner_front.length; i++) {
+                              owner.push({
+                                name: data.owner_full_name[i],
+                                identification_type: data.owner_type[i],
+                                identification_number: data.owner_id_number[i],
+                                identification_proof: {
+                                  front: file_owner_front[i],
+                                  back: file_owner_back[i]
+                                }
+                              });
+                            }
+
+                            Properties
+                              .findByIdAndUpdate(result[0]._id, {
+                                $set: {
+                                  'temp.owner.name': data.full_name,
+                                  'temp.owner.identification_type': data.type,
+                                  'temp.owner.identification_number': data.id_number,
+                                  'temp.owner.identification_proof.front': file_front,
+                                  'temp.owner.identification_proof.back': file_back,
+                                  'temp.shareholders': owner
+                                }
+                              })
+                              .exec((err, udpate) => {
+                                err ? reject({message: err.message})
+                                    : resolve({message: 'Success'});
+                              });
+                          });
+                        });
+                      }
+                      else {
+                        Properties
+                          .findByIdAndUpdate(result[0]._id, {
+                            $set: {
+                              'temp.owner.name': data.full_name,
+                              'temp.owner.identification_type': data.type,
+                              'temp.owner.identification_number': data.id_number,
+                              'temp.owner.identification_proof.front': file_front,
+                              'temp.owner.identification_proof.back': file_back
+                            }
+                          })
+                          .exec((err, udpate) => {
+                            err ? reject({message: err.message})
+                                : resolve({message: 'Success'});
+                          });
+                      }
+                    });
+                  }
+                  else {
+                    if (image.owner_back && !image.owner_front) {
+                      reject({message: 'Owner_front is required.'});
+                    }
+                    else if (image.owner_front && !image.owner_back) {
+                      Attachments.createAttachments(image.owner_front, {}).then(res => {
+                        let file_owner_front = res.idAtt;
+                        let owner = [];
+                        for(var i = 0; i < file_owner_front.length; i++) {
+                          owner.push({
+                            name: data.owner_full_name[i],
+                            identification_type: data.owner_type[i],
+                            identification_number: data.owner_id_number[i],
+                            identification_proof: {
+                              front: file_owner_front[i]
+                            }
+                          });
+                        }
+
+                        Properties
+                          .findByIdAndUpdate(result[0]._id, {
+                            $set: {
+                              'temp.owner.name': data.full_name,
+                              'temp.owner.identification_type': data.type,
+                              'temp.owner.identification_number': data.id_number,
+                              'temp.owner.identification_proof.front': file_front,
+                              'temp.shareholders': owner
+                            }
+                          })
+                          .exec((err, udpate) => {
+                            err ? reject({message: err.message})
+                                : resolve({message: 'Success'});
+                          });
+                        });
+                    }
+                    else if (image.owner_front && image.owner_back) {
+                      Attachments.createAttachments(image.owner_front, {}).then(res => {
+                        let file_owner_front = res.idAtt;
+                        Attachments.createAttachments(image.owner_back, {}).then(res => {
+                          let file_owner_back = res.idAtt;
+                          let owner = [];
+                          for(var i = 0; i < file_owner_front.length; i++) {
+                            owner.push({
+                              name: data.owner_full_name[i],
+                              identification_type: data.owner_type[i],
+                              identification_number: data.owner_id_number[i],
+                              identification_proof: {
+                                front: file_owner_front[i],
+                                back: file_owner_back[i]
+                              }
+                            });
+                          }
+
+                          Properties
+                            .findByIdAndUpdate(result[0]._id, {
+                              $set: {
+                                'temp.owner.name': data.full_name,
+                                'temp.owner.identification_type': data.type,
+                                'temp.owner.identification_number': data.id_number,
+                                'temp.owner.identification_proof.front': file_front,
+                                'temp.shareholders': owner
+                              }
+                            })
+                            .exec((err, udpate) => {
+                              err ? reject({message: err.message})
+                                  : resolve({message: 'Success'});
+                            });
+                        });
+                      });
+                    }
+                    else {
+                      Properties
+                        .findByIdAndUpdate(result[0]._id, {
+                          $set: {
+                            'temp.owner.name': data.full_name,
+                            'temp.owner.identification_type': data.type,
+                            'temp.owner.identification_number': data.id_number,
+                            'temp.owner.identification_proof.front': file_front
+                          }
+                        })
+                        .exec((err, udpate) => {
+                          err ? reject({message: err.message})
+                              : resolve({message: 'Success'});
+                        });
+                    }
+                  }
+                });
+              }
+              else {
+                reject({message: 'Front is required'});
+              }
+            }
+          }
+        })
+  });
+});
+
 let Properties = mongoose.model('Properties', propertiesSchema);
 
 export default Properties;
