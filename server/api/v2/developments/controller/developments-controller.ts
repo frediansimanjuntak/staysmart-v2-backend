@@ -3,8 +3,9 @@ import DevelopmentsDAO from '../dao/developments-dao';
 
 export class DevelopmentsController {
 	static getAll(req: express.Request, res: express.Response):void {
+		let _headers = req.headers;
 		DevelopmentsDAO
-		['getAll']()
+		['getAll'](_headers)
 		.then(developments => res.status(200).json(developments))
 		.catch(error => res.status(400).json(error));
 	}
