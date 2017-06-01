@@ -1163,6 +1163,35 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
   });
 });
 
+propertiesSchema.static('step1', (property: Object, userId: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      let body: any = property;
+      let _properties = new Properties();
+          _properties.development = body.development;
+          _properties.address.floor = body.address.unit_no;
+          _properties.address.unit = body.address.unit_no_2;
+          _properties.address.block_number = body.address.block_no;
+          _properties.address.street_name = body.address.street_name;
+          _properties.address.postal_code = body.address.postal_code;
+          _properties.address.coordinates = body.address.coordinates;
+          _properties.details.size_sqf = body.details.size;
+          _properties.details.size_sqm = body.details.size_sqm;
+          _properties.details.bedroom = body.details.bedroom;
+          _properties.details.bathroom = body.details.bathroom;
+          _properties.details.price = body.details.price;
+          _properties.details.psqft = body.details.psqft;
+          _properties.details.available = body.details.available;
+          _properties.details.furnishing = body.details.furnishing;
+          _properties.details.description = body.details.description;
+          _properties.amenities = body.amenities;
+          _properties.owner.user = userId;
+          _properties.status = 'draft';
+          _properties.save((err, save) => {
+            err ? reject({message: err.message})
+                : resolve({message: 'Success'});
+          });
+  });
+});
 
 let Properties = mongoose.model('Properties', propertiesSchema);
 
