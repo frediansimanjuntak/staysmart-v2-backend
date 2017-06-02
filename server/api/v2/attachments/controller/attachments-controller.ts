@@ -20,6 +20,7 @@ export class AttachmentsController {
 	static createAttachments(req: express.Request, res: express.Response):void {
 		let _attachments = req["files"].attachment;
 		if (req["files"].file) _attachments = req["files"].file;
+		if ( req["files"].img )  _attachments = req["files"].img;
 		let _req = req;
 		AttachmentsDAO
 		['createAttachments'](_attachments, _req)

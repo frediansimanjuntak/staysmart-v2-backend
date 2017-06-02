@@ -99,7 +99,10 @@ export class propertyHelper{
 										sale_date: properties[p].details.sale_date,
 										property_type: properties[p].details.property_type
 									},
-									seen: properties[p].seen
+									seen: {
+										by: properties[p].seen.by,
+										counts: properties[p].seen.by.length
+									}
 								});
 							}
 							resolve(properties_data);
@@ -177,7 +180,10 @@ export class propertyHelper{
 						description: properties.details.description,
 						type: properties.details.type
 					},
-					seen: properties.seen,
+					seen: {
+						by: properties.seen.by,
+						counts: properties.seen.by.length
+					},
 					amenities: amenities,
 					pictures: properties.pictures,
 					room: ''
