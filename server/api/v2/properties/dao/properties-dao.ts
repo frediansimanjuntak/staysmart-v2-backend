@@ -204,7 +204,6 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
               let radiusQuery = radius / 3963.2;
               var latlng_dev = search.latlng.split(",");
               let developments = Developments.find({});
-              console.log(search.latlng);
               let lat = Number(latlng_dev[0]);
               let lng = Number(latlng_dev[1]);
               if (from == 'mobile') {
