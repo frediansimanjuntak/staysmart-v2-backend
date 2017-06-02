@@ -55,12 +55,11 @@ attachmentsSchema.static('createAttachments', (attachments:Object, request:Objec
             }
             else{
               AWSService.upload(key, file).then(fileDetails => {
-                console.log(fileDetails);
                 var fileName = fileDetails.name.replace(/ /g,"%20");
                 var _attachment = new Attachments(attachments);
                 if (data.body) {
-      				_attachment.metadata = data.body;
-      			}
+          				_attachment.metadata = data.body;
+          			}
                 _attachment.name = fileDetails.name;
                 _attachment.type = fileDetails.type;
                 _attachment.key = 'attachment/'+fileName;
@@ -81,11 +80,18 @@ attachmentsSchema.static('createAttachments', (attachments:Object, request:Objec
                 let url = _attachment.url; 
                 idAtt.push(idattach);
                 urlAtt.push(url);
-
                  
                 if (i >= files.length - 1){
                   if(errAtt == 0) {
-                    resolve({idAtt, urlAtt, errAtt});  
+                    if (data.headers.from) {
+                      resolve({
+                        imgId: idAtt[0],
+                        message: 'Success'
+                      });
+                    }
+                    else {
+                      resolve({idAtt, urlAtt, errAtt});    
+                    }
                   }
                   else{
                     resolve({errAtt});

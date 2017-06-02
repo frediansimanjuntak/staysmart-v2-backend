@@ -2,6 +2,7 @@
 
 import * as express from 'express';
 import {PropertiesController} from '../controller/properties-controller';
+import {AttachmentsController} from '../../attachments/controller/attachments-controller';
 import * as auth from '../../../../auth/auth-service';
 
 export class PropertiesRoutes {
@@ -50,6 +51,10 @@ export class PropertiesRoutes {
 		router
 			.route('/property/new/step2')
 			.post(auth.isAuthenticated(),PropertiesController.step2);
+
+		router
+			.route('/property/new/step2/upload')
+			.post(auth.isAuthenticated(),AttachmentsController.createAttachments);
 
 		router
 			.route('/property/new/step3')
