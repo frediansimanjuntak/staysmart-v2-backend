@@ -12,6 +12,10 @@ export class AmenitiesRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), AmenitiesController.createAmenities);
 
 		router
+			.route('/amenity')
+			.get(AmenitiesController.getAll)
+
+		router
 			.route('/amenities/:id')
 			.get(auth.isAuthenticated(),AmenitiesController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), AmenitiesController.deleteAmenities);

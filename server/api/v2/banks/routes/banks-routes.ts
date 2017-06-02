@@ -12,6 +12,10 @@ export class BanksRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), BanksController.createBanks);
 
 		router
+			.route('/bank')
+			.get(auth.isAuthenticated(),BanksController.getAll)
+
+		router
 			.route('/banks/:id')
 			.get(auth.isAuthenticated(),BanksController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), BanksController.deleteBanks);
