@@ -64,7 +64,7 @@ export class UsersController {
 	}
 
 	static checkUserData(req: express.Request, res: express.Response):void {
-		let _search = req.params.search;
+		let _search = req.params.search.toLowerCase();
 		UsersDAO
 		['checkUserData'](_search)
 		.then(users => res.status(200).json(users))
