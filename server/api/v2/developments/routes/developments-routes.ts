@@ -16,7 +16,7 @@ export class DevelopmentsRoutes {
 			.get(DevelopmentsController.getAll)
 
 		router
-			.route('/developments/browse/:latlng/:pricemin/:pricemax/:bedroomCount/:bathroomCount/:available/:sizemin/:sizemax/:location/:radius')
+			.route('/developments/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location/:radius')
 			.get(DevelopmentsController.developmentsMap);
 
 		router
