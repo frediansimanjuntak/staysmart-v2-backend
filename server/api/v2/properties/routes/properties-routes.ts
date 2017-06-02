@@ -12,6 +12,10 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(),PropertiesController.createProperties);
 
 		router
+			.route('/property')
+			.get(auth.isAuthenticated(), PropertiesController.getAll)
+
+		router
 			.route('/properties/without_owner')
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.createPropertiesWithoutOwner);
 
@@ -20,7 +24,7 @@ export class PropertiesRoutes {
 			.get(PropertiesController.searchProperties);
 
 		router
-			.route('/me/properties')
+			.route('/me/property')
 			.get(auth.isAuthenticated(),PropertiesController.getUserProperties);
 
 		router
@@ -32,19 +36,19 @@ export class PropertiesRoutes {
 			.get(PropertiesController.getBySlug);
 
 		router
-			.route('/properties/new/step1')
+			.route('/property/new/step1')
 			.post(auth.isAuthenticated(),PropertiesController.step1);
 
 		router
-			.route('/properties/new/step2')
+			.route('/property/new/step2')
 			.post(auth.isAuthenticated(),PropertiesController.step2);
 
 		router
-			.route('/properties/new/step3')
+			.route('/property/new/step3')
 			.post(auth.isAuthenticated(),PropertiesController.step3);
 
 		router
-			.route('/properties/new/step5')
+			.route('/property/new/step5')
 			.post(auth.isAuthenticated(),PropertiesController.step5);
 
 		router

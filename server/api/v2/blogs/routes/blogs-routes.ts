@@ -12,13 +12,21 @@ export class BlogsRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.createBlogs);
 
 		router
+			.route('/blog')
+			.get(BlogsController.getAll)
+
+		router
 			.route('/blogs/slug/:slug')
 			.get(BlogsController.getBySlug);
 
 		router
 			.route('/blogs/:id')
-			.get(auth.isAuthenticated(), BlogsController.getById)
+			.get(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.deleteBlogs);
+
+		router
+			.route('/blog/:id')
+			.get(auth.isAuthenticated(), BlogsController.getById)
 
 		router
 			.route('/blogs/update/:id')
