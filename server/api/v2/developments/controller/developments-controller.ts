@@ -11,7 +11,7 @@ export class DevelopmentsController {
 	}
 
 	static developmentsMap(req: express.Request, res: express.Response):void {
-		let _searchComponent = req.params;
+		let _searchComponent;
 		let _from;
 		if (req.headers.from) {
 			_from = 'mobile';
