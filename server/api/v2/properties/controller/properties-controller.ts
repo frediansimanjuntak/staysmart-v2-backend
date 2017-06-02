@@ -70,6 +70,16 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static memberProperty(req: express.Request, res: express.Response):void {
+		let _type = req.params.type;
+		let _userId = req["user"]._id;
+		let _headers = req.headers;
+		PropertiesDAO
+		['memberProperty'](_type, _userId, _headers)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getDraft(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		PropertiesDAO

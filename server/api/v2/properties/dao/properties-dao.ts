@@ -254,6 +254,48 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
     });
 });
 
+propertiesSchema.static('memberProperty', (type:string, userId:Object, headers:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      let userType = [ 'tenant', 'landlord' ];
+      if ( userType.indexOf(type) > -1 ) {
+        Users.getById(userId)
+          .then(result => {
+            let properties = [];
+            if (type == 'landlord') {
+              properties = result.owned_properties;
+              console.log(properties.length);
+              if (properties.length > 0) {
+                propertyHelper.getAll(properties, userId, headers).then(res => {
+                  resolve(res);
+                });
+              }
+              else {
+                resolve([]);
+              }
+            }
+            else {
+              properties = result.rented_properties;
+              let prop = [];
+              for ( var i = 0; i < properties.length; i++ ) {
+                prop.push(properties[i].property);
+              }
+              if (prop.length > 0) {
+                propertyHelper.getAll(prop, userId, headers).then(res => {
+                  resolve(res);
+                });
+              }
+              else {
+                resolve(prop);
+              }
+            }
+          })
+      }
+      else {
+        reject({message: 'wrong user type.'});
+      }
+    });
+});
+
 propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (user != "") {

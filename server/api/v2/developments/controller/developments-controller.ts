@@ -22,7 +22,7 @@ export class DevelopmentsController {
 			_searchComponent = req.params;
 		}
 		DevelopmentsDAO
-		['developmentsMap'](_searchComponent _from, req.headers, req)
+		['developmentsMap'](_searchComponent, _from, req.headers, req)
 		.then(developments => res.status(200).json(developments))
 		.catch(error => res.status(400).json(error));
 	}

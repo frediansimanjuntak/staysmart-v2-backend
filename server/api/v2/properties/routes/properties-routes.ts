@@ -32,6 +32,10 @@ export class PropertiesRoutes {
 			.get(auth.isAuthenticated(),PropertiesController.getUserProperties);
 
 		router
+			.route('/member/property/:type')
+			.get(auth.isAuthenticated(),PropertiesController.memberProperty);
+
+		router
 			.route('/properties/draft')
 			.get(auth.isAuthenticated(),PropertiesController.getDraft);
 		
