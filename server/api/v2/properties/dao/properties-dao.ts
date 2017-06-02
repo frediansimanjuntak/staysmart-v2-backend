@@ -192,7 +192,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
             else {
               prop_data = properties;
             }
-            if(search.latlng && search.latlng != 'all' && !search.location || search.location == 'all')
+            if( search.latlng != 'all' && (!search.location || search.location == 'all'))
             {
               let radius;
               if(search.radius && search.radius != 'all') {
@@ -202,14 +202,16 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
                 radius = 1.5 * 0.621371192;
               }
               let radiusQuery = radius / 3963.2;
-              var latlng = search.latlng.split(",");
+              var latlng_dev = search.latlng.split(",");
               let developments = Developments.find({});
-
+              console.log(search.latlng);
+              let lat = Number(latlng_dev[0]);
+              let lng = Number(latlng_dev[1]);
               if (from == 'mobile') {
-                developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[0]), Number(latlng[1])], radiusQuery ] } } });
+                developments.where({address: { $geoWithin: { $centerSphere: [ [lat, lng], radiusQuery ] } } });
               }
               else {
-                developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
+                developments.where({address: { $geoWithin: { $centerSphere: [ [lng, lat], radiusQuery ] } } });
               }
               developments.exec((err, development) => {
                 if (err) {
