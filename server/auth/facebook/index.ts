@@ -29,6 +29,7 @@ router.post('/', function(req, res, next) {
         Attachments.getById(user.picture).then(result => {
           res.json({ 
             token: token,
+            'x-auth-token': token,
             _id: user._id,
             profil : user.nutchat,
             username: user.username,
