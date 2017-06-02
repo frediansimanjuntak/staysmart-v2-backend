@@ -2,6 +2,7 @@
 
 import * as express from 'express';
 import {PropertiesController} from '../controller/properties-controller';
+import {AttachmentsController} from '../../attachments/controller/attachments-controller';
 import * as auth from '../../../../auth/auth-service';
 
 export class PropertiesRoutes {
@@ -20,12 +21,20 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.createPropertiesWithoutOwner);
 
 		router
-			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroomCount/:bathroomCount/:available/:sizemin/:sizemax/:location/:radius')
+			.route('/properties/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location/:radius')
 			.get(PropertiesController.searchProperties);
+
+		router
+			.route('/browse?:params')
+			.get(auth.isAuthenticated(), PropertiesController.searchProperties);
 
 		router
 			.route('/me/property')
 			.get(auth.isAuthenticated(),PropertiesController.getUserProperties);
+
+		router
+			.route('/member/property/:type')
+			.get(auth.isAuthenticated(),PropertiesController.memberProperty);
 
 		router
 			.route('/properties/draft')
@@ -42,6 +51,10 @@ export class PropertiesRoutes {
 		router
 			.route('/property/new/step2')
 			.post(auth.isAuthenticated(),PropertiesController.step2);
+
+		router
+			.route('/property/new/step2/upload')
+			.post(auth.isAuthenticated(),AttachmentsController.createAttachments);
 
 		router
 			.route('/property/new/step3')

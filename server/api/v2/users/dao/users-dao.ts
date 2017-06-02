@@ -301,9 +301,6 @@ usersSchema.static('meData', (userId:string, param:string, headers:Object):Promi
 
 usersSchema.static('getById', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
 		let _query = {"_id": id};
 
 		Users.getUser(_query).then(res => {

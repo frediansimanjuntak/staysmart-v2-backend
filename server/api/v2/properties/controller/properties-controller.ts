@@ -12,9 +12,18 @@ export class PropertiesController {
 	}
 
 	static searchProperties(req: express.Request, res: express.Response):void {
-		let _searchComponent = req.params;
+		let _searchComponent;
+		let _from;
+		if (req.headers.from) {
+			_from = 'mobile';
+			_searchComponent = req.query;
+		}
+		else {
+			_from = 'web';
+			_searchComponent = req.params;
+		}
 		PropertiesDAO
-		['searchProperties'](_searchComponent)
+		['searchProperties'](_searchComponent, _from, req.headers, req)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -57,6 +66,16 @@ export class PropertiesController {
 		let _headers = req.headers;
 		PropertiesDAO
 		['getUserProperties'](_userId, _headers)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static memberProperty(req: express.Request, res: express.Response):void {
+		let _type = req.params.type;
+		let _userId = req["user"]._id;
+		let _headers = req.headers;
+		PropertiesDAO
+		['memberProperty'](_type, _userId, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

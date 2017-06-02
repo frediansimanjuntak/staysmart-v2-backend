@@ -78,7 +78,7 @@ propertiesSchema.static('getAll', (headers: Object, userId: Object):Promise<any>
     });
 });
 
-propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any> => {
+propertiesSchema.static('searchProperties', (searchComponent:Object, from:string, headers:Object, request:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var today = new Date();
         let date = today.getDate() + 1;
@@ -88,10 +88,10 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
-        if(search.latlng != 'all' && search.location != 'all') 
+        if(search.latlng && search.latlng != 'all') 
         {
           let radius;
-          if(search.radius != 'all') {
+          if(search.radius && search.radius != 'all') {
             radius = (search.radius) * 0.000621371192;
           }
           else{
@@ -99,20 +99,27 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
           }
           let radiusQuery = radius / 3963.2;
           var latlng = search.latlng.split(",");
-          property.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
-          property.where('address.street_name', search.location);
+          if (from == 'mobile') {
+            property.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[0]), Number(latlng[1])], radiusQuery ] } } });  
+          }
+          else {
+            property.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });  
+          }
+          if ( search.location && search.location != 'all') {
+            property.where('address.street_name', search.location);
+          }
         }
-        if(search.pricemin != 'all') 
+        if(search.pricemin && search.pricemin != 'all') 
         {
           property.where('details.price').gte(search.pricemin);
         }
-        if(search.pricemax != 'all') 
+        if(search.pricemax && search.pricemax != 'all') 
         {
           property.where('details.price').lte(search.pricemax);
         }
-        if(search.bedroomCount != 'all') 
+        if(search.bedroom && search.bedroom != 'all') 
         {
-          var bedroom = split(search.bedroomCount, {sep: ','});
+          var bedroom = split(search.bedroom, {sep: ','});
           if(bedroom.length == 1) {
             property.where('details.bedroom', bedroom[0]);
           }
@@ -127,9 +134,9 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             }
           }
         }
-        if(search.bathroomCount != 'all') 
+        if(search.bathroom && search.bathroom != 'all') 
         {
-          var bathroom = split(search.bathroomCount, {sep: ','});
+          var bathroom = split(search.bathroom, {sep: ','});
           if(bathroom.length == 1) {
             property.where('details.bathroom', bathroom[0]);
           }
@@ -144,15 +151,15 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             }
           }
         }
-        if(search.available != 'all') 
+        if(search.available && search.available != 'all') 
         {
           property.where('details.available').lte(search.available);
         }
-        if(search.sizemin != 'all') 
+        if(search.sizemin && search.sizemin != 'all') 
         {
           property.where('details.size_sqf').gte(search.sizemin);
         }
-        if(search.sizemax != 'all') 
+        if(search.sizemax && search.sizemax != 'all') 
         {
           property.where('details.size_sqf').lte(search.sizemax);
         }
@@ -178,10 +185,17 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
             reject({message: err.message});
           }
           else {
-            if(search.latlng != 'all' && search.location == 'all') 
+            let prop_data = [];
+            if (search.limit) {
+              prop_data = properties.slice(0, search.limit);
+            }
+            else {
+              prop_data = properties;
+            }
+            if(search.latlng && search.latlng != 'all' && !search.location || search.location == 'all')
             {
               let radius;
-              if(search.radius != 'all') {
+              if(search.radius && search.radius != 'all') {
                 radius = (search.radius) * 0.000621371192;
               }
               else{
@@ -190,31 +204,95 @@ propertiesSchema.static('searchProperties', (searchComponent:Object):Promise<any
               let radiusQuery = radius / 3963.2;
               var latlng = search.latlng.split(",");
               let developments = Developments.find({});
-              developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
+
+              if (from == 'mobile') {
+                developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[0]), Number(latlng[1])], radiusQuery ] } } });
+              }
+              else {
+                developments.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });
+              }
               developments.exec((err, development) => {
                 if (err) {
                   reject({message: err.message});
                 }
                 else {
                   let properties_data = [];
-                  for(let i = 0; i < properties.length; i++) {
+                  for(let i = 0; i < prop_data.length; i++) {
                     for(let j = 0; j < development.length; j++){
-                      let prop_dev_id = properties[i].development._id.toString();
+                      let prop_dev_id = prop_data[i].development._id.toString();
                       let dev_id = development[j]._id.toString();
-                      if ( properties[i].development.slug == development[j].slug) {
-                        properties_data.push(properties[i]);
+                      if ( prop_data[i].development.slug == development[j].slug) {
+                        properties_data.push(prop_data[i]);
                       }
                     }
                   }
-                  resolve(properties_data);
+                  let req: any = request;
+                  if (req.user) {
+                    propertyHelper.getAll(properties_data, req.user._id, headers).then(result => {
+                      resolve(result);  
+                    });
+                  }
+                  else {
+                    resolve(properties_data);
+                  }
                 }
               })
             }
             else {
-              resolve(properties);
+              let req: any = request;
+              if (req.user) {
+                propertyHelper.getAll(prop_data, req.user._id, headers).then(result => {
+                  resolve(result);  
+                });
+              }
+              else {
+                resolve(prop_data);
+              }
             }
           }
         });
+    });
+});
+
+propertiesSchema.static('memberProperty', (type:string, userId:Object, headers:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      let userType = [ 'tenant', 'landlord' ];
+      if ( userType.indexOf(type) > -1 ) {
+        Users.getById(userId)
+          .then(result => {
+            let properties = [];
+            if (type == 'landlord') {
+              properties = result.owned_properties;
+              console.log(properties.length);
+              if (properties.length > 0) {
+                propertyHelper.getAll(properties, userId, headers).then(res => {
+                  resolve(res);
+                });
+              }
+              else {
+                resolve([]);
+              }
+            }
+            else {
+              properties = result.rented_properties;
+              let prop = [];
+              for ( var i = 0; i < properties.length; i++ ) {
+                prop.push(properties[i].property);
+              }
+              if (prop.length > 0) {
+                propertyHelper.getAll(prop, userId, headers).then(res => {
+                  resolve(res);
+                });
+              }
+              else {
+                resolve(prop);
+              }
+            }
+          })
+      }
+      else {
+        reject({message: 'wrong user type.'});
+      }
     });
 });
 

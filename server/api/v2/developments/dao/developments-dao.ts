@@ -26,9 +26,9 @@ developmentsSchema.static('getAll', (headers: Object):Promise<any> => {
     });
 });
 
-developmentsSchema.static('developmentsMap', (searchComponent: Object):Promise<any> => {
+developmentsSchema.static('developmentsMap', (searchComponent: Object, from:string, headers:Object, request:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        Properties.searchProperties(searchComponent).then(properties => {
+        Properties.searchProperties(searchComponent, from, headers, request).then(properties => {
           var dev = [];
                     
           for(var i = 0; i < properties.length; i++){
