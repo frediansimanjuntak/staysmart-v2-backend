@@ -12,8 +12,17 @@ export class DevelopmentsController {
 
 	static developmentsMap(req: express.Request, res: express.Response):void {
 		let _searchComponent = req.params;
+		let _from;
+		if (req.headers.from) {
+			_from = 'mobile';
+			_searchComponent = req.query;
+		}
+		else {
+			_from = 'web';
+			_searchComponent = req.params;
+		}
 		DevelopmentsDAO
-		['developmentsMap'](_searchComponent)
+		['developmentsMap'](_searchComponent _from, req.headers, req)
 		.then(developments => res.status(200).json(developments))
 		.catch(error => res.status(400).json(error));
 	}
