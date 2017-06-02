@@ -12,6 +12,10 @@ export class DevelopmentsRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.createDevelopments);
 
 		router
+			.route('/development')
+			.get(DevelopmentsController.getAll)
+
+		router
 			.route('/developments/browse/:latlng/:pricemin/:pricemax/:bedroomCount/:bathroomCount/:available/:sizemin/:sizemax/:location/:radius')
 			.get(DevelopmentsController.developmentsMap);
 
@@ -23,6 +27,10 @@ export class DevelopmentsRoutes {
 			.route('/developments/:id')
 			.get(auth.isAuthenticated(), DevelopmentsController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), DevelopmentsController.deleteDevelopments);
+
+		router
+			.route('/development/:id')
+			.get(auth.isAuthenticated(), DevelopmentsController.getById)
 
 		router
 			.route('/developments/update/:id')

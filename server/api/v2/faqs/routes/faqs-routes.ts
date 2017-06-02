@@ -12,6 +12,10 @@ export class FaqsRoutes {
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), FaqsController.createFaqs);
 
 		router
+			.route('/faq')
+			.get(FaqsController.getAll)
+
+		router
 			.route('/faqs/:id')
 			.get(FaqsController.getById)
 			.delete(auth.isAuthenticated(), auth.hasRole('admin'), FaqsController.deleteFaqs);
