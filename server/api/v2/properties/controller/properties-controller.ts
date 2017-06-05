@@ -40,15 +40,11 @@ export class PropertiesController {
 
 	static getByIdMobile(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _user;
-		if (req["user"]) {
-			_user = req["user"]._id;
-		}
-		else {
-			_user = "";
-		}
+		let _headers = req.headers;
+		let _user = req["user"]._id;
+		
 		PropertiesDAO
-		['getById'](_id, _user)
+		['getById'](_id, _user, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

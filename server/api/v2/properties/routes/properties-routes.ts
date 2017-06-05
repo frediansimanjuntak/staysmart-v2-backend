@@ -79,7 +79,7 @@ export class PropertiesRoutes {
 
 		//view property for mobile, need login to get req["user"]._id and used it to update seen
 		router
-			.route('/properties/:id/view')
+			.route('/property/:id')
 			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile)
 
 		router

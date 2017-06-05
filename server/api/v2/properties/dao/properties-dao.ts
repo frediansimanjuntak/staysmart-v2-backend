@@ -376,7 +376,7 @@ propertiesSchema.static('getById', (id:string, user:string, headers: Object):Pro
               reject({message: err.message})
             }
             else {
-              propertyHelper.getById(properties, headers).then(result => {
+              propertyHelper.getById(properties, user, headers).then(result => {
                 resolve(result);  
               });
             }
@@ -1716,7 +1716,7 @@ propertiesSchema.static('step4', (properties: Object, userId: Object, headers: O
                       reject({ message: err.message });
                     }
                     else {
-                      propertyHelper.getById(res, headers).then(r => {
+                      propertyHelper.getById(res, userId, headers).then(r => {
                         resolve(r);
                       });
                     }
