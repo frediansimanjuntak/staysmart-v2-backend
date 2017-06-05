@@ -40,15 +40,11 @@ export class PropertiesController {
 
 	static getByIdMobile(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _user;
-		if (req["user"]) {
-			_user = req["user"]._id;
-		}
-		else {
-			_user = "";
-		}
+		let _headers = req.headers;
+		let _user = req["user"]._id;
+		
 		PropertiesDAO
-		['getById'](_id, _user)
+		['getById'](_id, _user, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -133,6 +129,26 @@ export class PropertiesController {
 		let _files = req["files"];
 		PropertiesDAO
 		['step3'](_properties, _userId, _files)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step3Company(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _properties = req.body;
+		let _files = req["files"];
+		PropertiesDAO
+		['step3Company'](_properties, _userId, _files)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static step4(req: express.Request, res: express.Response):void {
+		let _body = req.body;
+		let _userId = req["user"]._id;
+		let _headers = req.headers;
+		PropertiesDAO
+		['step4'](_body, _userId, _headers)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
