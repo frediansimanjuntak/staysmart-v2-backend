@@ -1532,8 +1532,8 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
             }
             else {
               if ( body.select_company && body.select_company != '' ) {
-                result.owner.company = body.select_company;
-                result.save();
+                result[0].owner.company = body.select_company;
+                result[0].save();
               }
               else {
                 if ( file.company_document ) {
@@ -1545,8 +1545,8 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
                     };
                     Companies.createCompanies(companyData, userId).then(res => {
                       let companyId = res.companiesId;
-                      result.owner.company = companyId;
-                      result.save();
+                      result[0].owner.company = companyId;
+                      result[0].save();
                     });
                   });
                 }
@@ -1570,16 +1570,162 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
                         }
                       }); 
                     }
-                    result.temp.shareholders = shareholders;
-                    result.save();
+                    result[0].temp.shareholders = shareholders;
+                    result[0].save();
                   })
                 })
               }
-              result.owned_type = 'company';
-              result.save((err, step3) => {
+              result[0].owned_type = 'company';
+              result[0].save((err, step3) => {
                 err ? reject({message: err.message})
                     : resolve({message: 'Success'});
               })
+            }
+          }
+        });
+  });
+});
+
+propertiesSchema.static('step4', (properties: Object, userId: Object, headers: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    let body: any = properties;
+    Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              let times = body.times;
+
+              let _days = [];
+              let _time_from = [];
+              let errorDays = false;
+              let errorTimes = false;
+              if (times.length > 0) {
+                for ( var t = 0; t < times.length; t++) {
+                  let days = times[t].days;
+                  let time_from = times[t].time_from;
+                  let start_date = times[t].date;
+
+                  if (days.length > 0) {
+                    for ( var i = 0; i < days.length; i++ ) {
+                      if ( _days.indexOf(days[i]) == -1 ) {
+                        _days.push(days[i]);
+                      }
+                      else {
+                        errorDays = true;
+                      }
+                    }
+                    if ( errorDays == true) {
+                      reject({message: "Can't select same day for more than 1 schedule."});
+                    }
+                    else {
+                      if ( time_from.length > 0 ) {
+                        for ( var j = 0; j < time_from.length; j++ ) {
+                          let f_h = time_from[j].time_from_hours;
+                          let f_m = time_from[j].time_from_minutes;
+                          let t_h = time_from[j].time_to_hours;
+                          let t_m = time_from[j].time_to_minutes;
+
+                          if ( t_h < f_h ) {
+                            errorTimes = true;
+                            reject({message: "From Time can't be bigger than To Time"});
+                          }
+                          else if ( t_h == f_h && f_m > t_m ) {
+                            errorTimes = true;
+                            reject({message: "From Time can't be bigger than To Time"});
+                          }
+                          else {
+                            for( var k = 0; k < _time_from.length; k++ ) {
+                              if ( f_h <= _time_from[k].f_h && t_h >= _time_from[k].t_h ) {
+                                errorTimes = true;
+                                reject({message: "Can't have from time lower than existing from time but to time higher than existing to time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m <= _time_from[k].f_m && t_m >= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have from time lower than existing from time but to time higher than existing to time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m <= _time_from[k].f_m && t_m <= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m >= _time_from[k].f_m && t_m >= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m >= _time_from[k].f_m && t_m <= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h <= _time_from[k].f_h && t_h <= _time_from[k].t_h && t_h >= _time_from[k].f_h ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h >= _time_from[k].f_h && t_h <= _time_from[k].t_h && t_h >= _time_from[k].f_h ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h >= _time_from[k].f_h && t_h >= _time_from[k].t_h && (f_h < _time_from[k].t_h || f_h == _time_from[k].t_h && f_m <= _time_from[k].t_m )) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else {
+                                _time_from.push({
+                                  f_h: f_h,
+                                  f_m: f_m,
+                                  t_h: t_h,
+                                  t_m: t_m
+                                });
+                              }
+                            }
+                          }
+                        }
+                      }
+                      else {
+                        reject({message: 'Required 1 time_from'});
+                      }
+                    }
+                  }
+                  else {
+                    reject({message: 'Please select minimal 1 day to your schedules.'});
+                  }
+                }
+
+                if ( errorTimes == false ) {
+                  let push_schedules = [];
+                  for ( var time = 0; time < times.length; time++ ) {
+                    for ( var day = 0; day < times[time].days.length; day++ ) {
+                      for ( var time_from = 0; time_from < times[time].time_from.length; time_from++ ) {
+                        push_schedules.push({
+                          day: times[time].days[day],
+                          start_date: times[time].date,
+                          time_from: times[time].time_from[time_from].time_from_hours+':'+times[time].time_from[time_from].time_from_minutes,
+                          time_to: times[time].time_from[time_from].time_to_hours+':'+times[time].time_from[time_from].time_to_minutes,
+                        });
+                      }
+                    }
+                  }
+                  result[0].schedules = push_schedules;
+                  result[0].save((err, res) => {
+                    if ( err ) {
+                      reject({ message: err.message });
+                    }
+                    else {
+                      propertyHelper.getById(res, headers).then(r => {
+                        resolve(r);
+                      });
+                    }
+                  })
+                }
+              } 
+              else {
+                reject({message: 'Please add minimal 1 schedule.'});
+              }
             }
           }
         });

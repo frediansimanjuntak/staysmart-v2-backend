@@ -147,6 +147,16 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static step4(req: express.Request, res: express.Response):void {
+		let _body = req.body;
+		let _userId = req["user"]._id;
+		let _headers = req.headers;
+		PropertiesDAO
+		['step4'](_body, _userId, _headers)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static step5(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		PropertiesDAO
