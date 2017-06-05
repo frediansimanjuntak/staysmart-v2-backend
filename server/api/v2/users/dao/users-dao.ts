@@ -597,6 +597,57 @@ usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:str
 	});
 });
 
+usersSchema.static('updateMe', (id:string, user:Object, image:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(user)) {
+			return reject(new TypeError('User is not a valid object.'));
+		}
+		let body:any = user;
+		let img: any = image;
+		Users
+			.findById(id, (err, user)=>{
+				if(err){
+					reject(err);
+				}
+				if(user){
+					if(body.username) {
+						user.username = body.username;
+					}
+					if(body.email) {
+						user.email = body.email;
+					}
+					if(body.phone) {
+						user.phone = body.phone;
+					}
+					if(img.photo) {
+						Attachments.createAttachments(img.photo, {}).then(res => {
+							user.picture = res.idAtt[0];
+							user.save();
+						})
+					}
+					user.save((err, saved) => {
+						if(err){
+							reject(err);
+						}
+						if(saved){
+							if(body.oldpassword && body.newpassword) {
+								Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+									resolve(res);
+								})
+								.catch((err) => {
+									reject(err);
+								})
+							}
+							else{
+								resolve({message: 'Success'});
+							}
+						}
+					});
+				}						
+			});
+	});
+});
+
 usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
@@ -766,6 +817,46 @@ usersSchema.static('activationUser', (id:string, user:Object, headers:Object):Pr
 				var code = user.verification.code;
 					
 				if (code == body.code){
+					if(user.verification.expires > new Date()) {
+						Users
+							.update({"_id": id},{
+								$set:
+								{
+									"verification.verified": true, 
+									"verification.verified_date": new Date()
+								}
+							})
+							.exec((err, update) => {
+								if (err) {
+									reject(err);
+								}
+								else {
+									userHelper.activationHelper(id, headers).then(result => {
+										resolve(result);
+									});
+								} 
+							});
+					}
+					else{
+						reject({message: 'Your code has expired.'});
+					}	
+				}
+				else{
+					reject({message: 'Your code is wrong or has expired.'});
+				}
+			})
+		});
+});
+
+usersSchema.static('verifiedUser', (id:string, user:Object, headers:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = user;
+
+		Users
+			.findById(id, (err,user)=>{
+				var code = user.verification.code;
+					
+				if (code == body.verification_code){
 					if(user.verification.expires > new Date()) {
 						Users
 							.update({"_id": id},{

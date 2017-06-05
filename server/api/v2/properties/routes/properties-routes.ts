@@ -61,6 +61,10 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(),PropertiesController.step3);
 
 		router
+			.route('/property/new/step3/company')
+			.post(auth.isAuthenticated(),PropertiesController.step3Company);
+
+		router
 			.route('/property/new/step5')
 			.post(auth.isAuthenticated(),PropertiesController.step5);
 

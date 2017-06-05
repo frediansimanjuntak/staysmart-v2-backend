@@ -678,6 +678,8 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                                 Properties.unsetTemp(id, type);
                                               }
                                               else{
+                                                Users.updateUserDataOwners(userId, shareholders[0]);
+                                                shareholders.splice(0, 1);
                                                 Companies.addCompaniesShareholders(companyId, shareholders, userId);
                                                 var type = 'shareholders';
                                                 Properties.unsetTemp(id, type);
@@ -1511,6 +1513,76 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
             }
           }
         })
+  });
+});
+
+propertiesSchema.static('step3Company', (properties: Object, userId: Object, files: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    let body: any = properties;
+    let file: any = files;
+    Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              if ( body.select_company && body.select_company != '' ) {
+                result.owner.company = body.select_company;
+                result.save();
+              }
+              else {
+                if ( file.company_document ) {
+                  Attachments.createAttachments(file.company_document, {}).then(doc => {
+                    let companyData = {
+                      name: body.name,
+                      registration_number: body.company_number,
+                      documents: doc.idAtt
+                    };
+                    Companies.createCompanies(companyData, userId).then(res => {
+                      let companyId = res.companiesId;
+                      result.owner.company = companyId;
+                      result.save();
+                    });
+                  });
+                }
+                else {
+                  reject({message: 'required company_document.'});
+                }
+                
+              }
+              if ( file.shareholder_front ) {
+                Attachments.createAttachments(file.shareholder_front, {}).then(front => {
+                  Attachments.createAttachments(file.shareholder_back, {}).then(back => {
+                    let shareholders = [];
+                    for ( var i = 0; i < front.idAtt.length; i++ ) {
+                      shareholders.push({
+                        name: body.shareholder_full_name[i],
+                        identification_type: body.shareholder_type[i],
+                        identification_number: body.shareholder_id_number[i],
+                        identification_proof: {
+                          front: front.idAtt[i],
+                          back: back.idAtt[i]
+                        }
+                      }); 
+                    }
+                    result.temp.shareholders = shareholders;
+                    result.save();
+                  })
+                })
+              }
+              result.owned_type = 'company';
+              result.save((err, step3) => {
+                err ? reject({message: err.message})
+                    : resolve({message: 'Success'});
+              })
+            }
+          }
+        });
   });
 });
 
