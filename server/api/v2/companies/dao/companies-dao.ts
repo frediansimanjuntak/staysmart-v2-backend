@@ -101,9 +101,6 @@ companiesSchema.static('addCompaniesShareholders', (id:string, shareholder:Objec
 
 companiesSchema.static('deleteCompanies', (id:string, currentUser:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(id)) {
-            return reject(new TypeError('Id is not a valid string.'));
-        }
         Companies
           .findById(id, (err,companies) => {
             Users.validateUser(companies.created_by, currentUser).then(res => {
