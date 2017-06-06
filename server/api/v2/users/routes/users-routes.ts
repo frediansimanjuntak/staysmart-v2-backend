@@ -38,7 +38,7 @@ export class UserRoutes {
 
 		router
 			.route('/me')
-			.get(auth.isAuthenticated(), UsersController.me);
+			.get(auth.isAuthenticated(), UsersController.me)
 			.post(auth.isAuthenticated(), UsersController.updateMe);
 
 		router

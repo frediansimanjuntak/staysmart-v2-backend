@@ -6,6 +6,7 @@ import Amenities from '../../amenities/dao/amenities-dao';
 import Attachments from '../../attachments/dao/attachments-dao';
 import Users from '../../users/dao/users-dao';
 import Agreements from '../../agreements/dao/agreements-dao'
+import Appointments from '../../appointments/dao/appointments-dao'
 import Companies from '../../companies/dao/companies-dao';
 import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
@@ -13,6 +14,7 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {socketIo} from '../../../../server';
 import {propertyHelper} from '../../../../helper/property.helper';
+import * as moment from 'moment';
 var split = require('split-string');
 
 propertiesSchema.static('getAll', (headers: Object, userId: Object):Promise<any> => {
@@ -1758,6 +1760,127 @@ propertiesSchema.static('step5', (userId: Object):Promise<any> => {
             }
           }
         })
+  });
+});
+
+propertiesSchema.static('getSchedules', (propertyId: Object, headers: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    Properties.findById(propertyId).populate('development').exec(( err, property ) => {
+      if ( err ) {
+        reject({message: 'No property with id '+propertyId});
+      }
+      else {
+        let schedules = property.schedules;
+        let name = '#'+property.address.floor+' - '+property.address.unit+' '+property.development.name;
+        
+        let schedules_data = [];
+        let date_arr = [];
+        let schedule = [];
+        for ( var i = 0; i < schedules.length; i++ ) {
+          let time_to = schedules[i].time_to.split(":");
+          let time_from = schedules[i].time_from.split(":");
+          let diff_h = time_to[0] - time_from[0];
+          let diff_m = time_to[1] - time_from[1];
+          let slot = (diff_h*2) + (diff_m/30);
+          
+          
+          if ( date_arr.indexOf(schedules[i].start_date) == -1) {
+            date_arr.push(schedules[i].start_date);
+          }
+          let count = 0;
+          let index = 0;
+          for ( var j = 0; j < schedule.length; j++ ) {
+            if ( schedule[j].start_date == schedules[i].start_date ) {
+              count += 1;
+              index = j;
+            }
+          }
+          let arr_id = 0;
+          if ( count == 0 ) {
+            schedule.push({
+              start_date: schedules[i].start_date,
+              time: [schedules[i]._id]
+            });
+          }
+          else {
+            arr_id = schedule[index].time.length + 1;
+            schedule[index].time.push(schedules[i]._id);
+          }
+
+          schedules_data.push({
+            _id: schedules[i]._id,
+            day: schedules[i].day,
+            date: schedules[i].start_date,
+            time_to: schedules[i].time_to,
+            time_from: schedules[i].time_from,
+            property: {
+              name: name,
+              address: property.address.full_address
+            },
+            array_id: arr_id,
+            form_index: date_arr.indexOf(schedules[i].start_date),
+            user: property.owner.user,
+            slot30min: slot
+          });
+        }
+        resolve(schedules_data);
+      }
+    })
+  });
+});
+
+propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string, headers: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    Appointments
+      .find({})
+      .populate('property')
+      .exec(( err, appointments ) => {
+      if ( err ) {
+        reject({message: 'No appointments.'});
+      }
+      else {
+        for ( var a = 0; a < appointments.length; a++ ) {
+          let _appointments = appointments[a];
+          Properties.getSchedules(propertyId, headers).then(res => {
+            let schedules = [];
+            for ( var i = 0; i < res.length; i++ ) {
+              let res_date = res[i].date;
+              let _fullDate = moment.utc(res_date).format("YYYY-MM-DD");
+              if ( _fullDate == date) {
+                let status;
+                if(_appointments.property) {
+                  if ( 
+                    res[i].property.address == _appointments.property.address.full_address && 
+                    res[i].date == _appointments.chosen_time.date && 
+                    res[i].time_from == _appointments.chosen_time.from
+                  ) {
+                    if ( _appointments.status == 'pending') {
+                      status = 'Pending Confirmation';  
+                    }
+                    else {
+                      status = _appointments.status.charAt(0).toUpperCase() + _appointments.status.slice(1);
+                    }
+                    
+                  }
+                  else {
+                    status = 'Available';
+                  }
+                  schedules.push({
+                    id: res[i]._id,
+                    time: res[i].time_from,
+                    time2: res[i].time_to,
+                    idx: res[i].form_index > 9 ? res[i].form_index : '0'+res[i].form_index,
+                    date: date,
+                    status: status
+                  });
+                }
+              }
+            }
+            resolve(schedules);
+          });
+        }
+      }
+    });
   });
 });
 
