@@ -61,6 +61,14 @@ export class PropertiesRoutes {
 			.post(auth.isAuthenticated(),PropertiesController.step3);
 
 		router
+			.route('/property/new/step3/company')
+			.post(auth.isAuthenticated(),PropertiesController.step3Company);
+
+		router
+			.route('/property/new/step4')
+			.post(auth.isAuthenticated(),PropertiesController.step4);
+
+		router
 			.route('/property/new/step5')
 			.post(auth.isAuthenticated(),PropertiesController.step5);
 
@@ -71,8 +79,16 @@ export class PropertiesRoutes {
 
 		//view property for mobile, need login to get req["user"]._id and used it to update seen
 		router
-			.route('/properties/:id/view')
-			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile)
+			.route('/property/:id')
+			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile);
+		
+		router
+			.route('/schedules/:id/:date')
+			.get(auth.isAuthenticated(),PropertiesController.getSchedulesByDate);
+
+		router
+			.route('/schedules/:id')
+			.get(auth.isAuthenticated(),PropertiesController.getSchedules);
 
 		router
 			.route('/properties/update/:id')

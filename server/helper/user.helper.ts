@@ -139,7 +139,7 @@ export class userHelper{
 								roles: result.role,
 								landlord: landlord_data,
 								tenant: tenant_data,
-								picture: result.picture.url,
+								picture: result.picture ? result.picture.url : '',
 								owned_property: result.owned_properties,
 								managed_property: result.managed_properties,
 								appointed_property: res
@@ -176,7 +176,7 @@ export class userHelper{
 					email: data.email,
 					roles: data.role,
 					tenant: tenant_data,
-					picture: data.picture.url
+					picture: data.picture.url ? data.picture.url : ''
 				});
 			}
 			else {
@@ -263,7 +263,7 @@ export class userHelper{
 											roles: data.role,
 											landlord: landlord_data,
 											tenant: tenant_data,
-											picture: data.picture.url,
+											picture: data.picture.url ? data.picture.url : '',
 											owned_property: data.owned_properties,
 											managed_property: data.managed_properties,
 											appointed_property: res,

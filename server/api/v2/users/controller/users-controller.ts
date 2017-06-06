@@ -89,6 +89,17 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updateMe(req: express.Request, res: express.Response):void {
+		let _id = req["user"]._id;
+		let _user = req.body;
+		let _image = req["files"];
+
+		UsersDAO
+		['updateMe'](_id, _user, _image)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static updateUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _user = req.body;
@@ -139,6 +150,25 @@ export class UsersController {
 		  ['activationUser'](_id, _user, _headers)
 		  .then(users => res.status(201).json(users))
 		  .catch(error => res.status(400).json(error));
+	}
+
+	static verifiedUser(req: express.Request, res: express.Response):void {
+		let _id = req["user"]._id;
+		let _user = req.body;
+		let _headers = req.headers;
+		UsersDAO
+		  ['verifiedUser'](_id, _user, _headers)
+		  .then(users => res.status(201).json(users))
+		  .catch(error => res.status(400).json(error));
+	}
+
+	static resendCode(req: express.Request, res: express.Response):void {
+		let _id = req["user"]._id;
+
+		UsersDAO
+		['sendActivationCode'](_id)
+		.then(() => res.status(200).end())
+		.catch(error => res.status(400).json(error));
 	}
 
 	static sendActivationCode(req: express.Request, res: express.Response):void {

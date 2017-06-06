@@ -7,7 +7,6 @@ import Users from '../../users/dao/users-dao'
 userReportsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
-
         UserReports
           .find(_query)
           .populate("reporter reported")
@@ -26,22 +25,31 @@ userReportsSchema.static('getGroupCount', ():Promise<any> => {
             { 
               $group: { 
                 _id: "$reported",
-                total_vote: { $sum: 1 }
+                total_report: { $sum: 1 }
               } 
-            }];      
-
+            },
+            {
+                $lookup:
+                {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "reported"
+                }
+            },
+            {
+                $unwind: "$reported"
+            },
+            {
+                $project: {"id_user":"$reported._id", "username":"$reported.username", "total_report":"$total_report", "reported":"$reported.reported", _id:0}
+            }];
         UserReports
-          .aggregate(pipeline, (err, res)=>{
-            if(err){
+          .aggregate(pipeline, (err, res) => {
+            if (err) {
               reject({message: err.message});
             }
-            else{
-              UserReports
-                .populate(res, {path: '$reported'})
-                .exec((err, res) => {
-                  err ? reject({message: err.message})
-                      : resolve(res);
-                })
+            else {
+                resolve (res);
             }
           })
     });
@@ -51,8 +59,7 @@ userReportsSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
-        }
-
+        }     
         UserReports
           .findById(id)
           .populate("reporter reported")
@@ -68,14 +75,57 @@ userReportsSchema.static('getByReported', (reported:string):Promise<any> => {
         if (!_.isString(reported)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-
+        let ObjectID = mongoose.Types.ObjectId;
+        let pipeline = [{
+            $match: {reported: new ObjectID(reported)}
+        },
+        {
+            $lookup:
+            {
+                from: "users",
+                localField: "reported",
+                foreignField: "_id",
+                as: "reported"
+            }
+        },
+        {
+            $lookup:
+            {
+                from: "users",
+                localField: "reporter",
+                foreignField: "_id",
+                as: "reporter"
+            }
+        },
+        {
+            $unwind: "$reported"
+        },
+        {
+            $unwind: "$reporter"
+        },
+        {
+            $project: {
+                "reported": {
+                    "id_user": "$reported._id",
+                    "username": "$reported.username"
+                },
+                "reporter": {
+                    "id_user": "$reporter._id",
+                    "username": "$reporter.username"
+                },
+                "reason": "$reason",
+                "created_at": "$created_at"
+            }
+        }];
         UserReports
-          .findOne({"reported": reported})
-          .populate("reporter reported")
-          .exec((err, reports) => {
-              err ? reject({message: err.message})
-                  : resolve(reports);
-          });
+            .aggregate(pipeline, (err, res) => {
+                if (err) {
+                    reject({message: err.message});
+                }
+                else {
+                    resolve (res);
+                }
+            })
     });
 });
 
@@ -99,15 +149,26 @@ userReportsSchema.static('reportUser', (reported:string):Promise<any> => {
             return reject(new TypeError('Id is not a valid string.'));
         }      
         Users
-          .findByIdAndUpdate(reported, {
-            $set: {
-              "reported": true
-            }
-          })
-          .exec((err, res) => {
-            err ? reject({message: err.message})
-                : resolve(res);
-          })
+            .findById(reported)
+            .exec((err, user) => {
+                if (err) {
+                    reject(err);
+                }
+                else if (user) {
+                    let report;
+                    if (user.reported === false) {
+                        report = true;
+                    } 
+                    else {
+                        report = false;
+                    }
+                    user.reported = report;
+                    user.save((err, saved) => {
+                        err ? reject({message: err.message})
+                            : resolve(saved);
+                    })
+                }
+            })
     });
 });
 
@@ -116,7 +177,6 @@ userReportsSchema.static('deleteUserReports', (reported:string):Promise<any> => 
         if (!_.isString(reported)) {
             return reject(new TypeError('Id is not a valid string.'));
         }
-
         UserReports
           .remove({"reported": reported})
           .exec((err, deleted) => {

@@ -6,6 +6,7 @@ import Amenities from '../../amenities/dao/amenities-dao';
 import Attachments from '../../attachments/dao/attachments-dao';
 import Users from '../../users/dao/users-dao';
 import Agreements from '../../agreements/dao/agreements-dao'
+import Appointments from '../../appointments/dao/appointments-dao'
 import Companies from '../../companies/dao/companies-dao';
 import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
@@ -13,6 +14,7 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {socketIo} from '../../../../server';
 import {propertyHelper} from '../../../../helper/property.helper';
+import * as moment from 'moment';
 var split = require('split-string');
 
 propertiesSchema.static('getAll', (headers: Object, userId: Object):Promise<any> => {
@@ -376,7 +378,7 @@ propertiesSchema.static('getById', (id:string, user:string, headers: Object):Pro
               reject({message: err.message})
             }
             else {
-              propertyHelper.getById(properties, headers).then(result => {
+              propertyHelper.getById(properties, user, headers).then(result => {
                 resolve(result);  
               });
             }
@@ -678,6 +680,8 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                                 Properties.unsetTemp(id, type);
                                               }
                                               else{
+                                                Users.updateUserDataOwners(userId, shareholders[0]);
+                                                shareholders.splice(0, 1);
                                                 Companies.addCompaniesShareholders(companyId, shareholders, userId);
                                                 var type = 'shareholders';
                                                 Properties.unsetTemp(id, type);
@@ -1514,6 +1518,222 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
   });
 });
 
+propertiesSchema.static('step3Company', (properties: Object, userId: Object, files: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    let body: any = properties;
+    let file: any = files;
+    Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              if ( body.select_company && body.select_company != '' ) {
+                result[0].owner.company = body.select_company;
+                result[0].save();
+              }
+              else {
+                if ( file.company_document ) {
+                  Attachments.createAttachments(file.company_document, {}).then(doc => {
+                    let companyData = {
+                      name: body.name,
+                      registration_number: body.company_number,
+                      documents: doc.idAtt
+                    };
+                    Companies.createCompanies(companyData, userId).then(res => {
+                      let companyId = res.companiesId;
+                      result[0].owner.company = companyId;
+                      result[0].save();
+                    });
+                  });
+                }
+                else {
+                  reject({message: 'required company_document.'});
+                }
+                
+              }
+              if ( file.shareholder_front ) {
+                Attachments.createAttachments(file.shareholder_front, {}).then(front => {
+                  Attachments.createAttachments(file.shareholder_back, {}).then(back => {
+                    let shareholders = [];
+                    for ( var i = 0; i < front.idAtt.length; i++ ) {
+                      shareholders.push({
+                        name: body.shareholder_full_name[i],
+                        identification_type: body.shareholder_type[i],
+                        identification_number: body.shareholder_id_number[i],
+                        identification_proof: {
+                          front: front.idAtt[i],
+                          back: back.idAtt[i]
+                        }
+                      }); 
+                    }
+                    result[0].temp.shareholders = shareholders;
+                    result[0].save();
+                  })
+                })
+              }
+              result[0].owned_type = 'company';
+              result[0].save((err, step3) => {
+                err ? reject({message: err.message})
+                    : resolve({message: 'Success'});
+              })
+            }
+          }
+        });
+  });
+});
+
+propertiesSchema.static('step4', (properties: Object, userId: Object, headers: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    let body: any = properties;
+    Properties
+        .find({"owner.user": userId, "status": "draft"})
+        .exec((err, result) => {
+          if (err) {
+            reject({message: err.message});
+          }
+          else {
+            if (result.length == 0) {
+              reject({message: 'Fill step 1 first.'});
+            }
+            else {
+              let times = body.times;
+
+              let _days = [];
+              let _time_from = [];
+              let errorDays = false;
+              let errorTimes = false;
+              if (times.length > 0) {
+                for ( var t = 0; t < times.length; t++) {
+                  let days = times[t].days;
+                  let time_from = times[t].time_from;
+                  let start_date = times[t].date;
+
+                  if (days.length > 0) {
+                    for ( var i = 0; i < days.length; i++ ) {
+                      if ( _days.indexOf(days[i]) == -1 ) {
+                        _days.push(days[i]);
+                      }
+                      else {
+                        errorDays = true;
+                      }
+                    }
+                    if ( errorDays == true) {
+                      reject({message: "Can't select same day for more than 1 schedule."});
+                    }
+                    else {
+                      if ( time_from.length > 0 ) {
+                        for ( var j = 0; j < time_from.length; j++ ) {
+                          let f_h = time_from[j].time_from_hours;
+                          let f_m = time_from[j].time_from_minutes;
+                          let t_h = time_from[j].time_to_hours;
+                          let t_m = time_from[j].time_to_minutes;
+
+                          if ( t_h < f_h ) {
+                            errorTimes = true;
+                            reject({message: "From Time can't be bigger than To Time"});
+                          }
+                          else if ( t_h == f_h && f_m > t_m ) {
+                            errorTimes = true;
+                            reject({message: "From Time can't be bigger than To Time"});
+                          }
+                          else {
+                            for( var k = 0; k < _time_from.length; k++ ) {
+                              if ( f_h <= _time_from[k].f_h && t_h >= _time_from[k].t_h ) {
+                                errorTimes = true;
+                                reject({message: "Can't have from time lower than existing from time but to time higher than existing to time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m <= _time_from[k].f_m && t_m >= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have from time lower than existing from time but to time higher than existing to time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m <= _time_from[k].f_m && t_m <= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m >= _time_from[k].f_m && t_m >= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h == _time_from[k].f_h && t_h == _time_from[k].t_h && f_m >= _time_from[k].f_m && t_m <= _time_from[k].t_m ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h <= _time_from[k].f_h && t_h <= _time_from[k].t_h && t_h >= _time_from[k].f_h ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h >= _time_from[k].f_h && t_h <= _time_from[k].t_h && t_h >= _time_from[k].f_h ) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else if ( f_h >= _time_from[k].f_h && t_h >= _time_from[k].t_h && (f_h < _time_from[k].t_h || f_h == _time_from[k].t_h && f_m <= _time_from[k].t_m )) {
+                                errorTimes = true;
+                                reject({message: "Can't have time between existing time."});
+                              }
+                              else {
+                                _time_from.push({
+                                  f_h: f_h,
+                                  f_m: f_m,
+                                  t_h: t_h,
+                                  t_m: t_m
+                                });
+                              }
+                            }
+                          }
+                        }
+                      }
+                      else {
+                        reject({message: 'Required 1 time_from'});
+                      }
+                    }
+                  }
+                  else {
+                    reject({message: 'Please select minimal 1 day to your schedules.'});
+                  }
+                }
+
+                if ( errorTimes == false ) {
+                  let push_schedules = [];
+                  for ( var time = 0; time < times.length; time++ ) {
+                    for ( var day = 0; day < times[time].days.length; day++ ) {
+                      for ( var time_from = 0; time_from < times[time].time_from.length; time_from++ ) {
+                        push_schedules.push({
+                          day: times[time].days[day],
+                          start_date: times[time].date,
+                          time_from: times[time].time_from[time_from].time_from_hours+':'+times[time].time_from[time_from].time_from_minutes,
+                          time_to: times[time].time_from[time_from].time_to_hours+':'+times[time].time_from[time_from].time_to_minutes,
+                        });
+                      }
+                    }
+                  }
+                  result[0].schedules = push_schedules;
+                  result[0].save((err, res) => {
+                    if ( err ) {
+                      reject({ message: err.message });
+                    }
+                    else {
+                      propertyHelper.getById(res, userId, headers).then(r => {
+                        resolve(r);
+                      });
+                    }
+                  })
+                }
+              } 
+              else {
+                reject({message: 'Please add minimal 1 schedule.'});
+              }
+            }
+          }
+        });
+  });
+});
+
 propertiesSchema.static('step5', (userId: Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       Properties
@@ -1540,6 +1760,127 @@ propertiesSchema.static('step5', (userId: Object):Promise<any> => {
             }
           }
         })
+  });
+});
+
+propertiesSchema.static('getSchedules', (propertyId: Object, headers: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    Properties.findById(propertyId).populate('development').exec(( err, property ) => {
+      if ( err ) {
+        reject({message: 'No property with id '+propertyId});
+      }
+      else {
+        let schedules = property.schedules;
+        let name = '#'+property.address.floor+' - '+property.address.unit+' '+property.development.name;
+        
+        let schedules_data = [];
+        let date_arr = [];
+        let schedule = [];
+        for ( var i = 0; i < schedules.length; i++ ) {
+          let time_to = schedules[i].time_to.split(":");
+          let time_from = schedules[i].time_from.split(":");
+          let diff_h = time_to[0] - time_from[0];
+          let diff_m = time_to[1] - time_from[1];
+          let slot = (diff_h*2) + (diff_m/30);
+          
+          
+          if ( date_arr.indexOf(schedules[i].start_date) == -1) {
+            date_arr.push(schedules[i].start_date);
+          }
+          let count = 0;
+          let index = 0;
+          for ( var j = 0; j < schedule.length; j++ ) {
+            if ( schedule[j].start_date == schedules[i].start_date ) {
+              count += 1;
+              index = j;
+            }
+          }
+          let arr_id = 0;
+          if ( count == 0 ) {
+            schedule.push({
+              start_date: schedules[i].start_date,
+              time: [schedules[i]._id]
+            });
+          }
+          else {
+            arr_id = schedule[index].time.length + 1;
+            schedule[index].time.push(schedules[i]._id);
+          }
+
+          schedules_data.push({
+            _id: schedules[i]._id,
+            day: schedules[i].day,
+            date: schedules[i].start_date,
+            time_to: schedules[i].time_to,
+            time_from: schedules[i].time_from,
+            property: {
+              name: name,
+              address: property.address.full_address
+            },
+            array_id: arr_id,
+            form_index: date_arr.indexOf(schedules[i].start_date),
+            user: property.owner.user,
+            slot30min: slot
+          });
+        }
+        resolve(schedules_data);
+      }
+    })
+  });
+});
+
+propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string, headers: Object):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    Appointments
+      .find({})
+      .populate('property')
+      .exec(( err, appointments ) => {
+      if ( err ) {
+        reject({message: 'No appointments.'});
+      }
+      else {
+        for ( var a = 0; a < appointments.length; a++ ) {
+          let _appointments = appointments[a];
+          Properties.getSchedules(propertyId, headers).then(res => {
+            let schedules = [];
+            for ( var i = 0; i < res.length; i++ ) {
+              let res_date = res[i].date;
+              let _fullDate = moment.utc(res_date).format("YYYY-MM-DD");
+              if ( _fullDate == date) {
+                let status;
+                if(_appointments.property) {
+                  if ( 
+                    res[i].property.address == _appointments.property.address.full_address && 
+                    res[i].date == _appointments.chosen_time.date && 
+                    res[i].time_from == _appointments.chosen_time.from
+                  ) {
+                    if ( _appointments.status == 'pending') {
+                      status = 'Pending Confirmation';  
+                    }
+                    else {
+                      status = _appointments.status.charAt(0).toUpperCase() + _appointments.status.slice(1);
+                    }
+                    
+                  }
+                  else {
+                    status = 'Available';
+                  }
+                  schedules.push({
+                    id: res[i]._id,
+                    time: res[i].time_from,
+                    time2: res[i].time_to,
+                    idx: res[i].form_index > 9 ? res[i].form_index : '0'+res[i].form_index,
+                    date: date,
+                    status: status
+                  });
+                }
+              }
+            }
+            resolve(schedules);
+          });
+        }
+      }
+    });
   });
 });
 

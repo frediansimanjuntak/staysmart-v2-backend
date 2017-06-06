@@ -38,7 +38,8 @@ export class UserRoutes {
 
 		router
 			.route('/me')
-			.get(auth.isAuthenticated(), UsersController.me);
+			.get(auth.isAuthenticated(), UsersController.me)
+			.post(auth.isAuthenticated(), UsersController.updateMe);
 
 		router
 			.route('/me/:type')
@@ -47,6 +48,14 @@ export class UserRoutes {
 		router
 			.route('/users/activate/:id')
 			.post(auth.isAuthenticated(), UsersController.activationUser);
+
+		router
+			.route('/verification')
+			.post(auth.isAuthenticated(), UsersController.verifiedUser);
+		
+		router
+			.route('/resendcode')
+			.post(auth.isAuthenticated(), UsersController.resendCode);
 
 		router
 			.route('/users/verification_code/:id')
