@@ -23,8 +23,23 @@ router.post('/', function(req, res, next) {
     }
     if(user._id && user.role && user.username) {
       var token = signToken(user._id, user.role, user.username);
-      if (user.picture) {
-        Attachments.getById(user.picture).then(result => {
+      if (user.reported == false) {
+        if (user.picture) {
+          Attachments.getById(user.picture).then(result => {
+            res.json({ 
+              token: token,
+              'x-auth-token': token,
+              _id: user._id,
+              profil : user.nutchat,
+              username: user.username,
+              email: user.email,
+              roles: user.role,
+              verified: user.verification.verified,
+              picture: result.url
+            });
+          });
+        }
+        else {
           res.json({ 
             token: token,
             'x-auth-token': token,
@@ -34,22 +49,12 @@ router.post('/', function(req, res, next) {
             email: user.email,
             roles: user.role,
             verified: user.verification.verified,
-            picture: result.url
           });
-        });
+        }
       }
       else {
-        res.json({ 
-          token: token,
-          'x-auth-token': token,
-          _id: user._id,
-          profil : user.nutchat,
-          username: user.username,
-          email: user.email,
-          roles: user.role,
-          verified: user.verification.verified,
-        });
-      }
+        res.json({message: 'You have been reported, please contact admin'});
+      }      
     }
     else{
       res.json({message: 'please login first.'});

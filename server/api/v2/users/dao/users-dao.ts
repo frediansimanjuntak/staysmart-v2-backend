@@ -485,7 +485,7 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 		Users
 			.update({"_id": id}, {
 				$set: {
-					"verification.expires" : new Date(+new Date() + 5*60*1000),
+					"verification.expires" : new Date(+ new Date() + 5 * 60 * 1000),
 					"verification.code": randomCode
 				}
 			})
