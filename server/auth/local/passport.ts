@@ -5,11 +5,14 @@ import * as Promise from 'bluebird';
 var LocalStrategy = passportLocal.Strategy;
 
 function localAuthenticate(User, username, password, done) {
-  User.findOne({ 
+  User
+  .findOne({ 
     $or: [
       {username: username.toLowerCase()}, 
       {email: username.toLowerCase()}]
-  }).exec()
+  })
+  .select('+password')
+  .exec()
     .then(user => {
       if(!user) {
         return done(null, false, {
@@ -28,8 +31,7 @@ function localAuthenticate(User, username, password, done) {
           return done(null, user);
         }
       });
-    })
- 
+    }) 
     .catch(err => done(err));
 }
 
@@ -37,8 +39,7 @@ export function setup(User/*, config*/) {
   passport.use('local.normal', new LocalStrategy({
     usernameField: 'username',
     passReqToCallback: true
-  }, function(req, username, password, done) {
-    
+  }, function(req, username, password, done) {    
     return localAuthenticate(User, username, password, done);
   }));
 }

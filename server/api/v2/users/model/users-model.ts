@@ -11,7 +11,7 @@ var Schema = mongoose.Schema;
 var UsersSchema = new mongoose.Schema({
 	username: {type: String, lowercase: true, unique: true, trim: true},
 	email: {type: String, lowercase: true, unique: true, trim: true},
-	password: {type: String},
+	password: {type: String, select: false},
 	phone:{type: String, trim: true},
 	role: {type: String, enum: ['user','admin'], default: 'user'},
 	picture: {

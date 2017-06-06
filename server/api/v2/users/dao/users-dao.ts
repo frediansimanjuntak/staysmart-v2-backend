@@ -21,7 +21,7 @@ import {userHelper} from '../../../../helper/user.helper';
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
-			.find({}, '-salt -password')
+			.find({})
 			.exec((err, users) => {
 				err ? reject(err)
 				: resolve(users);
@@ -33,7 +33,7 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 
 		Users
-			.find(query, '-salt -password')
+			.find(query)
 			.populate("picture tenant.data.identification_proof.front tenant.data.identification_proof.back tenant.data.bank_account.bank landlord.data.identification_proof.front landlord.data.identification_proof.back landlord.data.bank_account.bank landlord.data.owners.identification_proof.front landlord.data.owners.identification_proof.back blocked_users")
 			.populate({
 				path: 'companies',
@@ -352,7 +352,7 @@ usersSchema.static('checkUserData', (search:string):Promise<any> => {
 usersSchema.static('getPropertyNonManager', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
-			.findById(userId, '-salt -password -blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
+			.findById(userId, '-blocked_users -dreamtalk -agreements -landlord -tenant -verification -role -__v')
 			.populate({
 				path: 'owned_properties',
 					populate: {
@@ -485,7 +485,7 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 		Users
 			.update({"_id": id}, {
 				$set: {
-					"verification.expires" : new Date(+new Date() + 5*60*1000),
+					"verification.expires" : new Date(+ new Date() + 5 * 60 * 1000),
 					"verification.code": randomCode
 				}
 			})
@@ -568,6 +568,7 @@ usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:str
 		}
 		Users
 			.findById(id)
+			.select('+password')
 			.exec((err, user) => {
 				if(err){
 					reject(err);
@@ -741,7 +742,6 @@ usersSchema.static('updateUserDataOwners', (id:string, ownerData:Object):Promise
 		var type = 'landlord';
 
 		Users.createHistory(id, type);
-
 		for (var i = 0; i < body.owners.length; i++) {
 			Users
 				.findByIdAndUpdate(id, {
