@@ -3,9 +3,9 @@ import AmenitiesDAO from '../dao/amenities-dao';
 
 export class AmenitiesController {
 	static getAll(req: express.Request, res: express.Response):void {
-		let _headers = req.headers;
+		let _device = req.device.type;
 		AmenitiesDAO
-		['getAll'](_headers)
+		['getAll'](_device)
 		.then(amenities => res.status(200).json(amenities))
 		.catch(error => res.status(400).json(error));
 	}

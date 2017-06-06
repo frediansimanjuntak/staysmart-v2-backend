@@ -3,9 +3,9 @@ import DevelopmentsDAO from '../dao/developments-dao';
 
 export class DevelopmentsController {
 	static getAll(req: express.Request, res: express.Response):void {
-		let _headers = req.headers;
+		let _device = req.device.type;
 		DevelopmentsDAO
-		['getAll'](_headers)
+		['getAll'](_device)
 		.then(developments => res.status(200).json(developments))
 		.catch(error => res.status(400).json(error));
 	}
@@ -13,7 +13,7 @@ export class DevelopmentsController {
 	static developmentsMap(req: express.Request, res: express.Response):void {
 		let _searchComponent;
 		let _from;
-		if (req.headers.from) {
+		if (req.device.type.from) {
 			_from = 'mobile';
 			_searchComponent = req.query;
 		}
@@ -22,17 +22,17 @@ export class DevelopmentsController {
 			_searchComponent = req.params;
 		}
 		DevelopmentsDAO
-		['developmentsMap'](_searchComponent, _from, req.headers, req)
+		['developmentsMap'](_searchComponent, _from, req.device.type, req)
 		.then(developments => res.status(200).json(developments))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
-		let _headers = req.headers;
+		let _device = req.device.type;
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
 		DevelopmentsDAO
-		['getById'](_id, _userId, _headers)
+		['getById'](_id, _userId, _device)
 		.then(developments => res.status(200).json(developments))
 		.catch(error => res.status(400).json(error));
 	}
