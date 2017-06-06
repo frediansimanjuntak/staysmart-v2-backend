@@ -4,6 +4,7 @@
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 import * as express from "express";
+import * as device from 'express-device';
 import * as os from "os";
 import * as fs from 'fs';
 import * as http from "http";
@@ -19,6 +20,7 @@ import {Cron} from "./cron/index";
 
 var PORT = process.env.PORT || 5000;
 const app = express();
+app.use(device.capture());
 
 if(config.seedDB) { require('./config/seed'); }
 

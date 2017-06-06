@@ -6,7 +6,7 @@ import Properties from "../../properties/dao/properties-dao";
 import {developmentHelper} from '../../../../helper/development.helper';
 var split = require('split-string');
 
-developmentsSchema.static('getAll', (headers: Object):Promise<any> => {
+developmentsSchema.static('getAll', (device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -18,9 +18,14 @@ developmentsSchema.static('getAll', (headers: Object):Promise<any> => {
                reject({message: err.message});
              }
              else {
-               developmentHelper.getAll(developments, headers).then(result => {
-                 resolve(result);
-               })
+               if ( device != 'desktop' ) {
+                developmentHelper.getAll(developments).then(result => {
+                  resolve(result);
+                })
+               }
+               else {
+                 resolve(developments);
+               }
              }
           });
     });
@@ -132,7 +137,7 @@ developmentsSchema.static('getPropertyWithOwnerDevelopment', (id:string, data:Ob
     });
 });
 
-developmentsSchema.static('getById', (id:string, userId:Object, headers: Object):Promise<any> => {
+developmentsSchema.static('getById', (id:string, userId:Object, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Developments
@@ -143,9 +148,14 @@ developmentsSchema.static('getById', (id:string, userId:Object, headers: Object)
                reject({message: err.message});
             }
             else {
-               developmentHelper.getById(developments, userId, headers).then(result => {
-                 resolve(result);
-               })
+              if ( device != 'desktop' ) {
+                developmentHelper.getById(developments, userId).then(result => {
+                  resolve(result);
+                })
+              }
+              else {
+                resolve(developments);
+              }
             }
           });
     });
