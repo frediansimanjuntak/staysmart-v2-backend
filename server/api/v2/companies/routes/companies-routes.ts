@@ -10,6 +10,10 @@ export class CompaniesRoutes {
 			.route('/companies')
 			.get(auth.isAuthenticated(),CompaniesController.getAll)
 			.post(auth.isAuthenticated(),CompaniesController.createCompanies);
+		
+		router
+			.route('/company')
+			.get(auth.isAuthenticated(),CompaniesController.getUserCompany);
 
 		router
 			.route('/companies/:id')
