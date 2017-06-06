@@ -19,8 +19,16 @@ var split = require('split-string');
 
 propertiesSchema.static('getAll', (device: string, userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
+      var today = new Date();
+      let date = today.getDate() + 1;
+      let month = today.getMonth();
+      let year = today.getFullYear();
+      let _query = {};
+      if ( device != 'desktop' ) {
+        _query = {"confirmation.status": "approved", "details.available": {$lt: new Date(year, month, date)}, "status": "published"};
+      }
         Properties
-          .find({})
+          .find(_query)
           .populate("pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by rented.data.by agreements.data")
           .populate({
             path: 'owner.user',

@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import companiesSchema from '../model/companies-model';
 import Attachments from '../../attachments/dao/attachments-dao'
 import Users from '../../users/dao/users-dao'
+import {companyHelper} from '../../../../helper/company.helper';
 
 companiesSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -15,6 +16,31 @@ companiesSchema.static('getAll', ():Promise<any> => {
           .exec((err, companies) => {
               err ? reject({message: err.message})
                   : resolve(companies);
+          });
+    });
+});
+
+companiesSchema.static('getUserCompany', (userId: Object, device: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let _query = {"created_by": userId};
+
+        Companies
+          .find(_query)
+          .populate("documents created_by shareholders.identification_proof.front shareholders.identification_proof.back")
+          .exec((err, companies) => {
+            if ( err ) {
+              reject({message: err.message})
+            }
+            else {
+              if ( device != 'desktop' ) {
+                companyHelper.getAll(companies).then(res => {
+                  resolve(res);
+                })
+              }
+              else {
+                resolve(companies);
+              }
+            }
           });
     });
 });

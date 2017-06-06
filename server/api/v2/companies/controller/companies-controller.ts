@@ -9,6 +9,15 @@ export class CompaniesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getUserCompany(req: express.Request, res: express.Response):void {
+		let _device = req.device.type;
+		let _userId = req["user"]._id;
+		CompaniesDAO
+		['getUserCompany'](_userId, _device)
+		.then(companies => res.status(200).json(companies))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		CompaniesDAO
