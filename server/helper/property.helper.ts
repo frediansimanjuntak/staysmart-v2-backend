@@ -15,10 +15,10 @@ export class propertyHelper{
 					else {
 						let favourite;
 						let properties_data = [];
-						for( var p = 0; p < properties.length; p++ ) {
+						for ( var p = 0; p < properties.length; p++ ) {
 							if (user.shortlisted_properties.length > 0) {
 								let count = 0;
-								for( var i = 0 ; i < user.shortlisted_properties.length; i++ ) {
+								for ( var i = 0 ; i < user.shortlisted_properties.length; i++ ) {
 									if ( properties[p]._id == user.shortlisted_properties[i] ) {
 										count += 1;
 									}
@@ -35,23 +35,23 @@ export class propertyHelper{
 								
 							}
 
-							for(var l = 0; l < properties[p].pictures.living.length; l++) {
+							for (var l = 0; l < properties[p].pictures.living.length; l++) {
 								properties[p].pictures.living[l] = properties[p].pictures.living[l].url;
 							}
 
-							for(var d = 0; d < properties[p].pictures.dining.length; d++) {
+							for (var d = 0; d < properties[p].pictures.dining.length; d++) {
 								properties[p].pictures.dining[d] = properties[p].pictures.dining[d].url;
 							}
 
-							for(var b = 0; b < properties[p].pictures.bed.length; b++) {
+							for (var b = 0; b < properties[p].pictures.bed.length; b++) {
 								properties[p].pictures.bed[b] = properties[p].pictures.bed[b].url;
 							}
 
-							for(var t = 0; t < properties[p].pictures.toilet.length; t++) {
+							for (var t = 0; t < properties[p].pictures.toilet.length; t++) {
 								properties[p].pictures.toilet[t] = properties[p].pictures.toilet[t].url;
 							}
 
-							for(var k = 0; k < properties[p].pictures.kitchen.length; k++) {
+							for (var k = 0; k < properties[p].pictures.kitchen.length; k++) {
 								properties[p].pictures.kitchen[k] = properties[p].pictures.kitchen[k].url;
 							}
 
@@ -59,9 +59,9 @@ export class propertyHelper{
 								_id: properties[p]._id,
 								development: properties[p].development.name,
 								user: {
-									_id: userId,
-									username: user.username,
-									pictures: user.picture ? user.picture.url : '' 
+									_id: properties[p].owner.user._id,
+									username: properties[p].owner.user.username,
+									pictures: properties[p].owner.user.picture ? properties[p].owner.user.picture.url : '' 
 								},
 								address: {
 									unit_no: properties[p].address.floor,
@@ -111,23 +111,23 @@ export class propertyHelper{
 
 	static getById(properties, userId) {
 		return new Promise((resolve:Function, reject:Function) => {
-			for(var l = 0; l < properties.pictures.living.length; l++) {
+			for (var l = 0; l < properties.pictures.living.length; l++) {
 				properties.pictures.living[l] = properties.pictures.living[l].url;
 			}
 
-			for(var d = 0; d < properties.pictures.dining.length; d++) {
+			for (var d = 0; d < properties.pictures.dining.length; d++) {
 				properties.pictures.dining[d] = properties.pictures.dining[d].url;
 			}
 
-			for(var b = 0; b < properties.pictures.bed.length; b++) {
+			for (var b = 0; b < properties.pictures.bed.length; b++) {
 				properties.pictures.bed[b] = properties.pictures.bed[b].url;
 			}
 
-			for(var t = 0; t < properties.pictures.toilet.length; t++) {
+			for (var t = 0; t < properties.pictures.toilet.length; t++) {
 				properties.pictures.toilet[t] = properties.pictures.toilet[t].url;
 			}
 
-			for(var k = 0; k < properties.pictures.kitchen.length; k++) {
+			for (var k = 0; k < properties.pictures.kitchen.length; k++) {
 				properties.pictures.kitchen[k] = properties.pictures.kitchen[k].url;
 			}
 			let _amenities = [];
