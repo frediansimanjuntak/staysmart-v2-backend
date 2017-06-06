@@ -5,7 +5,7 @@ import amenitiesSchema from '../model/amenities-model';
 import Attachments from '../../attachments/dao/attachments-dao'
 import {amenityHelper} from '../../../../helper/amenity.helper';
 
-amenitiesSchema.static('getAll', (headers: Object):Promise<any> => {
+amenitiesSchema.static('getAll', (device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -17,9 +17,14 @@ amenitiesSchema.static('getAll', (headers: Object):Promise<any> => {
                reject({message: err.message});
              }
              else {
-                amenityHelper.getAll(amenities, headers).then(result => {
-                 resolve(result);
-                })
+                if ( device != 'desktop' ) {
+                    amenityHelper.getAll(amenities).then(result => {
+                        resolve(result);
+                    })
+                }
+                else {
+                    resolve(amenities);
+                }
              }
           });
     });

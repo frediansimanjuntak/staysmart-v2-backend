@@ -3,10 +3,10 @@ import PropertiesDAO from '../dao/properties-dao';
 
 export class PropertiesController {
 	static getAll(req: express.Request, res: express.Response):void {
-		let _headers = req.headers;
+		let _device = req.device.type;
 		let _userId = req["user"]._id;
 		PropertiesDAO
-		['getAll'](_headers, _userId)
+		['getAll'](_device, _userId)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -14,7 +14,7 @@ export class PropertiesController {
 	static searchProperties(req: express.Request, res: express.Response):void {
 		let _searchComponent;
 		let _from;
-		if (req.headers.from) {
+		if (req.device.type != 'desktop') {
 			_from = 'mobile';
 			_searchComponent = req.query;
 		}
@@ -23,38 +23,37 @@ export class PropertiesController {
 			_searchComponent = req.params;
 		}
 		PropertiesDAO
-		['searchProperties'](_searchComponent, _from, req.headers, req)
+		['searchProperties'](_searchComponent, _from, req.device.type, req)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _headers = req.headers;
+		let _device = req.device.type;
 		let _user = "";
 		PropertiesDAO
-		['getById'](_id, _user, _headers)
+		['getById'](_id, _user, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getByIdMobile(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _headers = req.headers;
+		let _device = req.device.type;
 		let _user = req["user"]._id;
 		
 		PropertiesDAO
-		['getById'](_id, _user, _headers)
+		['getById'](_id, _user, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static getSchedules(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _headers = req.headers;
-		
+		let _device = req.device.type;
 		PropertiesDAO
-		['getSchedules'](_id, _headers)
+		['getSchedules'](_id, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -62,10 +61,9 @@ export class PropertiesController {
 	static getSchedulesByDate(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _date = req.params.date;
-		let _headers = req.headers;
-		
+		let _device = req.device.type;
 		PropertiesDAO
-		['getSchedulesByDate'](_id, _date, _headers)
+		['getSchedulesByDate'](_id, _date, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -80,9 +78,9 @@ export class PropertiesController {
 
 	static getUserProperties(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-		let _headers = req.headers;
+		let _device = req.device.type;
 		PropertiesDAO
-		['getUserProperties'](_userId, _headers)
+		['getUserProperties'](_userId, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -90,9 +88,9 @@ export class PropertiesController {
 	static memberProperty(req: express.Request, res: express.Response):void {
 		let _type = req.params.type;
 		let _userId = req["user"]._id;
-		let _headers = req.headers;
+		let _device = req.device.type;
 		PropertiesDAO
-		['memberProperty'](_type, _userId, _headers)
+		['memberProperty'](_type, _userId, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -167,9 +165,9 @@ export class PropertiesController {
 	static step4(req: express.Request, res: express.Response):void {
 		let _body = req.body;
 		let _userId = req["user"]._id;
-		let _headers = req.headers;
+		let _device = req.device.type;
 		PropertiesDAO
-		['step4'](_body, _userId, _headers)
+		['step4'](_body, _userId, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

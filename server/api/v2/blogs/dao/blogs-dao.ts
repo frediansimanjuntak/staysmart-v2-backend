@@ -10,7 +10,7 @@ import Developments from '../../developments/dao/developments-dao';
 import {mail} from '../../../../email/mail';
 import {blogHelper} from '../../../../helper/blog.helper';
 
-blogsSchema.static('getAll', (headers: Object):Promise<any> => {
+blogsSchema.static('getAll', (device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -45,15 +45,20 @@ blogsSchema.static('getAll', (headers: Object):Promise<any> => {
               reject({message: err.message});
             }
             else {
-              blogHelper.getAll(blogs, headers).then(result => {
-                resolve(result);
-              });
+              if ( device != 'desktop' ) {
+                blogHelper.getAll(blogs).then(result => {
+                  resolve(result);
+                });
+              }
+              else {
+                resolve(blogs);
+              }
             }
           });
     });
 });
 
-blogsSchema.static('getById', (id:string, headers: Object, userEmail: Object):Promise<any> => {
+blogsSchema.static('getById', (id:string, device: string, userEmail: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Blogs
@@ -87,9 +92,14 @@ blogsSchema.static('getById', (id:string, headers: Object, userEmail: Object):Pr
               reject({message: err.message});
             }
             else {
-              blogHelper.getById(blogs, userEmail, headers).then(result => {
-                resolve(result);
-              });
+              if ( device != 'desktop' ) {
+                blogHelper.getById(blogs, userEmail).then(result => {
+                  resolve(result);
+                });
+              }
+              else {
+                resolve(blogs);
+              }
             }
           });
     });

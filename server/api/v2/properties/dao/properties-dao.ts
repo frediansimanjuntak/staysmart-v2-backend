@@ -17,7 +17,7 @@ import {propertyHelper} from '../../../../helper/property.helper';
 import * as moment from 'moment';
 var split = require('split-string');
 
-propertiesSchema.static('getAll', (headers: Object, userId: Object):Promise<any> => {
+propertiesSchema.static('getAll', (device: string, userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({})
@@ -72,15 +72,20 @@ propertiesSchema.static('getAll', (headers: Object, userId: Object):Promise<any>
               reject({message: err.message})
             }
             else {
-              propertyHelper.getAll(properties, userId, headers).then(result => {
-                resolve(result);  
-              });
+              if ( device != 'desktop' ) {
+                propertyHelper.getAll(properties, userId).then(result => {
+                  resolve(result);  
+                });
+              }
+              else {
+                resolve(properties);
+              }
             }
           });
     });
 });
 
-propertiesSchema.static('searchProperties', (searchComponent:Object, from:string, headers:Object, request:Object):Promise<any> => {
+propertiesSchema.static('searchProperties', (searchComponent:Object, from:string, device: string, request:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var today = new Date();
         let date = today.getDate() + 1;
@@ -231,7 +236,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
                   }
                   let req: any = request;
                   if (req.user) {
-                    propertyHelper.getAll(properties_data, req.user._id, headers).then(result => {
+                    propertyHelper.getAll(properties_data, req.user._id).then(result => {
                       resolve(result);  
                     });
                   }
@@ -244,7 +249,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
             else {
               let req: any = request;
               if (req.user) {
-                propertyHelper.getAll(prop_data, req.user._id, headers).then(result => {
+                propertyHelper.getAll(prop_data, req.user._id).then(result => {
                   resolve(result);  
                 });
               }
@@ -257,7 +262,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
     });
 });
 
-propertiesSchema.static('memberProperty', (type:string, userId:Object, headers:Object):Promise<any> => {
+propertiesSchema.static('memberProperty', (type:string, userId:Object, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       let userType = [ 'tenant', 'landlord' ];
       if ( userType.indexOf(type) > -1 ) {
@@ -268,9 +273,14 @@ propertiesSchema.static('memberProperty', (type:string, userId:Object, headers:O
               properties = result.owned_properties;
               console.log(properties.length);
               if (properties.length > 0) {
-                propertyHelper.getAll(properties, userId, headers).then(res => {
-                  resolve(res);
-                });
+                if ( device != 'desktop' ) {
+                  propertyHelper.getAll(properties, userId).then(res => {
+                    resolve(res);
+                  });
+                }
+                else {
+                  resolve(properties);
+                }
               }
               else {
                 resolve([]);
@@ -283,9 +293,14 @@ propertiesSchema.static('memberProperty', (type:string, userId:Object, headers:O
                 prop.push(properties[i].property);
               }
               if (prop.length > 0) {
-                propertyHelper.getAll(prop, userId, headers).then(res => {
-                  resolve(res);
-                });
+                if ( device != 'desktop' ) {
+                  propertyHelper.getAll(prop, userId).then(res => {
+                    resolve(res);
+                  });
+                }
+                else {
+                  resolve(prop);
+                }
               }
               else {
                 resolve(prop);
@@ -320,7 +335,7 @@ propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<a
     });
 });
 
-propertiesSchema.static('getById', (id:string, user:string, headers: Object):Promise<any> => {
+propertiesSchema.static('getById', (id:string, user:string, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties.updatePropertySeen(id, user);
 
@@ -378,9 +393,14 @@ propertiesSchema.static('getById', (id:string, user:string, headers: Object):Pro
               reject({message: err.message})
             }
             else {
-              propertyHelper.getById(properties, user, headers).then(result => {
-                resolve(result);  
-              });
+              if ( device != 'desktop' ) {
+                propertyHelper.getById(properties, user).then(result => {
+                  resolve(result);  
+                });
+              }
+              else {
+                resolve(properties);
+              }
             }
           });
     });
@@ -406,7 +426,7 @@ propertiesSchema.static('getBySlug', (slug:string):Promise<any> => {
     });
 });
 
-propertiesSchema.static('getUserProperties', (userId: Object, headers: Object):Promise<any> => {
+propertiesSchema.static('getUserProperties', (userId: Object, device: string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       let property = Properties.find({"owner.user": userId});
       property.populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by")
@@ -430,9 +450,14 @@ propertiesSchema.static('getUserProperties', (userId: Object, headers: Object):P
           reject({message: err.message});
         }
         else {
-          propertyHelper.getAll(properties, userId, headers).then(result => {
-            resolve(result);  
-          });
+          if ( device != 'desktop' ) {
+            propertyHelper.getAll(properties, userId).then(result => {
+              resolve(result);  
+            });
+          }
+          else {
+            resolve(properties);
+          }
         }
       });
   });
@@ -1588,7 +1613,7 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
   });
 });
 
-propertiesSchema.static('step4', (properties: Object, userId: Object, headers: Object):Promise<any> => {
+propertiesSchema.static('step4', (properties: Object, userId: Object, device: string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
     let body: any = properties;
     Properties
@@ -1718,9 +1743,14 @@ propertiesSchema.static('step4', (properties: Object, userId: Object, headers: O
                       reject({ message: err.message });
                     }
                     else {
-                      propertyHelper.getById(res, userId, headers).then(r => {
-                        resolve(r);
-                      });
+                      if ( device != 'desktop' ) {
+                        propertyHelper.getById(res, userId).then(r => {
+                          resolve(r);
+                        });
+                      }
+                      else {
+                        resolve(res);
+                      }
                     }
                   })
                 }
@@ -1763,7 +1793,7 @@ propertiesSchema.static('step5', (userId: Object):Promise<any> => {
   });
 });
 
-propertiesSchema.static('getSchedules', (propertyId: Object, headers: Object):Promise<any> => {
+propertiesSchema.static('getSchedules', (propertyId: Object, device: String):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
     Properties.findById(propertyId).populate('development').exec(( err, property ) => {
       if ( err ) {
@@ -1829,7 +1859,7 @@ propertiesSchema.static('getSchedules', (propertyId: Object, headers: Object):Pr
   });
 });
 
-propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string, headers: Object):Promise<any> => {
+propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string, device: string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
     Appointments
       .find({})
@@ -1841,7 +1871,7 @@ propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string,
       else {
         for ( var a = 0; a < appointments.length; a++ ) {
           let _appointments = appointments[a];
-          Properties.getSchedules(propertyId, headers).then(res => {
+          Properties.getSchedules(propertyId).then(res => {
             let schedules = [];
             for ( var i = 0; i < res.length; i++ ) {
               let res_date = res[i].date;
