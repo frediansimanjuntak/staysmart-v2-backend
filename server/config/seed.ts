@@ -8,15 +8,24 @@ import User from '../api/v2/users/dao/users-dao';
 
 User
   .find({})
-  .then(() => {
-    User.create({
-          provider: 'local',
-          username: 'master',
-          password: 'master',
-          email: 'master@master.com',
-          role: 'admin',
-        })
-    .then(() => {
-      console.log('finished populating users');
-    });
+  .exec((err, user) => {
+    if (err) {
+      throw(err);
+    }
+    if (!user) {
+      User.create({
+            provider: 'local',
+            username: 'master',
+            password: 'master',
+            email: 'master@master.com',
+            role: 'admin',
+          })
+      .exec((err, result) => {
+        if (err) { console.log(err); }
+        else { console.log('finished populating users', result); }
+      });
+    }
+    else {
+      console.log('no need to seed');
+    }
   });

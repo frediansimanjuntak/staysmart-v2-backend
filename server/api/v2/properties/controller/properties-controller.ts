@@ -49,6 +49,27 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getSchedules(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _headers = req.headers;
+		
+		PropertiesDAO
+		['getSchedules'](_id, _headers)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getSchedulesByDate(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _date = req.params.date;
+		let _headers = req.headers;
+		
+		PropertiesDAO
+		['getSchedulesByDate'](_id, _date, _headers)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getBySlug(req: express.Request, res: express.Response):void {
 		let _slug = req.params.slug;
 		PropertiesDAO

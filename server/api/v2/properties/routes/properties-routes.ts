@@ -80,7 +80,15 @@ export class PropertiesRoutes {
 		//view property for mobile, need login to get req["user"]._id and used it to update seen
 		router
 			.route('/property/:id')
-			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile)
+			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile);
+		
+		router
+			.route('/schedules/:id/:date')
+			.get(auth.isAuthenticated(),PropertiesController.getSchedulesByDate);
+
+		router
+			.route('/schedules/:id')
+			.get(auth.isAuthenticated(),PropertiesController.getSchedules);
 
 		router
 			.route('/properties/update/:id')

@@ -63,7 +63,7 @@ export class propertyHelper{
 									user: {
 										_id: userId,
 										username: user.username,
-										pictures: user.picture.url
+										pictures: user.picture ? user.picture.url : '' 
 									},
 									address: {
 										unit_no: properties[p].address.floor,
@@ -118,6 +118,7 @@ export class propertyHelper{
 	static getById(properties, userId, headers) {
 		return new Promise((resolve:Function, reject:Function) => {
 			let header: any = headers;
+			
 			if (header.from && header.from == 'Mobile') {
 				for(var l = 0; l < properties.pictures.living.length; l++) {
 					properties.pictures.living[l] = properties.pictures.living[l].url;
@@ -138,14 +139,22 @@ export class propertyHelper{
 				for(var k = 0; k < properties.pictures.kitchen.length; k++) {
 					properties.pictures.kitchen[k] = properties.pictures.kitchen[k].url;
 				}
-				let amenities = [];
-				for(var a = 0; a < properties.amenities.length; a++) {
-					amenities.push({
-						name: properties.amenities[a].name,
-						url: properties.amenitites[a].icon.url
+				let _amenities = [];
+				for ( var x = 0; x < properties.amenities.length; x++ ) {
+					let name = properties.amenities[x].name;
+					let icon;
+					if ( properties.amenities[x].icon == null ) {
+						icon = '';
+					}
+					else {
+						icon = properties.amenities[x].icon.url;
+					}
+					_amenities.push({
+						name: name,
+						url: icon
 					});
 				}
-
+				var ObjectID = mongoose.Types.ObjectId;  
 				Users.findById(userId).exec((err, user) => {
 					if (err) {
 						reject({message: err.message});
@@ -174,7 +183,7 @@ export class propertyHelper{
 							user: {
 								_id: properties.owner.user._id,
 								username: properties.owner.user.username,
-								pictures: properties.owner.user.picture.url
+								pictures: properties.owner.user.picture ? properties.owner.user.picture.url : ''
 							},
 							address: {
 								unit_no: properties.address.floor,
@@ -203,7 +212,7 @@ export class propertyHelper{
 								by: properties.seen.by,
 								counts: properties.seen.by.length
 							},
-							amenities: amenities,
+							amenities: _amenities,
 							pictures: properties.pictures,
 							room: room
 						});
