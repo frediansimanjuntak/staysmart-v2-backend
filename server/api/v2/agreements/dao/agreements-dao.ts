@@ -757,7 +757,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 									}
 								});
 						}
-						if (!tenantData.name) {
+						if (!tenantData) {
 							Agreements.userUpdateDataTenant(tenantID, tenant);
 						}
 						Users
@@ -826,16 +826,34 @@ agreementsSchema.static('userUpdateDataTenant', (id:string, data:Object,):Promis
 				if (err) {
 					reject(err);
 				}
-				if (res) {
+				else if (res) {
 					if (res.tenant.data.name) {
 						let tenantData = res.tenant.data;
 						Agreements.historyDataTenant(id, tenantData);
 					}
-					res.tenant.data = body.tenant;
-					res.save((err, saved) => {
+					Users
+						.update({"_id": id}, {
+							$set: {
+								"tenant.data": {
+									"name": body.tenant.name,
+									"identification_type": body.tenant.identification_type,
+									"identification_number": body.tenant.identification_type,
+									"identification_proof": {
+										"front": body.tenant.identification_proof.front,
+										"back": body.tenant.identification_proof.back
+									},
+									"bank_account": {
+										"bank": body.tenant.bank_account.bank,
+										"name": body.tenant.bank_account.name,
+										"no": body.tenant.bank_account.no
+									}
+								}
+							}
+						}, {upsert: true})
+						.exec((err, saved) => {
 						err ? reject({message: err.message})
             				: resolve(saved);
-					})
+						})
 				}
 			})		
 	});
