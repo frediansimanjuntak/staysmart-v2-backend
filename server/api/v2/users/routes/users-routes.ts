@@ -64,6 +64,10 @@ export class UserRoutes {
 		router
 			.route('/users/unactive/:id')
 			.post(auth.isAuthenticated(), UsersController.unActiveUser);
+		
+		router
+			.route('/block')
+			.post(auth.isAuthenticated(), UsersController.blockUserMobile);
 
 		router
 			.route('/users/block/:id/:roomid')
@@ -76,6 +80,14 @@ export class UserRoutes {
 		router
 			.route('/send_reset_password')
 			.post(UsersController.sendResetPassword);
+		
+		router
+			.route('/forget-password')
+			.post(UsersController.forgetPassword);
+
+		router
+			.route('/forget-password/verification')
+			.post(UsersController.resetPasswordMobile);
 
 		router
 			.route('/reset_password/:token')

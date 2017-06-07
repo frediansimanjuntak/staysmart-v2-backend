@@ -130,7 +130,7 @@ commentsSchema.static('sendSubscribeBlog', (idBlog:string, email:string):Promise
 commentsSchema.static('sendSubscribeComment', (idBlog:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Comments
-			.find({"blog": idBlog, "subscribes": true, "type": "comment/"})
+			.find({"blog": idBlog, "subscribes": true, "type": "blog"})
 			.populate("blog")	
 			.exec((err, com) => {
 				if(err){
@@ -241,13 +241,12 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
 		let body:any = comments;
-		console.log(body);
 		var type;
 		if(body.commentID) {
-			type = 'reply/';
+			type = 'comment';
 		}
 		else{
-			type = 'comment/';	
+			type = 'blog';	
 		}
 
 		var _comments = new Comments(comments);
@@ -271,6 +270,81 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 				else{
 					Comments.addCommentInBlog(idBlog, idComment);
 					resolve(saved);	
+				}
+			}
+		})			
+	});
+});
+
+commentsSchema.static('addComments', (comments:Object, id: string, device: string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(comments)) {
+			return reject(new TypeError('Comment is not a valid object.'));
+		}
+		var ObjectID = mongoose.Types.ObjectId;  
+		let body:any = comments;
+		var type;
+		if(body.comment_id) {
+			type = 'comment';
+		}
+		else{
+			type = 'blog';	
+		}
+
+		var _comments = new Comments();
+		_comments.content = body.comment;
+		_comments.name = body.name;
+		_comments.email = body.email;
+		_comments.type = type;
+		_comments.blog = id;
+		_comments.subscribes = body.subscribe;
+		_comments.save((err, saved) => {
+			if(err){
+				reject(err);
+			}
+			if(saved){
+				let idComment = saved._id;
+				let idBlog = saved.blog;
+				let email = saved.email;
+				Comments.checkEmailComment(idComment, email);
+				Comments.sendSubscribeBlog(idBlog);				
+				Comments.sendBlogComment(idComment);
+				if(body.comment_id){
+					Comments.sendSubscribeComment(idBlog);
+					Comments.addReplyInComment(body.comment_id, idComment);	
+					resolve({
+						message: {
+							status: 'success',
+							data: {
+								_id: saved._id,
+								name: saved.name,
+								email: saved.email,
+								comment: saved.content,
+								type_comment: saved.type,
+								blog: saved.blog,
+								created_at: saved.created_at
+							}
+						},
+						code: '200'
+					});
+				}
+				else{
+					Comments.addCommentInBlog(idBlog, idComment);
+					resolve({
+						message: {
+							status: 'success',
+							data: {
+								_id: saved._id,
+								name: saved.name,
+								email: saved.email,
+								comment: saved.content,
+								type_comment: saved.type,
+								blog: saved.blog,
+								created_at: saved.created_at
+							}
+						},
+						code: '200'
+					});
 				}
 			}
 		})			

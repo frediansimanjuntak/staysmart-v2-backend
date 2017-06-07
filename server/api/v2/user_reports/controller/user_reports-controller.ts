@@ -43,6 +43,16 @@ export class UserReportsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static reportUserMobile(req: express.Request, res: express.Response):void {
+		let _reports = req.body;
+		let _userId = req["user"]._id;
+		let _headers = req.headers;
+		UserReportsDAO
+		['reportUserMobile'](_reports, _userId, _headers)
+		.then(reports => res.status(201).json(reports))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static reportUser(req: express.Request, res: express.Response):void {
 		let _reported = req.params.reported;
 		

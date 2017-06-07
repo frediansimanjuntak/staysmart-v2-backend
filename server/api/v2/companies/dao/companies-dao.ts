@@ -45,15 +45,26 @@ companiesSchema.static('getUserCompany', (userId: Object, device: string):Promis
     });
 });
 
-companiesSchema.static('getById', (id:string):Promise<any> => {
+companiesSchema.static('getById', (id:string, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Companies
           .findById(id)
-          .populate("documents created_by")
+          .populate("documents created_by shareholders.identification_proof.front shareholders.identification_proof.back")
           .exec((err, companies) => {
-              err ? reject({message: err.message})
-                  : resolve(companies);
+            if ( err ) {
+              reject({message: err.message})
+            }
+            else {
+              if ( device != 'desktop' ) {
+                companyHelper.getById(companies).then(res => {
+                  resolve(res);
+                })
+              }
+              else {
+                resolve(companies);
+              }
+            }
           });
     });
 });

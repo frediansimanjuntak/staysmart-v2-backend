@@ -19,9 +19,10 @@ export class CompaniesController {
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
+		let _device = req.device.type;
 		let _id = req.params.id;
 		CompaniesDAO
-		['getById'](_id)
+		['getById'](_id, _device)
 		.then(companies => res.status(200).json(companies))
 		.catch(error => res.status(400).json(error));
 	}
