@@ -3,8 +3,9 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import blogCategoriesSchema from '../model/blog_categories-model';
 import Blogs from '../../blogs/model/blogs-model';
+import {categoryHelper} from '../../../../helper/category.helper';
 
-blogCategoriesSchema.static('getAll', ():Promise<any> => {
+blogCategoriesSchema.static('getAll', (device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
@@ -15,8 +16,17 @@ blogCategoriesSchema.static('getAll', ():Promise<any> => {
             select: 'username'
           })
           .exec((err, blog_categories) => {
-              err ? reject({message: err.message})
-                  : resolve(blog_categories);
+              if (err) {
+                reject({message: err.message});
+              }
+              else {
+                if (device == 'desktop') {
+                    resolve(blog_categories);
+                }
+                else {
+                    categoryHelper.getAll(blog_categories).then(res => { resolve(res); });
+                }
+              }
           });
     });
 });
