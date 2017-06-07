@@ -608,7 +608,9 @@ usersSchema.static('updateMe', (id:string, user:Object, image:Object):Promise<an
 		let body:any = user;
 		let img: any = image;
 		Users
-			.findById(id, (err, user)=>{
+			.findById(id)
+			.select('-phone')
+			.exec((err, user)=>{
 				if(err){
 					reject(err);
 				}

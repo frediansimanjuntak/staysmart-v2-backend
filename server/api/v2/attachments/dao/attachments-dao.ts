@@ -83,7 +83,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object, request:Objec
                  
                 if (i >= files.length - 1){
                   if(errAtt == 0) {
-                    if (data.headers.from) {
+                    if (data.headers && data.headers.from) {
                       resolve({
                         imgId: idAtt[0],
                         message: 'Success'
