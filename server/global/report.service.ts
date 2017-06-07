@@ -226,32 +226,45 @@ export class report {
 			  // let paymentProof = objectFunction['payment'](getData);
 			  let paymentProof = getData;
 			  if(paymentProof) {
-			  	let fileType = paymentProof.type; 
-				let url = paymentProof.url;
-				let subType = fileType.substring(0, 5);
-				if(subType == 'image'){
-					getData = '<img src="' + url + '" height="500px" /> ';
+			  	let fileType = paymentProof.type; 				
+				if (paymentProof.url) {
+					let url = paymentProof.url;
+					let subType = fileType.substring(0, 5);
+					if(subType == 'image'){
+						getData = '<img src="' + url + '" height="500px" /> ';
+					}
+					else if(fileType == 'application/pdf'){
+						getData = '<embed src="' + url + '" width="800px" height="2100px" />'
+					}
 				}
-				else if(fileType == 'application/pdf'){
-					// getData = '<embed src="' + url + '" type="application/pdf"/>';
-					// getData = '<iframe src="' + url + '" type="application/pdf"></iframe>';
-					// getData = '<a href="' + url + '"></a>';
-					// app.get(/(.*\.pdf)\/([0-9]+).png$/i, function (req, res) {
-					var input   = url;
-					console.log(input);
-					pdf2img.setOptions({
-						type: 'png',                      // png or jpeg, default png 
-						size: 1024,                       // default 1024 
-						density: 600,                     // default 600 
-						outputdir: '../../../../template/report-template/lib', // mandatory, outputdir must be absolute path 
-						targetname: 'test'                // the prefix for the generated files, optional 
-					});
+				else {
+					getData = 'Attachment Not Found';
+				}
 
-					pdf2img.convert(input, function(err, info) {
-						if (err) console.log(err)
-						else console.log(info);
-					});
-				} 
+				// let subType = fileType.substring(0, 5);
+				// if(subType == 'image'){
+				// 	getData = '<img src="' + url + '" height="500px" /> ';
+				// }
+				// else if(fileType == 'application/pdf'){
+				// 	// getData = '<embed src="' + url + '" type="application/pdf"/>';
+				// 	// getData = '<iframe src="' + url + '" type="application/pdf"></iframe>';
+				// 	// getData = '<a href="' + url + '"></a>';
+				// 	// app.get(/(.*\.pdf)\/([0-9]+).png$/i, function (req, res) {
+				// 	var input   = url;
+				// 	console.log(input);
+				// 	pdf2img.setOptions({
+				// 		type: 'png',                      // png or jpeg, default png 
+				// 		size: 1024,                       // default 1024 
+				// 		density: 600,                     // default 600 
+				// 		outputdir: '../../../../template/report-template/lib', // mandatory, outputdir must be absolute path 
+				// 		targetname: 'test'                // the prefix for the generated files, optional 
+				// 	});
+
+				// 	pdf2img.convert(input, function(err, info) {
+				// 		if (err) console.log(err)
+				// 		else console.log(info);
+				// 	});
+				// } 
 
 			    // let fileType = paymentProof.original.type;
 			    // let subType = fileType.substring('0', '5');
@@ -274,16 +287,22 @@ export class report {
 			case 'form_data.second_payment_proof':
 			  // let secPaymentProof = objectFunction['payment'](getData);
 			  let secPaymentProof = getData;
-			  if(secPaymentProof) {
-				let fileType = secPaymentProof.type;
-				let url = secPaymentProof.url;
-				let subType = fileType.substring(0, 5);
-				if(subType == 'image'){
-					getData = '<img src="' + url + '" height="500px" /> ';
-				}
-				else if(fileType == 'application/pdf'){
-					getData = '<embed src="' + url + '" width="800px" height="2100px" />'
-				} 
+			  if(secPaymentProof.url) {
+					let url = secPaymentProof.url;
+					let fileType = secPaymentProof.type;
+					if (url) {
+						let subType = fileType.substring(0, 5);
+						if(subType == 'image'){
+							getData = '<img src="' + url + '" height="500px" /> ';
+						}
+						else if(fileType == 'application/pdf'){
+							getData = '<embed src="' + url + '" width="800px" height="2100px" />'
+						}
+					}
+					else {
+						getData = 'Attachment Not Found';
+					}
+				 
 
 			    // let fileType = secPaymentProof.original.type;
 			    // let subType = fileType.substring('0', '5');
