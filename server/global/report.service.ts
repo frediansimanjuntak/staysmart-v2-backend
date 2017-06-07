@@ -88,10 +88,12 @@ var objectFunction = {
   			if(err){
   				return "Development not found";
   			}
-  			if(res){
-  				return (res.name);
-  				// console.log(res.name);  				
+  			else if(res){
+  				return (res.name); 				
   			}
+			  else{
+				  return "Development not found"
+			  }
   		})
   },
   payment: function(id) {

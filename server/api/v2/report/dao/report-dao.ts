@@ -52,6 +52,7 @@ export class reportDAO{
 					}]
 				})
 				.exec((err, agreement) => {
+					// console.log(agreement);
 					let property = agreement.property;
 					let landlord = agreement.landlord; 
 					let tenant = agreement.tenant;
@@ -82,7 +83,7 @@ export class reportDAO{
 							payment_proof = loi.payment.attachment.payment;
 							secpayment_proof = loi.payment.attachment.payment_confirm;
 						}						
-						if(loi.landlord.bank_account.no){
+						if(loi.landlord.bank_account.no && loi.landlord.bank_account.bank){
 							bankName = loi.landlord.bank_account.name,
 							bankNo = loi.landlord.bank_account.no,
 							bank = loi.landlord.bank_account.bank.name,								
@@ -103,12 +104,12 @@ export class reportDAO{
 						created_day = ta.created_at;
 						created_at = new Date(ta.created_at);
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
-						if(ta.payment){
+						if (ta.payment) {
 							payment_proof = ta.payment.attachment.payment;
 							secpayment_proof = ta.payment.attachment.payment_confirm;
 						}	
-						if(loi.landlord.bank_account.no){
-							bankName = loi.landlord.bank_account.name,
+						if (loi.landlord.bank_account.no && loi.landlord.bank_account.bank) {
+							bankName = loi.landlord.bank_account.name
 							bankNo = loi.landlord.bank_account.no,
 							bank = loi.landlord.bank_account.bank.name,								
 							bankCode = loi.landlord.bank_account.bank.code
@@ -119,12 +120,17 @@ export class reportDAO{
 							bank = "",								
 							bankCode = ""
 						}					
-					}				
-					console.log(property.development._id);
-
+					}
+					let devName;
+					if (property.development.name) {
+						devName = property.development.name;
+					}		
+					else {
+						devName = "Development Not Found";
+					}		
 					var data = {
 						"property": {
-							"development": property.development.name,
+							"development": devName,
 							"address": { 
 								"block_no": property.address.block_number,
 								"street_name": property.address.street_name,
@@ -139,7 +145,7 @@ export class reportDAO{
 						},
 						"form_data":{
 							"property": {
-								"development": property.development.name,
+								"development": devName,
 								"address": { 
 									"block_no": property.address.block_number,
 									"street_name": property.address.street_name,
@@ -157,9 +163,8 @@ export class reportDAO{
 								"id_no": loi.occupiers.identification_number
 							},
 							"tenant": {
-								"name": tenant.tenant.data.name,
-								"id_no": tenant.tenant.data.identification_number,
-								"company_name": tenant.companies
+								"name": loi.tenant.name,
+								"id_no": loi.tenant.identification_number
 							},
 							"requirements": loi.requirements,							
 							"tenant_sign": tenant_sign,
@@ -180,7 +185,7 @@ export class reportDAO{
 							"status": status,
 							"confirmation_date": confirmation_date,							
 							"landlord":{
-								"full_name": landlord.landlord.data.name,
+								"full_name": landlord.landlord.data.name, 
 								"id_number": landlord.landlord.data.identification_number,
 								"company_name": landlord.companies
 							},
