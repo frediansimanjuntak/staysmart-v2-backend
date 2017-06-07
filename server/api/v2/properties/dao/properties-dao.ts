@@ -1031,6 +1031,55 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
   });
 });
 
+propertiesSchema.static('favourite', (id:string, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    Users
+        .find({"_id": userId, "shortlisted_properties": id})
+        .select("shortlisted_property")
+        .exec((err, res) => {
+          if(err){
+            reject({message: err.message});
+          }
+          if(res){
+            if(res.length > 0){
+              Users
+                .findByIdAndUpdate(userId, {
+                  $pull: {
+                    "shortlisted_properties": id
+                  }
+                })
+                .exec((err, update) => {
+                  if (err) { reject({message: err.message}); }
+                  else { 
+                    Properties.getById(id, userId, 'phone').then(res => {
+                      res["favourites"] = 'Unshortlisted';
+                      resolve(res);
+                    })
+                  }
+                });
+            }
+            else {
+              Users
+                .findByIdAndUpdate(userId, {
+                  $push: {
+                    "shortlisted_properties": id
+                  }
+                })
+                .exec((err, update) => {
+                  if (err) { reject({message: err.message}); }
+                  else { 
+                    Properties.getById(id, userId, 'phone').then(res => {
+                      res["favourites"] = 'Shortlisted';
+                      resolve(res);
+                    })
+                  }
+                });
+            }          
+          }
+        }) 
+  });
+});
+
 propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       if(!_.isString(id)) {
@@ -1047,7 +1096,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
             if(res.length > 0){
               resolve({message: "Already shortlisted this property"})
             }
-            if(res.length == 0){
+            else {
               Users
                 .findByIdAndUpdate(userId, {
                   $push: {

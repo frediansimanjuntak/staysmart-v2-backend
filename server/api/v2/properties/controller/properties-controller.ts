@@ -212,6 +212,16 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static favourite(req: express.Request, res: express.Response):void {
+		let _id = req.body.property;
+		let _userId = req["user"]._id;
+
+		PropertiesDAO
+		['favourite'](_id, _userId)
+		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static shortlistProperty(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;

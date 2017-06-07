@@ -97,6 +97,10 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/:confirmation/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.confirmationProperty);
+		
+		router
+			.route('/favourite')
+			.post(auth.isAuthenticated(), PropertiesController.favourite);
 
 		router
 			.route('/properties/shortlist_property/:id')
