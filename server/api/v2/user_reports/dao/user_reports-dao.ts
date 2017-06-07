@@ -34,14 +34,14 @@ userReportsSchema.static('getGroupCount', ():Promise<any> => {
                     from: "users",
                     localField: "_id",
                     foreignField: "_id",
-                    as: "reported"
+                    as: "reported_data"
                 }
             },
             {
-                $unwind: "$reported"
+                $unwind: "$reported_data"
             },
             {
-                $project: {"id_user":"$reported._id", "username":"$reported.username", "total_report":"$total_report", "reported":"$reported.reported", _id:0}
+                $project: {"id_user":"$reported._id", "username":"$reported_data.username", "total_report":"$total_report", "reported":"$reported_data.reported", _id:0}
             }];
         UserReports
           .aggregate(pipeline, (err, res) => {
