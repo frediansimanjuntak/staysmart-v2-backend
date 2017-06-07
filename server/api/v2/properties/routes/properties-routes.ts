@@ -83,6 +83,10 @@ export class PropertiesRoutes {
 			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile);
 		
 		router
+			.route('/property/:id/seen')
+			.get(auth.isAuthenticated(), PropertiesController.updatePropertySeen);
+		
+		router
 			.route('/schedules/:id/:date')
 			.get(auth.isAuthenticated(),PropertiesController.getSchedulesByDate);
 

@@ -336,7 +336,11 @@ propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<a
               reject(err);
             }
             else {
-              resolve(update);
+              resolve({
+                message: 'success',
+                code: 200,
+                data: { update: 1 }
+              });
             }
           });
       }

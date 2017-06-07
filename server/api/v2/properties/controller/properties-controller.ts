@@ -28,6 +28,15 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updatePropertySeen(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _user = req["user"]._id;
+		PropertiesDAO
+		['updatePropertySeen'](_id, _user)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _device = req.device.type;
