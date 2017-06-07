@@ -18,7 +18,7 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements
 			.find(query)
-			.populate("inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room_id letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate("inventory_list.data.lists.items.attachments tenancy_agreement.data.stamp_certificate room letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
 			.populate({
 				path: 'landlord',
 				model: 'Users',
@@ -334,20 +334,20 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 									}
 									else if (agreement) {
 										let roomId;
-										if (agreement.room_id) {
-											roomId = agreement.room_id;
-											resolve({_id: agreement._id, room_id: roomId, message: "agreement has been made"})
+										if (agreement.room) {
+											roomId = agreement.room;
+											resolve({_id: agreement._id, room: roomId, message: "agreement has been made"})
 										}
-										else if (!agreement.room_id) {
+										else if (!agreement.room) {
 											let landlord = agreement.landlord.toString();
 											let tenant = agreement.tenant.toString();
 											let property = agreement.property.toString();
-											if (body.room_id) {
-												Appointments.updateAppointmentsRoomId(landlord, tenant, property, body.room_id);
-												agreement.room_id = body.room_id;
+											if (body.room) {
+												Appointments.updateAppointmentsRoomId(landlord, tenant, property, body.room);
+												agreement.room = body.room;
 												agreement.save((err, saved) => {
 													err ? reject({message: err})
-														: resolve({_id: saved._id, room_id: saved.room_id, message: "agreement room Id updated"});
+														: resolve({_id: saved._id, room: saved.room, message: "agreement room Id updated"});
 												})
 											}
 											else {
@@ -364,8 +364,8 @@ agreementsSchema.static('createAgreements', (agreements:Object, userId:string):P
 											if (body.appointment) {
 												_agreements.appointment = body.appointment;
 											}
-											if (body.room_id) {
-												_agreements.room_id = body.room_id;
+											if (body.room) {
+												_agreements.room = body.room;
 											}
 											_agreements.save((err, saved) => {
 												err ? reject({message: err})
@@ -1462,7 +1462,7 @@ agreementsSchema.static('rejectTA', (id:string, userId:string, role:string, ta:O
 
 		Agreements
 			.findById(id)
-			.populate("room_id landlord tenant property appointment")
+			.populate("room landlord tenant property appointment")
 			.exec((err, agreement) => {
 				if (err) {
 					reject({message: err.message});

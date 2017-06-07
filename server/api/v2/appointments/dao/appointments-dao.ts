@@ -14,7 +14,7 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       Appointments
           .find(query)
-          .populate("agreement room_id")
+          .populate("agreement room")
           .populate({
             path: 'landlord',
             model: 'Users',
@@ -152,8 +152,8 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
               Agreements.createAgreements(data, tenant).then(res => {
                 let agreementId = res._id;
                 let roomId;
-                if (res.room_id) {
-                  roomId = res.room_id;
+                if (res.room) {
+                  roomId = res.room;
                 }                
                 for(var i = 0; i < body.time.length; i++) {
                   let timeFrom = body.time[i];
@@ -170,7 +170,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                           _appointments.agreement = agreementId;
                           _appointments.landlord = landlordId;
                           if (roomId) {
-                            _appointments.room_id = roomId;
+                            _appointments.room = roomId;
                           }
                           _appointments.tenant = tenantId;
                           _appointments.chosen_time.date = body.date;
@@ -183,8 +183,8 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                             else if (saved) {
                               let appointmentId = saved._id;
                               let roomChatId;
-                              if (saved.room_id) {
-                                roomChatId = saved.room_id;
+                              if (saved.room) {
+                                roomChatId = saved.room;
                               }
                               Appointments
                                 .findById(appointmentId)
@@ -202,8 +202,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                   }
                                   else if (appointment) {
                                     var devID = appointment.property.development;
-                                    var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;
-                                    
+                                    var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;                                    
                                     var notification = {
                                       "user": appointment.landlord._id,
                                       "message": "Viewing Received for "+unit+" "+appointment.property.development.name+" at "+appointment.chosen_time.date+" from "+appointment.chosen_time.from+" to "+appointment.chosen_time.to,
@@ -218,7 +217,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                     var from = 'Staysmart';
 
                                     mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
-                                    resolve({appointment_id: appointmentId, room_id: roomChatId, message: 'appoinment proposed'});
+                                    resolve({appointment_id: appointmentId, room: roomChatId, message: 'appoinment proposed'});
                                   }                                  
                                 })                 
                             }
@@ -245,7 +244,7 @@ appointmentsSchema.static('updateAppointmentsRoomId', (landlord:string, tenant:s
         Appointments
           .update({"landlord": landlord, "tenant": tenant, "property": property}, {
             $set: {
-              "room_id": room
+              "room": room
             }
           }, {multi: true})
           .exec((err, updated) => {
