@@ -11,6 +11,7 @@ import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import {mail} from '../../../../email/mail';
+import {socketIo} from '../../../../server';
 import {GlobalService} from '../../../../global/global.service';
 
 agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
@@ -692,6 +693,25 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 	});
 });
 
+agreementsSchema.static('getTotalLOINeedApprove', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let today = new Date();
+		Agreements
+			.find({"letter_of_intent.data.status": "pending"})
+			.where("letter_of_intent.data.created_at").lte(today)
+			.exec((err, agreements) => {
+				if (err) {
+					reject(err);
+				}
+				else if (agreements) {
+					let data = { total: agreements.length }
+					socketIo.counterLOI(data);
+					resolve(agreements);
+				}
+			})
+	});
+});
+
 agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
@@ -898,6 +918,7 @@ agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 											let type = "initiateLoi";
 											Agreements.email(id, type);
 											Agreements.notification(id, type);
+											Agreements.getTotalLOINeedApprove();
 											resolve(updated);
 										}
 									})
@@ -1178,15 +1199,31 @@ agreementsSchema.static('getTA', (id:string, userId:string, role:string):Promise
 	});
 });
 
+agreementsSchema.static('getTotalTANeedApprove', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let today = new Date();
+		Agreements
+			.find({"tenancy_agreement.data.status": "admin-confirmation"})
+			.where("tenancy_agreement.data.created_at").lte(today)
+			.exec((err, agreements) => {
+				if (err) {
+					reject(err);
+				}
+				else if (agreements) {
+					let data = { total: agreements.length }
+					socketIo.counterTA(data);
+					resolve(agreements);
+				}
+			})
+	});
+});
+
 agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
 			return reject(new TypeError('TA is not a valid object.'));
 		}
-
 		let body:any = data;
-		console.log(body);
-
 		let type = "tenancy_agreement";
 		let bankNo = body.no;
 		let IDUser = userId.toString();
@@ -1405,6 +1442,7 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 								Agreements.email(id, typeEmail);
 								Agreements.notification(id, type_notif);
 								Agreements.confirmation(id, data, type);
+								Agreements.getTotalTANeedApprove();
 								resolve({status: "TA "+ saved.tenancy_agreement.data.status});
 							}						
 						});
@@ -2248,6 +2286,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 			typeMail = "acceptTaPayment";
 			type_notif = "acceptTaPayment";
 			statusTa = "accepted";
+			Agreements.getTotalStampCertificateNotUploaded();
 		}
 
 		let dataAccept = {
@@ -2312,6 +2351,32 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 		.catch(err => {
 			reject(err);
 		})
+	});
+});
+
+agreementsSchema.static('getTotalStampCertificateNotUploaded', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let today = new Date();
+		Agreements
+			.find({})
+			.where("tenancy_agreement.data.created_at").lte(today)
+			.exec((err, agreements) => {
+				if (err) {
+					reject(err);
+				}
+				else if (agreements) {
+					let count = 0;
+					for (var i = 0; i < agreements.length; i++) {
+						let agreement = agreements[i];
+						if (agreement.tenancy_agreement.data.stamp_certificate){
+							count = count + 1;
+						}
+					}
+					let data = { total: count };
+					socketIo.counterCertificate(data);
+					resolve(agreements);
+				}
+			})
 	});
 });
 
