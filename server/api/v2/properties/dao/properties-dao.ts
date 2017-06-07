@@ -1077,7 +1077,7 @@ propertiesSchema.static('favourite', (id:string, userId:string):Promise<any> => 
                   if (err) { reject({message: err.message}); }
                   else { 
                     Properties.getById(id, userId, 'phone').then(res => {
-                      res["favourites"] = 'Unshortlisted';
+                      res["favourites"] = 'Not Shortlisted';
                       resolve(res);
                     })
                   }

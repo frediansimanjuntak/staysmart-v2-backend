@@ -1040,7 +1040,7 @@ usersSchema.static('forgetPassword', (email:string, headers):Promise<any> => {
 						userHelper.meHelper(result, headers, 'success').then(user_data => {
 							resolve(user_data);
 						})
-					})
+					});
 				}
 			});
 		})
