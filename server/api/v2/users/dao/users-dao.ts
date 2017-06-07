@@ -276,7 +276,7 @@ usersSchema.static('me', (userId:string, headers:Object, device: string):Promise
 					resolve(result);
 				}
 				else {
-					userHelper.meHelper(result, headers).then(res_data => {
+					userHelper.meHelper(result, headers, '').then(res_data => {
 						resolve(res_data);
 					});
 				}
@@ -1026,6 +1026,24 @@ usersSchema.static('unblockUser', (id:string, userId:Object, roomId:string):Prom
 					}
 				}
 			})		
+	});
+});
+
+usersSchema.static('forgetPassword', (email:string, headers):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users.sendResetPassword(email).then(res => {
+			Users.findOne({"email": email}).exec((err, user) => {
+				if (err) { reject({message: err.message}); }
+				else {
+					let id = user._id;
+					Users.getById(id).then(result => {
+						userHelper.meHelper(result, headers, 'success').then(user_data => {
+							resolve(user_data);
+						})
+					})
+				}
+			});
+		})
 	});
 });
 

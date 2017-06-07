@@ -76,6 +76,10 @@ export class UserRoutes {
 		router
 			.route('/send_reset_password')
 			.post(UsersController.sendResetPassword);
+		
+		router
+			.route('/forget-password')
+			.post(UsersController.forgetPassword);
 
 		router
 			.route('/reset_password/:token')

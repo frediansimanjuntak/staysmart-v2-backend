@@ -222,6 +222,15 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static forgetPassword(req: express.Request, res: express.Response):void {
+		let _email = req.body.email;
+		let _headers = req.headers;
+		UsersDAO
+		['forgetPassword'](_email, _headers)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static resetPassword(req: express.Request, res: express.Response):void {
 		let _token = req.params.token;
 		let _newPassword = req.body;
