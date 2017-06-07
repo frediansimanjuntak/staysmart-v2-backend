@@ -26,6 +26,6 @@ export class AppointmentsRoutes {
 
 		router
 			.route('/appointments/update/:id/:status')
-			.put(auth.isAuthenticated(),AppointmentsController.updateAppointments);
+			.put(auth.isAuthenticated(),AppointmentsController.updateAppointments);		
 	}
 }

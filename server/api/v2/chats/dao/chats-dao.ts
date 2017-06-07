@@ -315,7 +315,7 @@ chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
                                             if(saved){
                                                 let agreementData = {
                                                     "property": saved.property,
-                                                    "room_id": saved._id
+                                                    "room": saved._id
                                                 }
                                                 Agreements.createAgreements(agreementData, uid.toString())
                                                 .then((res) => {
