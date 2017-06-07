@@ -78,7 +78,7 @@ export class reportDAO{
 						confirmation_date = loi.confirmation.landlord.date;
 						created_day = loi.created_at;
 						created_at = new Date(loi.created_at);
-						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
+						date_expired = new Date(created_at.setDate(created_at.getDate() + 6));
 						if(loi.payment){
 							payment_proof = loi.payment.attachment.payment;
 							secpayment_proof = loi.payment.attachment.payment_confirm;
@@ -103,7 +103,7 @@ export class reportDAO{
 						confirmation_date = ta.confirmation.landlord.date;
 						created_day = ta.created_at;
 						created_at = new Date(ta.created_at);
-						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
+						date_expired = new Date(created_at.setDate(created_at.getDate() + 6));
 						if (ta.payment) {
 							payment_proof = ta.payment.attachment.payment;
 							secpayment_proof = ta.payment.attachment.payment_confirm;
@@ -185,8 +185,8 @@ export class reportDAO{
 							"status": status,
 							"confirmation_date": confirmation_date,							
 							"landlord":{
-								"full_name": landlord.landlord.data.name, 
-								"id_number": landlord.landlord.data.identification_number,
+								"full_name": loi.landlord.name, 
+								"id_number": loi.landlord.identification_number,
 								"company_name": landlord.companies
 							},
 							"landlord_account": {								
