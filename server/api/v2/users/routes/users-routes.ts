@@ -64,6 +64,10 @@ export class UserRoutes {
 		router
 			.route('/users/unactive/:id')
 			.post(auth.isAuthenticated(), UsersController.unActiveUser);
+		
+		router
+			.route('/block')
+			.post(auth.isAuthenticated(), UsersController.blockUserMobile);
 
 		router
 			.route('/users/block/:id/:roomid')

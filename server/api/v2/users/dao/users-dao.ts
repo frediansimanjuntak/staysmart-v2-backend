@@ -949,6 +949,25 @@ usersSchema.static('updateChatsRoom', (id:string, block:boolean):Promise<any> =>
 	});
 });
 
+usersSchema.static('blockUserMobile', (id:string, userId:Object, headers: Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users.findById(userId).exec((err, user) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				let rooms = user.chat_rooms;
+				for (var i = 0; i < rooms.length; i++) {
+					Users.blockUser(id, userId, rooms[i]);
+				}
+				Users.getById(userId).then(result => {
+					userHelper.meHelper(result, headers, '').then(user_data => {
+						resolve(user_data);
+					})
+				})
+			}
+		})
+	});
+});
+
 usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -956,7 +975,7 @@ usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promis
 		}
 		let idUser = userId.toString();
 		if(id == idUser){
-			reject({message: "Connot Block by yourself"})
+			reject({message: "Cannot Block by yourself"})
 		} 
 		if(id != idUser){
 			Users

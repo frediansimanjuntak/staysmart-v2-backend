@@ -194,6 +194,17 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static blockUserMobile(req: express.Request, res: express.Response):void {
+		let _id = req.body.user_id;
+		let _userId = req['user']._id;
+		let _headers = req.headers;
+
+		UsersDAO
+		['blockUserMobile'](_id, _userId, _headers)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static blockUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _roomId = req.params.roomid;
