@@ -12,6 +12,10 @@ export class UserReportsRoutes {
 			.post(auth.isAuthenticated(),UserReportsController.createUserReports);
 
 		router
+			.route('/report')
+			.post(auth.isAuthenticated(), UserReportsController.reportUserMobile);
+
+		router
 			.route('/user_reports/count')
 			.get(auth.isAuthenticated(), auth.hasRole('admin'), UserReportsController.getGroupCount);
 

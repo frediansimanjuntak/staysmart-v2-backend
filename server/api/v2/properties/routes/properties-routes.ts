@@ -35,6 +35,10 @@ export class PropertiesRoutes {
 		router
 			.route('/member/property/:type')
 			.get(auth.isAuthenticated(),PropertiesController.memberProperty);
+		
+		router
+			.route('/member/favourite')
+			.get(auth.isAuthenticated(), PropertiesController.memberFavourite);
 
 		router
 			.route('/properties/draft')
@@ -83,6 +87,10 @@ export class PropertiesRoutes {
 			.get(auth.isAuthenticated(),PropertiesController.getByIdMobile);
 		
 		router
+			.route('/property/:id/seen')
+			.get(auth.isAuthenticated(), PropertiesController.updatePropertySeen);
+		
+		router
 			.route('/schedules/:id/:date')
 			.get(auth.isAuthenticated(),PropertiesController.getSchedulesByDate);
 
@@ -97,6 +105,10 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/:confirmation/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), PropertiesController.confirmationProperty);
+		
+		router
+			.route('/favourite')
+			.post(auth.isAuthenticated(), PropertiesController.favourite);
 
 		router
 			.route('/properties/shortlist_property/:id')

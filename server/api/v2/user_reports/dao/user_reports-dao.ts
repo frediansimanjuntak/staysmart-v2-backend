@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import userReportsSchema from '../model/user_reports-model';
 import Users from '../../users/dao/users-dao'
+import {userHelper} from '../../../../helper/user.helper';
 
 userReportsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -139,6 +140,26 @@ userReportsSchema.static('createUserReports', (reports:Object, userId:string):Pr
         _reports.save((err, saved)=>{
           err ? reject({message: err.message})
               : resolve(saved);
+        });
+    });
+});
+
+userReportsSchema.static('reportUserMobile', (reports:Object, userId:string, headers: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body: any = reports;
+        var _reports = new UserReports();
+        _reports.reported = body.user_id;
+        _reports.reason = body.reason;
+        _reports.reporter = userId;
+        _reports.save((err, saved)=>{
+          if (err) { reject({message: err.message}); }
+          else {
+            Users.getById(userId).then(result => {
+                userHelper.meHelper(result, headers, '').then(user_data => {
+                    resolve(user_data);
+                })
+            })
+          }
         });
     });
 });

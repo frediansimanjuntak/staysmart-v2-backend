@@ -194,6 +194,17 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static blockUserMobile(req: express.Request, res: express.Response):void {
+		let _id = req.body.user_id;
+		let _userId = req['user']._id;
+		let _headers = req.headers;
+
+		UsersDAO
+		['blockUserMobile'](_id, _userId, _headers)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static blockUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _roomId = req.params.roomid;
@@ -222,11 +233,28 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static forgetPassword(req: express.Request, res: express.Response):void {
+		let _email = req.body.email;
+		let _headers = req.headers;
+		UsersDAO
+		['forgetPassword'](_email, _headers)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static resetPassword(req: express.Request, res: express.Response):void {
 		let _token = req.params.token;
 		let _newPassword = req.body;
 		UsersDAO
 		['resetPassword'](_token, _newPassword)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static resetPasswordMobile(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		UsersDAO
+		['resetPasswordMobile'](_data)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}

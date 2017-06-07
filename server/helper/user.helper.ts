@@ -5,11 +5,11 @@ import Users from '../api/v2/users/dao/users-dao';
 import Managers from '../api/v2/managers/dao/managers-dao';
 
 export class userHelper{
-	static meHelper(data, headers) {
+	static meHelper(data, headers, conf) {
 		return new Promise((resolve:Function, reject:Function) => {
 			let result: any = data;
 			let header: any = headers;
-			let auth = header.authorization;
+			let auth = header.authorization ? header.authorization : '123456789';
 			let auth_code = auth.slice(7);
 			let front_landlord;
 			let back_landlord;
@@ -124,25 +124,48 @@ export class userHelper{
 						reject({message: err.message});
 					}
 					else {
-						resolve({
-							'x-auth-token': auth_code,
-							_id: result._id,
-							profil: {
-								forgot: {
-									code: result.reset_password.token,
-									expire: result.reset_password.expired_at
-								}
-							},
-							username: result.username,
-							email: result.email,
-							roles: result.role,
-							landlord: landlord_data,
-							tenant: tenant_data,
-							picture: result.picture ? result.picture.url : '',
-							owned_property: result.owned_properties,
-							managed_property: result.managed_properties,
-							appointed_property: res
-						});
+						if (conf == 'success') {
+							resolve({
+								_id: result._id,
+								profil: {
+									forgot: {
+										code: result.reset_password.token,
+										expire: result.reset_password.expired_at
+									}
+								},
+								username: result.username,
+								email: result.email,
+								roles: result.role,
+								landlord: landlord_data,
+								tenant: tenant_data,
+								picture: result.picture ? result.picture.url : '',
+								owned_property: result.owned_properties,
+								managed_property: result.managed_properties,
+								appointed_property: res,
+								message: 'Success'
+							});
+						}
+						else {
+							resolve({
+								'x-auth-token': auth_code,
+								_id: result._id,
+								profil: {
+									forgot: {
+										code: result.reset_password.token,
+										expire: result.reset_password.expired_at
+									}
+								},
+								username: result.username,
+								email: result.email,
+								roles: result.role,
+								landlord: landlord_data,
+								tenant: tenant_data,
+								picture: result.picture ? result.picture.url : '',
+								owned_property: result.owned_properties,
+								managed_property: result.managed_properties,
+								appointed_property: res
+							});
+						}
 					}
 				})
 		});
