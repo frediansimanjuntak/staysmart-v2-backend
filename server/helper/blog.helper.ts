@@ -8,13 +8,12 @@ export class blogHelper{
 		return new Promise((resolve:Function, reject:Function) => {
 			let blogs_data = [];
 			for(var i = 0; i < blogs.length; i++) {
-				blogs[i].cover = blogs[i].cover.url;
 				blogs_data.push({
 					_id: blogs[i]._id,
 					title: blogs[i].title,
 					content: blogs[i].content,
 					category: blogs[i].category,
-					cover: blogs[i].cover,
+					cover: blogs[i].cover.url,
 					created_at: blogs[i].created_at,
 					created_by: blogs[i].created_by
 				});
@@ -25,7 +24,6 @@ export class blogHelper{
 
 	static getById(blogs, userEmail) {
 		return new Promise((resolve:Function, reject:Function) => {
-			blogs.cover = blogs.cover.url;
 			Subscribes
 				.find({"email": userEmail, "extra.type":"blog", "extra.reference_id": blogs._id})
 				.exec((err, result) => {
@@ -45,7 +43,7 @@ export class blogHelper{
 							title: blogs.title,
 							content: blogs.content,
 							category: blogs.category,
-							cover: blogs.cover,
+							cover: blogs.cover.url,
 							created_at: blogs.created_at,
 							created_by: blogs.created_by,
 							comment: blogs.comments,

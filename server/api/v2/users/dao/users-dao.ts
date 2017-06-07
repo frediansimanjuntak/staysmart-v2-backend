@@ -284,7 +284,7 @@ usersSchema.static('me', (userId:string, headers:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('meData', (userId:string, param:string, headers:Object):Promise<any> => {
+usersSchema.static('meData', (userId:string, param:string, headers:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users.me(userId, headers).then(res => {
 			let type = ['tenant', 'landlord'];
@@ -292,6 +292,9 @@ usersSchema.static('meData', (userId:string, param:string, headers:Object):Promi
 			if (type.indexOf(param) > -1) {
 				resolve(res[param]);
 			}
+			else if (param == 'property') {
+				Properties.getUserProperties(userId, device).then(res => resolve(res));
+			} 
 			else {
 				reject({ message: 'wrong type.' });
 			}

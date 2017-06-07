@@ -30,8 +30,9 @@ export class UsersController {
 		let _userId = req["user"]._id;
 		let _headers = req.headers;
 		let _param = req.params.type;
+		let _device = req.device.type;
 		UsersDAO
-		['meData'](_userId, _param, _headers)
+		['meData'](_userId, _param, _headers, _device)
 		.then(users => res.status(200).json(users))
 		.catch(error => res.status(400).json(error));
 	}

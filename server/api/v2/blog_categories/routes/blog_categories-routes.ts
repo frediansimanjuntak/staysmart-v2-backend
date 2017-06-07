@@ -13,7 +13,7 @@ export class BlogCategoriesRoutes {
 
 		router
 			.route('/category')
-			.get(BlogCategoriesController.getAll)
+			.get(auth.isAuthenticated(), BlogCategoriesController.getAll)
 
 		router
 			.route('/blog-categories/:id')

@@ -13,7 +13,7 @@ export class AmenitiesRoutes {
 
 		router
 			.route('/amenity')
-			.get(AmenitiesController.getAll)
+			.get(auth.isAuthenticated(), AmenitiesController.getAll)
 
 		router
 			.route('/amenities/:id')

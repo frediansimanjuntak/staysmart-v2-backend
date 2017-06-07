@@ -3,8 +3,9 @@ import BlogCategoriesDAO from '../dao/blog_categories-dao';
 
 export class BlogCategoriesController {
 	static getAll(req: express.Request, res: express.Response):void {
+		let _device = req.device.type;
 		BlogCategoriesDAO
-		['getAll']()
+		['getAll'](_device)
 		.then(blog_categories => res.status(200).json(blog_categories))
 		.catch(error => res.status(400).json(error));
 	}
