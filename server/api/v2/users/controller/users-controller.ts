@@ -240,6 +240,14 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static resetPasswordMobile(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		UsersDAO
+		['resetPasswordMobile'](_data)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static refreshToken(req: express.Request, res: express.Response):void {
       let _authorization = req.headers.authorization;
       UsersDAO

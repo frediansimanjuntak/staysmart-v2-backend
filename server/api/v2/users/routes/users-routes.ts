@@ -82,6 +82,10 @@ export class UserRoutes {
 			.post(UsersController.forgetPassword);
 
 		router
+			.route('/forget-password/verification')
+			.post(UsersController.resetPasswordMobile);
+
+		router
 			.route('/reset_password/:token')
 			.post(UsersController.resetPassword);
 

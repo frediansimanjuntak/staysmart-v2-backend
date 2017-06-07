@@ -1158,6 +1158,45 @@ usersSchema.static('validateUser', (userId:string, currentUser:string):Promise<a
 	});
 });
 
+usersSchema.static('resetPasswordMobile', (data:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		let body: any = data;
+		Users.findOne({"email": body.email, "reset_password.token": body.code}).exec((err, res) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				if(res == null) {
+					reject({message: 'You already reset your password.'});
+				}
+				else{
+					var dateNow = new Date();
+					if(dateNow < res.reset_password.expired_at) {
+						if (body.password == body.password_confirmation) {
+							res.password = body.password;
+							res.save((err, saved)=>{
+								if (err) { reject(err) };
+							})
+							Users
+								.update({"reset_password.token": body.code}, {
+									$unset: {"reset_password": ""}
+								})
+								.exec((err, update) => {
+									err ? reject(err)
+										: resolve({message: 'Success please re-login.'});
+								});
+						}
+						else {
+							reject({message: "Your password didn't match."});
+						}	
+					}
+					else{
+						reject({message: "Your link has expired."});
+					}
+				}
+			}
+		})
+    });
+});
+
 usersSchema.static('decodeToken', (token:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var decoded = jwtDecode(token);
