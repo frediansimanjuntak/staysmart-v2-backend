@@ -568,12 +568,9 @@ usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string)
 
 usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:string, confpass:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
 		Users
 			.findById(id)
-			.select('+password')
+			.select('+password -phone')
 			.exec((err, user) => {
 				if(err){
 					reject(err);
