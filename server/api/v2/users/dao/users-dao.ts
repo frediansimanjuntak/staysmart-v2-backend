@@ -552,6 +552,7 @@ usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string)
 		}
 		Users
 			.findById(id)
+			.select('+password')
 			.exec((err, user) => {
 				if(err){
 					reject(err);
