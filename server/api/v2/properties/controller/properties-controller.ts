@@ -28,6 +28,15 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updatePropertySeen(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _user = req["user"]._id;
+		PropertiesDAO
+		['updatePropertySeen'](_id, _user)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _device = req.device.type;
@@ -91,6 +100,15 @@ export class PropertiesController {
 		let _device = req.device.type;
 		PropertiesDAO
 		['memberProperty'](_type, _userId, _device)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static memberFavourite(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _device = req.device.type;
+		PropertiesDAO
+		['memberFavourite'](_userId, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -208,6 +226,16 @@ export class PropertiesController {
 		let _proof = req.body;
 		PropertiesDAO
 		['confirmationProperty'](_id, _userId, _confirmation, _proof)
+		.then(properties => res.status(201).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static favourite(req: express.Request, res: express.Response):void {
+		let _id = req.body.property;
+		let _userId = req["user"]._id;
+
+		PropertiesDAO
+		['favourite'](_id, _userId)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}

@@ -25,6 +25,16 @@ export class CommentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static addComments(req: express.Request, res: express.Response):void {
+		let _comments = req.body;
+		let _id = req.params.id;
+		let _device = req.device.type;
+		CommentsDAO
+		['addComments'](_comments, _id, _device)
+		.then(comments => res.status(201).json(comments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static deleteReplies(req: express.Request, res: express.Response):void {
 		let _idComment = req.params.id;
 		let reply = req.body;

@@ -121,6 +121,83 @@ managersSchema.static('getOwnManager', (userId:string):Promise<any> => {
     });
 });
 
+managersSchema.static('getManagerDetails', (type: string, device: string, userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let types = ['owned','managed', 'appointed'];
+        if (types.indexOf(type) == -1) {
+            reject({message: 'wrong type.'});
+        }
+        else {
+            if (type == 'owned') {
+                Properties.getUserProperties(userId, device).then(res => {
+                    resolve(res);
+                });
+            }
+            else {
+                let status;
+                if (type == 'managed') {
+                    status = "accepted";
+                }
+                else if (type == 'appointed') {
+                    status = "pending";
+                }
+                Properties.getAll(device, userId).then(properties => {
+                    let prop_data = properties;
+                    Managers.find({"manager": userId, "status": status}).exec((err, manager) => {
+                        if (err) { reject({message: err.message}); }
+                        else {
+                            if (manager.length > 0) {
+                                let manager_prop = [];
+                                for (var i = 0; i < prop_data.length; i++) {
+                                    for (var j = 0; j < manager.length; j++) {
+                                        if (prop_data[i]._id == manager[j].property) {
+                                            manager_prop.push(prop_data[i]);
+                                        }
+                                    }
+                                }
+                                resolve(manager_prop);
+                            }
+                            else {
+                                resolve([]);
+                            }
+                        }
+                    })
+                });
+            }
+        }
+    });
+});
+
+managersSchema.static('addManagers', (userId:string, managers:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body: any = managers;
+        Users.find({ $or: [{"username": body.manager}, {"_id": body.manager}]}).exec((err, res) => {
+            if (err) { reject({message: err.message}); }
+            else {
+                let manager_data = {
+                    manager: res[0]._id,
+                    property: body.property,
+                    chat: body.chat
+                };
+                Managers.createManagers(userId, manager_data).then(result => {
+                    Users.getById(result.manager).then(user => {
+                        resolve({
+                            _id: user._id,
+                            full_name: user.landlord.data ? user.landlord.data.name : user.username,
+                            type: user.landlord.data ? user.landlord.data.identification_type : '',
+                            id_number: user.landlord.data ? user.landlord.data.identification_number: '',
+                            identity_front: user.landlord.data? user.landlord.data.identification_proof.front ? user.landlord.data.identification_proof.front.url : '' : '',
+                            identity_back: user.landlord.data? user.landlord.data.identification_proof.back ? user.landlord.data.identification_proof.back.url : '' : '',
+                            user: user._id,
+                            message: 'Success'
+                        });
+                    })
+                });
+            }
+        });
+    });
+});
+
 managersSchema.static('createManagers', (userId:string, managers:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(managers)) {
@@ -132,7 +209,6 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
         let managerId = body.manager;
         let properties = [].concat(body.property);
         let status = "pending";
-        console.log(managers);
 
         for (var i = 0; i < properties.length; i++){
             let propertyID = properties[i];
@@ -181,6 +257,36 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
                     }
                 })
         }
+    });
+});
+
+managersSchema.static('confirmManagers', (managers:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body: any = managers;
+        for (var i = 0; i < body.properties.length; i++) {
+            let property = body.properties[i];
+            Managers.findOneAndUpdate({"manager": body.manager_id, "owner": body.landlord, "property": property.id}, {
+                $set: {
+                    status: 'accepted',
+                    chat: property.chat
+                }
+            })
+            .exec((err, res) => {
+                if (err) { reject({message: err.message}); }
+            })
+        }
+        Users.getById(body.manager_id).then(user => {
+            resolve({
+                _id: user._id,
+                full_name: user.landlord.data ? user.landlord.data.name : user.username,
+                type: user.landlord.data ? user.landlord.data.identification_type : '',
+                id_number: user.landlord.data ? user.landlord.data.identification_number: '',
+                identity_front: user.landlord.data? user.landlord.data.identification_proof.front ? user.landlord.data.identification_proof.front.url : '' : '',
+                identity_back: user.landlord.data? user.landlord.data.identification_proof.back ? user.landlord.data.identification_proof.back.url : '' : '',
+                user: user._id,
+                message: 'Success'
+            });
+        });
     });
 });
 

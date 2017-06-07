@@ -276,7 +276,7 @@ usersSchema.static('me', (userId:string, headers:Object, device: string):Promise
 					resolve(result);
 				}
 				else {
-					userHelper.meHelper(result, headers).then(res_data => {
+					userHelper.meHelper(result, headers, '').then(res_data => {
 						resolve(res_data);
 					});
 				}
@@ -949,6 +949,25 @@ usersSchema.static('updateChatsRoom', (id:string, block:boolean):Promise<any> =>
 	});
 });
 
+usersSchema.static('blockUserMobile', (id:string, userId:Object, headers: Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users.findById(userId).exec((err, user) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				let rooms = user.chat_rooms;
+				for (var i = 0; i < rooms.length; i++) {
+					Users.blockUser(id, userId, rooms[i]);
+				}
+				Users.getById(userId).then(result => {
+					userHelper.meHelper(result, headers, '').then(user_data => {
+						resolve(user_data);
+					})
+				})
+			}
+		})
+	});
+});
+
 usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -956,7 +975,7 @@ usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promis
 		}
 		let idUser = userId.toString();
 		if(id == idUser){
-			reject({message: "Connot Block by yourself"})
+			reject({message: "Cannot Block by yourself"})
 		} 
 		if(id != idUser){
 			Users
@@ -1026,6 +1045,24 @@ usersSchema.static('unblockUser', (id:string, userId:Object, roomId:string):Prom
 					}
 				}
 			})		
+	});
+});
+
+usersSchema.static('forgetPassword', (email:string, headers):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Users.sendResetPassword(email).then(res => {
+			Users.findOne({"email": email}).exec((err, user) => {
+				if (err) { reject({message: err.message}); }
+				else {
+					let id = user._id;
+					Users.getById(id).then(result => {
+						userHelper.meHelper(result, headers, 'success').then(user_data => {
+							resolve(user_data);
+						})
+					});
+				}
+			});
+		})
 	});
 });
 
@@ -1138,6 +1175,45 @@ usersSchema.static('validateUser', (userId:string, currentUser:string):Promise<a
 			}
 		})
 	});
+});
+
+usersSchema.static('resetPasswordMobile', (data:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		let body: any = data;
+		Users.findOne({"email": body.email, "reset_password.token": body.code}).exec((err, res) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				if(res == null) {
+					reject({message: 'You already reset your password.'});
+				}
+				else{
+					var dateNow = new Date();
+					if(dateNow < res.reset_password.expired_at) {
+						if (body.password == body.password_confirmation) {
+							res.password = body.password;
+							res.save((err, saved)=>{
+								if (err) { reject(err) };
+							})
+							Users
+								.update({"reset_password.token": body.code}, {
+									$unset: {"reset_password": ""}
+								})
+								.exec((err, update) => {
+									err ? reject(err)
+										: resolve({message: 'Success please re-login.'});
+								});
+						}
+						else {
+							reject({message: "Your password didn't match."});
+						}	
+					}
+					else{
+						reject({message: "Your link has expired."});
+					}
+				}
+			}
+		})
+    });
 });
 
 usersSchema.static('decodeToken', (token:string):Promise<any> => {

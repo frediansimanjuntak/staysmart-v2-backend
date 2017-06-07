@@ -11,6 +11,10 @@ export class CommentsRoutes {
 			.get(CommentsController.getAll)
 			.post(CommentsController.createComments);
 
+		router 
+			.route('/blog/:id/comment')
+			.post(auth.isAuthenticated(), CommentsController.addComments);
+
 		router
 			.route('/comments/:id')
 			.get(CommentsController.getById)

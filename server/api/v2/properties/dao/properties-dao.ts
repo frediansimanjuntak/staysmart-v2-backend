@@ -336,7 +336,11 @@ propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<a
               reject(err);
             }
             else {
-              resolve(update);
+              resolve({
+                message: 'success',
+                code: 200,
+                data: { update: 1 }
+              });
             }
           });
       }
@@ -513,6 +517,27 @@ propertiesSchema.static('getTotalListing', ():Promise<any> => {
 				}
 			})
 	});
+});
+
+propertiesSchema.static('memberFavourite', (userId: Object, device: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Users.findById(userId).select("shortlisted_properties").exec((err, shortlisted) => {
+        if (err) { reject(err); }
+        else {
+          Properties.getAll(device, userId).then(properties => {
+            let favourite = [];
+            for (var i = 0; i < shortlisted.length; i++) {
+              for (var j = 0; j < properties.length; j++) {
+                if (shortlisted[i] == properties[j]._id) {
+                  favourite.push(properties[j]);
+                }
+              }
+            }
+            resolve(favourite);
+          });
+        }
+      })
+    });
 });
 
 propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Object, userEmail:string, userFullname:string, userRole:string):Promise<any> => {
@@ -1031,6 +1056,55 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
   });
 });
 
+propertiesSchema.static('favourite', (id:string, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    Users
+        .find({"_id": userId, "shortlisted_properties": id})
+        .select("shortlisted_property")
+        .exec((err, res) => {
+          if(err){
+            reject({message: err.message});
+          }
+          if(res){
+            if(res.length > 0){
+              Users
+                .findByIdAndUpdate(userId, {
+                  $pull: {
+                    "shortlisted_properties": id
+                  }
+                })
+                .exec((err, update) => {
+                  if (err) { reject({message: err.message}); }
+                  else { 
+                    Properties.getById(id, userId, 'phone').then(res => {
+                      res["favourites"] = 'Not Shortlisted';
+                      resolve(res);
+                    })
+                  }
+                });
+            }
+            else {
+              Users
+                .findByIdAndUpdate(userId, {
+                  $push: {
+                    "shortlisted_properties": id
+                  }
+                })
+                .exec((err, update) => {
+                  if (err) { reject({message: err.message}); }
+                  else { 
+                    Properties.getById(id, userId, 'phone').then(res => {
+                      res["favourites"] = 'Shortlisted';
+                      resolve(res);
+                    })
+                  }
+                });
+            }          
+          }
+        }) 
+  });
+});
+
 propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       if(!_.isString(id)) {
@@ -1047,7 +1121,7 @@ propertiesSchema.static('shortlistProperty', (id:string, userId:string):Promise<
             if(res.length > 0){
               resolve({message: "Already shortlisted this property"})
             }
-            if(res.length == 0){
+            else {
               Users
                 .findByIdAndUpdate(userId, {
                   $push: {

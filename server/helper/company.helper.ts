@@ -41,4 +41,39 @@ export class companyHelper{
             resolve(company_data);
         });
     }
+
+    static getById(companies) {
+		return new Promise((resolve:Function, reject:Function) => {
+            let documents = companies.documents;
+            for ( var j = 0; j < documents.length; j++ ) {
+                documents[j] = documents[j].url;
+            }
+            let shareholders = companies.shareholders;
+            let shareholder = [];
+            for ( var k = 0; k < shareholders.length; k++ ) {
+                shareholder.push({
+                    full_name: shareholders[k].name,
+                    type2: shareholders[k].identification_type,
+                    id_number: shareholders[k].identification_number,
+                    identity_front: shareholders[k].identification_proof.front.url
+                });
+            }
+            resolve({
+                _id: companies._id,
+                name: companies.name,
+                company_number: companies.registration_number,
+                company_document: documents,
+                shareholder: shareholder,
+                landlord: {
+                    _id: companies.created_by._id,
+                    full_name: companies.created_by.landlord.data.name,
+                    id_number: companies.created_by.landlord.data.identification_number,
+                    identity_front: companies.created_by.landlord.data.identification_proof.front.url,
+                    type: companies.created_by.landlord.data.identification_type,
+                    user: companies.created_by._id
+                },
+                created_at: companies.created_at
+            });
+        });
+    }
 }
