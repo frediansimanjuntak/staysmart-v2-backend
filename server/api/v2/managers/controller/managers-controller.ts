@@ -85,6 +85,15 @@ export class ManagersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static confirmManagers(req: express.Request, res: express.Response):void {
+		let _managers = req.body;
+
+		ManagersDAO
+		['confirmManagers'](_managers)
+		.then(managers => res.status(201).json(managers))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static acceptManagers(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;

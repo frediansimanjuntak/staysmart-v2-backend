@@ -18,6 +18,10 @@ export class ManagersRoutes {
 		router
 			.route('/me/manager')
 			.post(auth.isAuthenticated(), ManagersController.addManagers);
+		
+		router
+			.route('/me/manager/confirm')
+			.post(auth.isAuthenticated(), ManagersController.confirmManagers);
 
 		router
 			.route('/managers/find_own')

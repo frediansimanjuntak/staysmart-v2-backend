@@ -260,6 +260,36 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
     });
 });
 
+managersSchema.static('confirmManagers', (managers:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body: any = managers;
+        for (var i = 0; i < body.properties.length; i++) {
+            let property = body.properties[i];
+            Managers.findOneAndUpdate({"manager": body.manager_id, "owner": body.landlord, "property": property.id}, {
+                $set: {
+                    status: 'accepted',
+                    chat: property.chat
+                }
+            })
+            .exec((err, res) => {
+                if (err) { reject({message: err.message}); }
+            })
+        }
+        Users.getById(body.manager_id).then(user => {
+            resolve({
+                _id: user._id,
+                full_name: user.landlord.data ? user.landlord.data.name : user.username,
+                type: user.landlord.data ? user.landlord.data.identification_type : '',
+                id_number: user.landlord.data ? user.landlord.data.identification_number: '',
+                identity_front: user.landlord.data? user.landlord.data.identification_proof.front ? user.landlord.data.identification_proof.front.url : '' : '',
+                identity_back: user.landlord.data? user.landlord.data.identification_proof.back ? user.landlord.data.identification_proof.back.url : '' : '',
+                user: user._id,
+                message: 'Success'
+            });
+        });
+    });
+});
+
 managersSchema.static('acceptManagers', (id:string, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
