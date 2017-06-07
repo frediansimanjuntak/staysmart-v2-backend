@@ -999,7 +999,7 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                                           else{
                                             var notification = {
                                               "user": result.owner.user,
-                                              "message": "Property "+confirmation_result+" for "+unit+" "+data.name,
+                                              "message": "Listing "+confirmation_result+" for "+unit+" "+data.name,
                                               "type": confirmation_result+"_property",
                                               "ref_id": id
                                             };

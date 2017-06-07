@@ -298,7 +298,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
               let from = 'Staysmart';
               let notification = {
                 "user": user,
-                "message": "Viewing " + status + " for " + unit + " " + appointment.property.development.name + " at " + appointment.chosen_time.date + " from " + appointment.chosen_time.from + " to " + appointment.chosen_time.to,
+                "message": "Viewing " + status + " for " + appointment.property.development.name,
                 "type": "appointment_proposed",
                 "ref_id": id
               };
