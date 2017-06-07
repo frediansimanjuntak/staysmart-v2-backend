@@ -28,7 +28,7 @@ export class DevelopmentsController {
 	}
 
 	static getById(req: express.Request, res: express.Response):void {
-		let _device = req.device.type;
+		let _device = 'phone';
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
 		DevelopmentsDAO
