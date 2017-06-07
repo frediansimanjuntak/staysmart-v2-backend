@@ -20,8 +20,9 @@ export class UsersController {
 	static me(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		let _headers = req.headers;
+		let _device = req.device.type;
 		UsersDAO
-		['me'](_userId, _headers)
+		['me'](_userId, _headers, _device)
 		.then(users => res.status(200).json(users))
 		.catch(error => res.status(400).json(error));
 	}
@@ -84,8 +85,9 @@ export class UsersController {
 	static signUp(req: express.Request, res: express.Response):void {
 		let _user = req.body;
 		let _headers = req.headers;
+		let _device = req.device.type;
 		UsersDAO
-		['signUp'](_user, _headers)
+		['signUp'](_user, _headers, _device)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
@@ -147,8 +149,9 @@ export class UsersController {
 		let _id = req.params.id;
 		let _user = req.body;
 		let _headers = req.headers;
+		let _device = req.device.type;
 		UsersDAO
-		  ['activationUser'](_id, _user, _headers)
+		  ['activationUser'](_id, _user, _headers, _device)
 		  .then(users => res.status(201).json(users))
 		  .catch(error => res.status(400).json(error));
 	}
@@ -157,8 +160,9 @@ export class UsersController {
 		let _id = req["user"]._id;
 		let _user = req.body;
 		let _headers = req.headers;
+		let _device = req.device.type;
 		UsersDAO
-		  ['verifiedUser'](_id, _user, _headers)
+		  ['verifiedUser'](_id, _user, _headers, _device)
 		  .then(users => res.status(201).json(users))
 		  .catch(error => res.status(400).json(error));
 	}
