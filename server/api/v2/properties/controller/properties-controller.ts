@@ -104,6 +104,15 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static memberFavourite(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _device = req.device.type;
+		PropertiesDAO
+		['memberFavourite'](_userId, _device)
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getDraft(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		PropertiesDAO

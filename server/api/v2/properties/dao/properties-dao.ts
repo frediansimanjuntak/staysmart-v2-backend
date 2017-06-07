@@ -519,6 +519,24 @@ propertiesSchema.static('getTotalListing', ():Promise<any> => {
 	});
 });
 
+propertiesSchema.static('memberFavourite', (userId: Object, device: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Users.findById(userId).select("shortlisted_properties").exec((err, shortlisted) => {
+        Properties.getAll(device, userId).then(properties => {
+          let favourite = [];
+          for (var i = 0; i < shortlisted.length; i++) {
+            for (var j = 0; j < properties.length; j++) {
+              if (shortlisted[i] == properties[j]._id) {
+                favourite.push(properties[j]);
+              }
+            }
+          }
+          resolve(favourite);
+        })
+      })
+    });
+});
+
 propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Object, userEmail:string, userFullname:string, userRole:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(propertiesObject)) {

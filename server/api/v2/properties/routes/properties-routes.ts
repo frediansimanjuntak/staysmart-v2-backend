@@ -35,6 +35,10 @@ export class PropertiesRoutes {
 		router
 			.route('/member/property/:type')
 			.get(auth.isAuthenticated(),PropertiesController.memberProperty);
+		
+		router
+			.route('/member/favourite')
+			.get(auth.isAuthenticated(), PropertiesController.memberFavourite);
 
 		router
 			.route('/properties/draft')
