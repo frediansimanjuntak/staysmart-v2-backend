@@ -38,6 +38,16 @@ export class ManagersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static addManagers(req: express.Request, res: express.Response):void {
+		let _manager = req.body;
+		let _userId = req["user"]._id;
+
+		ManagersDAO
+		['addManagers'](_userId, _manager)
+		.then(managers => res.status(201).json(managers))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createManagers(req: express.Request, res: express.Response):void {
 		let _manager = req.body;
 		let _userId = req["user"]._id;

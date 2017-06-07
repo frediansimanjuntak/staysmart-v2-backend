@@ -168,6 +168,36 @@ managersSchema.static('getManagerDetails', (type: string, device: string, userId
     });
 });
 
+managersSchema.static('addManagers', (userId:string, managers:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body: any = managers;
+        Users.find({ $or: [{"username": body.manager}, {"_id": body.manager}]}).exec((err, res) => {
+            if (err) { reject({message: err.message}); }
+            else {
+                let manager_data = {
+                    manager: res[0]._id,
+                    property: body.property,
+                    chat: body.chat
+                };
+                Managers.createManagers(userId, manager_data).then(result => {
+                    Users.getById(result.manager).then(user => {
+                        resolve({
+                            _id: user._id,
+                            full_name: user.landlord.data ? user.landlord.data.name : user.username,
+                            type: user.landlord.data ? user.landlord.data.identification_type : '',
+                            id_number: user.landlord.data ? user.landlord.data.identification_number: '',
+                            identity_front: user.landlord.data? user.landlord.data.identification_proof.front ? user.landlord.data.identification_proof.front.url : '' : '',
+                            identity_back: user.landlord.data? user.landlord.data.identification_proof.back ? user.landlord.data.identification_proof.back.url : '' : '',
+                            user: user._id,
+                            message: 'Success'
+                        });
+                    })
+                });
+            }
+        });
+    });
+});
+
 managersSchema.static('createManagers', (userId:string, managers:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(managers)) {
@@ -179,7 +209,6 @@ managersSchema.static('createManagers', (userId:string, managers:Object):Promise
         let managerId = body.manager;
         let properties = [].concat(body.property);
         let status = "pending";
-        console.log(managers);
 
         for (var i = 0; i < properties.length; i++){
             let propertyID = properties[i];

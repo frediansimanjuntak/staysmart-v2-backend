@@ -12,8 +12,12 @@ export class ManagersRoutes {
 			.post(auth.isAuthenticated(),ManagersController.createManagers);
 		
 		router	
-			.route('me/manager-details/:type')
-			.get(auth.isAuthenticated(),ManagersController.getManagerDetails);
+			.route('/me/manager-details/:type')
+			.get(auth.isAuthenticated(), ManagersController.getManagerDetails);
+
+		router
+			.route('/me/manager')
+			.post(auth.isAuthenticated(), ManagersController.addManagers);
 
 		router
 			.route('/managers/find_own')
