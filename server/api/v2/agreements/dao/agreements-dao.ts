@@ -10,6 +10,7 @@ import Appointments from '../../appointments/dao/appointments-dao';
 import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
+import Chats from '../../chats/dao/chats-dao';
 import {mail} from '../../../../email/mail';
 import {socketIo} from '../../../../server';
 import {GlobalService} from '../../../../global/global.service';
@@ -961,27 +962,33 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 			.findById(id)
 			.populate("landlord tenant property")
 			.exec((err, agreement) => {
-				let landlordId
-				if (agreement.landlord) {
-					landlordId = agreement.landlord._id;
-					if (landlordId != IDUser) {
+				if (err) {
+					reject(err);
+				}
+				else if (agreement) {
+					let landlordId
+					if (agreement.landlord) {
+						landlordId = agreement.landlord._id;
+						if (landlordId != IDUser) {
+							resolve({message: "forbidden"});
+						}
+						else if (landlordId == IDUser) {
+							agreement.letter_of_intent.data.status = "accepted";
+							agreement.save((err, saved) => {
+								Agreements.confirmation(id, data, type);
+								Agreements.changeStatusChat(agreement.room.toString(), "pending");
+								Agreements.notification(id, type_notif).then(res => {
+									let typeMail = "acceptedLoiLandlord";
+									Agreements.email(id, typeMail);
+									resolve(saved);
+								});
+							})
+						}
+					}	
+					else {
 						resolve({message: "forbidden"});
-					}
-					else if (landlordId == IDUser) {
-						agreement.letter_of_intent.data.status = "accepted";
-						agreement.save((err, saved) => {
-							Agreements.confirmation(id, data, type)
-							Agreements.notification(id, type_notif).then(res => {
-								let typeMail = "acceptedLoiLandlord";
-								Agreements.email(id, typeMail);
-								resolve(saved);
-							});
-						})
-					}
-				}	
-				else {
-					resolve({message: "forbidden"});
-				}			
+					}						
+				}		
 				
 			})			
 	});
@@ -1052,6 +1059,21 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 						}
 					}						
 				}
+			})
+	});
+});
+
+agreementsSchema.static('changeStatusChat', (id:string, status:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Chats
+			.findByIdAndUpdate(id, {
+				$set: {
+					status: status
+				}
+			})
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve(updated)
 			})
 	});
 });
@@ -2254,6 +2276,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 									if (body.status_payment == "accepted") {
 										if (receivePayment >= totalFee) {
 											Agreements.updatePropertyStatus(propertyId, tenantId, until, "rented", id.toString());
+											Agreements.changeStatusChat(agreement.room.toString(), "rented");
 											Agreements.updateUserRented(tenantId, until, propertyId, id.toString());	
 											Agreements.updateReceivePayment(data);
 											Agreements.notification(id, type_notif);										
