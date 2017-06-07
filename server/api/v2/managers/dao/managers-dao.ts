@@ -121,6 +121,53 @@ managersSchema.static('getOwnManager', (userId:string):Promise<any> => {
     });
 });
 
+managersSchema.static('getManagerDetails', (type: string, device: string, userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let types = ['owned','managed', 'appointed'];
+        if (types.indexOf(type) == -1) {
+            reject({message: 'wrong type.'});
+        }
+        else {
+            if (type == 'owned') {
+                Properties.getUserProperties(userId, device).then(res => {
+                    resolve(res);
+                });
+            }
+            else {
+                let status;
+                if (type == 'managed') {
+                    status = "accepted";
+                }
+                else if (type == 'appointed') {
+                    status = "pending";
+                }
+                Properties.getAll(device, userId).then(properties => {
+                    let prop_data = properties;
+                    Managers.find({"manager": userId, "status": status}).exec((err, manager) => {
+                        if (err) { reject({message: err.message}); }
+                        else {
+                            if (manager.length > 0) {
+                                let manager_prop = [];
+                                for (var i = 0; i < prop_data.length; i++) {
+                                    for (var j = 0; j < manager.length; j++) {
+                                        if (prop_data[i]._id == manager[j].property) {
+                                            manager_prop.push(prop_data[i]);
+                                        }
+                                    }
+                                }
+                                resolve(manager_prop);
+                            }
+                            else {
+                                resolve([]);
+                            }
+                        }
+                    })
+                });
+            }
+        }
+    });
+});
+
 managersSchema.static('createManagers', (userId:string, managers:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isObject(managers)) {
