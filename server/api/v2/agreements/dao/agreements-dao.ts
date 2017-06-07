@@ -1524,6 +1524,8 @@ agreementsSchema.static('stampCertificateTA', (id:string, data:Object):Promise<a
 				err ? reject({message: err.message})
 					: resolve({message: "uploaded"});
 				let typeEmail = "stampCertificateTa";
+				let type_notif = "certificateStampDuty";
+				Agreements.notification(id, type_notif);
 				Agreements.email(id, typeEmail);
 			})
 	});
@@ -2279,12 +2281,12 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 		let statusLoi;
 		if (type == "letter_of_intent") {
 			typeMail = "acceptLoiPayment";
-			type_notif = "acceptLoiPayment";
 			statusLoi = "payment-confirmed";
+			type_notif = "paymentLOIAccepted";
 		}
 		if (type == "tenancy_agreement") {
 			typeMail = "acceptTaPayment";
-			type_notif = "acceptTaPayment";
+			type_notif = "paymentTAAccepted";
 			statusTa = "accepted";
 			Agreements.getTotalStampCertificateNotUploaded();
 		}
@@ -2325,12 +2327,12 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 		let statusLoi;
 		if (type == "letter_of_intent") {
 			typeMail = "rejectLoiPayment";
-			type_notif = "rejectLoiPayment";
+			type_notif = "paymentTARejected";
 			statusLoi = "rejected";
 		}
 		if (type == "tenancy_agreement") {
 			typeMail = "rejectTaPayment";
-			type_notif = "rejectTaPayment";
+			type_notif = "paymentTARejected";
 			statusTa = "rejected";
 		}
 
@@ -2722,17 +2724,17 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 							}
 							if (type == "initiateTA") {
 								message = "Tenancy Agreement (TA) received for" + unit + " " + devResult.name;
-								type_notif = "received_LOI";
+								type_notif = "received_TA";
 								user = tenantId;
 							}
 			            	if (type == "rejectTA") {
 								message = "Tenancy Agreement (TA) rejected for" + unit + " " + devResult.name;
-								type_notif = "rejected_LOI";
+								type_notif = "rejected_TA";
 								user = landlordId;
 							}
 							if (type == "acceptTA") {
 								message = "Tenancy Agreement (TA) accepted for" + unit + " " + devResult.name;
-								type_notif = "accepted_LOI";
+								type_notif = "accepted_TA";
 								user = landlordId;
 							}
 							if (type == "initiateIL") {
@@ -2743,6 +2745,31 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 			            	if (type == "confirmedIL") {
 								message = "Inventory List confirmed for" + unit + " " + devResult.name;
 								type_notif = "confirm_Inventory";
+								user = landlordId;
+							}
+							if (type == "paymentLOIAccepted") {
+								message = "Good Faith Deposit (GFD) received for" + unit + " " + devResult.name;
+								type_notif = "payment_LOI";
+								user = landlordId;
+							}
+							if (type == "paymentLOIRejected") {
+								message = "Good Faith Deposit (GFD) rejected for" + unit + " " + devResult.name;
+								type_notif = "payment_LOI";
+								user = landlordId;
+							}
+							if (type == "paymentTAAccepted") {
+								message = "Security Deposit (SD) received for" + unit + " " + devResult.name;
+								type_notif = "payment_TA";
+								user = landlordId;
+							}
+							if (type == "paymentTARejected") {
+								message = "Security Deposit (SD) rejected for" + unit + " " + devResult.name;
+								type_notif = "payment_TA";
+								user = landlordId;
+							}
+							if (type == "certificateStampDuty") {
+								message = "Certificate of Stamp Duty received for" + unit + " " + devResult.name;
+								type_notif = "certificate_ta";
 								user = landlordId;
 							}
 				            var notification = {
