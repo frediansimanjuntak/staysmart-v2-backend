@@ -226,4 +226,21 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static refreshToken(req: express.Request, res: express.Response):void {
+      let _authorization = req.headers.authorization;
+      UsersDAO
+        ['refreshToken'](_authorization)
+        .then(user => res.status(201).json(user))
+        .catch(error => res.status(400).json(error));
+  }
+
+	static logout(req: express.Request, res: express.Response):void {
+		let _userId = req['user']._id;
+		let _authorization = req.headers.authorization;
+		UsersDAO
+		['logout'](_userId, _authorization)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 }

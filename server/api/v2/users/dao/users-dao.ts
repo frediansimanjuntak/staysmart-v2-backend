@@ -16,8 +16,10 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {GlobalService} from '../../../../global/global.service';
 import {socketIo} from '../../../../server';
-var split = require('split-string');
 import {userHelper} from '../../../../helper/user.helper';
+var split = require('split-string');
+var jwtDecode = require('jwt-decode');
+
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users
@@ -1100,7 +1102,7 @@ usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<a
 	});
 });
 
-usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<any> => {
+usersSchema.static('validateUser', (userId:string, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users.findById(currentUser, (err, result) => {
 			if(result.role != 'admin'){
@@ -1114,6 +1116,62 @@ usersSchema.static('validateUser', (userId:string, currentUser: string):Promise<
 			else{
 				resolve(true);
 			}
+		})
+	});
+});
+
+usersSchema.static('decodeToken', (token:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        var decoded = jwtDecode(token);
+        resolve(decoded);
+    });
+});
+
+usersSchema.static('refreshToken', (authorization:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let token = authorization.substring(7);
+        Users.decodeToken(token).then((res) => {
+          let userId = res._id;
+          if (res.exp) {
+            Users
+            .findById(userId)
+            .exec((err, user) => {
+              if (err) {
+				  reject({message: err.message});
+              }
+              else if (user) {
+				  Users.logout(user._id.toString(), authorization);
+				  var newToken = signToken(user._id, user.role, user.username);
+				  resolve({token: newToken});
+              }
+            })
+          }
+          else {
+            reject({message:"token not expired"})
+          }          
+        })
+        .catch((err)=> {
+          reject({message: err.message});
+        })        
+    });
+});
+
+usersSchema.static('logout', (userId:string, authorization:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let token = authorization;
+		let data = {
+			token: token,
+			date: new Date()
+		};
+		Users
+		.findByIdAndUpdate(userId, {
+			$push: { 
+				blacklisted_token: data
+			}
+		})
+		.exec((err, updated) => {
+			err ? reject(err)
+				: resolve(updated);
 		})
 	});
 });
