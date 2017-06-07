@@ -6,7 +6,7 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 var AppointmentsSchema = new mongoose.Schema({
-	room_id: {
+	room: {
 		type: Schema.Types.ObjectId,
 		ref: 'ChatRooms'
 	},
