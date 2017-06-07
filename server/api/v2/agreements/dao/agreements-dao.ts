@@ -777,7 +777,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 						let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
 						let remark = body.remark_payment;
 						let term_payment = GlobalService.calcTermPayment(term_lease);
-						// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+						let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
 						let _query = {"_id": id};
 						let loiObj = {$set: {}};
 					    for(var param in body) {
@@ -786,7 +786,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 					    loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
 						loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
 						loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
-						loiObj.$set["letter_of_intent.data.term_lease_extend"] = 0;
+						loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
 						loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
 						loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
 					    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
