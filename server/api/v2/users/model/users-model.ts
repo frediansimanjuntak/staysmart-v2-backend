@@ -173,6 +173,10 @@ var UsersSchema = new mongoose.Schema({
     created_at: {type: Date},
     expired_at: {type: Date}
   },
+  blacklisted_token: [{
+    token: {type: String, select: false},
+    date: {type: Date, select: false}    
+  }],
 	created_at: {type: Date, default: Date.now}
 });
 

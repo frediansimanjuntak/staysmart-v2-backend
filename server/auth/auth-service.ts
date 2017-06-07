@@ -53,23 +53,55 @@ export function isAuthenticated() {
     })
     // Attach user to request
     .use(function(req, res, next) {
-      User.findById(req.user._id).exec()
+      User.findById(req.user._id).select('+blacklisted_token.token').exec()
         .then(user => {
           if(!user) {
             return res.status(401).end();
           }
-          if(user.picture) {
-            Attachment.findById(user.picture).exec()
-            .then(picture => {
-              user.picture = picture.url;
-              req.user = user;
-              next();
-            })
+          if (user) { 
+            if (user.blacklisted_token.length > 0) {
+              let tokenBlacklist;
+              for (var i = 0; i < user.blacklisted_token.length; i++) {
+                let blacklist = user.blacklisted_token[i];
+                let token = blacklist.token;
+                if (token == req.headers.authorization) {
+                  tokenBlacklist = true;
+                }
+              }
+              if (tokenBlacklist == true) {
+                return res.status(412).send({message: "You must be logged in to do this", code: 412});
+              }
+              else {
+                if(user.picture) {
+                  Attachment.findById(user.picture).exec()
+                  .then(picture => {
+                    user.picture = picture.url;
+                    req.user = user;
+                    next();
+                  })
+                }
+                else {
+                  req.user = user;
+                  next();
+                }
+              }
+            }
+            else {
+              if(user.picture) {
+                Attachment.findById(user.picture).exec()
+                .then(picture => {
+                  user.picture = picture.url;
+                  req.user = user;
+                  next();
+                })
+              }
+              else {
+                req.user = user;
+                next();
+              }
+            }            
           }
-          else {
-            req.user = user;
-            next();
-          }
+          
         })
         .catch(err => next({message: "error", err}));
     });

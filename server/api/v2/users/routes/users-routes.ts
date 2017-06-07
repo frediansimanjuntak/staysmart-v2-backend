@@ -92,6 +92,14 @@ export class UserRoutes {
 		router
 			.route('/users/property/nonmanager')
 			.get(auth.isAuthenticated(), UsersController.getPropertyNonManager);
+			
+		router
+			.route('/refresh_token')
+			.get(UsersController.refreshToken);
+
+		router
+			.route('/logout')
+			.post(auth.isAuthenticated(), UsersController.logout);
 
 	}
 }
