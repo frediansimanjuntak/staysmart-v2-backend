@@ -53,8 +53,11 @@ export function isAuthenticated() {
     })
     // Attach user to request
     .use(function(req, res, next) {
-      User.findById(req.user._id).select('+blacklisted_token.token').exec()
-        .then(user => {
+      User.findById(req.user._id).select('+blacklisted_token.token').exec((err, user) => {
+        if (err) {
+          next({message: "error", err});
+        }
+        else {
           if(!user) {
             return res.status(401).end();
           }
@@ -73,12 +76,11 @@ export function isAuthenticated() {
               }
               else {
                 if(user.picture) {
-                  Attachment.findById(user.picture).exec()
-                  .then(picture => {
+                  Attachment.findById(user.picture).exec((err, picture) => {
                     user.picture = picture.url;
                     req.user = user;
                     next();
-                  })
+                  });
                 }
                 else {
                   req.user = user;
@@ -88,12 +90,11 @@ export function isAuthenticated() {
             }
             else {
               if(user.picture) {
-                Attachment.findById(user.picture).exec()
-                .then(picture => {
+                Attachment.findById(user.picture).exec((err, picture) => {
                   user.picture = picture.url;
                   req.user = user;
                   next();
-                })
+                });
               }
               else {
                 req.user = user;
@@ -101,9 +102,9 @@ export function isAuthenticated() {
               }
             }            
           }
+        }
           
-        })
-        .catch(err => next({message: "error", err}));
+      })
     });
 }
 

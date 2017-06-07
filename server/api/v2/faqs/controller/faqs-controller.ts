@@ -3,8 +3,9 @@ import FaqsDAO from '../dao/faqs-dao';
 
 export class FaqsController {
 	static getAll(req: express.Request, res: express.Response):void {
+		let _device = req.device.type;
 		FaqsDAO
-		['getAll']()
+		['getAll'](_device)
 		.then(faqs => res.status(200).json(faqs))
 		.catch(error => res.status(400).json(error));
 	}

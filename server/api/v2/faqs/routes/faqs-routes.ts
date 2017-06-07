@@ -13,7 +13,7 @@ export class FaqsRoutes {
 
 		router
 			.route('/faq')
-			.get(FaqsController.getAll)
+			.get(auth.isAuthenticated(), FaqsController.getAll)
 
 		router
 			.route('/faqs/:id')

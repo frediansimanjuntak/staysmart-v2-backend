@@ -3,14 +3,13 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import faqsSchema from '../model/faqs-model';
 
-faqsSchema.static('getAll', ():Promise<any> => {
+faqsSchema.static('getAll', (device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
 
-        Faqs
-          .find(_query)
-          .populate("created_by")
-          .exec((err, faqs) => {
+        let faqs = Faqs.find(_query);
+        (device == 'desktop') ? faqs.populate("created_by"): '';
+          faqs.exec((err, faqs) => {
             err ? reject({message: err.message})
                 : resolve(faqs);
           });

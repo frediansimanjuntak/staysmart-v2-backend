@@ -266,15 +266,20 @@ usersSchema.static('getAll', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('me', (userId:string, headers:Object):Promise<any> => {
+usersSchema.static('me', (userId:string, headers:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let _query = {"_id": userId};
 		Users.getUser(_query).then(res => {
 			let result = res[0] ? res[0] : {};
 			if (result) {
-				userHelper.meHelper(result, headers).then(res_data => {
-					resolve(res_data);
-				});
+				if (device == 'desktop') {
+					resolve(result);
+				}
+				else {
+					userHelper.meHelper(result, headers).then(res_data => {
+						resolve(res_data);
+					});
+				}
 			}
 			else {
 				reject({ message: 'User data not found.' });
@@ -288,7 +293,7 @@ usersSchema.static('me', (userId:string, headers:Object):Promise<any> => {
 
 usersSchema.static('meData', (userId:string, param:string, headers:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		Users.me(userId, headers).then(res => {
+		Users.me(userId, headers, device).then(res => {
 			let type = ['tenant', 'landlord'];
 
 			if (type.indexOf(param) > -1) {
@@ -416,7 +421,7 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('signUp', (user:Object, headers:Object):Promise<any> => {
+usersSchema.static('signUp', (user:Object, headers:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
@@ -449,9 +454,14 @@ usersSchema.static('signUp', (user:Object, headers:Object):Promise<any> => {
 					SMS.sendActivationCode(body.phone, randomCode);
 					mail.signUp(_user.email, fullname, from);
 					Users.getTotalUserSignupToday();
-					userHelper.signUpHelper(saved._id, token, saved, headers).then(result => {
-						resolve(result);
-					});
+					if (device == 'desktop') {
+						resolve({userId: saved._id, token});				
+					}
+					else {
+						userHelper.signUpHelper(saved._id, token, saved, headers).then(result => {
+							resolve(result);
+						});
+					}
 				}
 			});
 	});
@@ -568,12 +578,9 @@ usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string)
 
 usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:string, confpass:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
 		Users
 			.findById(id)
-			.select('+password')
+			.select('+password -phone')
 			.exec((err, user) => {
 				if(err){
 					reject(err);
@@ -611,7 +618,9 @@ usersSchema.static('updateMe', (id:string, user:Object, image:Object):Promise<an
 		let body:any = user;
 		let img: any = image;
 		Users
-			.findById(id, (err, user)=>{
+			.findById(id)
+			.select('-phone')
+			.exec((err, user)=>{
 				if(err){
 					reject(err);
 				}
@@ -810,7 +819,7 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('activationUser', (id:string, user:Object, headers:Object):Promise<any> => {
+usersSchema.static('activationUser', (id:string, user:Object, headers:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -836,9 +845,14 @@ usersSchema.static('activationUser', (id:string, user:Object, headers:Object):Pr
 									reject(err);
 								}
 								else {
-									userHelper.activationHelper(id, headers).then(result => {
-										resolve(result);
-									});
+									if (device == 'desktop') {
+										resolve({message: 'user verified.'});
+									}
+									else {
+										userHelper.activationHelper(id, headers).then(result => {
+											resolve(result);
+										});
+									}
 								} 
 							});
 					}
@@ -853,7 +867,7 @@ usersSchema.static('activationUser', (id:string, user:Object, headers:Object):Pr
 		});
 });
 
-usersSchema.static('verifiedUser', (id:string, user:Object, headers:Object):Promise<any> => {
+usersSchema.static('verifiedUser', (id:string, user:Object, headers:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let body:any = user;
 
@@ -876,9 +890,14 @@ usersSchema.static('verifiedUser', (id:string, user:Object, headers:Object):Prom
 									reject(err);
 								}
 								else {
-									userHelper.activationHelper(id, headers).then(result => {
-										resolve(result);
-									});
+									if (device == 'desktop') {
+										resolve({message: 'user verified.'});
+									}
+									else {
+										userHelper.activationHelper(id, headers).then(result => {
+											resolve(result);
+										});
+									}
 								} 
 							});
 					}

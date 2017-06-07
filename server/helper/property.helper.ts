@@ -59,9 +59,9 @@ export class propertyHelper{
 								_id: properties[p]._id,
 								development: properties[p].development.name,
 								user: {
-									_id: properties[p].owner.user._id,
-									username: properties[p].owner.user.username,
-									pictures: properties[p].owner.user.picture ? properties[p].owner.user.picture.url : '' 
+									_id: properties[p].owner.user ? properties[p].owner.user._id : '',
+									username: properties[p].owner.user ? properties[p].owner.user.username : '',
+									pictures: properties[p].owner.user ? properties[p].owner.user.picture ? properties[p].owner.user.picture.url : '' : '' 
 								},
 								address: {
 									unit_no: properties[p].address.floor,
