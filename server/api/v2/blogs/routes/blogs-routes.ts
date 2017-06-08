@@ -31,5 +31,10 @@ export class BlogsRoutes {
 		router
 			.route('/blogs/update/:id')
 			.put(auth.isAuthenticated(), auth.hasRole('admin'), BlogsController.updateBlogs);
+		
+		//mobile api
+		router
+			.route('/blog/:id/subscribe')
+			.post(auth.isAuthenticated(), BlogsController.subscribeBlog);
 	}
 }
