@@ -27,6 +27,14 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static username(req: express.Request, res: express.Response):void {
+		let _user = req.body;
+		UsersDAO
+		['username'](_user)
+		.then(users => res.status(200).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static meData(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		let _headers = req.headers;
