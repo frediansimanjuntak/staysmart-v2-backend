@@ -35,6 +35,10 @@ export class NotificationsRoutes {
 		router
 			.route('/notifications/read')
 			.post(auth.isAuthenticated(),NotificationsController.readNotifications);
+		
+		router
+			.route('/notification/click')
+			.post(auth.isAuthenticated(),NotificationsController.clickNotificationsMobile);
 
 		router
 			.route('/notifications/click/:id')
