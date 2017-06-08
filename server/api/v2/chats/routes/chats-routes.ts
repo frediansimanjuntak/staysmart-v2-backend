@@ -63,6 +63,10 @@ export class ChatsRoutes {
 			.put(auth.isAuthenticated(),ChatsController.updateRoom)
 
 		router
+			.route('/rooms/status')
+			.post(auth.isAuthenticated(), ChatsController.updateRoomMobile);
+
+		router
 			.route('/chats/profile/update')
 			.put(auth.isAuthenticated(),ChatsController.updateProfile)
 

@@ -115,6 +115,14 @@ export class ChatsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updateRoomMobile(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		ChatsDAO
+		['updateRoomMobile'](_data)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static updateRoom(req: express.Request, res: express.Response):void {
 		let _roomId = req.params.roomId;
 		let _status = req.params.status;

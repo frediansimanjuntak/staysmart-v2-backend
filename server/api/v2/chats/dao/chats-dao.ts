@@ -445,6 +445,27 @@ chatsSchema.static('updateProfile', (data:Object):Promise<any> => {
     });
 });
 
+chatsSchema.static('updateRoomMobile', (data: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body: any = data;
+        var extra = {status: body.status};
+        ChatRooms
+            .findOne({"tenant": body.tenantUser_id, "property": body.property_id})
+            .exec((err, chat_rooms) => {
+                if(err) {
+                    reject({message: err.message});
+                }
+                else if(chat_rooms) {
+                    chat_rooms.status = body.status;
+                    chat_rooms.save((err, saved) => {
+                        DreamTalk.updateRoom(chat_rooms._id, extra);
+                        resolve({message: 'success', code: 200});
+                    });
+                }
+            })
+    });
+});
+
 chatsSchema.static('updateRoom', (roomId:string, status:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var extra = {status: status};
