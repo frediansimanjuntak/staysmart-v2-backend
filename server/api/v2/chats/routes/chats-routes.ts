@@ -45,6 +45,10 @@ export class ChatsRoutes {
 		router
 			.route('/chats/room/create')
 			.post(auth.isAuthenticated(),ChatsController.createRoom)
+		
+		router
+			.route('/rooms/create')
+			.post(auth.isAuthenticated(), ChatsController.createRoom)
 
 		router
 			.route('/chats/rooms/delete_many')
@@ -61,6 +65,10 @@ export class ChatsRoutes {
 		router
 			.route('/chats/rooms/update/:roomId/:status')
 			.put(auth.isAuthenticated(),ChatsController.updateRoom)
+
+		router
+			.route('/rooms/status')
+			.post(auth.isAuthenticated(), ChatsController.updateRoomMobile);
 
 		router
 			.route('/chats/profile/update')

@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import notificationsSchema from '../model/notifications-model';
 import {socketIo} from '../../../../server';
+import {notificationHelper} from '../../../../helper/notification.helper';
 
 notificationsSchema.static('countAll', (userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -108,15 +109,31 @@ notificationsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-notificationsSchema.static('getByUser', (userId:string):Promise<any> => {
+notificationsSchema.static('listNotifications', (userId: string, limit: string, device: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Notifications.getByUser(userId, device).then(res => {
+          let lim = Number(limit);
+          resolve(res.slice(0, lim));
+        });
+    });
+});
+
+notificationsSchema.static('getByUser', (userId:string, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
 
         Notifications
           .find({"user": userId})
           .populate("user")
           .exec((err, notifications) => {
-            err ? reject({message: err.message})
-                : resolve(notifications);
+            if (err) { reject({message: err.message}); }
+            else {
+              if (device == 'desktop') { resolve(notifications); }
+              else {
+                notificationHelper.getNotif(notifications).then(res => {
+                  resolve(res);
+                })
+              }
+            } 
           });
     });
 });
