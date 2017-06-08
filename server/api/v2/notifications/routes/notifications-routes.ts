@@ -47,5 +47,13 @@ export class NotificationsRoutes {
 		router
 			.route('/notifications/limit/:limit')
 			.get(auth.isAuthenticated(),NotificationsController.getAllLimit);
+		
+		router
+			.route('/notification/all')
+			.get(auth.isAuthenticated(), NotificationsController.countAll);
+		
+		router
+			.route('/notification/notread')
+			.get(auth.isAuthenticated(), NotificationsController.countUnread);
 	}
 } 

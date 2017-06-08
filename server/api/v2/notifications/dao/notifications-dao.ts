@@ -4,6 +4,32 @@ import * as _ from 'lodash';
 import notificationsSchema from '../model/notifications-model';
 import {socketIo} from '../../../../server';
 
+notificationsSchema.static('countAll', (userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Notifications.find({"user": userId}).exec((err, res) => {
+        err ? reject(err)
+            : resolve({
+              message: 'All Notif',
+              count: res.length,
+              code: 200
+            });
+      })
+    });
+});
+
+notificationsSchema.static('countUnread', (userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Notifications.find({"user": userId, "read": false}).exec((err, res) => {
+        err ? reject(err)
+            : resolve({
+              message: 'Notread',
+              count: res.length,
+              code: 200
+            });
+      })
+    });
+});
+
 notificationsSchema.static('getAll', ():Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let _query = {};
@@ -55,7 +81,7 @@ notificationsSchema.static('getAllLimit', (limit:string, userId:string):Promise<
 
 notificationsSchema.static('getUnreadCount', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      Notifications.find({"user": id, read: false}).then((err, res) => {
+      Notifications.find({"user": id, "read": false}).then((err, res) => {
         err ? reject({message: err.message})
             : resolve({
               message: 'success',
