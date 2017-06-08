@@ -479,7 +479,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({"owner.user": userId, "status": "draft"})
-          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
+          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
           .populate({
             path: 'amenities',
             populate: {
@@ -494,6 +494,14 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
               model: 'Attachments'
             },
             select: 'username email phone picture landlord.data.name tenant.data.name'
+          })
+          .populate({
+            path: 'owner.company',
+            populate: {
+              path: 'documents',
+              model: 'Attachments'
+            },
+            select: 'name registration_number documents shareholders'
           })
           .exec((err, result) => {
             err ? reject({message: err.message})
@@ -693,9 +701,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
             reject({message: res.message});
           }
           else if(res == true){
-            Properties.addOwnedProperty(id, userId.toString()).then((prop) => {
-              console.log(prop);
-            });
+            Properties.addOwnedPropertyUser(id, body.owner.user);
             Properties
               .findById(id)
               .exec((err, property_result) => {
@@ -780,7 +786,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
     });
 });
 
-propertiesSchema.static('addOwnedProperty', (id:string, idUser:string):Promise<any> => {
+propertiesSchema.static('addOwnedPropertyUser', (id:string, idUser:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var ObjectID = mongoose.Types.ObjectId;
         Properties
@@ -790,7 +796,6 @@ propertiesSchema.static('addOwnedProperty', (id:string, idUser:string):Promise<a
               reject(err);
             }
             else if(property){
-              console.log(property);
               if(!property.owner.user){
                  Users
                   .update({"_id": idUser}, {

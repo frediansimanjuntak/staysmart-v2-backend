@@ -3,6 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import {report} from '../../../../global/report.service';
 import * as fs from 'fs';
+import * as phantom from 'phantom';
 // import * as pdf from 'html-pdf';
 import Properties from '../../properties/dao/properties-dao';
 import Agreements from '../../agreements/dao/agreements-dao';
@@ -359,54 +360,45 @@ export class reportDAO{
 			let body:any = data;
 			let type = body.type;
 			let report;
-			var options = { 
-				"format": "A4",
-				"border": {
-					"top": "2cm",
-					"right": "2cm",
-					"bottom": "2cm",
-					"left": "2cm"
-					}
-				};
-
-			if(type == "loi"){
-				let pdfName = "testLoi";
+			if (type == "loi") {
 				this.reportLOIPrint(id)
 					.then(res => {
-						// console.log(res);
-						// pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
-						//   if (err){
-						//   	reject(err)
-						//   }
-						//   if(resultt){
-						//   	resolve(resultt);
-						//  	console.log(resultt);
-						//   }						   
-						// });
-						pdf.create(res, options, (err, buffer)=>{
+						let namedata = "letter_of_intent"+id+".pdf"
+						var options = {
+							"directory": "/tmp",
+							"format": "Letter",        // allowed units: A3, A4, A5, Legal, Letter, Tabloid 
+  							"orientation": "portrait",
+							"border": {
+								"top": "2cm",            // default is 0, units: mm, cm, in, px 
+								"right": "1cm",
+								"bottom": "2cm",
+								"left": "1.5cm"
+							},
+						};
+						
+						pdf.create(res, options , (err, buffer) => {
+							if (err) return console.log(err);
+							console.log(buffer);
 							resolve(buffer);
 						});
-					})
-					.catch(err => {
-						reject(err);
+
+						// pdf.create(res, options).toFile('./test.pdf', function(err, res) {
+						// if (err) return console.log(err);
+						// 	console.log(res); // { filename: '/app/businesscard.pdf' } 
+						// 	resolve(res.filename);
+						// });
 					})
 			}
-			if(type == "ta"){
-				let pdfName = "testTA";
+			else if (type == "ta") {
 				this.reportTAPrint(id)
 					.then(res => {
-						pdf.create(res, options).toFile('./'+pdfName+'.pdf', (err, resultt) => {
-						  if (err){
-						  	reject(err)
-						  }
-						  if(resultt){
-						  	resolve(resultt);
-						 	console.log(resultt);
-						  } 
-						});
-					})
-					.catch(err => {
-						reject(err);
+						let rendering = {
+							template: {
+								content: res,
+								recipe: "html"
+							},
+							data: { name: "jsreport" }
+						}
 					})
 			}					
 		})					
