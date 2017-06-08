@@ -261,7 +261,7 @@ chatsSchema.static('insertChatRoom', (user:Object, rooms:Object):Promise<any> =>
     });
 });
 
-chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
+chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let body:any = data;
         let propertyId = body.property_id;
@@ -339,8 +339,17 @@ chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
                                                                     }
                                                                 }, {multi: true})
                                                                 .exec((err, users) => {
-                                                                    err ? reject({message: err})
-                                                                        : resolve(result);
+                                                                    if (err) { reject({message: err}); }
+                                                                    else {
+                                                                        if (device == 'desktop') { resolve(result); }
+                                                                        else {
+                                                                            resolve({
+                                                                                message: 'success',
+                                                                                code: 200,
+                                                                                data: { _id: saved._id }
+                                                                            });
+                                                                        }
+                                                                    }
                                                                 }); 
                                                         }
                                                     })
