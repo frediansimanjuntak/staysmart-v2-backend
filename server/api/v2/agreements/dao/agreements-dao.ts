@@ -489,7 +489,29 @@ agreementsSchema.static('getAllLoi', (userId:string, role:string):Promise<any> =
 		}
 		Agreements
 			.find(_query)
-			.populate("landlord tenant property letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate("landlord tenant letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate({
+				path: 'property',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            }]
+			})	
 			.populate({
 				path: 'letter_of_intent.data.payment',
 				populate: [{
@@ -587,7 +609,29 @@ agreementsSchema.static('getLoiHistories', (id:string, userId:string, role:strin
 		}
 		Agreements
 			.findOne(_query)
-			.populate("landlord tenant property letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate("landlord tenant letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+			.populate({
+				path: 'property',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            }]
+			})	
 			.populate({
 				path: 'letter_of_intent.data.payment',
 				populate: [{
@@ -1151,7 +1195,29 @@ agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> =>
 		}		
 		Agreements
 			.find(_query)
-			.populate("landlord tenant property tenancy_agreement.data.stamp_certificate")
+			.populate("landlord tenant tenancy_agreement.data.stamp_certificate")
+			.populate({
+				path: 'property',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            }]
+			})	
 			.populate({
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
@@ -1222,7 +1288,29 @@ agreementsSchema.static('getTaHistories', (id:string, userId:string, role:string
 		}		
 		Agreements
 			.findOne(_query)
-			.populate("landlord tenant property tenancy_agreement.data.stamp_certificate")
+			.populate("landlord tenant tenancy_agreement.data.stamp_certificate")
+			.populate({
+				path: 'property',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            }]
+			})	
 			.populate({
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
