@@ -10,6 +10,10 @@ export class ManagersRoutes {
 			.route('/managers')
 			.get(auth.isAuthenticated(),ManagersController.getAll)
 			.post(auth.isAuthenticated(),ManagersController.createManagers);
+
+		router
+			.route('/manager')
+			.get(auth.isAuthenticated(), ManagersController.getManagerProperties);
 		
 		router	
 			.route('/me/manager-details/:type')
