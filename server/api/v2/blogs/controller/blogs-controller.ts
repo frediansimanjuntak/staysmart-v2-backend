@@ -57,8 +57,7 @@ export class BlogsController {
 
 	static subscribeBlog(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		// let _device = req.device.type;
-		let _device = "phone";
+		let _device = req.device.type;
 		let _data = req.body;
 		BlogsDAO
 		['subscribeBlog'](_id, _device, _data)
