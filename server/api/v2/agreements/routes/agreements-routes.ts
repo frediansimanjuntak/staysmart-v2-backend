@@ -175,5 +175,13 @@ export class AgreementsRoutes {
 		router
 			.route('/tenancy-agreement/:id/seen')
 			.post(auth.isAuthenticated(), AgreementsController.taSeen);
+		
+		router
+			.route('/letter-of-intent/:id/remove')
+			.post(auth.isAuthenticated(), AgreementsController.removeLOI);
+
+		router
+			.route('/tenancy-agreement/:id/remove')
+			.post(auth.isAuthenticated(), AgreementsController.removeTA);
 	}
 }

@@ -269,6 +269,15 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static removeLOI(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		
+		AgreementsDAO
+		['removeLOI'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//TA
 	static getAllTa(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
@@ -361,6 +370,15 @@ export class AgreementsController {
 		
 		AgreementsDAO
 		['stampCertificateTA'](_id, _agreements)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static removeTA(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		
+		AgreementsDAO
+		['removeTA'](_id)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

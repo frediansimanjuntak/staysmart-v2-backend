@@ -1898,6 +1898,30 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 	});
 });
 
+agreementsSchema.static('removeLOI', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		Agreements.createHistory(id, 'letter_of_intent').then(res => {
+			resolve({
+				message: 'success',
+				code: 200,
+				data: 1
+			});
+		})
+	});
+});
+
+agreementsSchema.static('removeTA', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		Agreements.createHistory(id, 'tenancy_agreement').then(res => {
+			resolve({
+				message: 'success',
+				code: 200,
+				data: 1
+			});
+		})
+	});
+});
+
 //create History
 agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
