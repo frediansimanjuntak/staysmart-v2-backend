@@ -40,6 +40,7 @@ blogsSchema.static('getAll', (device: string):Promise<any> => {
             },
             select: 'username picture'
           }])
+          .sort({"created_at": -1})
           .exec((err, blogs) => {
             if (err) {
               reject({message: err.message});
