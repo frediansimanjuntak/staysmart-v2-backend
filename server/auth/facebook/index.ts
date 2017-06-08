@@ -50,7 +50,8 @@ router.post('/', function(req, res, next) {
           _id: user._id,
           email: user.email,
           roles: user.role,
-          verified: user.verification.verified
+          verified: user.verification.verified,
+          picture: ''
         });
       }
     }

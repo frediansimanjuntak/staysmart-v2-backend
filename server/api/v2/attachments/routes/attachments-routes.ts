@@ -23,5 +23,9 @@ export class AttachmentsRoutes {
 		router
 			.route('/attachments/delete/many')
 			.post(auth.isAuthenticated(),AttachmentsController.deleteManyAttachments);
+		
+		router
+			.route('/inventory/photo/:id/remove')
+			.post(auth.isAuthenticated, AttachmentsController.deleteAttachments);
 	}
 } 

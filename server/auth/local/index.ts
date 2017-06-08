@@ -49,6 +49,7 @@ router.post('/', function(req, res, next) {
             email: user.email,
             roles: user.role,
             verified: user.verification.verified,
+            picture: ''
           });
         }
       }
