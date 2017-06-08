@@ -136,6 +136,14 @@ var AgreementsSchema = new mongoose.Schema({
 				type: String, 
 				enum: ['draft', 'pending', 'payment-confirmed', 'accepted', 'rejected', 'expired']
 			},
+			tenant_seen : {
+				type: Boolean,
+				default: false
+			},
+			landlord_seen : {
+				type: Boolean,
+				default: false
+			},
 			created_at: {type: Date}
 		},
 		histories: 
@@ -170,6 +178,14 @@ var AgreementsSchema = new mongoose.Schema({
 			stamp_certificate: {
 				type: Schema.Types.ObjectId,
 				ref: 'Attachments'
+			},
+			tenant_seen : {
+				type: Boolean,
+				default: false
+			},
+			landlord_seen : {
+				type: Boolean,
+				default: false
 			},
 			created_at: {type: Date}
 		},
