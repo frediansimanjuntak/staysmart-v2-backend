@@ -128,6 +128,33 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
     });
 });
 
+appointmentsSchema.static('readAppointment', (id:string, userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Appointments.findById(id).exec((err, res) => {
+          let type;
+          if (res.tenant == userId) {
+            type = 'tenant';
+            res.tenant_read = true;
+          }
+          else if (res.landlord == userId) {
+            type = 'landlord';
+            res.landlord_read = true;
+          }
+          else {
+            reject({message: 'You not a member of this appointment.'});
+          }
+          res.save((err, saved) => {
+            err ? reject({message: err.message})
+                : resolve({
+                  message: 'success',
+                  code: 200,
+                  data: [1]
+                });
+          })
+        })
+    });
+});
+
 appointmentsSchema.static('createAppointments', (appointments:Object, tenant:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       let tenantId = tenant.toString();

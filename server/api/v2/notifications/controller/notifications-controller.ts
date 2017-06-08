@@ -43,6 +43,15 @@ export class NotificationsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static readNotif(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _data = req.body;
+		NotificationsDAO
+		['readNotif'](_userId, _data)
+		.then(notifications => res.status(201).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static readNotifications(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		NotificationsDAO
@@ -51,10 +60,20 @@ export class NotificationsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static clickNotificationsMobile(req: express.Request, res: express.Response):void {
+		let _id = req.body._id;
+		let _device = req.device.type;
+		NotificationsDAO
+		['clickNotificationsMobile'](_id, _device)
+		.then(notifications => res.status(201).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static clickNotifications(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+		let _device = req.device.type;
 		NotificationsDAO
-		['readNotifications'](_id)
+		['clickNotifications'](_id, _device)
 		.then(notifications => res.status(201).json(notifications))
 		.catch(error => res.status(400).json(error));
 	}

@@ -12,6 +12,10 @@ export class AttachmentsRoutes {
 			.post(auth.isAuthenticated(),AttachmentsController.createAttachments);
 
 		router
+			.route('/upload')
+			.post(auth.isAuthenticated(),AttachmentsController.createAttachments);
+			
+		router
 			.route('/attachments/:id')
 			.get(auth.isAuthenticated(),AttachmentsController.getById)
 			.delete(auth.isAuthenticated(),AttachmentsController.deleteAttachments);	

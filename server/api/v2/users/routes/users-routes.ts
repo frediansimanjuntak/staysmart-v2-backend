@@ -40,6 +40,10 @@ export class UserRoutes {
 			.route('/me')
 			.get(auth.isAuthenticated(), UsersController.me)
 			.post(auth.isAuthenticated(), UsersController.updateMe);
+		
+		router
+			.route('/me/phone')
+			.post(auth.isAuthenticated(), UsersController.updateUser);
 
 		router
 			.route('/me/:type')
