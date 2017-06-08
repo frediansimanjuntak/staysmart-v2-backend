@@ -14,6 +14,10 @@ export class NotificationsRoutes {
 		router
 			.route('/notifications/user')
 			.get(auth.isAuthenticated(),NotificationsController.getByUser);
+		
+		router
+			.route('/notification/:limit')
+			.get(auth.isAuthenticated(), NotificationsController.listNotifications);
 
 		router
 			.route('/notifications/:id')
