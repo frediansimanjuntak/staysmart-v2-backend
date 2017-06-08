@@ -72,7 +72,6 @@ agreementsSchema.static('getAgreement', (query:Object):Promise<any> => {
 			})
 			.populate({
 				path: 'property',
-				model: 'Properties',
 	            populate: [{
 					path: 'development',
 					model: 'Developments'
