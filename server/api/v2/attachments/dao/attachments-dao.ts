@@ -141,7 +141,7 @@ attachmentsSchema.static('deleteAttachments', (id:string):Promise<any> => {
               	reject({error: true, message: 'No attachment with that id.'});
               }
               else if(err == null && deleted != null) {
-              	resolve({error: false, message: 'delete success.'});
+              	resolve({error: false, code: 200, message: 'success.'});
               }
           });
 
