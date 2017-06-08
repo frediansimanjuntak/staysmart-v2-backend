@@ -16,6 +16,10 @@ export class DevelopmentsRoutes {
 			.get(DevelopmentsController.getAll)
 
 		router
+			.route('/development/unit')
+			.post(auth.isAuthenticated(), DevelopmentsController.getDevUnit);
+
+		router
 			.route('/developments/browse/:latlng/:pricemin/:pricemax/:bedroom/:bathroom/:available/:sizemin/:sizemax/:location/:radius')
 			.get(DevelopmentsController.developmentsMap);
 

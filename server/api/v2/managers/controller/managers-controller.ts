@@ -10,6 +10,14 @@ export class ManagersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getManagerProperties(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		ManagersDAO
+		['getManagerProperties'](_userId)
+		.then(managers => res.status(200).json(managers))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getManagerDetails(req: express.Request, res: express.Response):void {
 		let _type = req.params.type;
 		let _device = req.device.type;

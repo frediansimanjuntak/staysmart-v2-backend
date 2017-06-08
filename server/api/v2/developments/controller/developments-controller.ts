@@ -37,6 +37,16 @@ export class DevelopmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getDevUnit(req: express.Request, res: express.Response):void {
+		let _device = req.device.type;
+		let _userId = req["user"]._id;
+		let _request = req.body;
+		DevelopmentsDAO
+		['getDevUnit'](_request, _userId, _device)
+		.then(developments => res.status(200).json(developments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getDevelopment(req: express.Request, res: express.Response):void {
 		let _unit = req.params.number_of_units;
 		DevelopmentsDAO

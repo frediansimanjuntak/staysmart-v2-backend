@@ -872,7 +872,7 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
     });
 });
 
-propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<any> => {
+propertiesSchema.static('deleteProperties', (id:string, userId:Object, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
             return reject(new TypeError('Id is not a valid string.'));
@@ -888,7 +888,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                   .findByIdAndRemove(result.pictures.living[i])
                   .exec((err, deleted) => {
                       err ? reject({message: err.message})
-                          : resolve(deleted);
+                          : '';
                   });
               }
               for(var i = 0; i < result.pictures.dining.length; i++){
@@ -896,7 +896,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                   .findByIdAndRemove(result.pictures.dining[i])
                   .exec((err, deleted) => {
                       err ? reject({message: err.message})
-                          : resolve(deleted);
+                          : '';
                   });
               }
               for(var i = 0; i < result.pictures.bed.length; i++){
@@ -904,7 +904,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                   .findByIdAndRemove(result.pictures.bed[i])
                   .exec((err, deleted) => {
                       err ? reject({message: err.message})
-                          : resolve(deleted);
+                          : '';
                   });
               }
               for(var i = 0; i < result.pictures.toilet.length; i++){
@@ -912,7 +912,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                   .findByIdAndRemove(result.pictures.toilet[i])
                   .exec((err, deleted) => {
                       err ? reject({message: err.message})
-                          : resolve(deleted);
+                          : '';
                   });
               }
               for(var i = 0; i < result.pictures.kitchen.length; i++){
@@ -920,7 +920,7 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
                   .findByIdAndRemove(result.pictures.kitchen[i])
                   .exec((err, deleted) => {
                       err ? reject({message: err.message})
-                          : resolve(deleted);
+                          : '';
                   });
               }
             })
@@ -932,14 +932,25 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object):Promise<a
               })
               .exec((err, deleted) => {
                   err ? reject({message: err.message})
-                      : resolve(deleted);
+                      : '';
               });
 
             Properties
               .findByIdAndRemove(id)
               .exec((err, deleted) => {
-                  err ? reject({message: err.message})
-                      : resolve(deleted);
+                  if (err) { reject({message: err.message}); }
+                  else {
+                    if (device == 'desktop') {
+                      resolve(deleted);                      
+                    }
+                    else {
+                      resolve({
+                        message: 'success',
+                        code: 200,
+                        data: 1
+                      });
+                    }
+                  }
               });
           }
         });

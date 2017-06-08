@@ -121,6 +121,26 @@ managersSchema.static('getOwnManager', (userId:string):Promise<any> => {
     });
 });
 
+managersSchema.static('getManagerProperties', (userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Managers.getManagerDetails('managed', 'phone', userId).then(res => {
+            if (res.length == 0) {
+                resolve({message: "this manager doesn't have any listing"});
+            }
+            else {
+                let properties = [];
+                for (var i = 0; i < res.length; i++) {
+                    properties.push({
+                        _id: res[i]._id,
+                        pictures: res[i].pictures
+                    });
+                }
+                resolve(properties);
+            }
+        });
+    });
+});
+
 managersSchema.static('getManagerDetails', (type: string, device: string, userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let types = ['owned','managed', 'appointed'];

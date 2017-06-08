@@ -104,6 +104,53 @@ developmentsSchema.static('getPropertyDraftWithoutOwnerDevelopment', (id:string,
     });
 });
 
+developmentsSchema.static('getDevUnit', (request: Object, userId: Object, device: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      let body: any = request;
+      Properties.find({"development": body.development, "address.floor": body.unit_no, "address.unit": body.unit_no_2})
+                .populate('development')
+                .exec((err, result) => {
+                  if (err) { reject({message: err.messsage}); }
+                  else {
+                    let data = result[0];
+                    resolve({
+                      address: {
+                        unit_no: data.address.floor,
+                        unit_no_2: data.address.unit,
+                        coordinates: data.address.coordinates,
+                        full_address: data.address.full_address,
+                        block_no: data.address.block_number,
+                        street_name: data.address.street_name,
+                        postal_district: '',
+                        postal_sector: '',
+                        postal_code: data.address.postal_code,
+                        type: data.address.type,
+                        country: data.address.country
+                      },
+                      details: {
+                        area_sqm: data.details.size_sqm,
+                        type_of_area: data.development.type_of_area,
+                        transacted_price: '',
+                        nett_price: '',
+                        price_psm: data.details.psqm,
+                        price_psf: data.details.psqft,
+                        sale_date: data.details.sale_date,
+                        property_type: data.details.type,
+                        tenure: data.details.tenure,
+                        completion_date: data.details.completion_date,
+                        type_of_sale: data.details.type_of_sale,
+                        purchaser_address_indicator: data.details.purchaser_address_indicator,
+                        planning_region: data.details.planning_region,
+                        planning_area: data.details.planning_area,
+                        area_sqf: data.details.size_sqf
+                      },
+                      id: data._id
+                    });
+                  }
+                })
+    });
+});
+
 developmentsSchema.static('getPropertyWithOwnerDevelopment', (id:string, data:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let body:any = data;

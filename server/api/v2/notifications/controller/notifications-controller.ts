@@ -19,6 +19,14 @@ export class NotificationsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getUnreadCount(req: express.Request, res: express.Response):void {
+		let _id = req["user"]._id;
+		NotificationsDAO
+		['getUnreadCount'](_id)
+		.then(notifications => res.status(200).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		NotificationsDAO
