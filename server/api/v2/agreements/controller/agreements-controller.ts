@@ -473,4 +473,22 @@ export class AgreementsController {
 		.then(agreement => res.status(201).json(agreement))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static loiPayment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['loiPayment'](_id)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static taPayment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['taPayment'](_id)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
 }

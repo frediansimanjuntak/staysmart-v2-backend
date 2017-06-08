@@ -2001,6 +2001,67 @@ agreementsSchema.static('confirmation', (id:string, data:Object):Promise<any> =>
 	});
 });
 
+agreementsSchema.static('loiPayment', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.findById(id).exec((err, agreement) => {
+			if (err) {
+				reject(err);
+			}
+			else if (agreement) {
+				let loiData = agreement.letter_of_intent.data;
+				let gfd = loiData.gfd_amount;
+				let std = loiData.sd_amount;
+
+				if (loiData.payment) {
+					resolve({message: "Already Payment"});									
+				}
+				if (!loiData.payment) {
+					resolve({
+						staysmart_bank : {
+							account_name: "Staysmart Pte. Ltd.",
+							bank_name: "DBS",
+							account_number: "100-904130-7"
+						},
+						gfd_amount: gfd,
+						sd_amount: std,
+						total_amount: gfd + std
+					});
+				}
+			}
+		});
+	});
+});
+
+agreementsSchema.static('taPayment', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.findById(id).exec((err, agreement) => {
+			if (err) {
+				reject(err);
+			}
+			else if (agreement) {
+				let loiData = agreement.letter_of_intent.data;
+				let taData = agreement.tenancy_agreement.data;
+				let scd = loiData.security_deposit;
+
+				if (taData.payment) {
+					resolve({message: "Already Payment"});
+				}
+				if (!taData.payment) {
+					resolve({
+						staysmart_bank : {
+							account_name: "Staysmart Pte. Ltd.",
+							bank_name: "DBS",
+							account_number: "100-904130-7"
+						},
+						security_deposit: scd,
+						total_amount: scd
+					});
+				}
+			}
+		});
+	});
+});
+
 //payment
 agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
