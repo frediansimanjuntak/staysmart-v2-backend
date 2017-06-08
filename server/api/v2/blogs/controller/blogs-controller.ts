@@ -54,4 +54,14 @@ export class BlogsController {
 		.then(blogs => res.status(201).json(blogs))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static subscribeBlog(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _device = req.device.type;
+		let _data = req.body;
+		BlogsDAO
+		['subscribeBlog'](_id, _device, _data)
+		.then(blogs => res.status(200).json(blogs))
+		.catch(error => res.status(400).json(error));
+	}
 }

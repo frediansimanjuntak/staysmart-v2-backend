@@ -45,13 +45,15 @@ subscribesSchema.static('createSubscribes', (subscribes:Object):Promise<any> => 
 				}
 				if(res){
 					if(res.length > 0){
-						resolve({message: "your email already added to subscribe"})
+						resolve(res);
 					}
 					if(res.length == 0){
 						var _subscribes = new Subscribes(subscribes);
-						if(body.blog_id){
-							_subscribes.extra.type = "blog",
-							_subscribes.extra.reference_id = body.blog_id 
+						if (body.blog_id) {
+							_subscribes.extra = {
+								"type": "blog",
+								"reference_id": body.blog_id
+							}
 						}
 						_subscribes.save((err, saved)=>{
 							err ? reject({message: err.message})

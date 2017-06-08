@@ -6,7 +6,7 @@ export class ReportController{
 		let _id = req.params.id;
 
 		reportDAO.reportLOI(_id)
-		.then(agreements => res.status(200).json(agreements))
+		.then(report => res.status(200).json(report))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -14,7 +14,7 @@ export class ReportController{
 		let _id = req.params.id;
 
 		reportDAO.reportTA(_id)
-		.then(agreements => res.status(200).json(agreements))
+		.then(report => res.status(200).json(report))
 		.catch(error => res.status(400).json(error));
 	}
 
@@ -23,7 +23,7 @@ export class ReportController{
 		let _id = req.params.id;
 
 		reportDAO.printReport(_id, _data)
-		.then(agreements => res.status(200).json(agreements))
+		.then(report => res.status(200).json(report))
 		.catch(error => res.status(400).json(error));
 	}		
 }

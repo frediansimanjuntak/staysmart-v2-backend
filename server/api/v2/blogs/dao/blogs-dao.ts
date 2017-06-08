@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import blogsSchema from '../model/blogs-model';
 import Comments from '../../comments/dao/comments-dao';
 import Attachments from '../../attachments/dao/attachments-dao';
+import Subscribes from '../../subscribe/dao/subscribes-dao';
 import BlogCategories from '../../blog_categories/dao/blog_categories-dao';
 import Users from '../../users/dao/users-dao';
 import Developments from '../../developments/dao/developments-dao';
@@ -40,6 +41,7 @@ blogsSchema.static('getAll', (device: string):Promise<any> => {
             },
             select: 'username picture'
           }])
+          .sort({"created_at": -1})
           .exec((err, blogs) => {
             if (err) {
               reject({message: err.message});
@@ -315,6 +317,51 @@ blogsSchema.static('updateBlogs', (id:string, blogs:Object):Promise<any> => {
                 })
              }
           });  
+    });
+});
+
+blogsSchema.static('subscribeBlog', (id:string, device: string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        if (!_.isString(id)) {
+            return reject(new TypeError('Id is not a valid string.'));
+        }
+        let body:any = data;
+        Blogs
+          .findById(id)
+          .exec((err, blogs) => {
+            if (err) { reject(err); }
+            else {
+              Users
+                .findById(body.userId)
+                .exec((err, user) => {
+                  if (err) { reject(err); }
+                  else if (user) { 
+                    let data = {
+                      email: user.email,
+                      blog_id: blogs._id
+                    };
+                    Subscribes.createSubscribes(data).then((res) => {
+                      Blogs
+                        .findById(id)
+                        .exec((err, blog) => {
+                          if (err) { reject(err); }
+                          else{
+                            if ( device != 'desktop' ) {
+                              blogHelper.getSubscribeBlog(blog).then(result => {
+                                resolve(result);
+                              });
+                            }
+                            else {
+                              resolve(blog);
+                            }
+                          }
+                        })
+                    })
+                  } 
+                  else { resolve({message: "user not found"})};
+                })
+            }
+          })        
     });
 });
 

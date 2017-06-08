@@ -291,6 +291,25 @@ usersSchema.static('me', (userId:string, headers:Object, device: string):Promise
 	});
 });
 
+usersSchema.static('username', (data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data;
+		Users
+			.findOne({"username": body.username})
+			.exec((err, user) => {
+				if (err) {
+					reject(err);
+				}
+				else if (user) {
+					resolve({message: "success"})
+				}
+				else {
+					reject({message: "username not found"})
+				}
+			})
+	});
+});
+
 usersSchema.static('meData', (userId:string, param:string, headers:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Users.me(userId, headers, device).then(res => {

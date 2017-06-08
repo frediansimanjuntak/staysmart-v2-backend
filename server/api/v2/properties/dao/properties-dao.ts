@@ -479,7 +479,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties
           .find({"owner.user": userId, "status": "draft"})
-          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen owner.company confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
+          .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
           .populate({
             path: 'amenities',
             populate: {
@@ -494,6 +494,14 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
               model: 'Attachments'
             },
             select: 'username email phone picture landlord.data.name tenant.data.name'
+          })
+          .populate({
+            path: 'owner.company',
+            populate: {
+              path: 'documents',
+              model: 'Attachments'
+            },
+            select: 'name registration_number documents shareholders'
           })
           .exec((err, result) => {
             err ? reject({message: err.message})
@@ -549,6 +557,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
         reject({message: 'Please login first before continue.'});
       }
       else{        
+        
         var ObjectID = mongoose.Types.ObjectId;  
         let body:any = propertiesObject;
         Developments
@@ -572,7 +581,6 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                     else{
                       var _properties = new Properties(propertiesObject);
                           _properties.slug = slug;
-                          _properties.owner.user = userId;
                           _properties.confirmation.status = 'pending';
                           _properties.save((err, saved)=>{
                             if(err) {
@@ -580,7 +588,8 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                             }
                             else if(saved){
                               let propertyID = saved._id;
-                              Properties.insertData(propertiesObject, propertyID, userId).then(res => {
+                              if (saved.owner.user) {
+                                Properties.insertData(propertiesObject, propertyID, userId).then(res => {
                                 Users
                                   .update({"_id":userId}, {
                                     $push: {
@@ -588,32 +597,30 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                                     }
                                   })
                                   .exec((err, saved) => {
-                                      if(err) {
-                                        reject({message: err.message});
-                                      }
-                                      else if(saved) {
-                                        if(!body.address.full_address) {
-                                          reject({message:'no full address'});
-                                        }
-                                        else{
-                                          var full_address = body.address.full_address;
-                                          var from = 'Staysmart';
-                                          if(body.status && body.status != 'draft') {
-                                            Properties.getTotalListing()
-                                            mail.submitProperty(userEmail, userFullname, full_address, from);
-                                            resolve({message: 'property created'});    
-                                          }
-                                          else if(body.status && body.status == 'draft'){
-                                            resolve({message: 'property draft created'});
-                                          }
-                                          else{
-                                            mail.submitProperty(userEmail, userFullname, full_address, from);
-                                            resolve({message: 'property created'});
-                                          }
-                                        }
-                                      }
-                                  });
-                                });
+                                      err ? reject({message: err.message})
+                                          : console.log(saved);
+                                  }) 
+                                })                                     
+                              }
+                              if(!body.address.full_address) {
+                                reject({message:'no full address'});
+                              }
+                              else{
+                                var full_address = body.address.full_address;
+                                var from = 'Staysmart';
+                                if(body.status && body.status != 'draft') {
+                                  Properties.getTotalListing()
+                                  mail.submitProperty(userEmail, userFullname, full_address, from);
+                                  resolve({message: 'property created'});    
+                                }
+                                else if(body.status && body.status == 'draft'){
+                                  resolve({message: 'property draft created'});
+                                }
+                                else{
+                                  mail.submitProperty(userEmail, userFullname, full_address, from);
+                                  resolve({message: 'property created'});
+                                }
+                              }
                             }
                           });
                     }
@@ -693,9 +700,12 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
             reject({message: res.message});
           }
           else if(res == true){
-            Properties.addOwnedProperty(id, userId.toString()).then((prop) => {
-              console.log(prop);
-            });
+            if (body.owner) {
+              Properties.addOwnedPropertyUser(id, body.owner.user);
+            }
+            else if (!body.owner) {
+              Properties.deleteOwnedPropertyUser(id);
+            }            
             Properties
               .findById(id)
               .exec((err, property_result) => {
@@ -780,7 +790,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
     });
 });
 
-propertiesSchema.static('addOwnedProperty', (id:string, idUser:string):Promise<any> => {
+propertiesSchema.static('addOwnedPropertyUser', (id:string, idUser:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var ObjectID = mongoose.Types.ObjectId;
         Properties
@@ -790,7 +800,6 @@ propertiesSchema.static('addOwnedProperty', (id:string, idUser:string):Promise<a
               reject(err);
             }
             else if(property){
-              console.log(property);
               if(!property.owner.user){
                  Users
                   .update({"_id": idUser}, {
@@ -813,6 +822,51 @@ propertiesSchema.static('addOwnedProperty', (id:string, idUser:string):Promise<a
               } 
               else{
                 resolve({message: "this property owner is already"});
+              }            
+            }
+          })
+    });
+});
+
+propertiesSchema.static('deleteOwnedPropertyUser', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        var ObjectID = mongoose.Types.ObjectId;
+        Properties
+          .findById(id)
+          .exec((err, property) => {
+            if(err){
+              reject(err);
+            }
+            else if(property){
+              if (property.owner.user) {
+                 Users
+                  .update({"_id": property.owner.user}, {
+                    $pull: {
+                      "owned_properties": id
+                    }
+                  })
+                  .exec((err, updated) => {
+                    if(err){
+                      console.log(err)
+                      reject(err);
+                    }
+                    else if (updated) {
+                      console.log(updated)
+                      Properties
+                        .update({"_id": id}, {
+                          $unset: {
+                            "owner.user": ""
+                          }
+                        })
+                        .exec((err, saved) => {
+                          err ? reject({message: err.message})
+                              : resolve(saved);
+                        })
+                    }                    
+                  })
+              } 
+              else{
+                resolve({message: "owner this property not found"});
               }            
             }
           })

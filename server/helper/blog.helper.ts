@@ -53,4 +53,34 @@ export class blogHelper{
 				})
 		});
 	}
+
+	static getSubscribeBlog(blogs) {
+		return new Promise((resolve:Function, reject:Function) => {
+			Subscribes
+				.find({"extra.type": "blog", "extra.reference_id": blogs._id})
+				.select("email")
+				.exec((err, result) => {
+					if (err) {
+						reject(err);
+					}
+					else {
+						let email = [];
+						for (var i = 0; i < result.length; i++) {
+							email.push(result[i].email);
+						}
+						resolve({
+							_id: blogs._id,
+							title: blogs.title,
+							content: blogs.content,
+							category: blogs.category,
+							cover: blogs.cover.url,
+							created_at: blogs.created_at,
+							created_by: blogs.created_by,
+							source: blogs.source,
+							subscribe: email
+						});
+					}
+				})
+		});
+	}
 }
