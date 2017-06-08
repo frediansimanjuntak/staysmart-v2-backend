@@ -44,6 +44,14 @@ export class AppointmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static initiateLOICheck(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		AppointmentsDAO
+		['initiateLOICheck'](_id)
+		.then(appointments => res.status(200).json(appointments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createAppointments(req: express.Request, res: express.Response):void {
 		let _appointments = req.body;
 		let _tenant = req["user"]._id;

@@ -29,7 +29,7 @@ var ChatsSchema = new mongoose.Schema({
 	},
 	status: {
 		type: String, 
-		enum: ['enquiries', 'pending', 'rented'],
+		enum: ['enquiries', 'pending', 'rented', 'archived'],
 		default: 'enquiries'
 	},
 	blocked: {type: Boolean, default: false},

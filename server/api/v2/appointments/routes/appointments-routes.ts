@@ -31,5 +31,9 @@ export class AppointmentsRoutes {
 		router
 			.route('/member/appointments/read')
 			.post(auth.isAuthenticated(), AppointmentsController.readAppointment);
+		
+		router
+			.route('/loi/:id/check-initiated')
+			.get(auth.isAuthenticated(), AppointmentsController.initiateLOICheck);
 	}
 }

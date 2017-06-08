@@ -155,6 +155,25 @@ appointmentsSchema.static('readAppointment', (id:string, userId:string):Promise<
     });
 });
 
+appointmentsSchema.static('initiateLOICheck', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Appointments.findById(id).exec((err, res) => {
+        let initiated;
+        if (res.state != 'under consideration') {
+          initiated = true;
+        }
+        else {
+          initiated = false;
+        }
+        resolve({
+          message: 'success',
+          code: 200,
+          data: { initiated: initiated }
+        });
+      })
+    });
+});
+
 appointmentsSchema.static('createAppointments', (appointments:Object, tenant:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       let tenantId = tenant.toString();

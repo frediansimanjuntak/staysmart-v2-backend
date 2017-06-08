@@ -557,6 +557,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
         reject({message: 'Please login first before continue.'});
       }
       else{        
+        
         var ObjectID = mongoose.Types.ObjectId;  
         let body:any = propertiesObject;
         Developments
@@ -580,7 +581,6 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                     else{
                       var _properties = new Properties(propertiesObject);
                           _properties.slug = slug;
-                          _properties.owner.user = userId;
                           _properties.confirmation.status = 'pending';
                           _properties.save((err, saved)=>{
                             if(err) {
@@ -588,7 +588,8 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                             }
                             else if(saved){
                               let propertyID = saved._id;
-                              Properties.insertData(propertiesObject, propertyID, userId).then(res => {
+                              if (saved.owner.user) {
+                                Properties.insertData(propertiesObject, propertyID, userId).then(res => {
                                 Users
                                   .update({"_id":userId}, {
                                     $push: {
@@ -596,32 +597,30 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                                     }
                                   })
                                   .exec((err, saved) => {
-                                      if(err) {
-                                        reject({message: err.message});
-                                      }
-                                      else if(saved) {
-                                        if(!body.address.full_address) {
-                                          reject({message:'no full address'});
-                                        }
-                                        else{
-                                          var full_address = body.address.full_address;
-                                          var from = 'Staysmart';
-                                          if(body.status && body.status != 'draft') {
-                                            Properties.getTotalListing()
-                                            mail.submitProperty(userEmail, userFullname, full_address, from);
-                                            resolve({message: 'property created'});    
-                                          }
-                                          else if(body.status && body.status == 'draft'){
-                                            resolve({message: 'property draft created'});
-                                          }
-                                          else{
-                                            mail.submitProperty(userEmail, userFullname, full_address, from);
-                                            resolve({message: 'property created'});
-                                          }
-                                        }
-                                      }
-                                  });
-                                });
+                                      err ? reject({message: err.message})
+                                          : console.log(saved);
+                                  }) 
+                                })                                     
+                              }
+                              if(!body.address.full_address) {
+                                reject({message:'no full address'});
+                              }
+                              else{
+                                var full_address = body.address.full_address;
+                                var from = 'Staysmart';
+                                if(body.status && body.status != 'draft') {
+                                  Properties.getTotalListing()
+                                  mail.submitProperty(userEmail, userFullname, full_address, from);
+                                  resolve({message: 'property created'});    
+                                }
+                                else if(body.status && body.status == 'draft'){
+                                  resolve({message: 'property draft created'});
+                                }
+                                else{
+                                  mail.submitProperty(userEmail, userFullname, full_address, from);
+                                  resolve({message: 'property created'});
+                                }
+                              }
                             }
                           });
                     }
@@ -701,7 +700,12 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
             reject({message: res.message});
           }
           else if(res == true){
-            Properties.addOwnedPropertyUser(id, body.owner.user);
+            if (body.owner) {
+              Properties.addOwnedPropertyUser(id, body.owner.user);
+            }
+            else if (!body.owner) {
+              Properties.deleteOwnedPropertyUser(id);
+            }            
             Properties
               .findById(id)
               .exec((err, property_result) => {
@@ -818,6 +822,51 @@ propertiesSchema.static('addOwnedPropertyUser', (id:string, idUser:string):Promi
               } 
               else{
                 resolve({message: "this property owner is already"});
+              }            
+            }
+          })
+    });
+});
+
+propertiesSchema.static('deleteOwnedPropertyUser', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        var ObjectID = mongoose.Types.ObjectId;
+        Properties
+          .findById(id)
+          .exec((err, property) => {
+            if(err){
+              reject(err);
+            }
+            else if(property){
+              if (property.owner.user) {
+                 Users
+                  .update({"_id": property.owner.user}, {
+                    $pull: {
+                      "owned_properties": id
+                    }
+                  })
+                  .exec((err, updated) => {
+                    if(err){
+                      console.log(err)
+                      reject(err);
+                    }
+                    else if (updated) {
+                      console.log(updated)
+                      Properties
+                        .update({"_id": id}, {
+                          $unset: {
+                            "owner.user": ""
+                          }
+                        })
+                        .exec((err, saved) => {
+                          err ? reject({message: err.message})
+                              : resolve(saved);
+                        })
+                    }                    
+                  })
+              } 
+              else{
+                resolve({message: "owner this property not found"});
               }            
             }
           })

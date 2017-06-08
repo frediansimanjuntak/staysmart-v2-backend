@@ -2,6 +2,22 @@ import * as express from 'express';
 import NotificationsDAO from '../dao/notifications-dao';
 
 export class NotificationsController {
+	static countAll(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		NotificationsDAO
+		['countAll'](_userId)
+		.then(notifications => res.status(200).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static countUnread(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		NotificationsDAO
+		['countUnread'](_userId)
+		.then(notifications => res.status(200).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getAll(req: express.Request, res: express.Response):void {
 		NotificationsDAO
 		['getAll']()
@@ -21,6 +37,7 @@ export class NotificationsController {
 
 	static getUnreadCount(req: express.Request, res: express.Response):void {
 		let _id = req["user"]._id;
+
 		NotificationsDAO
 		['getUnreadCount'](_id)
 		.then(notifications => res.status(200).json(notifications))
@@ -29,16 +46,30 @@ export class NotificationsController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
+
 		NotificationsDAO
 		['getById'](_id)
 		.then(notifications => res.status(200).json(notifications))
 		.catch(error => res.status(400).json(error));
 	}
 
+	static listNotifications(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _device = req.device.type;
+		let _limit = req.params.limit;
+
+		NotificationsDAO
+		['listNotifications'](_userId, _limit, _device)
+		.then(notifications => res.status(200).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getByUser(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
+		let _device = req.device.type;
+
 		NotificationsDAO
-		['getByUser'](_userId)
+		['getByUser'](_userId, _device)
 		.then(notifications => res.status(200).json(notifications))
 		.catch(error => res.status(400).json(error));
 	}
@@ -46,6 +77,7 @@ export class NotificationsController {
 	static readNotif(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		let _data = req.body;
+
 		NotificationsDAO
 		['readNotif'](_userId, _data)
 		.then(notifications => res.status(201).json(notifications))
@@ -54,6 +86,7 @@ export class NotificationsController {
 
 	static readNotifications(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
+
 		NotificationsDAO
 		['readNotifications'](_userId)
 		.then(notifications => res.status(201).json(notifications))

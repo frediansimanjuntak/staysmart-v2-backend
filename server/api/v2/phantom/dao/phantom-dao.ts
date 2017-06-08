@@ -27,6 +27,9 @@ export class phantomDAO{
                             page.property('content').then(function(content){
                                 resolve(content);
                                 ph.exit();                               
+                            }).catch(function(err) {
+                                reject(err);
+                                ph.exit();
                             }); 
                         }        
                     });
