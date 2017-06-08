@@ -53,6 +53,19 @@ notificationsSchema.static('getAllLimit', (limit:string, userId:string):Promise<
     });
 });
 
+notificationsSchema.static('getUnreadCount', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Notifications.find({"user": id, read: false}).then((err, res) => {
+        err ? reject({message: err.message})
+            : resolve({
+              message: 'success',
+              code: 200,
+              data: { count: res.length }
+            });
+      })
+    });
+});
+
 notificationsSchema.static('getById', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(id)) {
@@ -116,6 +129,25 @@ notificationsSchema.static('deleteNotifications', (id:string):Promise<any> => {
     });
 });
 
+notificationsSchema.static('readNotif', (userId:string, data: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      let body: any = data;
+      Notifications.update({"_id": {$in: body.notif_id}}, {
+        $set: {
+          read: true,
+          read_at: new Date()
+        }
+      })
+      .exec((err, res) => {
+        err ? reject ({message: err.message})
+            : resolve ({
+              message: 'Success Read',
+              code: 200
+            });
+      });
+    });
+});
+
 notificationsSchema.static('readNotifications', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Notifications
@@ -132,7 +164,15 @@ notificationsSchema.static('readNotifications', (userId:string):Promise<any> => 
     });
 });
 
-notificationsSchema.static('clickNotifications', (id:string):Promise<any> => {
+notificationsSchema.static('clickNotificationsMobile', (id:string, device: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Notifications.clickNotifications(id, device).then(res => {
+        resolve(res);
+      })
+    });
+});
+
+notificationsSchema.static('clickNotifications', (id:string, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Notifications
           .findByIdAndUpdate(id,{
@@ -142,8 +182,10 @@ notificationsSchema.static('clickNotifications', (id:string):Promise<any> => {
             }
           })
           .exec((err, update) => {
-            err ? reject({message: err.message})
-                : resolve(update);
+            if (err) { reject({message: err.message}); }
+            else {
+              (device == 'desktop') ? resolve(update) : resolve({message: 'success', code: 200});
+            }
           });
     });
 });

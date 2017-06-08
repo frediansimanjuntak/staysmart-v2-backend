@@ -23,10 +23,22 @@ export class NotificationsRoutes {
 		router
 			.route('/notifications/update/:id')
 			.post(auth.isAuthenticated(),NotificationsController.updateNotifications);
+		
+		router
+			.route('/notification/unread')
+			.post(auth.isAuthenticated(), NotificationsController.readNotif);
+
+		router
+			.route('/notification/unread')
+			.get(auth.isAuthenticated(), NotificationsController.getUnreadCount);
 
 		router
 			.route('/notifications/read')
 			.post(auth.isAuthenticated(),NotificationsController.readNotifications);
+		
+		router
+			.route('/notification/click')
+			.post(auth.isAuthenticated(),NotificationsController.clickNotificationsMobile);
 
 		router
 			.route('/notifications/click/:id')

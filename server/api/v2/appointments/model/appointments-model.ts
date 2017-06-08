@@ -43,6 +43,14 @@ var AppointmentsSchema = new mongoose.Schema({
 		type: String, 
 		enum: ['under consideration', 'initiate letter of intent', 'initiate tenancy agreement'], 
 		default: 'under consideration'
+	},
+	tenant_read: {
+		type: Boolean,
+		default: false
+	},
+	landlord_read: {
+		type: Boolean,
+		default: false
 	}
 });
 

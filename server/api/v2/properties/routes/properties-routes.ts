@@ -58,7 +58,7 @@ export class PropertiesRoutes {
 
 		router
 			.route('/property/new/step2/upload')
-			.post(auth.isAuthenticated(),AttachmentsController.createAttachments);
+			.post(auth.isAuthenticated(), AttachmentsController.createAttachments);
 
 		router
 			.route('/property/new/step3')
@@ -80,6 +80,10 @@ export class PropertiesRoutes {
 			.route('/properties/:id')
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
+
+		router
+			.route('/property/:id/remove')
+			.post(auth.isAuthenticated(), PropertiesController.deleteProperties);
 
 		//view property for mobile, need login to get req["user"]._id and used it to update seen
 		router

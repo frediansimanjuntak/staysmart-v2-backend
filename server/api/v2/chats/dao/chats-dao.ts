@@ -275,7 +275,7 @@ chatsSchema.static('createRoom', (uid:string, data:Object):Promise<any> => {
                 if(property){
                     let landlordId = property.owner.user;
                     var members = [];
-                    members.push(property.owner.user);
+                    // members.push(property.owner.user);
                     var manager = '';
                     if(property.manager){
                         members.push(property.manager);    
