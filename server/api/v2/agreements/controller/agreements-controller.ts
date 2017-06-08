@@ -57,6 +57,24 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static loiSeen(req: express.Request, res: express.Response):void {	
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		AgreementsDAO
+		['loiSeen'](_id, _userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static taSeen(req: express.Request, res: express.Response):void {	
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		AgreementsDAO
+		['taSeen'](_id, _userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createAgreements(req: express.Request, res: express.Response):void {
 		let _agreements = req.body;
 		let _userId = req["user"]._id;
@@ -251,6 +269,15 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static removeLOI(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		
+		AgreementsDAO
+		['removeLOI'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//TA
 	static getAllTa(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
@@ -347,6 +374,15 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static removeTA(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		
+		AgreementsDAO
+		['removeTA'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//IL
 	static getAllInventoryList(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
@@ -434,6 +470,24 @@ export class AgreementsController {
 
 		AgreementsDAO
 		['deleteHistory'](_idAgreement, _idHistory, _type)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static loiPayment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['loiPayment'](_id)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static taPayment(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+
+		AgreementsDAO
+		['taPayment'](_id)
 		.then(agreement => res.status(201).json(agreement))
 		.catch(error => res.status(400).json(error));
 	}

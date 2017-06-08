@@ -302,6 +302,67 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 	});
 });
 
+agreementsSchema.static('loiSeen', (id: string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.updateSeen('loi', id, userId).then(res => {
+			resolve(res);
+		})
+	});
+});
+
+agreementsSchema.static('taSeen', (id: string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.updateSeen('ta', id, userId).then(res => {
+			resolve(res);
+		})
+	});
+});
+
+agreementsSchema.static('updateSeen', (type: string, id: string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let t = ['ta', 'loi'];
+		if (t.indexOf(type) == -1) {
+			reject({message: 'wrong type'});
+		}
+		else {
+			let _query;
+			Agreements.findById(id).exec((err, res) => {
+				if (err) { reject({message: err.message}); }
+				else {
+					let user_type;
+					if (userId == res.tenant) { user_type = 'tenant'; }
+					else if (userId == res.landlord) { user_type = 'landlord'; }
+					else { reject({message: 'You not a member of this agreement.'}); }
+					if (user_type == 'tenant') {
+						if (type == 'loi') {
+							res.letter_of_intent.data.tenant_seen = true;
+						}
+						else {
+							res.tenancy_agreement.data.tenant_seen = true;
+						}
+					}
+					else {
+						if (type == 'loi') {
+							res.letter_of_intent.data.landlord_seen = true;
+						}
+						else {
+							res.tenancy_agreement.data.landlord_seen = true;
+						}
+					}
+					res.save((err, saved) => {
+						err ? reject({message: err.message})
+							: resolve({
+								message: 'success',
+								code: 200,
+								data: [1]
+							});
+					})
+				}
+			})
+		}
+	});
+});
+
 agreementsSchema.static('createAgreements', (agreements:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(agreements)) {
@@ -1837,6 +1898,30 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 	});
 });
 
+agreementsSchema.static('removeLOI', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		Agreements.createHistory(id, 'letter_of_intent').then(res => {
+			resolve({
+				message: 'success',
+				code: 200,
+				data: 1
+			});
+		})
+	});
+});
+
+agreementsSchema.static('removeTA', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		Agreements.createHistory(id, 'tenancy_agreement').then(res => {
+			resolve({
+				message: 'success',
+				code: 200,
+				data: 1
+			});
+		})
+	});
+});
+
 //create History
 agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
@@ -1913,6 +1998,67 @@ agreementsSchema.static('confirmation', (id:string, data:Object):Promise<any> =>
                 err ? reject({message: err.message})
                 	: resolve(saved);
             });
+	});
+});
+
+agreementsSchema.static('loiPayment', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.findById(id).exec((err, agreement) => {
+			if (err) {
+				reject(err);
+			}
+			else if (agreement) {
+				let loiData = agreement.letter_of_intent.data;
+				let gfd = loiData.gfd_amount;
+				let std = loiData.sd_amount;
+
+				if (loiData.payment) {
+					resolve({message: "Already Payment"});									
+				}
+				if (!loiData.payment) {
+					resolve({
+						staysmart_bank : {
+							account_name: "Staysmart Pte. Ltd.",
+							bank_name: "DBS",
+							account_number: "100-904130-7"
+						},
+						gfd_amount: gfd,
+						sd_amount: std,
+						total_amount: gfd + std
+					});
+				}
+			}
+		});
+	});
+});
+
+agreementsSchema.static('taPayment', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.findById(id).exec((err, agreement) => {
+			if (err) {
+				reject(err);
+			}
+			else if (agreement) {
+				let loiData = agreement.letter_of_intent.data;
+				let taData = agreement.tenancy_agreement.data;
+				let scd = loiData.security_deposit;
+
+				if (taData.payment) {
+					resolve({message: "Already Payment"});
+				}
+				if (!taData.payment) {
+					resolve({
+						staysmart_bank : {
+							account_name: "Staysmart Pte. Ltd.",
+							bank_name: "DBS",
+							account_number: "100-904130-7"
+						},
+						security_deposit: scd,
+						total_amount: scd
+					});
+				}
+			}
+		});
 	});
 });
 
