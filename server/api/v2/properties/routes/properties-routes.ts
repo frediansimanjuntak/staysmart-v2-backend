@@ -81,6 +81,10 @@ export class PropertiesRoutes {
 			.get(PropertiesController.getById)
 			.delete(auth.isAuthenticated(),PropertiesController.deleteProperties);
 
+		router
+			.route('/property/:id/remove')
+			.post(auth.isAuthenticated(), PropertiesController.deleteProperties);
+
 		//view property for mobile, need login to get req["user"]._id and used it to update seen
 		router
 			.route('/property/:id')

@@ -213,8 +213,9 @@ export class PropertiesController {
 	static deleteProperties(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
+		let _device = req.device.type;
 		PropertiesDAO
-		['deleteProperties'](_id, _userId)
+		['deleteProperties'](_id, _userId, _device)
 		.then(properties => res.status(201).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
