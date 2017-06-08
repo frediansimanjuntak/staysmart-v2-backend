@@ -43,6 +43,15 @@ export class NotificationsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static readNotif(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _data = req.body;
+		NotificationsDAO
+		['readNotif'](_userId, _data)
+		.then(notifications => res.status(201).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static readNotifications(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		NotificationsDAO

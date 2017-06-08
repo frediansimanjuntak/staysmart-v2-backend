@@ -129,6 +129,25 @@ notificationsSchema.static('deleteNotifications', (id:string):Promise<any> => {
     });
 });
 
+notificationsSchema.static('readNotif', (userId:string, data: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      let body: any = data;
+      Notifications.update({"_id": {$in: body.notif_id}}, {
+        $set: {
+          read: true,
+          read_at: new Date()
+        }
+      })
+      .exec((err, res) => {
+        err ? reject ({message: err.message})
+            : resolve ({
+              message: 'Success Read',
+              code: 200
+            });
+      });
+    });
+});
+
 notificationsSchema.static('readNotifications', (userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Notifications
