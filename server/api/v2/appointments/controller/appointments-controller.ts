@@ -35,6 +35,15 @@ export class AppointmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static readAppointment(req: express.Request, res: express.Response):void {
+		let _id = req.body.appointment_id;
+		let _userId = req["user"]._id;
+		AppointmentsDAO
+		['readAppointment'](_id, _userId)
+		.then(appointments => res.status(200).json(appointments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createAppointments(req: express.Request, res: express.Response):void {
 		let _appointments = req.body;
 		let _tenant = req["user"]._id;

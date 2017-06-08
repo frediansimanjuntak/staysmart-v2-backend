@@ -27,5 +27,9 @@ export class AppointmentsRoutes {
 		router
 			.route('/appointments/update/:id/:status')
 			.put(auth.isAuthenticated(),AppointmentsController.updateAppointments);		
+		
+		router
+			.route('/member/appointments/read')
+			.post(auth.isAuthenticated(), AppointmentsController.readAppointment);
 	}
 }

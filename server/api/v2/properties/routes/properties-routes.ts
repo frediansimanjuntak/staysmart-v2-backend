@@ -58,7 +58,7 @@ export class PropertiesRoutes {
 
 		router
 			.route('/property/new/step2/upload')
-			.post(auth.isAuthenticated(),AttachmentsController.createAttachments);
+			.post(auth.isAuthenticated(), AttachmentsController.createAttachments);
 
 		router
 			.route('/property/new/step3')
