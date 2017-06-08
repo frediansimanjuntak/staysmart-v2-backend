@@ -5,6 +5,8 @@ import chatsSchema from '../model/chats-model';
 import Users from '../../users/dao/users-dao';
 import Agreements from '../../agreements/dao/agreements-dao'
 import Properties from '../../properties/dao/properties-dao';
+import Developments from '../../developments/dao/developments-dao';
+import Attachments from '../../attachments/dao/attachments-dao';
 import {DreamTalk} from '../../../../global/chat.service';
 
 chatsSchema.static('getChatRooms', (query:Object):Promise<any> => {
@@ -589,6 +591,97 @@ chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> =>
                 }                
             })
         }        
+    });
+});
+
+chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        ChatRooms.find({ $or: [{"tenant": userId}, {"landlord": userId}] })
+        .populate([{
+            path: 'property',
+            model: Properties,
+            populate: {
+                path: 'development',
+                model: Developments
+            }
+        },
+        {
+            path: 'tenant landlord manager',
+            model: Users,
+            populate: {
+                path: 'picture',
+                model: Attachments
+            }
+        },
+        {
+            path: 'agreement',
+            model: Agreements
+        }
+        ])
+        .exec((err, res) => {
+            if (err) { reject({message: err.message}); }
+            else {
+                if (res.length > 0) {
+                    let rooms = [];
+                    for (var i = 0; i < res.length; i++) {
+                        let loi;
+                        let ta;
+                        if (res[i].agreement.letter_of_intent.data.created_at) {
+                            loi = {
+                                _id: res[i].agreement._id,
+                                status: res[i].agreement.letter_of_intent.data.status
+                            };
+                        }
+                        else { loi = ''; }
+
+                        if (res[i].agreement.tenancy_agreement.data.created_at) {
+                            ta = {
+                                _id: res[i].agreement._id,
+                                status: res[i].agreement.tenancy_agreement.data.status
+                            };
+                        }
+                        else { ta = ''; }
+                        rooms.push({
+                            tenantUser: {
+                                _id: res[i].tenant._id,
+                                username: res[i].tenant.username,
+                                pictures: res[i].tenant.picture ? res[i].tenant.picture.url : ''
+                            },
+                            landlordUser: {
+                                _id: res[i].landlord._id,
+                                username: res[i].landlord.username,
+                                pictures: res[i].landlord.picture ? res[i].landlord.picture.url : ''
+                            },
+                            development: {
+                                name: res[i].property.development.name
+                            },
+                            property: {
+                                _id: res[i].property._id,
+                                address: {
+                                    unit_no: res[i].property.address.floor,
+                                    unit_no_2: res[i].property.address.unit,
+                                    block_no: res[i].property.address.block_number,
+                                    street_name: res[i].property.address.street_name,
+                                    postal_code: res[i].property.address.postal_code,
+                                    coordinates: res[i].property.address.coordinates,
+                                    country: res[i].property.address.country,
+                                    full_address: res[i].property.address.full_address,
+                                    type: res[i].property.address.type
+                                }
+                            },
+                            manager: [ res[i].manager._id ],
+                            roomId: res[i].room_id,
+                            status: res[i].status,
+                            appointmentId: res[i].agreement.appointment,
+                            letterOfIntent: loi,
+                            tenancyAgreement: ta
+                        });
+                    }
+                    resolve(rooms);
+                }
+                else { resolve([]); }
+            }
+        })
     });
 });
 

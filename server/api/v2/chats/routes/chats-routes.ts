@@ -47,6 +47,10 @@ export class ChatsRoutes {
 			.post(auth.isAuthenticated(),ChatsController.createRoom)
 		
 		router
+			.route('/rooms')
+			.get(auth.isAuthenticated(), ChatsController.getAllUserRooms);
+
+		router
 			.route('/rooms/create')
 			.post(auth.isAuthenticated(), ChatsController.createRoom)
 

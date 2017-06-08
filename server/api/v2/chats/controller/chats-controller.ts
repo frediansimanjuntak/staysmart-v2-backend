@@ -168,4 +168,12 @@ export class ChatsController {
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static getAllUserRooms(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		ChatsDAO
+		['getAllUserRooms'](_userId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
 }
