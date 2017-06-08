@@ -3,7 +3,7 @@ import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import Agreements from '../api/v2/agreements/dao/agreements-dao';
 
-export class companyHelper{
+export class notificationHelper{
     static getNotif(notifications) {
         return new Promise((resolve:Function, reject:Function) => {
             Agreements.find().exec((err, res) => {
