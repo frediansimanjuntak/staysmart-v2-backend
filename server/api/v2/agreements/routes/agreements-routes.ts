@@ -167,5 +167,13 @@ export class AgreementsRoutes {
 		router
 			.route('/odometer')
 			.get(AgreementsController.getOdometer);
+
+		router
+			.route('/letter-of-intent/:id/seen')
+			.post(auth.isAuthenticated(), AgreementsController.loiSeen);
+
+		router
+			.route('/tenancy-agreement/:id/seen')
+			.post(auth.isAuthenticated(), AgreementsController.taSeen);
 	}
 }

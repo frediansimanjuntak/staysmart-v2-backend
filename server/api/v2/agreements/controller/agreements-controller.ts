@@ -57,6 +57,24 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static loiSeen(req: express.Request, res: express.Response):void {	
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		AgreementsDAO
+		['loiSeen'](_id, _userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static taSeen(req: express.Request, res: express.Response):void {	
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		AgreementsDAO
+		['taSeen'](_id, _userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createAgreements(req: express.Request, res: express.Response):void {
 		let _agreements = req.body;
 		let _userId = req["user"]._id;

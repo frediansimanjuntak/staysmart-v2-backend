@@ -302,6 +302,67 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 	});
 });
 
+agreementsSchema.static('loiSeen', (id: string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.updateSeen('loi', id, userId).then(res => {
+			resolve(res);
+		})
+	});
+});
+
+agreementsSchema.static('taSeen', (id: string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.updateSeen('ta', id, userId).then(res => {
+			resolve(res);
+		})
+	});
+});
+
+agreementsSchema.static('updateSeen', (type: string, id: string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let t = ['ta', 'loi'];
+		if (t.indexOf(type) == -1) {
+			reject({message: 'wrong type'});
+		}
+		else {
+			let _query;
+			Agreements.findById(id).exec((err, res) => {
+				if (err) { reject({message: err.message}); }
+				else {
+					let user_type;
+					if (userId == res.tenant) { user_type = 'tenant'; }
+					else if (userId == res.landlord) { user_type = 'landlord'; }
+					else { reject({message: 'You not a member of this agreement.'}); }
+					if (user_type == 'tenant') {
+						if (type == 'loi') {
+							res.letter_of_intent.data.tenant_seen = true;
+						}
+						else {
+							res.tenancy_agreement.data.tenant_seen = true;
+						}
+					}
+					else {
+						if (type == 'loi') {
+							res.letter_of_intent.data.landlord_seen = true;
+						}
+						else {
+							res.tenancy_agreement.data.landlord_seen = true;
+						}
+					}
+					res.save((err, saved) => {
+						err ? reject({message: err.message})
+							: resolve({
+								message: 'success',
+								code: 200,
+								data: [1]
+							});
+					})
+				}
+			})
+		}
+	});
+});
+
 agreementsSchema.static('createAgreements', (agreements:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(agreements)) {
