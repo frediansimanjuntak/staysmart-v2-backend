@@ -2,6 +2,22 @@ import * as express from 'express';
 import NotificationsDAO from '../dao/notifications-dao';
 
 export class NotificationsController {
+	static countAll(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		NotificationsDAO
+		['countAll'](_userId)
+		.then(notifications => res.status(200).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static countUnread(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		NotificationsDAO
+		['countUnread'](_userId)
+		.then(notifications => res.status(200).json(notifications))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static getAll(req: express.Request, res: express.Response):void {
 		NotificationsDAO
 		['getAll']()
