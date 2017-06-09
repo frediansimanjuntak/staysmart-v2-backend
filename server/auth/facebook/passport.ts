@@ -6,9 +6,10 @@ var FacebookStrategy = passportLocal.Strategy;
 
 function facebookAuthenticate(User, id, accessToken, done) {
   return new Promise((resolve:Function, reject:Function) => {
-    User.findOne({
-    "service.facebook.id": id
-    }, (err, user) => {
+    User
+      .findOne({ "service.facebook.id": id })
+      .select('+password')
+      .exec((err, user) => {
       if(user == null) {
         var _new_user = new User();
             _new_user.service.facebook.id = id;
@@ -16,7 +17,9 @@ function facebookAuthenticate(User, id, accessToken, done) {
             _new_user.save((err, saved)=>{
               if(saved){
                 User
-                  .findById(saved._id, (err, userData) => {
+                  .findById(saved._id)
+                  .select('+password')
+                  .exec((err, userData) => {
                     if(err) {
                       return done(null, false, {
                         message: 'Something went wrong, please try again.'
