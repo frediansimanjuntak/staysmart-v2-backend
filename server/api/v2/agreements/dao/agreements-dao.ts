@@ -822,7 +822,6 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 		if (!_.isObject(data)) {
 			return reject(new TypeError('TA is not a valid object.'));
 		}		
-
 		let bodies:any = data;	
 		let body:any = GlobalService.validObjectEmpty(data);
 		let typeDataa = "letter_of_intent";
@@ -961,6 +960,49 @@ agreementsSchema.static('userUpdateDataTenant', (id:string, data:Object,):Promis
 						})
 				}
 			})		
+	});
+});
+
+agreementsSchema.static('updatePaymentProof', (id:string, attachment:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let files:any = attachment;
+		let data = {body:"staysmart"};
+		Appointments
+			.findById(id)
+			.select("agreement")
+			.exec((err, appointment) => {
+				if (err) {reject(err);}
+				else if (appointment) {
+					if (files.proof) {
+						Attachments.createAttachments(files.proof, data).then((res) => {
+							if (res.idAtt) {
+								Agreements
+									.update({"_id": appointment.agreement}, {
+										$set: {
+											"letter_of_intent.data.payment": res.idAtt
+										}
+									})
+									.exec((err, agreement) => {
+										err ? reject(err)
+											: resolve(agreement);
+									})
+							}
+							else {
+								resolve({message: "Attachment file not found"});
+							}
+						})						
+					}
+					else {
+						resolve({message: "Attachment file not found"});
+					}					
+				}
+				else {
+
+				}
+			})
 	});
 });
 
@@ -1726,7 +1768,29 @@ agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
 		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
 		Agreements
 			.find(_query)
-			.populate("landlord tenant property")
+			.populate("landlord tenant")
+			.populate({
+				path: 'property',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            }]
+			})
 			.exec((err, il) => {
 				if (err) {
 					reject(err);
@@ -1774,7 +1838,29 @@ agreementsSchema.static('getInventoryListHistories', (id:string, userId:string, 
 		}		
 		Agreements
 			.findOne(_query)
-			.populate("landlord tenant property tenancy_agreement.data.stamp_certificate")
+			.populate("landlord tenant tenancy_agreement.data.stamp_certificate")
+			.populate({
+				path: 'property',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            }]
+			})
 			.populate({
 				path: 'tenancy_agreement.data.payment',
 				populate: [{
@@ -2268,10 +2354,10 @@ agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
 					reject(err)
 				}
 				else if (res) {
-					if (res.status == "rejected" || res.status == "accepted") {
-						resolve({message: "Allready Accept or Reject this Payment"});
+					if (res.status == "accepted") {
+						resolve({message: "Allready Accept this Payment"});
 					}
-					else if (res.status == "pending") {
+					else if (res.status == "rejected" || res.status == "pending") {
 						resolve(res);
 					}	
 					else {
@@ -2288,21 +2374,28 @@ agreementsSchema.static('paymentReceiveAmount', (id:string, code:string, receive
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 		Payments
-			.update({"_id": id, "fee": {$elemMatch: {"code_name": code}}}, {
-				$set: {
-					"fee.$.received_amount": receiveAmount,
-					"fee.$.needed_refund": neededRefund,
-					"fee.$.refunded": false,
-					"fee.$.updated_at": new Date(),
-					"attachment.payment_confirm": payment_confirm,
-					"status": status,
-					"remarks": remarks
+			.findById(id)
+			.exec((err, payment) => {
+				if (err) { reject(err); }
+				else if (payment) {
+					let data;
+					if (payment.status == "rejected") {
+						data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "remarks": remarks }};
+					}
+					else {
+						data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
+					}
+					Payments
+						.update({"_id": id, "fee": {$elemMatch: {"code_name": code}}}, data)
+						.exec((err, updated) => {
+							err ? reject({message: err.message})
+								: resolve(updated);
+						});
 				}
-			})
-			.exec((err, updated) => {
-	      		err ? reject({message: err.message})
-	      			: resolve(updated);
-	      	});
+				else {
+					reject({message: "payment not found"});
+				}
+			})		
 	});
 });
 

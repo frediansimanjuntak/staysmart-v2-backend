@@ -278,6 +278,15 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updatePaymentProof(req: express.Request, res: express.Response):void {
+		let _id = req.params.appoiments_id;
+		let _attachment = req["files"];
+		AgreementsDAO
+		['updatePaymentProof'](_id, _attachment)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//TA
 	static getAllTa(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
