@@ -191,5 +191,10 @@ export class AgreementsRoutes {
 		router
 			.route('/tenancy-agreement/:id/payment-details')
 			.get(auth.isAuthenticated(), AgreementsController.taPayment);
+		
+		//mobile api
+		router
+			.route('/loi/:appoiments_id/payment')
+			.get(auth.isAuthenticated(), AgreementsController.updatePaymentProof);
 	}
 }
