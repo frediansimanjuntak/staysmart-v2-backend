@@ -196,5 +196,9 @@ export class AgreementsRoutes {
 		router
 			.route('/loi/:appoiments_id/payment')
 			.get(auth.isAuthenticated(), AgreementsController.updatePaymentProof);
+		
+		router
+			.route('/loi/:appoiments_id/initiate')
+			.get(auth.isAuthenticated(), AgreementsController.initiateLoi);
 	}
 }

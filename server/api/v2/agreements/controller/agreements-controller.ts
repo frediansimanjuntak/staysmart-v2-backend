@@ -226,6 +226,17 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static initiateLoi(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['initiateLoi'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static sendLoi(req: express.Request, res: express.Response):void {		
 		let _id = req.params.id;
 		let _userId = req["user"]._id;

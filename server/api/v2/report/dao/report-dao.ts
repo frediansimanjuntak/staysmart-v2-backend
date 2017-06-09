@@ -72,6 +72,13 @@ export class reportDAO{
 					let bankCode;
 					let bankName;
 					let bankNo;
+					let landlordFullname;
+					if (landlord.landlord.data.name) {
+						landlordFullname = landlord.landlord.data.name;
+					}
+					else {
+						landlordFullname = "Landlord";
+					}
 					if (type == "loi"){
 						tenant_sign = loi.confirmation.tenant.sign;
 						landlord_sign = loi.confirmation.landlord.sign;
@@ -186,8 +193,8 @@ export class reportDAO{
 							"status": status,
 							"confirmation_date": confirmation_date,							
 							"landlord":{
-								"full_name": loi.landlord.name, 
-								"id_number": loi.landlord.identification_number,
+								"full_name": landlordFullname, 
+								"id_number": landlord.landlord.data.identification_number,
 								"company_name": landlord.companies
 							},
 							"landlord_account": {								
