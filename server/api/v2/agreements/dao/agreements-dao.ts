@@ -1,7 +1,7 @@
+import { Agreement } from './../../../../../../staysmart-v2-frontend/src/client/models/agreement';
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
-// import * as newrelic from 'newrelic';
 import agreementsSchema from '../model/agreements-model';
 import Users from '../../users/dao/users-dao';
 import Payments from '../../payments/dao/payments-dao';
@@ -908,6 +908,51 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 	});
 });
 
+agreementsSchema.static('userUpdateDataTenant', (id:string, data:Object,):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data;
+		Users
+			.findById(id)
+			.exec((err, res) => {
+				if (err) {
+					reject(err);
+				}
+				else if (res) {
+					if (res.tenant.data.name) {
+						let tenantData = res.tenant.data;
+						Agreements.historyDataTenant(id, tenantData);
+					}
+					Users
+						.update({"_id": id}, {
+							$set: {
+								"tenant.data": {
+									"name": body.name,
+									"identification_type": body.identification_type,
+									"identification_number": body.identification_number,
+									"identification_proof": {
+										"front": body.identification_proof.front,
+										"back": body.identification_proof.back
+									},
+									"bank_account": {
+										"bank": body.bank_account.bank,
+										"name": body.bank_account.name,
+										"no": body.bank_account.no
+									}
+								}
+							}
+						}, {upsert: true})
+						.exec((err, saved) => {
+						err ? reject({message: err.message})
+            				: resolve(saved);
+						})
+				}
+				else {
+					reject({message: "User not found"});
+				}
+			})		
+	});
+});
+
 agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
@@ -1006,8 +1051,17 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 									Agreements
 										.update(_query, loiObj)
 										.exec((err, updated) => {
-											err ? reject({message: err.message})
-												: resolve({message: "Loi created"});
+											if (err) { reject(err); }
+											else {
+												let result = {
+													"message": "success",
+													"code": 200,
+													"data": {
+														"_id": idAgreement
+													}
+												};
+												resolve(result);
+											}
 										});
 								}
 							}
@@ -1021,50 +1075,144 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 	});
 });
 
-agreementsSchema.static('userUpdateDataTenant', (id:string, data:Object,):Promise<any> => {
+agreementsSchema.static('signLoi', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
 		let body:any = data;
-		console.log(body);
-		Users
+		let IDUser = userId.toString();	
+		Appointments
 			.findById(id)
-			.exec((err, res) => {
-				if (err) {
-					reject(err);
-				}
-				else if (res) {
-					if (res.tenant.data.name) {
-						let tenantData = res.tenant.data;
-						Agreements.historyDataTenant(id, tenantData);
-					}
-					Users
-						.update({"_id": id}, {
-							$set: {
-								"tenant.data": {
-									"name": body.name,
-									"identification_type": body.identification_type,
-									"identification_number": body.identification_number,
-									"identification_proof": {
-										"front": body.identification_proof.front,
-										"back": body.identification_proof.back
-									},
-									"bank_account": {
-										"bank": body.bank_account.bank,
-										"name": body.bank_account.name,
-										"no": body.bank_account.no
+			.exec((err, appointment) => {
+				if (err) { reject(err); }
+				else if (appointment) {
+					let idAgreement = appointment.agreement;
+					Agreements
+						.findById(idAgreement)
+						.exec((err, agreement) => {
+							if (err) { reject(err); }
+							else if (agreement) {
+								if (agreement.tenant == IDUser) {
+									let data = {
+										"sign": body.signature,
+										"type": "letter_of_intent",
+										"status": "tenant"
 									}
+									Agreements.confirmation(id, data).then((res) => {
+										if (!res.message) {
+											resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
+										}
+										else { reject(res); }
+									})
+									.catch((err) => { reject(err); })
 								}
+								else { reject({message: "forbidden"}); }								
 							}
-						}, {upsert: true})
-						.exec((err, saved) => {
-						err ? reject({message: err.message})
-            				: resolve(saved);
+							else { reject({message: "Agreement not found"}); }
 						})
 				}
-			})		
+				else { reject({message: "Appointment not found"}); }
+			})
 	});
 });
 
-agreementsSchema.static('updatePaymentProof', (id:string, attachment:Object):Promise<any> => {
+agreementsSchema.static('acceptLoi_', (id:string, data:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let body:any = data;
+		let IDUser = userId.toString();	
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) { reject(err); }
+				else if (appointment) {
+					let idAgreement = appointment.agreement;
+					Agreements
+						.findById(idAgreement)
+						.exec((err, agreement) => {
+							if (err) { reject(err); }
+							else if (agreement) {
+								if (agreement.landlord == IDUser) {
+									let data = {
+										"sign": body.signature,
+										"type": "letter_of_intent",
+										"status": "landlord"
+									}
+									Agreements.changeStatusChat(agreement.room.toString(), "pending");
+									Agreements.confirmation(id, data);
+									agreement.letter_of_intent.data.status = "accepted";
+									agreement.save((err, saved) => {
+										err ? reject(err)
+											: resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
+									})
+									.catch((err) => { reject(err); })
+								}
+								else { reject({message: "forbidden"}); }								
+							}
+							else { reject({message: "Agreement not found"}); }
+						})
+				}
+				else { reject({message: "Appointment not found"}); }
+			})
+	});
+});
+
+agreementsSchema.static('rejectLoi_', (id:string, data:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let body:any = data;
+		let IDUser = userId.toString();	
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) { reject(err); }
+				else if (appointment) {
+					let idAgreement = appointment.agreement;
+					Agreements
+						.findById(idAgreement)
+						.populate("letter_of_intent.data.payment")
+						.exec((err, agreement) => {
+							if (err) { reject(err); }
+							else if (agreement) {
+								if (agreement.landlord == IDUser) {
+									let payment = agreement.letter_of_intent.data.payment;
+									let statusLoi = agreement.letter_of_intent.data.status;
+									let paymentId = payment._id;
+									let paymentStatus = payment.status;
+									let paymentFee = payment.fee;
+									let typeMail = "rejectLoiLandlord";
+									
+									if (paymentStatus == "rejected") {
+										resolve({message: "this payment has rejected"});
+									}
+									else if (paymentStatus == "pending" || paymentStatus == "accepted" || statusLoi == "payment-confirmed") {
+										Agreements.changeNeedRefundAfterRejectLOI(paymentId, body.rejected_reason);
+										agreement.letter_of_intent.data.status = "rejected";
+										agreement.save((err, saved)=>{
+											if (err) { reject({message: err.message}); }
+											else if (saved) {
+												Agreements.email(idAgreement, typeMail);
+												resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
+											}
+										});							
+									}
+								}
+								else { reject({message: "forbidden"}); }								
+							}
+							else { reject({message: "Agreement not found"}); }
+						})
+				}
+				else { reject({message: "Appointment not found"}); }
+			})
+	});
+});
+
+agreementsSchema.static('updatePaymentProof', (id:string, attachment:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
@@ -1080,6 +1228,7 @@ agreementsSchema.static('updatePaymentProof', (id:string, attachment:Object):Pro
 					if (files.proof) {
 						Attachments.createAttachments(files.proof, data).then((res) => {
 							if (res.idAtt) {
+								Agreements.sendLoi(appointment.agreement, userId);
 								let idAttachments = res.idAtt;
 								_.each(idAttachments, (result) => {
 									Agreements
@@ -1133,9 +1282,6 @@ agreementsSchema.static('historyDataTenant', (id:string, tenantData:Object):Prom
 
 agreementsSchema.static('sendLoi', (id:string, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
 		let IDUser = userId.toString();
 		Agreements
 			.findById(id)
@@ -2271,18 +2417,14 @@ agreementsSchema.static('confirmation', (id:string, data:Object):Promise<any> =>
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
-		}		
-		
+		}				
 		let body:any = data;
 		let sign = body.sign;
 		let type = body.type; //type ('letter_of_intent', 'tenancy_agreement', 'inventory_list')
 		let status = body.status; //status ('tenant', 'landlord')
-		let typeData = "";
-
 		let confirmObj = {$set: {}};
 		confirmObj.$set[type + ".data.confirmation." + status + ".sign"] = body.sign;
 		confirmObj.$set[type + ".data.confirmation." + status + ".date"] = new Date;
-
 		Agreements
 			.findByIdAndUpdate(id, confirmObj)
 			.exec((err, saved) => {
