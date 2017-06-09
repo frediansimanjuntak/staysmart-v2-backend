@@ -199,6 +199,18 @@ export class AgreementsRoutes {
 		
 		router
 			.route('/loi/:appoiments_id/initiate')
-			.get(auth.isAuthenticated(), AgreementsController.initiateLoi);
+			.post(auth.isAuthenticated(), AgreementsController.initiateLoi);
+		
+		router
+			.route('/loi/:appoiments_id/sign')
+			.post(auth.isAuthenticated(), AgreementsController.signLoi);
+		
+		router
+			.route('/loi/:appoiments_id/accept')
+			.post(auth.isAuthenticated(), AgreementsController.acceptLoi_);
+		
+		router
+			.route('/loi/:appoiments_id/reject')
+			.post(auth.isAuthenticated(), AgreementsController.rejectLoi_);
 	}
 }

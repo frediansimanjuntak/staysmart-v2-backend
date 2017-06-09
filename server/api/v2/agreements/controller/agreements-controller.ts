@@ -228,11 +228,44 @@ export class AgreementsController {
 
 	static initiateLoi(req: express.Request, res: express.Response):void {
 		let _data = req.body;
-		let _id = req.params.id;
+		let _id = req.params.appoiments_id;
 		let _userId = req["user"]._id;
 
 		AgreementsDAO
 		['initiateLoi'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static signLoi(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.appoiments_id;
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['signLoi'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static acceptLoi_(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.appoiments_id;
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['acceptLoi_'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static rejectLoi_(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.appoiments_id;
+		let _userId = req["user"]._id;
+
+		AgreementsDAO
+		['rejectLoi_'](_id, _data, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -292,8 +325,9 @@ export class AgreementsController {
 	static updatePaymentProof(req: express.Request, res: express.Response):void {
 		let _id = req.params.appoiments_id;
 		let _attachment = req["files"];
+		let _userId = req["user"]._id;
 		AgreementsDAO
-		['updatePaymentProof'](_id, _attachment)
+		['updatePaymentProof'](_id, _attachment, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
