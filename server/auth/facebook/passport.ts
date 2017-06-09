@@ -10,34 +10,37 @@ function facebookAuthenticate(User, id, accessToken, done) {
       .findOne({ "service.facebook.id": id })
       .select('+password')
       .exec((err, user) => {
-      if(user == null) {
-        var _new_user = new User();
-            _new_user.service.facebook.id = id;
-            _new_user.service.facebook.token = accessToken;
-            _new_user.save((err, saved)=>{
-              if(saved){
-                User
-                  .findById(saved._id)
-                  .select('+password')
-                  .exec((err, userData) => {
-                    if(err) {
-                      return done(null, false, {
-                        message: 'Something went wrong, please try again.'
-                      });
-                    }
-                    return done(null, userData);    
-                  })
-              }
-              else{
-                return done(null, false, {
-                  message: 'Something went wrong, please try again.'
-                });
-              }
-            });
-      }
-      else{
-        return done(null, user);
-      }
+        if (err) { reject(err); }
+        else if (user) {
+          return done(null, user);
+        }
+        else {
+          var _new_user = new User();
+          _new_user.username = id;
+          _new_user.email = id;
+          _new_user.service.facebook.id = id;
+          _new_user.service.facebook.token = accessToken;
+          _new_user.save((err, saved)=>{
+            if(saved){
+              User
+                .findById(saved._id)
+                .select('+password')
+                .exec((err, userData) => {
+                  if(err) {
+                    return done(null, false, {
+                      message: 'Something went wrong, please try again.'
+                    });
+                  }
+                  return done(null, userData);    
+                })
+            }
+            else{
+              return done(null, false, {
+                message: 'Something went wrong, please try again.'
+              });
+            }
+          });
+        }
     })  
   })
 }

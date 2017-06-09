@@ -102,8 +102,7 @@ export function isAuthenticated() {
               }
             }            
           }
-        }
-          
+        }          
       })
     });
 }

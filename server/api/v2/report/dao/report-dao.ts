@@ -53,7 +53,6 @@ export class reportDAO{
 					}]
 				})
 				.exec((err, agreement) => {
-					// console.log(agreement);
 					let property = agreement.property;
 					let landlord = agreement.landlord; 
 					let tenant = agreement.tenant;
@@ -73,11 +72,18 @@ export class reportDAO{
 					let bankName;
 					let bankNo;
 					let landlordFullname;
+					let landlordIdNo;
 					if (landlord.landlord.data.name) {
-						landlordFullname = landlord.landlord.data.name;
+						landlordFullname = landlord.landlord.data.name;						
 					}
 					else {
-						landlordFullname = "Landlord";
+						landlordFullname = "Landlord";						
+					}
+					if (landlord.landlord.data.identification_number) {
+						landlordIdNo = landlord.landlord.data.identification_number;
+					}
+					else {
+						landlordIdNo = "-";
 					}
 					if (type == "loi"){
 						tenant_sign = loi.confirmation.tenant.sign;
@@ -194,7 +200,7 @@ export class reportDAO{
 							"confirmation_date": confirmation_date,							
 							"landlord":{
 								"full_name": landlordFullname, 
-								"id_number": landlord.landlord.data.identification_number,
+								"id_number": landlordIdNo,
 								"company_name": landlord.companies
 							},
 							"landlord_account": {								

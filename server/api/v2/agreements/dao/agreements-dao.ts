@@ -1,4 +1,3 @@
-import { Agreement } from './../../../../../../staysmart-v2-frontend/src/client/models/agreement';
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
@@ -1372,7 +1371,9 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 							agreement.letter_of_intent.data.status = "accepted";
 							agreement.save((err, saved) => {
 								Agreements.confirmation(id, data, type);
-								Agreements.changeStatusChat(agreement.room.toString(), "pending");
+								if (agreement.room) {
+									Agreements.changeStatusChat(agreement.room.toString(), "pending");
+								}								
 								Agreements.notification(id, type_notif).then(res => {
 									let typeMail = "acceptedLoiLandlord";
 									Agreements.email(id, typeMail);
