@@ -226,6 +226,7 @@ var AgreementsSchema = new mongoose.Schema({
 						type: Schema.Types.ObjectId,
 						ref: 'Attachments'
 					}],
+					row_id: {type: String},
 					landlord_check: {type: Boolean},
 					tenant_check: {type: Boolean}
 				}]

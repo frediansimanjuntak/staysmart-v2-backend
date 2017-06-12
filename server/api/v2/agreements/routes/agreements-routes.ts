@@ -212,5 +212,14 @@ export class AgreementsRoutes {
 		router
 			.route('/loi/:appoiments_id/reject')
 			.post(auth.isAuthenticated(), AgreementsController.rejectLoi_);
+
+		router
+			.route('/inventory/:id')
+			.get(auth.isAuthenticated(), AgreementsController.inventoryDetailsMobile)
+			.post(auth.isAuthenticated(), AgreementsController.inventoryUpdateMobile);
+		
+		router 
+			.route('/inventory/validate/:id')
+			.post(auth.isAuthenticated(). AgreementsController.inventoryUpdateMobile);
 	}
 }
