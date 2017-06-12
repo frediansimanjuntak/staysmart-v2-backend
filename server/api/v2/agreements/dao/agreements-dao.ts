@@ -3604,6 +3604,97 @@ agreementsSchema.static('email', (idAgreement:string, type:string):Promise<any> 
 	});
 });
 
+agreementsSchema.static('inventoryUpdateMobile', (idAppointment: string, data: Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body: any = data;
+		Agreements.findOne({"appointment": idAppointment}).exec((err, agreement) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				if (body.list) {
+					let lists = [];
+					for (var i = 0; i < body.list.length; i++) {
+						let list = body.list[i];
+						let items = [];
+						for (var j = 0; j < list.attr.length; j++) {
+							items.push({
+								name: list.attr[j].item,
+								quantity: list.attr[j].quantity,
+								row_id: list.attr[j].row_id,
+								tenant_check: list.attr[j].confirm_by_tenant,
+								landlord_check: list.attr[j].confirm_by_landlord
+							});
+						}
+						lists.push({
+							name: list.area_name,
+							items: items
+						});
+					}
+					agreement.inventory_list.data.lists = lists;
+					agreement.save();
+				}
+				if (body.tenant_sign) {
+					agreement.inventory_list.data.confirmation.tenant.sign = body.tenant_sign;
+					agreement.inventory_list.data.confirmation.tenant.date = new Date();
+					agreement.save();
+				}
+				resolve({
+					message: 'success',
+					code: 200
+				});
+			}
+		});
+	});
+});
+
+agreementsSchema.static('inventoryDetailsMobile', (id: string, user: string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.findById(id).populate('inventory_list.data.lists.items.attachments').exec((err, agreement) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				let lists = [];
+				for (var i = 0; i < agreement.inventory_list.data.lists.length; i++) {
+					let list = agreement.inventory_list.data.lists[i];
+					let items = [];
+					for (var j = 0; j < list.items.length; j++) {
+						let img = [];
+						for (var k = 0; k < list.items[j].attachments.length; k++) {
+							img.push(list.items[j].attachments[k].url);
+						}
+						items.push({
+							confirm_by_landlord: list.items[j].landlord_check,
+							confirm_by_tenant: list.items[j].tenant_check,
+							item: list.items[j].name,
+							quantity: list.items[j].quantity,
+							remark: list.items[j].remark,
+							row: j > 9 ? j : '0'+j,
+							row_id: list.items[j].row_id,
+							photo: img
+						});
+					}
+					lists.push({
+						area_name: list.name,
+						attr: items
+					});
+				}
+				Properties.getById(agreement.property, user, 'phone').then(property => {
+					resolve({
+						_id: agreement._id,
+						appointment_id: agreement.appointment,
+						landlord_sign: agreement.inventory_list.data.confirmation.landlord.sign,
+						tenant_signDate: agreement.inventory_list.data.confirmation.tenant.date,
+						landlord_signDate: agreement.inventory_list.data.confirmation.landlord.date,
+						status: agreement.inventory_list.data.status,
+						property: property,
+						created_at: agreement.inventory_list.data.created_at,
+						list: lists,
+						tenant_sign: agreement.inventory_list.data.confirmation.tenant.sign
+					});
+				})
+			}
+		});
+	});
+});
+
 let Agreements = mongoose.model('Agreements', agreementsSchema);
 
 export default Agreements;

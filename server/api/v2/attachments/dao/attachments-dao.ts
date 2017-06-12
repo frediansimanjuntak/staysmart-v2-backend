@@ -30,7 +30,7 @@ attachmentsSchema.static('getById', (id:string):Promise<any> => {
     });
 });
 
-attachmentsSchema.static('createAttachments', (attachments:Object, request:Object):Promise<any> => {
+attachmentsSchema.static('createAttachments', (attachments:Object, request:Object, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       if (!_.isObject(attachments)) {
         return reject(new TypeError('Attachment is not a valid object.'));
@@ -83,11 +83,20 @@ attachmentsSchema.static('createAttachments', (attachments:Object, request:Objec
                  
                 if (i >= files.length - 1){
                   if(errAtt == 0) {
-                    if (data.headers && data.headers.from) {
-                      resolve({
-                        imgId: idAtt[0],
-                        message: 'Success'
-                      });
+                    if (device != 'desktop') {
+                      if (data.body.row_id) {
+                        resolve({
+                          imgId: idAtt[0],
+                          row_id: data.body.row_id,
+                          message: 'Success'
+                        });
+                      }
+                      else {
+                        resolve({
+                          imgId: idAtt[0],
+                          message: 'Success'
+                        });
+                      }
                     }
                     else {
                       resolve({idAtt, urlAtt, errAtt});    

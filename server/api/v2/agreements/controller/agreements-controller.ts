@@ -554,4 +554,22 @@ export class AgreementsController {
 		.then(agreement => res.status(201).json(agreement))
 		.catch(error => res.status(400).json(error));
 	}
+	
+	static inventoryUpdateMobile(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _data = req.body;
+		AgreementsDAO
+		['inventoryUpdateMobile'](_id, _data)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static inventoryDetailsMobile(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _user = req["user"]._id;
+		AgreementsDAO
+		['inventoryDetailsMobile'](_id, _user)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
 }
