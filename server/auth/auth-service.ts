@@ -37,16 +37,16 @@ export function isAuthenticated() {
       validateJwt(req, res, function(err, validate){
         if(err) {
           if(err.message == "jwt expired"){
+            let decodeToken = jwt.verify(req.headers['x-auth-token'], config.secrets.session, {
+              ignoreExpiration: true
+            });
+            let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
+            req.headers['x-auth-token'] = newToken;
+            req.headers.authorization = `Bearer ${newToken}`;
             if (req.device.type == 'desktop') {
               return res.status(err.status).send({message: "Your session has been expired", code: 411});
             }
             else {
-              let decodeToken = jwt.verify(req.headers['x-auth-token'], config.secrets.session, {
-                ignoreExpiration: true
-              });
-              let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
-              req.headers['x-auth-token'] = newToken;
-              req.headers.authorization = `Bearer ${newToken}`;
               validateJwt(req, res, next);
             }
           }
