@@ -6,7 +6,8 @@ var expressJwt = require('express-jwt')
 import * as compose from 'composable-middleware';
 import User from '../api/v2/users/dao/users-dao';
 import Attachment from '../api/v2/attachments/dao/attachments-dao';
-import * as jwtDecode from 'jwt-decode';
+// import * as jwtDecode from 'jwt-decode';
+var jwtDecode = require('jwt-decode');
 
 var validateJwt = expressJwt({
   secret: config.secrets.session
