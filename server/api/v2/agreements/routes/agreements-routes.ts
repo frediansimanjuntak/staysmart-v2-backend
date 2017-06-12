@@ -212,5 +212,9 @@ export class AgreementsRoutes {
 		router
 			.route('/loi/:appoiments_id/reject')
 			.post(auth.isAuthenticated(), AgreementsController.rejectLoi_);
+		
+		router
+			.route('/loi/:appoiments_id/initiate/step2')
+			.get(auth.isAuthenticated(), AgreementsController.GetLoiStep2);
 	}
 }
