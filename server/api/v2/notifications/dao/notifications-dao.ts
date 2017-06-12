@@ -123,7 +123,14 @@ notificationsSchema.static('getByUser', (userId:string, device: string):Promise<
 
         Notifications
           .find({"user": userId})
-          .populate("user")
+          .populate({
+            path: 'user',
+            model: 'Users',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            }
+          })
           .exec((err, notifications) => {
             if (err) { reject({message: err.message}); }
             else {

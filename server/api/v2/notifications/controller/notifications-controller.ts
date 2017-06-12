@@ -55,7 +55,7 @@ export class NotificationsController {
 
 	static listNotifications(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-		let _device = req.device.type;
+		let _device = 'phone';
 		let _limit = req.params.limit;
 
 		NotificationsDAO

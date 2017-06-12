@@ -260,7 +260,7 @@ export class userHelper{
 							type_landlord: type
 						};
 						let tenant_data = {
-							_id: '',
+							_id: data._id,
 							user: data._id,
 							phone: data.phone,
 							verification: {
