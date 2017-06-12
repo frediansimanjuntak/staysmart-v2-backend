@@ -16,9 +16,33 @@ export class NotificationsRoutes {
 			.get(auth.isAuthenticated(),NotificationsController.getByUser);
 		
 		router
+			.route('/notification/all')
+			.get(auth.isAuthenticated(), NotificationsController.countAll);
+		
+		router
+			.route('/notification')
+			.post(auth.isAuthenticated(), NotificationsController.readNotif);
+
+		router
+			.route('/notification/unread')
+			.get(auth.isAuthenticated(), NotificationsController.getUnreadCount);
+
+		router
+			.route('/notifications/read')
+			.post(auth.isAuthenticated(),NotificationsController.readNotifications);
+
+		router
+			.route('/notification/notread')
+			.get(auth.isAuthenticated(), NotificationsController.countUnread);
+		
+		router
+			.route('/notification/click')
+			.post(auth.isAuthenticated(),NotificationsController.clickNotificationsMobile);
+
+		router
 			.route('/notification/:limit')
 			.get(auth.isAuthenticated(), NotificationsController.listNotifications);
-
+		
 		router
 			.route('/notifications/:id')
 			.get(auth.isAuthenticated(),NotificationsController.getById)
@@ -29,22 +53,6 @@ export class NotificationsRoutes {
 			.post(auth.isAuthenticated(),NotificationsController.updateNotifications);
 		
 		router
-			.route('/notification/unread')
-			.post(auth.isAuthenticated(), NotificationsController.readNotif);
-
-		router
-			.route('/notification/unread')
-			.get(auth.isAuthenticated(), NotificationsController.getUnreadCount);
-
-		router
-			.route('/notifications/read')
-			.post(auth.isAuthenticated(),NotificationsController.readNotifications);
-		
-		router
-			.route('/notification/click')
-			.post(auth.isAuthenticated(),NotificationsController.clickNotificationsMobile);
-
-		router
 			.route('/notifications/click/:id')
 			.post(auth.isAuthenticated(),NotificationsController.clickNotifications);
 
@@ -52,12 +60,6 @@ export class NotificationsRoutes {
 			.route('/notifications/limit/:limit')
 			.get(auth.isAuthenticated(),NotificationsController.getAllLimit);
 		
-		router
-			.route('/notification/all')
-			.get(auth.isAuthenticated(), NotificationsController.countAll);
 		
-		router
-			.route('/notification/notread')
-			.get(auth.isAuthenticated(), NotificationsController.countUnread);
 	}
 } 
