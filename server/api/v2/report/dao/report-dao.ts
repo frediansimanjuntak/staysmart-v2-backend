@@ -117,7 +117,7 @@ export class reportDAO{
 						confirmation_date = ta.confirmation.landlord.date;
 						created_day = ta.created_at;
 						created_at = new Date(ta.created_at);
-						date_expired = new Date(created_at.setDate(created_at.getDate() + 6));
+						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
 						if (ta.payment) {
 							payment_proof = ta.payment.attachment.payment;
 							secpayment_proof = ta.payment.attachment.payment_confirm;
