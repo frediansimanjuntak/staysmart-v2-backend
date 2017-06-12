@@ -241,6 +241,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		}
 		var ObjectID = mongoose.Types.ObjectId;  
 		let body:any = comments;
+		console.log(body);
 		var type;
 		if(body.commentID) {
 			type = 'comment';
@@ -264,7 +265,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 				Comments.sendBlogComment(idComment);
 				if(body.commentID){
 					Comments.sendSubscribeComment(idBlog);
-					Comments.addReplyInComment(body.commentID, idComment);	
+					Comments.addReplyInComment(idComment, body.commentID);	
 					resolve(saved);
 				}
 				else{
@@ -311,7 +312,7 @@ commentsSchema.static('addComments', (comments:Object, id: string, device: strin
 				Comments.sendBlogComment(idComment);
 				if(body.comment_id){
 					Comments.sendSubscribeComment(idBlog);
-					Comments.addReplyInComment(body.comment_id, idComment);	
+					Comments.addReplyInComment(idComment, body.comment_id);	
 					resolve({
 						message: {
 							status: 'success',
