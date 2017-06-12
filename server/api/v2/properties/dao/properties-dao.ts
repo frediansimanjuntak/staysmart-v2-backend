@@ -103,25 +103,6 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
-        if(search.latlng && search.latlng != 'all' && search.location && search.location != 'all') 
-        {
-          let radius;
-          if(search.radius && search.radius != 'all') {
-            radius = (search.radius) * 0.000621371192;
-          }
-          else{
-            radius = 1.5 * 0.621371192;
-          }
-          let radiusQuery = radius / 3963.2;
-          var latlng = search.latlng.split(",");
-          if (from == 'mobile') {
-            property.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[0]), Number(latlng[1])], radiusQuery ] } } });  
-          }
-          else {
-            property.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });  
-          }
-          property.where('address.street_name', search.location);
-        }
         if(search.pricemin && search.pricemin != 'all') 
         {
           property.where('details.price').gte(search.pricemin);
@@ -205,7 +186,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
             else {
               prop_data = properties;
             }
-            if( search.latlng != 'all' && (!search.location || search.location == 'all'))
+            if( search.latlng != 'all' )
             {
               let radius;
               if(search.radius && search.radius != 'all') {
