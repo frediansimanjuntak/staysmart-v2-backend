@@ -1489,6 +1489,85 @@ agreementsSchema.static('changeStatusChat', (id:string, status:string):Promise<a
 	});
 });
 
+agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) { reject(err); }
+				else if (appointment) {
+					let idAgreement = appointment.agreement;
+					Agreements
+						.findById(idAgreement)
+						.populate("letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+						.exec((err, agreement) => {
+							if (err) { reject(err); }
+							else if (agreement) {
+								if (agreement.letter_of_intent.data.landlord.name || agreement.letter_of_intent.data.tenant.name) {
+									let tenant = agreement.letter_of_intent.data.tenant;
+									let landlord = agreement.letter_of_intent.data.landlord;
+									let tenantIdentityFront;
+									let tenantIdentityBack;
+									let landlordIdentityFront;
+									let landlordIdentityBack;
+									if (tenant.identification_proof.front) {
+										tenantIdentityFront = {
+											"_id": tenant.identification_proof.front._id,
+											"url": tenant.identification_proof.front.url
+										}
+									}
+									if (landlord.identification_proof.front) {
+										landlordIdentityFront = {
+											"_id": landlord.identification_proof.front._id,
+											"url": landlord.identification_proof.front.url
+										}
+									}
+									if (tenant.identification_proof.back) {
+										tenantIdentityBack = {
+											"_id": tenant.identification_proof.back._id,
+											"url": tenant.identification_proof.back.url
+										}
+									}
+									if (landlord.identification_proof.back) {
+										landlordIdentityBack = {
+											"_id": landlord.identification_proof.back._id,
+											"url": landlord.identification_proof.back.url
+										}
+									}
+									let data = {
+										"tenant": {
+											"name": tenant.name,
+											"type": tenant.identification_type,
+											"id_no": tenant.identification_number,
+											"identity_front": tenantIdentityFront,
+											"identity_back": tenantIdentityBack
+										},
+										"landlord": {
+											"name": landlord.name,
+											"type": landlord.identification_type,
+											"id_no": landlord.identification_number,
+											"identity_front": landlordIdentityFront,
+											"identity_back": landlordIdentityBack
+										}
+									}
+									resolve(data);
+								}
+								else {
+									reject({message: "You must create LOI first"});
+								}
+							}
+							else {
+								reject({message: "Agreement not found"});
+							}
+						})
+				}
+				else {
+					reject({message: "Appointment not found"});
+				}
+			})
+	});
+});
+
 //TA
 agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {

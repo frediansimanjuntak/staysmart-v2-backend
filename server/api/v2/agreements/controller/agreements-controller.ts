@@ -332,6 +332,15 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static GetLoiStep2(req: express.Request, res: express.Response):void {
+		let _id = req.params.appoiments_id;
+		
+		AgreementsDAO
+		['GetLoiStep2'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//TA
 	static getAllTa(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;

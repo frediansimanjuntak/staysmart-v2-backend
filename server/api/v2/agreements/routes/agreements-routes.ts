@@ -221,5 +221,9 @@ export class AgreementsRoutes {
 		router 
 			.route('/inventory/validate/:id')
 			.post(auth.isAuthenticated(). AgreementsController.inventoryUpdateMobile);
+		
+		router
+			.route('/loi/:appoiments_id/initiate/step2')
+			.get(auth.isAuthenticated(), AgreementsController.GetLoiStep2);
 	}
 }
