@@ -37,17 +37,20 @@ export function isAuthenticated() {
       validateJwt(req, res, function(err, validate){
         if(err) {
           if(err.message == "jwt expired"){
-            // let decodeToken = jwt.verify(req.headers['x-auth-token'], config.secrets.session, {
-            //   ignoreExpiration: true
-            // });
-            // let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
-            // req.headers['x-auth-token'] = newToken;
-            // req.headers.authorization = `Bearer ${newToken}`;
+            let token = req.headers.authorization.split("Bearer ");
+            let decodeToken = jwt.verify(token[1], config.secrets.session, {
+              ignoreExpiration: true
+            });
+            console.log(decodeToken);
+            let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
+            console.log(newToken);
+            req.headers['x-auth-token'] = newToken;
+            req.headers.authorization = `Bearer ${newToken}`;
             // if (req.device.type == 'desktop') {
-              return res.status(err.status).send({message: "Your session has been expired", code: 411});
+            //   return res.status(err.status).send({message: "Your session has been expired", code: 411});
             // }
             // else {
-            //   validateJwt(req, res, next);
+              next();
             // }
           }
           else if(err.message == "jwt malformed"){
@@ -58,13 +61,17 @@ export function isAuthenticated() {
           }
         }
         else{
-          validateJwt(req, res, next);
+          next();
         }
       });
     })
     // Attach user to request
     .use(function(req, res, next) {
-      User.findById(req.user._id).select('+blacklisted_token.token').exec((err, user) => {
+      let token = req.headers.authorization.split("Bearer ");
+      let decodeToken = jwt.verify(token[1], config.secrets.session, {
+        ignoreExpiration: true
+      });
+      User.findById(decodeToken._id).select('+blacklisted_token.token').exec((err, user) => {
         if (err) {
           next({message: "error", err});
         }
@@ -143,7 +150,7 @@ export function hasRole(roleRequired) {
  */
 export function signToken(id, role, username) {
   return jwt.sign({ _id: id, role, username }, config.secrets.session, {
-    expiresIn: 60 * 60 * 5
+    expiresIn: 5
   });
 }
 
