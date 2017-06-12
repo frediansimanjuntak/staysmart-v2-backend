@@ -332,6 +332,15 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static GetLoiStep2(req: express.Request, res: express.Response):void {
+		let _id = req.params.appoiments_id;
+		
+		AgreementsDAO
+		['GetLoiStep2'](_id)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//TA
 	static getAllTa(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
@@ -370,6 +379,17 @@ export class AgreementsController {
 		
 		AgreementsDAO
 		['createTA'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static initiateTA_(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.appointment_id;
+		let _userId = req["user"]._id;
+		
+		AgreementsDAO
+		['initiateTA_'](_id, _data, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -543,6 +563,44 @@ export class AgreementsController {
 		AgreementsDAO
 		['taPayment'](_id)
 		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+	
+	static inventoryUpdateMobile(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _data = req.body;
+		AgreementsDAO
+		['inventoryUpdateMobile'](_id, _data)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static inventoryDetailsMobile(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _user = req["user"]._id;
+		AgreementsDAO
+		['inventoryDetailsMobile'](_id, _user)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static inventoryListMember(req: express.Request, res: express.Response):void {
+		let _user = req["user"]._id;
+		AgreementsDAO
+		['inventoryListMember'](_user)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static rejectTAMobile(req: express.Request, res: express.Response):void {
+		let _idAppointment = req.params.id;
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		let _ta = req.body;
+
+		AgreementsDAO
+		['rejectTAMobile'](_idAppointment, _userId, _role, _ta)
+		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 }

@@ -6,6 +6,7 @@ var expressJwt = require('express-jwt')
 import * as compose from 'composable-middleware';
 import User from '../api/v2/users/dao/users-dao';
 import Attachment from '../api/v2/attachments/dao/attachments-dao';
+import * as jwtDecode from 'jwt-decode';
 
 var validateJwt = expressJwt({
   secret: config.secrets.session
@@ -37,9 +38,18 @@ export function isAuthenticated() {
       validateJwt(req, res, function(err, validate){
         if(err) {
           if(err.message == "jwt expired"){
-            return res.status(err.status).send({message: "Your session has been expired", code: 411});
+            let decodeToken = jwtDecode(req.headers['x-auth-token']);
+            let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
+            req.headers['x-auth-token'] = newToken;
+            req.headers.authorization = `Bearer ${newToken}`;
+            if (req.device.type == 'desktop') {
+              return res.status(err.status).send({message: "Your session has been expired", code: 411});
+            }
+            else {
+              validateJwt(req, res, next);
+            }
           }
-          if(err.message == "jwt malformed"){
+          else if(err.message == "jwt malformed"){
             return res.status(err.status).send({message: "You must be logged in to do this", code: 412});
           }
           else{

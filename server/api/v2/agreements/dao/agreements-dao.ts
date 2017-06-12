@@ -1489,6 +1489,85 @@ agreementsSchema.static('changeStatusChat', (id:string, status:string):Promise<a
 	});
 });
 
+agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) { reject(err); }
+				else if (appointment) {
+					let idAgreement = appointment.agreement;
+					Agreements
+						.findById(idAgreement)
+						.populate("letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+						.exec((err, agreement) => {
+							if (err) { reject(err); }
+							else if (agreement) {
+								if (agreement.letter_of_intent.data.landlord.name || agreement.letter_of_intent.data.tenant.name) {
+									let tenant = agreement.letter_of_intent.data.tenant;
+									let landlord = agreement.letter_of_intent.data.landlord;
+									let tenantIdentityFront;
+									let tenantIdentityBack;
+									let landlordIdentityFront;
+									let landlordIdentityBack;
+									if (tenant.identification_proof.front) {
+										tenantIdentityFront = {
+											"_id": tenant.identification_proof.front._id,
+											"url": tenant.identification_proof.front.url
+										}
+									}
+									if (landlord.identification_proof.front) {
+										landlordIdentityFront = {
+											"_id": landlord.identification_proof.front._id,
+											"url": landlord.identification_proof.front.url
+										}
+									}
+									if (tenant.identification_proof.back) {
+										tenantIdentityBack = {
+											"_id": tenant.identification_proof.back._id,
+											"url": tenant.identification_proof.back.url
+										}
+									}
+									if (landlord.identification_proof.back) {
+										landlordIdentityBack = {
+											"_id": landlord.identification_proof.back._id,
+											"url": landlord.identification_proof.back.url
+										}
+									}
+									let data = {
+										"tenant": {
+											"name": tenant.name,
+											"type": tenant.identification_type,
+											"id_no": tenant.identification_number,
+											"identity_front": tenantIdentityFront,
+											"identity_back": tenantIdentityBack
+										},
+										"landlord": {
+											"name": landlord.name,
+											"type": landlord.identification_type,
+											"id_no": landlord.identification_number,
+											"identity_front": landlordIdentityFront,
+											"identity_back": landlordIdentityBack
+										}
+									}
+									resolve(data);
+								}
+								else {
+									reject({message: "You must create LOI first"});
+								}
+							}
+							else {
+								reject({message: "Agreement not found"});
+							}
+						})
+				}
+				else {
+					reject({message: "Appointment not found"});
+				}
+			})
+	});
+});
+
 //TA
 agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -1719,8 +1798,55 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 		let body:any = data;
+		let bank = {
+			"bank_id": body.bank,
+			"bank_account_name": body.name,
+			"bank_account_no": body.no
+		}
+		Agreements.initiateTA(id, bank, userId).then((res) => {
+			resolve(res);
+		})
+		.catch((err) => {
+			reject(err);
+		})					
+	});
+});
+
+agreementsSchema.static('initiateTA_', (id:string, data:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(data)) {
+			return reject(new TypeError('TA is not a valid object.'));
+		}
+		let body:any = data;
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) { reject(err); }
+				else if (appointment) {
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement;
+						Agreements.initiateTA(idAgreement, data, userId).then((res) => {
+							resolve(res);
+						})
+						.catch((err) => {
+							reject(err);
+						})
+					}
+					else { reject({message: "Agreement not found"}); }
+				}
+				else { reject({message: "Appointment not found"}); }
+			})						
+	});
+});
+
+agreementsSchema.static('initiateTA', (id:string, data:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(data)) {
+			return reject(new TypeError('TA is not a valid object.'));
+		}
+		let body:any = data;
 		let type = "tenancy_agreement";
-		let bankNo = body.no;
+		let bankNo = body.bank_account_no;
 		let IDUser = userId.toString();
 		Agreements
 			.findById(id)
@@ -1731,52 +1857,15 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 				}
 				else if (agreement) {
 					let landlordId = agreement.landlord._id;
-					let landlordDataBank = agreement.landlord.landlord.data.bank_account;
-					let ta = agreement.tenancy_agreement.data;
 					if (landlordId != IDUser) {
 						resolve({message: "forbidden"});
 					}
 					else if (landlordId == IDUser) {
-						if (ta.created_at || ta.status == "rejected" || ta.status == "expired") {
-							Agreements.createHistory(id, type);
-							Agreements
-								.findByIdAndUpdate(id, {
-									$unset: {
-										"tenancy_agreement.data": ""
-									}
-								})
-								.exec((err, updated) => {
-									if (err) {
-										reject({message: err.message});
-									}
-								});
-						}						
-						if (landlordDataBank.no != bankNo) {
-							Users
-								.update({"_id": landlordId}, {
-									$push: {
-										"landlord.histories": {
-											"date": new Date(),
-											"data": landlordDataBank
-										}
-									},
-									$set: {
-										"landlord.data.bank_account": {
-												"no": body.no,
-												"name": body.name,
-												"bank": body.bank
-											}
-									}
-								})
-								.exec((err, updated) => {
-									if (err) {
-										reject({message: err.message})
-									}
-								})
-						}
-						agreement.letter_of_intent.data.landlord.bank_account.no = body.no;
-						agreement.letter_of_intent.data.landlord.bank_account.name = body.name;
-						agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank;	
+						Agreements.checkTAStatus(id);						
+						Agreements.checklandlordBank(landlordId, data);
+						agreement.letter_of_intent.data.landlord.bank_account.no = body.bank_account_no;
+						agreement.letter_of_intent.data.landlord.bank_account.name = body.bank_account_name;
+						agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank_id;	
 						agreement.tenancy_agreement.data.status = "pending";
 						agreement.tenancy_agreement.data.created_at = new Date();
 						agreement.save((err, saved)=>{
@@ -1785,8 +1874,100 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 						});
 					}
 				}
+				else { reject({message: "Agreement not found"}); }
 			})					
 	});
+});
+
+agreementsSchema.static('checklandlordBank', (id:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data;
+		let bankNo = body.bank_account_no;
+		let type = "tenancy_agreement";
+		Users	
+			.findById(id)
+			.exec((err, user) => {
+				if (err) { reject(err); }
+				else if (user) {
+					if (user.landlord.data.bank_account) {
+						let landlordDataBank = user.landlord.data.bank_account;
+						Users
+							.update({"_id": id}, {
+								$push: {
+									"landlord.histories": {
+										"date": new Date(),
+										"data": landlordDataBank
+									}
+								},
+								$set: {
+									"landlord.data.bank_account": {
+										"no": body.bank_account_no,
+										"name": body.bank_account_name,
+										"bank": body.bank_id
+									}
+								}
+							})
+							.exec((err, updated) => {
+								err ? reject(err)
+									: resolve(updated);
+							})
+					}
+					else {
+						Users
+							.update({"_id": id}, {
+								$set: {
+									"landlord.data.bank_account": {
+										"no": body.bank_account_no,
+										"name": body.bank_account_name,
+										"bank": body.bank_id
+									}
+								}
+							})
+							.exec((err, updated) => {
+								err ? reject(err)
+									: resolve(updated);
+							})
+					}
+				}
+				else { reject({message: "user not found"}); }
+			})
+    });
+});
+
+agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		let type = "tenancy_agreement";
+		Agreements
+			.findById(id)
+			.populate("landlord")
+			.exec((err, agreement) => {
+				if (err) { reject(err); }
+				else if (agreement) {
+					if (agreement.tenancy_agreement.data) {
+						let ta = agreement.tenancy_agreement.data;
+						if (ta.created_at) {
+							if (ta.status == "rejected" || ta.status == "expired") {
+								Agreements.createHistory(id, type);
+								Agreements
+									.findByIdAndUpdate(id, {
+										$unset: {
+											"tenancy_agreement.data": ""
+										}
+									})
+									.exec((err, updated) => {
+										err ? reject({message: err.message})
+											: resolve(updated);
+									});
+							}
+							else { resolve({message: "TA Already Exist"}); }
+						}
+					}
+				}
+				else {
+					reject({message: "Agreement not found"});
+				}
+			})
+    });
 });
 
 agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promise<any> => {
@@ -3522,6 +3703,186 @@ agreementsSchema.static('email', (idAgreement:string, type:string):Promise<any> 
 					mail.confirmInventory(landlordEmail, tenantUsername, landlordUsername, fulladdress, from);
 				}
 			})		
+	});
+});
+
+agreementsSchema.static('inventoryUpdateMobile', (idAppointment: string, data: Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body: any = data;
+		Agreements.findOne({"appointment": idAppointment}).exec((err, agreement) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				if (body.list) {
+					let lists = [];
+					for (var i = 0; i < body.list.length; i++) {
+						let list = body.list[i];
+						let items = [];
+						for (var j = 0; j < list.attr.length; j++) {
+							items.push({
+								name: list.attr[j].item,
+								quantity: list.attr[j].quantity,
+								row_id: list.attr[j].row_id,
+								tenant_check: list.attr[j].confirm_by_tenant,
+								landlord_check: list.attr[j].confirm_by_landlord
+							});
+						}
+						lists.push({
+							name: list.area_name,
+							items: items
+						});
+					}
+					agreement.inventory_list.data.lists = lists;
+					agreement.save();
+				}
+				if (body.tenant_sign) {
+					agreement.inventory_list.data.confirmation.tenant.sign = body.tenant_sign;
+					agreement.inventory_list.data.confirmation.tenant.date = new Date();
+					agreement.save();
+				}
+				resolve({
+					message: 'success',
+					code: 200
+				});
+			}
+		});
+	});
+});
+
+agreementsSchema.static('inventoryDetailsMobile', (id: string, user: string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.findById(id).populate('inventory_list.data.lists.items.attachments').exec((err, agreement) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				let lists = [];
+				for (var i = 0; i < agreement.inventory_list.data.lists.length; i++) {
+					let list = agreement.inventory_list.data.lists[i];
+					let items = [];
+					for (var j = 0; j < list.items.length; j++) {
+						let img = [];
+						for (var k = 0; k < list.items[j].attachments.length; k++) {
+							img.push(list.items[j].attachments[k].url);
+						}
+						items.push({
+							confirm_by_landlord: list.items[j].landlord_check,
+							confirm_by_tenant: list.items[j].tenant_check,
+							item: list.items[j].name,
+							quantity: list.items[j].quantity,
+							remark: list.items[j].remark,
+							row: j > 9 ? j : '0'+j,
+							row_id: list.items[j].row_id,
+							photo: img
+						});
+					}
+					lists.push({
+						area_name: list.name,
+						attr: items
+					});
+				}
+				Properties.getById(agreement.property, user, 'phone').then(property => {
+					resolve({
+						_id: agreement._id,
+						appointment_id: agreement.appointment,
+						landlord_sign: agreement.inventory_list.data.confirmation.landlord.sign,
+						tenant_signDate: agreement.inventory_list.data.confirmation.tenant.date,
+						landlord_signDate: agreement.inventory_list.data.confirmation.landlord.date,
+						status: agreement.inventory_list.data.status,
+						property: property,
+						created_at: agreement.inventory_list.data.created_at,
+						list: lists,
+						tenant_sign: agreement.inventory_list.data.confirmation.tenant.sign
+					});
+				})
+			}
+		});
+	});
+});
+
+agreementsSchema.static('inventoryListMember', (user: string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.find({ $or: [{"tenant": user}, {"landlord": user}]})
+		.populate([
+			{
+				path: 'landlord',
+				model: 'Users',
+				populate: {
+					path: 'picture',
+					model: 'Attachments'
+				}
+			},
+			{
+				path: 'tenant',
+				model: 'Users',
+				populate: {
+					path: 'picture',
+					model: 'Attachments'
+				}
+			},
+			{
+				path: 'property',
+				model: 'Properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			}
+		])
+		.exec((err, agreements) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				let aggr = [];
+				for (var i = 0; i < agreements.length; i++) {
+					aggr.push({
+						_id: agreements[i]._id,
+						appointment_id: agreements[i].appointment,
+						property: {
+							_id: agreements[i].property._id,
+							development: agreements[i].property.development.name,
+							address: {
+								unit_no: agreements[i].property.address.floor,
+								unit_no_2: agreements[i].property.address.unit,
+								block_no: agreements[i].property.address.block_number,
+								street_name: agreements[i].property.address.street_name,
+								postal_code: agreements[i].property.address.postal_code,
+								country: agreements[i].property.address.country
+							},
+							details: {
+								furnishing: agreements[i].property.details.furnishing,
+								price: agreements[i].property.price,
+								size: agreements[i].property.size_sqf,
+								size_sqm: agreements[i].property.size_sqm,
+								psqft: agreements[i].property.psqf
+							}
+						},
+						landlord: {
+							_id: agreements[i].landlord._id,
+							profile_picture: agreements[i].landlord.picture ? agreements[i].landlord.picture.url : ''
+						},
+						tenant: {
+							_id: agreements[i].tenant._id,
+							profile_picture: agreements[i].tenant.picture ? agreements[i].tenant.picture.url : ''
+						},
+						status: agreements[i].inventory_list.data.status,
+						created_at: agreements[i].inventory_list.data.created_at
+					});
+				}
+				resolve(aggr);
+			}
+		});
+	});
+});
+
+agreementsSchema.static('rejectTAMobile', (idAppointment:string, userId:string, role:string, ta:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body: any = ta;
+		let data = {remarks: body.rejected_reason};
+		Agreements.findOne({"appointment": idAppointment}).exec((err, agreement) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				Agreements.rejectTA(agreement._id, userId, role, data).then(res => {
+					resolve(res);
+				})
+			}
+		})
 	});
 });
 

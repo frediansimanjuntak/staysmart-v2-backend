@@ -1508,16 +1508,16 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
               let image: any = files;
               let data: any = property;
               if (image.front) {
-                Attachments.createAttachments(image.front, {}).then(res => {
+                Attachments.createAttachments(image.front, {}, 'phone').then(res => {
                   let file_front = res.idAtt[0];
                   if (image.back) {
-                    Attachments.createAttachments(image.back, {}).then(res => {
+                    Attachments.createAttachments(image.back, {}, 'phone').then(res => {
                       let file_back = res.idAtt[0];
                       if (image.owner_back && !image.owner_front) {
                         reject({message: 'Owner_front is required.'});
                       }
                       else if (image.owner_front && !image.owner_back) {
-                        Attachments.createAttachments(image.owner_front, {}).then(res => {
+                        Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
                           let file_owner_front = res.idAtt;
                           let owner = [];
                           for(var i = 0; i < file_owner_front.length; i++) {
@@ -1550,9 +1550,9 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                         });
                       }
                       else if (image.owner_front && image.owner_back) {
-                        Attachments.createAttachments(image.owner_front, {}).then(res => {
+                        Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
                           let file_owner_front = res.idAtt;
-                          Attachments.createAttachments(image.owner_back, {}).then(res => {
+                          Attachments.createAttachments(image.owner_back, {}, 'phone').then(res => {
                             let file_owner_back = res.idAtt;
                             let owner = [];
                             for(var i = 0; i < file_owner_front.length; i++) {
@@ -1610,7 +1610,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                       reject({message: 'Owner_front is required.'});
                     }
                     else if (image.owner_front && !image.owner_back) {
-                      Attachments.createAttachments(image.owner_front, {}).then(res => {
+                      Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
                         let file_owner_front = res.idAtt;
                         let owner = [];
                         for(var i = 0; i < file_owner_front.length; i++) {
@@ -1642,9 +1642,9 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                         });
                     }
                     else if (image.owner_front && image.owner_back) {
-                      Attachments.createAttachments(image.owner_front, {}).then(res => {
+                      Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
                         let file_owner_front = res.idAtt;
-                        Attachments.createAttachments(image.owner_back, {}).then(res => {
+                        Attachments.createAttachments(image.owner_back, {}, 'phone').then(res => {
                           let file_owner_back = res.idAtt;
                           let owner = [];
                           for(var i = 0; i < file_owner_front.length; i++) {
@@ -1726,7 +1726,7 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
               }
               else {
                 if ( file.company_document ) {
-                  Attachments.createAttachments(file.company_document, {}).then(doc => {
+                  Attachments.createAttachments(file.company_document, {}, 'phone').then(doc => {
                     let companyData = {
                       name: body.name,
                       registration_number: body.company_number,
@@ -1745,8 +1745,8 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
                 
               }
               if ( file.shareholder_front ) {
-                Attachments.createAttachments(file.shareholder_front, {}).then(front => {
-                  Attachments.createAttachments(file.shareholder_back, {}).then(back => {
+                Attachments.createAttachments(file.shareholder_front, {}, 'phone').then(front => {
+                  Attachments.createAttachments(file.shareholder_back, {}, 'phone').then(back => {
                     let shareholders = [];
                     for ( var i = 0; i < front.idAtt.length; i++ ) {
                       shareholders.push({
