@@ -229,5 +229,9 @@ export class AgreementsRoutes {
 		router
 			.route('/loi/:appoiments_id/initiate/step2')
 			.get(auth.isAuthenticated(), AgreementsController.GetLoiStep2);
+		
+		router
+			.route('/ta/:id/reject')
+			.post(auth.isAuthenticated(), AgreementsController.rejectTAMobile);
 	}
 }

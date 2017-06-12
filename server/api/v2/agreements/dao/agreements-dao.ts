@@ -3769,6 +3769,21 @@ agreementsSchema.static('inventoryListMember', (user: string):Promise<any> => {
 	});
 });
 
+agreementsSchema.static('rejectTAMobile', (idAppointment:string, userId:string, role:string, ta:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body: any = ta;
+		let data = {remarks: body.rejected_reason};
+		Agreements.findOne({"appointment": idAppointment}).exec((err, agreement) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				Agreements.rejectTA(agreement._id, userId, role, data).then(res => {
+					resolve(res);
+				})
+			}
+		})
+	});
+});
+
 let Agreements = mongoose.model('Agreements', agreementsSchema);
 
 export default Agreements;
