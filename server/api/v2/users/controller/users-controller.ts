@@ -104,9 +104,9 @@ export class UsersController {
 		let _id = req["user"]._id;
 		let _user = req.body;
 		let _image = req["files"];
-
+		let _device = req.device.type;
 		UsersDAO
-		['updateMe'](_id, _user, _image)
+		['updateMe'](_id, _user, _image, _device)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}

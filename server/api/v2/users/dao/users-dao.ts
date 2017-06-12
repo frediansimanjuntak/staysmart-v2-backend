@@ -630,7 +630,7 @@ usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:str
 	});
 });
 
-usersSchema.static('updateMe', (id:string, user:Object, image:Object):Promise<any> => {
+usersSchema.static('updateMe', (id:string, user:Object, image:Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
@@ -655,7 +655,7 @@ usersSchema.static('updateMe', (id:string, user:Object, image:Object):Promise<an
 						user.phone = body.phone;
 					}
 					if(img.photo) {
-						Attachments.createAttachments(img.photo, {}).then(res => {
+						Attachments.createAttachments(img.photo, {}, device).then(res => {
 							user.picture = res.idAtt[0];
 							user.save();
 						})
