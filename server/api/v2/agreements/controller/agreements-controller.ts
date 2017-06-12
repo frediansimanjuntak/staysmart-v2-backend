@@ -322,12 +322,12 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
-	static updatePaymentProof(req: express.Request, res: express.Response):void {
+	static uploadPaymentLoi(req: express.Request, res: express.Response):void {
 		let _id = req.params.appoiments_id;
 		let _attachment = req["files"];
 		let _userId = req["user"]._id;
 		AgreementsDAO
-		['updatePaymentProof'](_id, _attachment, _userId)
+		['uploadPaymentLoi'](_id, _attachment, _userId)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
@@ -394,6 +394,16 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static uploadPaymentTA(req: express.Request, res: express.Response):void {
+		let _id = req.params.appoiments_id;
+		let _attachment = req["files"];
+		let _userId = req["user"]._id;
+		AgreementsDAO
+		['uploadPaymentTA'](_id, _attachment, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static sendTA(req: express.Request, res: express.Response):void {		
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
@@ -428,12 +438,44 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static tenantRejectTa(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		let _ta = req.body;
+
+		AgreementsDAO
+		['tenantRejectTa'](_id, _userId, _role, _ta)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static adminConfirmationTA(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _agreements = req.body;
 		
 		AgreementsDAO
 		['adminConfirmationTA'](_id, _agreements)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static landlordSign(req: express.Request, res: express.Response):void {
+		let _id = req.params.appointment_id;
+		let _agreements = req.body;
+		
+		AgreementsDAO
+		['landlordSign'](_id, _agreements)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static tenantAcceptance(req: express.Request, res: express.Response):void {
+		let _id = req.params.appointment_id;
+		let _agreements = req.body;
+		
+		AgreementsDAO
+		['tenantAcceptance'](_id, _agreements)
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}

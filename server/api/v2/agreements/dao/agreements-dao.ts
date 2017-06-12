@@ -1211,50 +1211,56 @@ agreementsSchema.static('rejectLoi_', (id:string, data:Object, userId:string):Pr
 	});
 });
 
-agreementsSchema.static('updatePaymentProof', (id:string, attachment:Object, userId:string):Promise<any> => {
+agreementsSchema.static('uploadPaymentLoi', (id:string, attachment:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
-		}
-		let files:any = attachment;
-		let data = {body:"staysmart"};
+		}		
 		Appointments
 			.findById(id)
 			.select("agreement")
 			.exec((err, appointment) => {
 				if (err) {reject(err);}
 				else if (appointment) {
-					if (files.proof) {
-						Attachments.createAttachments(files.proof, data).then((res) => {
-							if (res.idAtt) {
-								Agreements.sendLoi(appointment.agreement, userId);
-								let idAttachments = res.idAtt;
-								_.each(idAttachments, (result) => {
-									Agreements
-										.update({"_id": appointment.agreement}, {
-											$set: {
-												"letter_of_intent.data.payment": result
-											}
-										})
-										.exec((err, agreement) => {
-											err ? reject(err)
-												: resolve(agreement);
-										})
-								})								
-							}
-							else {
-								resolve({message: "Attachment file not found"});
-							}
-						})						
-					}
-					else {
-						resolve({message: "Attachment file not found"});
-					}					
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement._id;
+						Agreements.updatePaymentProof(idAgreement, attachment, userId, "letter_of_intent");
+						Agreements.sendLoi(id, userId);
+						resolve(appointment);
+					}				
 				}
 				else {
 					reject({message: "Appointment not found"})
 				}
 			})
+	});
+});
+
+agreementsSchema.static('updatePaymentProof', (id:string, attachment:Object, userId:string, type:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let files:any = attachment;
+		let data = {body:"staysmart"};
+		if (files.proof) {
+			Attachments.createAttachments(files.proof, data).then((res) => {
+				if (res.idAtt) {
+					let idAttachments = res.idAtt;
+					_.each(idAttachments, (result) => {
+						let paymentData = {
+							type : type,
+							attachment : result
+						};
+						Agreements.payment(id, paymentData);									
+					})	
+					resolve(res);							
+				}
+				else {
+					resolve({message: "Attachment file not found"});
+				}
+			})						
+		}
+		else {
+			resolve({message: "Attachment file not found"});
+		}	
 	});
 });
 
@@ -1970,6 +1976,31 @@ agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
     });
 });
 
+agreementsSchema.static('uploadPaymentTA', (id:string, attachment:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}		
+		Appointments
+			.findById(id)
+			.select("agreement")
+			.exec((err, appointment) => {
+				if (err) {reject(err);}
+				else if (appointment) {
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement._id;
+						Agreements.updatePaymentProof(idAgreement, attachment, userId, "tenancy_agreement");
+						Agreements.sendTA(idAgreement.toString, attachment, userId);
+						resolve(appointment);
+					}				
+				}
+				else {
+					reject({message: "Appointment not found"})
+				}
+			})
+	});
+});
+
 agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -2083,6 +2114,76 @@ agreementsSchema.static('updateUserRented', (userId:string, until:string, proper
 	});
 });
 
+agreementsSchema.static('landlordSign', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) {reject(err);}
+				else if (appointment) {
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement;
+						Agreements.signTA(idAgreement, data, "landlord");
+						resolve(appointment);
+					}
+					else { reject({message: "Agreement not found"}); }
+				}
+				else { reject({message: "Appointment not found"}); }
+			})
+	});
+});
+
+agreementsSchema.static('tenantAcceptance', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) {reject(err);}
+				else if (appointment) {
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement;
+						Agreements.signTA(idAgreement, data, "tenant");
+						resolve(appointment);
+					}
+					else { reject({message: "Agreement not found"}); }
+				}
+				else { reject({message: "Appointment not found"}); }
+			})
+	});
+});
+
+agreementsSchema.static('tenantAcceptance', (id:string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) {reject(err);}
+				else {
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement;
+						Agreements.signTA(idAgreement, data, "tenant");
+						resolve(appointment);
+					}
+				}
+			})
+	});
+});
+
+agreementsSchema.static('signTA', (id:string, data:Object, type:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data
+		let SignObj = {$set: {}};
+		SignObj.$set["tenancy_agreement.data.confirmation." + type + ".sign"] = body.signature;
+		SignObj.$set["tenancy_agreement.data.confirmation." + type + ".date"] = new Date();
+		Agreements
+			.findByIdAndUpdate(id, SignObj)
+			.exec((err, updated) => {
+				err ? reject(err)
+					: resolve(updated);
+			})
+	});
+});
+
 agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -2125,6 +2226,31 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 					}					
 				}
 			})					
+	});
+});
+
+agreementsSchema.static('tenantRejectTa', (id:string, userId:string, role:string, ta:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isString(id)) {
+			return reject(new TypeError('Id is not a valid string.'));
+		}
+		let IDUser = userId.toString();
+		let body:any = ta;
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) { reject(err) }
+				else if (appointment) {
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement;
+						let data = {remarks: body.rejected_reason}
+						Agreements.rejectTA(idAgreement.toString(), userId, role, data);
+						resolve(appointment);
+					}
+					else { reject({message: "Agreement not found"}); }
+				}
+				else { reject({message: "Appointment not found"}); }
+			})		
 	});
 });
 
@@ -2698,8 +2824,7 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 					let taData = agreement.tenancy_agreement.data;
 					let gfd = loiData.gfd_amount;
 					let std = loiData.sd_amount;
-					let scd = loiData.security_deposit;
-							
+					let scd = loiData.security_deposit;							
 					if (type == "letter_of_intent") {
 						if (loiData.payment) {
 							resolve({message: "Already Payment"});									
