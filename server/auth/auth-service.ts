@@ -46,12 +46,12 @@ export function isAuthenticated() {
             console.log(newToken);
             req.headers['x-auth-token'] = newToken;
             req.headers.authorization = `Bearer ${newToken}`;
-            // if (req.device.type == 'desktop') {
-            //   return res.status(err.status).send({message: "Your session has been expired", code: 411});
-            // }
-            // else {
+            if (req.device.type == 'desktop') {
+              return res.status(err.status).send({message: "Your session has been expired", code: 411});
+            }
+            else {
               next();
-            // }
+            }
           }
           else if(err.message == "jwt malformed"){
             return res.status(err.status).send({message: "You must be logged in to do this", code: 412});
