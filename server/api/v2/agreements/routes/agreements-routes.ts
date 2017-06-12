@@ -212,6 +212,10 @@ export class AgreementsRoutes {
 		router
 			.route('/loi/:appoiments_id/reject')
 			.post(auth.isAuthenticated(), AgreementsController.rejectLoi_);
+		
+		router
+			.route('/inventory')
+			.get(auth.isAuthenticated(), AgreementsController.inventoryListMember);
 
 		router
 			.route('/inventory/:id')

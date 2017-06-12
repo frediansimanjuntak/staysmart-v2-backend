@@ -3695,6 +3695,80 @@ agreementsSchema.static('inventoryDetailsMobile', (id: string, user: string):Pro
 	});
 });
 
+agreementsSchema.static('inventoryListMember', (user: string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.find({ $or: [{"tenant": user}, {"landlord": user}]})
+		.populate([
+			{
+				path: 'landlord',
+				model: 'Users',
+				populate: {
+					path: 'picture',
+					model: 'Attachments'
+				}
+			},
+			{
+				path: 'tenant',
+				model: 'Users',
+				populate: {
+					path: 'picture',
+					model: 'Attachments'
+				}
+			},
+			{
+				path: 'property',
+				model: 'Properties',
+				populate: {
+					path: 'development',
+					model: 'Developments'
+				}
+			}
+		])
+		.exec((err, agreements) => {
+			if (err) { reject({message: err.message}); }
+			else {
+				let aggr = [];
+				for (var i = 0; i < agreements.length; i++) {
+					aggr.push({
+						_id: agreements[i]._id,
+						appointment_id: agreements[i].appointment,
+						property: {
+							_id: agreements[i].property._id,
+							development: agreements[i].property.development.name,
+							address: {
+								unit_no: agreements[i].property.address.floor,
+								unit_no_2: agreements[i].property.address.unit,
+								block_no: agreements[i].property.address.block_number,
+								street_name: agreements[i].property.address.street_name,
+								postal_code: agreements[i].property.address.postal_code,
+								country: agreements[i].property.address.country
+							},
+							details: {
+								furnishing: agreements[i].property.details.furnishing,
+								price: agreements[i].property.price,
+								size: agreements[i].property.size_sqf,
+								size_sqm: agreements[i].property.size_sqm,
+								psqft: agreements[i].property.psqf
+							}
+						},
+						landlord: {
+							_id: agreements[i].landlord._id,
+							profile_picture: agreements[i].landlord.picture ? agreements[i].landlord.picture.url : ''
+						},
+						tenant: {
+							_id: agreements[i].tenant._id,
+							profile_picture: agreements[i].tenant.picture ? agreements[i].tenant.picture.url : ''
+						},
+						status: agreements[i].inventory_list.data.status,
+						created_at: agreements[i].inventory_list.data.created_at
+					});
+				}
+				resolve(aggr);
+			}
+		});
+	});
+});
+
 let Agreements = mongoose.model('Agreements', agreementsSchema);
 
 export default Agreements;
