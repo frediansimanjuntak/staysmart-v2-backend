@@ -212,6 +212,10 @@ export class AgreementsRoutes {
 		router
 			.route('/loi/:appoiments_id/reject')
 			.post(auth.isAuthenticated(), AgreementsController.rejectLoi_);
+		
+		router
+			.route('/inventory')
+			.get(auth.isAuthenticated(), AgreementsController.inventoryListMember);
 
 		router
 			.route('/inventory/:id')
@@ -220,12 +224,16 @@ export class AgreementsRoutes {
 		
 		router 
 			.route('/inventory/validate/:id')
-			.post(auth.isAuthenticated(). AgreementsController.inventoryUpdateMobile);
+			.post(auth.isAuthenticated(), AgreementsController.inventoryUpdateMobile);
 		
 		router
 			.route('/loi/:appoiments_id/initiate/step2')
 			.get(auth.isAuthenticated(), AgreementsController.GetLoiStep2);
 		
+		router
+			.route('/ta/:id/reject')
+			.post(auth.isAuthenticated(), AgreementsController.rejectTAMobile);
+			
 		router
 			.route('/ta/:appointment_id/initiate')
 			.post(auth.isAuthenticated(), AgreementsController.initiateTA_);

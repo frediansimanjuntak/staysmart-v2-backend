@@ -583,4 +583,24 @@ export class AgreementsController {
 		.then(agreement => res.status(201).json(agreement))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static inventoryListMember(req: express.Request, res: express.Response):void {
+		let _user = req["user"]._id;
+		AgreementsDAO
+		['inventoryListMember'](_user)
+		.then(agreement => res.status(201).json(agreement))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static rejectTAMobile(req: express.Request, res: express.Response):void {
+		let _idAppointment = req.params.id;
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		let _ta = req.body;
+
+		AgreementsDAO
+		['rejectTAMobile'](_idAppointment, _userId, _role, _ta)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
 }
