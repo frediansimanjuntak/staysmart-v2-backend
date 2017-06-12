@@ -37,18 +37,18 @@ export function isAuthenticated() {
       validateJwt(req, res, function(err, validate){
         if(err) {
           if(err.message == "jwt expired"){
-            let decodeToken = jwt.verify(req.headers['x-auth-token'], config.secrets.session, {
-              ignoreExpiration: true
-            });
-            let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
-            req.headers['x-auth-token'] = newToken;
-            req.headers.authorization = `Bearer ${newToken}`;
-            if (req.device.type == 'desktop') {
+            // let decodeToken = jwt.verify(req.headers['x-auth-token'], config.secrets.session, {
+            //   ignoreExpiration: true
+            // });
+            // let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
+            // req.headers['x-auth-token'] = newToken;
+            // req.headers.authorization = `Bearer ${newToken}`;
+            // if (req.device.type == 'desktop') {
               return res.status(err.status).send({message: "Your session has been expired", code: 411});
-            }
-            else {
-              validateJwt(req, res, next);
-            }
+            // }
+            // else {
+            //   validateJwt(req, res, next);
+            // }
           }
           else if(err.message == "jwt malformed"){
             return res.status(err.status).send({message: "You must be logged in to do this", code: 412});
