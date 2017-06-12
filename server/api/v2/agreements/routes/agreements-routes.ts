@@ -233,5 +233,9 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/:id/reject')
 			.post(auth.isAuthenticated(), AgreementsController.rejectTAMobile);
+			
+		router
+			.route('/ta/:appointment_id/initiate')
+			.post(auth.isAuthenticated(), AgreementsController.initiateTA_);
 	}
 }
