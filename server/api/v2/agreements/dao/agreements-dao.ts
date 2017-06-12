@@ -1798,8 +1798,55 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 			return reject(new TypeError('TA is not a valid object.'));
 		}
 		let body:any = data;
+		let bank = {
+			"bank_id": body.bank,
+			"bank_account_name": body.name,
+			"bank_account_no": body.no
+		}
+		Agreements.initiateTA(id, bank, userId).then((res) => {
+			resolve(res);
+		})
+		.catch((err) => {
+			reject(err);
+		})					
+	});
+});
+
+agreementsSchema.static('initiateTA_', (id:string, data:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(data)) {
+			return reject(new TypeError('TA is not a valid object.'));
+		}
+		let body:any = data;
+		Appointments
+			.findById(id)
+			.exec((err, appointment) => {
+				if (err) { reject(err); }
+				else if (appointment) {
+					if (appointment.agreement) {
+						let idAgreement = appointment.agreement;
+						Agreements.initiateTA(idAgreement, data, userId).then((res) => {
+							resolve(res);
+						})
+						.catch((err) => {
+							reject(err);
+						})
+					}
+					else { reject({message: "Agreement not found"}); }
+				}
+				else { reject({message: "Appointment not found"}); }
+			})						
+	});
+});
+
+agreementsSchema.static('initiateTA', (id:string, data:Object, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		if (!_.isObject(data)) {
+			return reject(new TypeError('TA is not a valid object.'));
+		}
+		let body:any = data;
 		let type = "tenancy_agreement";
-		let bankNo = body.no;
+		let bankNo = body.bank_account_no;
 		let IDUser = userId.toString();
 		Agreements
 			.findById(id)
@@ -1810,52 +1857,15 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 				}
 				else if (agreement) {
 					let landlordId = agreement.landlord._id;
-					let landlordDataBank = agreement.landlord.landlord.data.bank_account;
-					let ta = agreement.tenancy_agreement.data;
 					if (landlordId != IDUser) {
 						resolve({message: "forbidden"});
 					}
 					else if (landlordId == IDUser) {
-						if (ta.created_at || ta.status == "rejected" || ta.status == "expired") {
-							Agreements.createHistory(id, type);
-							Agreements
-								.findByIdAndUpdate(id, {
-									$unset: {
-										"tenancy_agreement.data": ""
-									}
-								})
-								.exec((err, updated) => {
-									if (err) {
-										reject({message: err.message});
-									}
-								});
-						}						
-						if (landlordDataBank.no != bankNo) {
-							Users
-								.update({"_id": landlordId}, {
-									$push: {
-										"landlord.histories": {
-											"date": new Date(),
-											"data": landlordDataBank
-										}
-									},
-									$set: {
-										"landlord.data.bank_account": {
-												"no": body.no,
-												"name": body.name,
-												"bank": body.bank
-											}
-									}
-								})
-								.exec((err, updated) => {
-									if (err) {
-										reject({message: err.message})
-									}
-								})
-						}
-						agreement.letter_of_intent.data.landlord.bank_account.no = body.no;
-						agreement.letter_of_intent.data.landlord.bank_account.name = body.name;
-						agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank;	
+						Agreements.checkTAStatus(id);						
+						Agreements.checklandlordBank(landlordId, data);
+						agreement.letter_of_intent.data.landlord.bank_account.no = body.bank_account_no;
+						agreement.letter_of_intent.data.landlord.bank_account.name = body.bank_account_name;
+						agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank_id;	
 						agreement.tenancy_agreement.data.status = "pending";
 						agreement.tenancy_agreement.data.created_at = new Date();
 						agreement.save((err, saved)=>{
@@ -1864,8 +1874,100 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 						});
 					}
 				}
+				else { reject({message: "Agreement not found"}); }
 			})					
 	});
+});
+
+agreementsSchema.static('checklandlordBank', (id:string, data:Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data;
+		let bankNo = body.bank_account_no;
+		let type = "tenancy_agreement";
+		Users	
+			.findById(id)
+			.exec((err, user) => {
+				if (err) { reject(err); }
+				else if (user) {
+					if (user.landlord.data.bank_account) {
+						let landlordDataBank = user.landlord.data.bank_account;
+						Users
+							.update({"_id": id}, {
+								$push: {
+									"landlord.histories": {
+										"date": new Date(),
+										"data": landlordDataBank
+									}
+								},
+								$set: {
+									"landlord.data.bank_account": {
+										"no": body.bank_account_no,
+										"name": body.bank_account_name,
+										"bank": body.bank_id
+									}
+								}
+							})
+							.exec((err, updated) => {
+								err ? reject(err)
+									: resolve(updated);
+							})
+					}
+					else {
+						Users
+							.update({"_id": id}, {
+								$set: {
+									"landlord.data.bank_account": {
+										"no": body.bank_account_no,
+										"name": body.bank_account_name,
+										"bank": body.bank_id
+									}
+								}
+							})
+							.exec((err, updated) => {
+								err ? reject(err)
+									: resolve(updated);
+							})
+					}
+				}
+				else { reject({message: "user not found"}); }
+			})
+    });
+});
+
+agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+		let type = "tenancy_agreement";
+		Agreements
+			.findById(id)
+			.populate("landlord")
+			.exec((err, agreement) => {
+				if (err) { reject(err); }
+				else if (agreement) {
+					if (agreement.tenancy_agreement.data) {
+						let ta = agreement.tenancy_agreement.data;
+						if (ta.created_at) {
+							if (ta.status == "rejected" || ta.status == "expired") {
+								Agreements.createHistory(id, type);
+								Agreements
+									.findByIdAndUpdate(id, {
+										$unset: {
+											"tenancy_agreement.data": ""
+										}
+									})
+									.exec((err, updated) => {
+										err ? reject({message: err.message})
+											: resolve(updated);
+									});
+							}
+							else { resolve({message: "TA Already Exist"}); }
+						}
+					}
+				}
+				else {
+					reject({message: "Agreement not found"});
+				}
+			})
+    });
 });
 
 agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promise<any> => {

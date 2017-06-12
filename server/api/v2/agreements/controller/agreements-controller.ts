@@ -383,6 +383,17 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static initiateTA_(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		let _id = req.params.appointment_id;
+		let _userId = req["user"]._id;
+		
+		AgreementsDAO
+		['initiateTA_'](_id, _data, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static sendTA(req: express.Request, res: express.Response):void {		
 		let _id = req.params.id;
 		let _userId = req["user"]._id;
