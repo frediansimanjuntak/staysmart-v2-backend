@@ -6,8 +6,6 @@ var expressJwt = require('express-jwt')
 import * as compose from 'composable-middleware';
 import User from '../api/v2/users/dao/users-dao';
 import Attachment from '../api/v2/attachments/dao/attachments-dao';
-// import * as jwtDecode from 'jwt-decode';
-var jwtDecode = require('jwt-decode');
 
 var validateJwt = expressJwt({
   secret: config.secrets.session
@@ -43,7 +41,9 @@ export function isAuthenticated() {
               return res.status(err.status).send({message: "Your session has been expired", code: 411});
             }
             else {
-              let decodeToken = jwtDecode(String(req.headers['x-auth-token']));
+              let decodeToken = jwt.verify(req.headers['x-auth-token'], config.secrets.session, {
+                ignoreExpiration: true
+              });
               let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
               req.headers['x-auth-token'] = newToken;
               req.headers.authorization = `Bearer ${newToken}`;
