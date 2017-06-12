@@ -72,7 +72,7 @@ export class propertyHelper{
 									full_address: properties[p].address.full_address,
 									country: properties[p].address.country,
 									type: properties[p].address.type,
-									coordinates: properties[p].address.coordinates
+									coordinates: [Number(properties[p].address.coordinates[0]) , Number(properties[p].address.coordinates[1])]
 								},
 								pictures: properties[p].pictures,
 								favourite: favourite,
@@ -182,7 +182,7 @@ export class propertyHelper{
 							block_no: properties.address.block_number,
 							street_name: properties.address.street_name,
 							postal_code: properties.address.postal_code,
-							coordinates: properties.address.coordinates,
+							coordinates: [Number(properties.address.coordinates[0]) , Number(properties.address.coordinates[1])],
 							country: properties.address.country,
 							full_address: properties.address.full_address,
 							type: properties.address.type

@@ -103,7 +103,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
-        if(search.latlng && search.latlng != 'all') 
+        if(search.latlng && search.latlng != 'all' && search.location && search.location != 'all') 
         {
           let radius;
           if(search.radius && search.radius != 'all') {
@@ -120,9 +120,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
           else {
             property.where({address: { $geoWithin: { $centerSphere: [ [Number(latlng[1]), Number(latlng[0])], radiusQuery ] } } });  
           }
-          if ( search.location && search.location != 'all') {
-            property.where('address.street_name', search.location);
-          }
+          property.where('address.street_name', search.location);
         }
         if(search.pricemin && search.pricemin != 'all') 
         {
