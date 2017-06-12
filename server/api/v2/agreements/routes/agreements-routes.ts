@@ -195,7 +195,7 @@ export class AgreementsRoutes {
 		//mobile api
 		router
 			.route('/loi/:appoiments_id/payment')
-			.get(auth.isAuthenticated(), AgreementsController.updatePaymentProof);
+			.post(auth.isAuthenticated(), AgreementsController.uploadPaymentLoi);
 		
 		router
 			.route('/loi/:appoiments_id/initiate')
@@ -237,5 +237,21 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/:appointment_id/initiate')
 			.post(auth.isAuthenticated(), AgreementsController.initiateTA_);
+		
+		router
+			.route('/ta/:appoiments_id/sign')
+			.post(auth.isAuthenticated(), AgreementsController.landlordSign);
+		
+		router
+			.route('/ta/:appoiments_id/accept')
+			.post(auth.isAuthenticated(), AgreementsController.tenantAcceptance);
+		
+		router
+			.route('/loi/:appoiments_id/reject')
+			.post(auth.isAuthenticated(), AgreementsController.tenantRejectTa);
+		
+		router
+			.route('/ta/:appoiments_id/payment')
+			.post(auth.isAuthenticated(), AgreementsController.uploadPaymentTA);
 	}
 }
