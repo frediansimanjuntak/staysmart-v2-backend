@@ -43,7 +43,7 @@ export function isAuthenticated() {
               return res.status(err.status).send({message: "Your session has been expired", code: 411});
             }
             else {
-              let decodeToken = jwtDecode(req.headers['x-auth-token']);
+              let decodeToken = jwtDecode(String(req.headers['x-auth-token']));
               let newToken = signToken(decodeToken._id, decodeToken.role, decodeToken.username);
               req.headers['x-auth-token'] = newToken;
               req.headers.authorization = `Bearer ${newToken}`;
