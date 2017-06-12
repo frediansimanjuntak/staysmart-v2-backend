@@ -82,7 +82,7 @@ notificationsSchema.static('getAllLimit', (limit:string, userId:string):Promise<
 
 notificationsSchema.static('getUnreadCount', (id:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      Notifications.find({"user": id, "read": false}).then((err, res) => {
+      Notifications.find({"user": id, "read": false}).exec((err, res) => {
         err ? reject({message: err.message})
             : resolve({
               message: 'success',
