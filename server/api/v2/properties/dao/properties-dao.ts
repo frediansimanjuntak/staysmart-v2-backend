@@ -258,7 +258,6 @@ propertiesSchema.static('memberProperty', (type:string, userId:Object, device: s
             let properties = [];
             if (type == 'landlord') {
               properties = result.owned_properties;
-              console.log(properties.length);
               if (properties.length > 0) {
                 if ( device != 'desktop' ) {
                   propertyHelper.getAll(properties, userId).then(res => {
@@ -277,7 +276,7 @@ propertiesSchema.static('memberProperty', (type:string, userId:Object, device: s
               properties = result.rented_properties;
               let prop = [];
               for ( var i = 0; i < properties.length; i++ ) {
-                prop.push(properties[i].property);
+                properties[i].property != null ? prop.push(properties[i].property) : '';
               }
               if (prop.length > 0) {
                 if ( device != 'desktop' ) {
@@ -290,7 +289,7 @@ propertiesSchema.static('memberProperty', (type:string, userId:Object, device: s
                 }
               }
               else {
-                resolve(prop);
+                resolve([]);
               }
             }
           })
