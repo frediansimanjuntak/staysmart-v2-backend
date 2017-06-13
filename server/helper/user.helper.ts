@@ -127,6 +127,13 @@ export class userHelper{
 					expire: result.verification.expires
 				}
 			};
+			let token = result.dreamtalk[result.dreamtalk.length - 1].loginToken;
+			let id = result.dreamtalk[result.dreamtalk.length - 1].loginId;
+			let rooms = [];
+			for (var r = 0; r < result.chat_rooms.length; r++) {
+				rooms.push(result.chat_rooms[r]._id);
+			}
+			let dreamtalk = { token, id, rooms };
 			Managers
 				.find({"manager": result._id, "status": "pending"}, '-_id property')
 				.exec((err, res) => {
@@ -141,7 +148,8 @@ export class userHelper{
 									forgot: {
 										code: result.reset_password.token,
 										expire: result.reset_password.expired_at
-									}
+									},
+									dreamtalk: dreamtalk
 								},
 								username: result.username,
 								email: result.email,
@@ -163,7 +171,8 @@ export class userHelper{
 									forgot: {
 										code: result.reset_password.token,
 										expire: result.reset_password.expired_at
-									}
+									},
+									dreamtalk: dreamtalk
 								},
 								username: result.username,
 								email: result.email,
