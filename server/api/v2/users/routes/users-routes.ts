@@ -115,7 +115,7 @@ export class UserRoutes {
 
 		router
 			.route('/logout')
-			.post(auth.isAuthenticated(), UsersController.logout);
+			.get(auth.isAuthenticated(), UsersController.logout);
 
 		//mobile api
 		router
