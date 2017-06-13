@@ -1494,6 +1494,44 @@ usersSchema.static('terms', ():Promise<any> => {
 	});
 });
 
+usersSchema.static('refunds', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		resolve(
+			[
+				{
+					"content": "*To safeguard the interest of our users, collections of Good Faith Deposit (GFD) and Security Deposit (SD), if any, will be held with Staysmart, until final conclusion of the Letter of Intent (LOI) or Tenancy Agreement (TA) respectively.\n\nThe table below sets out the various scenarios where the Good Faith Deposit (GFD) will be refunded and forfeited.\n\nPlease note that upon the conclusion of a Tenancy Agreement (TA) between the landlord and tenant, Staysmart will disburse to the landlord the Good Faith Deposit (GFD) and Security Deposit (SD) less any fees payable by the landlord to Staysmart.\n\nSubsequent refund of the Security Deposit (SD), if any, will be between the landlord and the tenant based on the terms agreed in the Tenancy Agreement (TA), which Staysmart is not a party of."
+				},
+				{
+					"table": {
+						"column1": "",
+						"column2": "Purpose",
+						"column3": "Will be refunded back to the tenant if:",
+						"column4": "Will be forfeited to the landlord if:"
+					}
+				},
+				{
+					"table": {
+						"column1": "Good Faith Deposit (GFD)*",
+						"column2": "Paid together with the Letter of Intent (LOI), and serves as a financial token to credibly back your intentions.\n\nWill be converted into part of the Security Deposit or advance rental upon successful conclusion of the Tenancy Agreement (TA)",
+						"column3": "Landlord does not agree to the terms of the Letter of Intent (LOI); or\n\nUpon conclusion of the LOI, landlord decides not to proceed on with the deal",
+						"column4": "Upon conclusion of the LOI, tenant decides not to proceed on with the deal"
+					}
+				},
+				{
+					"table": {
+						"column1": "Security Deposit (SD)",
+						"column2": "Paid upon conclusion of the Tenancy Agreement (TA).\n\nPrimarily it serves as a security for the landlord in the event the property is damaged due to negligence on part of the tenant.\n\nHowever, in the event of a premature termination of the lease by the tenant that is not in accordance with the terms of the TA, the landlord may also withhold the SD to cover the inconvenience suffered.",
+						"column3": "Upon conclusion of the LOI, landlord decides not to proceed on with the deal"
+					}
+				},
+				{
+					"content": "*Together with Stamp Duty Fee paid to Staysmart for stamping of the Tenancy Agreement (TA)."
+				}
+			]
+		);
+	});
+});
+
 let Users = mongoose.model('Users', usersSchema);
 
 export default Users;
