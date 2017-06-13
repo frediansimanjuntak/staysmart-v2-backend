@@ -37,8 +37,8 @@ export function isAuthenticated() {
       validateJwt(req, res, function(err, validate){
         if(err) {
           if(err.message == "jwt expired"){
-            let token = req.headers.authorization.split("Bearer ");
-            let decodeToken = jwt.verify(token[1], config.secrets.session, {
+            let token = req.headers.authorization.substring(7);
+            let decodeToken = jwt.verify(token, config.secrets.session, {
               ignoreExpiration: true
             });
             console.log(decodeToken);
@@ -67,8 +67,8 @@ export function isAuthenticated() {
     })
     // Attach user to request
     .use(function(req, res, next) {
-      let token = req.headers.authorization.split("Bearer ");
-      let decodeToken = jwt.verify(token[1], config.secrets.session, {
+      let token = req.headers.authorization.substring(7);
+      let decodeToken = jwt.verify(token, config.secrets.session, {
         ignoreExpiration: true
       });
       User.findById(decodeToken._id).select('+blacklisted_token.token').exec((err, user) => {
