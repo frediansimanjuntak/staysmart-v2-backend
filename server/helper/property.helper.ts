@@ -19,7 +19,7 @@ export class propertyHelper{
 							if (user.shortlisted_properties.length > 0) {
 								let count = 0;
 								for ( var i = 0 ; i < user.shortlisted_properties.length; i++ ) {
-									if ( properties[p]._id && String(properties[p]._id) == String(user.shortlisted_properties[i]) ) {
+									if ( properties[p]._id != null && String(properties[p]._id) == String(user.shortlisted_properties[i]) ) {
 										count += 1;
 									}
 								}
