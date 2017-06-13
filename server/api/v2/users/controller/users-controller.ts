@@ -283,4 +283,18 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static privacy(req: express.Request, res: express.Response):void {
+		UsersDAO
+		['privacy']()
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static terms(req: express.Request, res: express.Response):void {
+		UsersDAO
+		['terms']()
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 }
