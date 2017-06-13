@@ -129,6 +129,9 @@ export class UserRoutes {
 		router
 			.route('/terms')
 			.get(auth.isAuthenticated(), UsersController.terms);
-
+		
+		router
+			.route('/refunds')
+			.get(auth.isAuthenticated(), UsersController.refunds);
 	}
 }

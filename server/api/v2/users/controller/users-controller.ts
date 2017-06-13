@@ -297,4 +297,11 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static refunds(req: express.Request, res: express.Response):void {
+		UsersDAO
+		['refunds']()
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 }
