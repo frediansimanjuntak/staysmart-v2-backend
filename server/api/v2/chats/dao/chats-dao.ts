@@ -206,8 +206,25 @@ chatsSchema.static('requestToken', (userId:string, username:string):Promise<any>
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.requestToken(userId, username).then(token => {
             resolve(JSON.parse(token));
-            ChatRooms.login(JSON.parse(token), userId, username);
         });
+    });
+});
+
+chatsSchema.static('updateUserDt', (userId:string, body: Object ):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let data: any = body;
+        var pushObj = {$push:{}};
+        pushObj.$push['dreamtalk'] = {'loginId': data.id, 'loginToken': data.token, 'loginTokenExpires': data.tokenExpires};
+        Users
+            .findByIdAndUpdate(userId, pushObj)
+            .exec((err, result) => {
+                if(err) {
+                    reject({message: err.message});
+                }
+                else{
+                    resolve({'loginId': data.id, 'loginToken': data.token, 'loginTokenExpires': data.tokenExpires});            
+                }
+            });
     });
 });
 

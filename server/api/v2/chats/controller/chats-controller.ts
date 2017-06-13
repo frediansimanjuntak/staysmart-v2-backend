@@ -45,6 +45,15 @@ export class ChatsController {
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
+	
+	static updateUserDt(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id.toString();
+		let _body = req.body;
+		ChatsDAO
+		['updateUserDt'](_userId, _body)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
 
 	static insertChatRoom(req: express.Request, res: express.Response):void {
 		let _users = req.body.user;
