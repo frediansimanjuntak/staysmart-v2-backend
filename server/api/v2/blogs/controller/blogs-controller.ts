@@ -3,7 +3,7 @@ import BlogsDAO from '../dao/blogs-dao';
 
 export class BlogsController {
 	static getAll(req: express.Request, res: express.Response):void {
-		let _device = 'phone';
+		let _device = req.device.type;
 		BlogsDAO
 		['getAll'](_device)
 		.then(blogs => res.status(200).json(blogs))
