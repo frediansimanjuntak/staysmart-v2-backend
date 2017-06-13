@@ -16,7 +16,7 @@ export class notificationHelper{
                         else {
                             let count = 0;
                             for (var j = 0; j < res.length; j++) {
-                                if (notifications[i].ref_id == res[j]._id) {
+                                if (notifications[i].ref_id.toString() == res[j]._id.toString()) {
                                     count += 1;
                                     if (res[j].letter_of_intent.data.created_at) {
                                         extra = { loi: 'LOIID'+notifications[i]._id };
