@@ -630,7 +630,7 @@ usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:str
 	});
 });
 
-usersSchema.static('updateMe', (id:string, user:Object, image:Object, device: string):Promise<any> => {
+usersSchema.static('updateMe', (id:string, user:Object, image:Object, headers: Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
@@ -674,7 +674,9 @@ usersSchema.static('updateMe', (id:string, user:Object, image:Object, device: st
 								})
 							}
 							else{
-								resolve({message: 'Success'});
+								Users.me(saved._id, headers, device).then(res => {
+									resolve(res);
+								})
 							}
 						}
 					});
