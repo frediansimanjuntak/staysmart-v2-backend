@@ -154,7 +154,7 @@ export class propertyHelper{
 					let rooms = user.chat_rooms;
 					let room = {};
 					for ( var r = 0; r < rooms.length; r++ ) {
-						if ( rooms[r].tenant == userId && rooms[r].property == properties._id ) {
+						if ( rooms[r].tenant.toString() == userId.toString() && rooms[r].property.toString() == properties._id.toString() ) {
 							room = {
 								tenantUser: rooms[r].tenant,
 								landlordUser: rooms[r].landlord,
