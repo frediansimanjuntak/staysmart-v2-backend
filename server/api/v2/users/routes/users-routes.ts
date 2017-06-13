@@ -122,5 +122,13 @@ export class UserRoutes {
 			.route('/username')
 			.post(UsersController.username);
 
+		router
+			.route('/privacy')
+			.get(auth.isAuthenticated(), UsersController.privacy);
+		
+		router
+			.route('/terms')
+			.get(auth.isAuthenticated(), UsersController.terms);
+
 	}
 }
