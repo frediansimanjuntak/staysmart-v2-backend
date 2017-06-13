@@ -106,7 +106,7 @@ export class PropertiesController {
 
 	static memberFavourite(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
-		let _device = 'phone';
+		let _device = req.device.type;
 		PropertiesDAO
 		['memberFavourite'](_userId, _device)
 		.then(properties => res.status(200).json(properties))
