@@ -49,7 +49,7 @@ export class PropertiesController {
 
 	static getByIdMobile(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _device = req.device.type;
+		let _device = 'phone';
 		let _user = req["user"]._id;
 		
 		PropertiesDAO

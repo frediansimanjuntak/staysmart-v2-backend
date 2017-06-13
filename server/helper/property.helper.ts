@@ -164,11 +164,30 @@ export class propertyHelper{
 							};
 						}
 					}
+					let favourite;
+					if (user.shortlisted_properties.length > 0) {
+						let count = 0;
+						for ( var i = 0 ; i < user.shortlisted_properties.length; i++ ) {
+							if ( properties._id && String(properties._id) == String(user.shortlisted_properties[i]) ) {
+								count += 1;
+							}
+						}
+						if (count > 0) {
+							favourite = true;
+						}
+						else {
+							favourite = false;
+						}
+					}
+					else {
+						favourite = false;
+						
+					}
 					resolve({
 						_id: properties._id,
 						development: properties.development.name,
 						landlord: {
-							_id: '',
+							_id: properties.owner.user._id,
 							full_name: properties.owner.user.landlord.data.name
 						},
 						user: {
@@ -203,6 +222,7 @@ export class propertyHelper{
 							by: properties.seen.by,
 							counts: properties.seen.by.length
 						},
+						favourite: favourite,
 						amenities: _amenities,
 						pictures: properties.pictures,
 						room: room
