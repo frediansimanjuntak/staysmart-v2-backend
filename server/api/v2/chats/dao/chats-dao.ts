@@ -206,6 +206,7 @@ chatsSchema.static('requestToken', (userId:string, username:string):Promise<any>
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.requestToken(userId, username).then(token => {
             resolve(JSON.parse(token));
+            ChatRooms.login(JSON.parse(token), userId, username);
         });
     });
 });
