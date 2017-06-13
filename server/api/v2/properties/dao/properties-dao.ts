@@ -513,9 +513,9 @@ propertiesSchema.static('memberFavourite', (userId: Object, device: string):Prom
         else {
           Properties.getAll(device, userId).then(properties => {
             let favourite = [];
-            for (var i = 0; i < shortlisted.length; i++) {
+            for (var i = 0; i < shortlisted.shortlisted_properties.length; i++) {
               for (var j = 0; j < properties.length; j++) {
-                if (shortlisted[i] == properties[j]._id) {
+                if (shortlisted.shortlisted_properties[i].toString() == properties[j]._id.toString()) {
                   favourite.push(properties[j]);
                 }
               }
