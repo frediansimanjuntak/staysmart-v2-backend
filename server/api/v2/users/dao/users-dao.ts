@@ -657,29 +657,51 @@ usersSchema.static('updateMe', (id:string, user:Object, image:Object, headers: O
 					if(img.photo) {
 						Attachments.createAttachments(img.photo, {}, device).then(res => {
 							user.picture = res.idAtt[0];
-							user.save();
+							user.save((err, saved) => {
+								if(err){
+									reject(err);
+								}
+								if(saved){
+									if(body.oldpassword && body.newpassword) {
+										Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+											resolve(res);
+										})
+										.catch((err) => {
+											reject(err);
+										})
+									}
+									else{
+										Users.me(saved._id, headers, device).then(res => {
+											resolve(res);
+										})
+									}
+								}
+							});
 						})
 					}
-					user.save((err, saved) => {
-						if(err){
-							reject(err);
-						}
-						if(saved){
-							if(body.oldpassword && body.newpassword) {
-								Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
-									resolve(res);
-								})
-								.catch((err) => {
-									reject(err);
-								})
+					else {
+						user.save((err, saved) => {
+							if(err){
+								reject(err);
 							}
-							else{
-								Users.me(saved._id, headers, device).then(res => {
-									resolve(res);
-								})
+							if(saved){
+								if(body.oldpassword && body.newpassword) {
+									Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+										resolve(res);
+									})
+									.catch((err) => {
+										reject(err);
+									})
+								}
+								else{
+									Users.me(saved._id, headers, device).then(res => {
+										resolve(res);
+									})
+								}
 							}
-						}
-					});
+						});
+					}
+						
 				}						
 			});
 	});
