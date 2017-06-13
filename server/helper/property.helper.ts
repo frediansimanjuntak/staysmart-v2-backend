@@ -19,7 +19,7 @@ export class propertyHelper{
 							if (user.shortlisted_properties.length > 0) {
 								let count = 0;
 								for ( var i = 0 ; i < user.shortlisted_properties.length; i++ ) {
-									if ( properties[p]._id.toString() == user.shortlisted_properties[i].toString() ) {
+									if ( properties[p]._id && String(properties[p]._id) == String(user.shortlisted_properties[i]) ) {
 										count += 1;
 									}
 								}
@@ -154,7 +154,7 @@ export class propertyHelper{
 					let rooms = user.chat_rooms;
 					let room = {};
 					for ( var r = 0; r < rooms.length; r++ ) {
-						if ( rooms[r].tenant.toString() == userId.toString() && rooms[r].property.toString() == properties._id.toString() ) {
+						if ( rooms[r].tenant && rooms[r].property && properties._id && String(rooms[r].tenant) == String(userId) && String(rooms[r].property) == String(properties._id) ) {
 							room = {
 								tenantUser: rooms[r].tenant,
 								landlordUser: rooms[r].landlord,
