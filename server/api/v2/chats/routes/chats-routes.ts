@@ -17,6 +17,10 @@ export class ChatsRoutes {
 		router
 			.route('/chats/request_token')
 			.get(auth.isAuthenticated(),ChatsController.requestToken)
+		
+		router
+			.route('/chats/token')
+			.get(auth.isAuthenticated(),ChatsController.requestToken)
 
 		router
 			.route('/chats/request_peer/:roomName')
