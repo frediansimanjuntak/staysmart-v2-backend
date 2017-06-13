@@ -19,6 +19,10 @@ export class ChatsRoutes {
 			.get(auth.isAuthenticated(),ChatsController.requestToken)
 		
 		router
+			.route('/users/dreamtalk')
+			.post(auth.isAuthenticated(), ChatsController.updateUserDt);
+		
+		router
 			.route('/chats/token')
 			.get(auth.isAuthenticated(),ChatsController.requestToken)
 
