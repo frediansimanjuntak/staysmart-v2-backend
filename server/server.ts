@@ -51,11 +51,11 @@ const opts = {
 var server = https.createServer(opts, app)
 var io = require('socket.io')(server);
 // var ioo = require('socket.io-client');
-
-export class socketIo{
-  static notif(data){
+export class socketIo{  
+  static notif(data){   
     let body:any = data;    
-    let userId = body.user;
+    let userId = body.user.toString();
+     console.log('notification_'+userId);
     io.on('connect', onConnect);
     function onConnect(socket){
       socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id });
@@ -97,16 +97,9 @@ export class socketIo{
     }
   }
 }
-// io.on('connect', onConnect);
-// let tes = '123456'
-// function onConnect(socket){
-//   setInterval(function(){
-//       socket.emit('notification_'+tes, { hello: 'world' }); 
-//   }, 1000);
-// }
 
 // var socket = ioo('https://localhost:5000');
-// socket.on('notification_590a9e408eb848305c5a307c', function (data) {
+// socket.on('notification_58d49b588d36d286ee353147', function (data) {
 //   console.log("test", data);
 // });
 
