@@ -159,7 +159,7 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
               reject(err);
             }
             else if (blog) {
-              Blogs.getBlogSimilar(blog.slug, blog.category).then((res) => {
+              Blogs.getBlogSimilar(blog.slug, blog.category._id).then((res) => {
                 resolve({"blog": blog, "similar": res});
               })
               .catch((err) => {
@@ -167,6 +167,22 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
               })
             }
           });
+    });
+});
+
+blogsSchema.static('getMight', (id: string, device: string, userEmail: string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      Blogs.findById(id)
+      .exec((err, blog) => {
+        if (err) { reject({message: err.message});}
+        else {
+          Blogs.getBlogSimilar(blog.slug, blog.category).then(similar => {
+            blogHelper.getAll(similar).then(res => {
+              resolve(res);
+            })
+          })
+        }
+      })
     });
 });
 
