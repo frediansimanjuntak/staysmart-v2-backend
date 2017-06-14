@@ -630,12 +630,12 @@ usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:str
 	});
 });
 
-usersSchema.static('updateMe', (id:string, user:Object, image:Object, headers: Object, device: string):Promise<any> => {
+usersSchema.static('updateMe', (id:string, userData:Object, image:Object, headers: Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(user)) {
+		if (!_.isObject(userData)) {
 			return reject(new TypeError('User is not a valid object.'));
 		}
-		let body:any = user;
+		let body:any = userData;
 		let img: any = image;
 		Users
 			.findById(id)
@@ -656,51 +656,38 @@ usersSchema.static('updateMe', (id:string, user:Object, image:Object, headers: O
 					}
 					if(img.photo) {
 						Attachments.createAttachments(img.photo, {}, device).then(res => {
-							user.picture = res.idAtt[0];
-							user.save((err, saved) => {
+							Users.update({"_id": user._id}, {
+								$set: {
+									picture: res.idAtt[0]
+								}
+							})
+							.exec((err, saved) => {
 								if(err){
 									reject(err);
-								}
-								if(saved){
-									if(body.oldpassword && body.newpassword) {
-										Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
-											resolve(res);
-										})
-										.catch((err) => {
-											reject(err);
-										})
-									}
-									else{
-										Users.me(saved._id, headers, device).then(res => {
-											resolve(res);
-										})
-									}
 								}
 							});
 						})
 					}
-					else {
-						user.save((err, saved) => {
-							if(err){
-								reject(err);
+					user.save((err, saved) => {
+						if(err){
+							reject(err);
+						}
+						if(saved){
+							if(body.oldpassword && body.newpassword) {
+								Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+									resolve(res);
+								})
+								.catch((err) => {
+									reject(err);
+								})
 							}
-							if(saved){
-								if(body.oldpassword && body.newpassword) {
-									Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
-										resolve(res);
-									})
-									.catch((err) => {
-										reject(err);
-									})
-								}
-								else{
-									Users.me(saved._id, headers, device).then(res => {
-										resolve(res);
-									})
-								}
+							else{
+								Users.me(saved._id, headers, device).then(res => {
+									resolve(res);
+								})
 							}
-						});
-					}
+						}
+					});
 						
 				}						
 			});
