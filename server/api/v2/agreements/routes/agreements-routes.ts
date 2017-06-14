@@ -253,5 +253,13 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/:appoiments_id/payment')
 			.post(auth.isAuthenticated(), AgreementsController.uploadPaymentTA);
+		
+		router
+			.route('/tenancy-agreement')
+			.get(auth.isAuthenticated(), AgreementsController.memberSectionOwnedTa);
+		
+		router
+			.route('/tenancy-agreement/:id')
+			.get(auth.isAuthenticated(), AgreementsController.memberSectionTaById);
 	}
 }

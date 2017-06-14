@@ -499,6 +499,25 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static memberSectionOwnedTa(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _role = req["user"].role;
+		
+		AgreementsDAO
+		['memberSectionOwnedTa'](_userId, _role)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static memberSectionTaById(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _userId = req["user"]._id;		
+		AgreementsDAO
+		['memberSectionTaById'](_id, _userId)
+		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	//IL
 	static getAllInventoryList(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
