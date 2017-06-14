@@ -75,7 +75,7 @@ blogsSchema.static('getById', (id:string, device: string, userEmail: Object):Pro
                   path: 'picture',
                   model: 'Attachments'
                 },
-                select: 'username picture verification email'
+                select: 'username picture verification email role'
               }, 
               {
                 path: 'replies',
