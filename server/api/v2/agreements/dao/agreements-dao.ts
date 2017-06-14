@@ -560,7 +560,7 @@ agreementsSchema.static('getAllLoi', (userId:string, role:string):Promise<any> =
 						let loiArr = loi[i];
 						if (loiArr.letter_of_intent.data) {
 							let status;
-							let history;
+							let history = false;
 							if (loiArr.tenancy_agreement.data.status) {
 								let taStatus = loiArr.tenancy_agreement.data.status;
 								if (taStatus == "draft" || taStatus == "rejected" || taStatus == "expired") {
@@ -573,11 +573,14 @@ agreementsSchema.static('getAllLoi', (userId:string, role:string):Promise<any> =
 							else {
 								status = false;
 							}
-							if(loiArr.letter_of_intent.histories.length == 0){
-								history = false;
-							}
-							else {
-								history = true;
+							if(loiArr.letter_of_intent.histories.length > 0){
+								if(loiArr.tenancy_agreement.histories.length > 0){
+									for (var j = 0; j < loiArr.letter_of_intent.histories.length; j++) {
+										if (loiArr.letter_of_intent.histories[j].delete == false) {
+											history = true;
+										}
+									}
+								}
 							}
 							let data = {
 								"_idAgreement": loiArr._id,
@@ -1635,18 +1638,19 @@ agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> =>
 						let taArr = ta[i];
 						if (taArr.tenancy_agreement.data) {
 							let status;
-							let history;
+							let history = false;
 							if (taArr.inventory_list.data.status) {
 								status = true;
 							}
 							else {
 								status = false;
 							}
-							if(taArr.tenancy_agreement.histories.length == 0){
-								history = false;
-							}
-							else {
-								history = true;
+							if(taArr.tenancy_agreement.histories.length > 0){
+								for (var j = 0; j < taArr.tenancy_agreement.histories.length; j++) {
+									if (taArr.tenancy_agreement.histories[j].delete == false) {
+										history = true;
+									}
+								}
 							}
 							if(taArr.tenancy_agreement.data.status){
 								let data = {
@@ -1658,7 +1662,7 @@ agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> =>
 									"inventory_list": status,
 									"history": history
 								}
-								datas.push(data);
+								datas.push(data);					
 							}							
 						}						
 					}
@@ -3077,7 +3081,9 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 							resolve({message: "LOI status is draft"})
 						}
 						else {
-							agreement.letter_of_intent.data.status = body.status_loi;
+							if (loiData.status == "pending") {
+								agreement.letter_of_intent.data.status = body.status_loi;
+							}
 							Agreements.paymentCekStatus(paymentLoiID).then((res) => {
 								if (res.message) {
 									reject(res);
@@ -3148,7 +3154,9 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 							resolve({message: "TA status is draft or expired"})
 						}
 						else {
-							agreement.tenancy_agreement.data.status = body.status_ta;
+							if (taData.status == "admin-confirmation") {
+								agreement.tenancy_agreement.data.status = body.status_ta;
+							}							
 							Agreements.paymentCekStatus(paymentTaID).then((res) => {
 								if (res.message) {
 									resolve(res);
