@@ -69,9 +69,9 @@ export class blogHelper{
 							comment: blogs.comments[j].content,
 							type_comment: blogs.comments[j].type == 'comment/' ? 'blog' : blogs.comments[j].type == 'reply/' ? 'comment' : blogs.comments[j].type,
 							blog: blogs.comments[j].blog,
-							user_id: blogs.comments[j].user._id,
+							user_id: blogs.comments[j].user ? blogs.comments[j].user._id : '',
 							created_at: blogs.comments[j].created_at,
-							user: {
+							user: blogs.comments[j].user ? {
 								_id: blogs.comments[j].user._id,
 								username: blogs.comments[j].user.username,
 								role : blogs.comments[j].user.role,
@@ -82,7 +82,7 @@ export class blogHelper{
 									}
 								],
 								picture: blogs.comments[j].user.picture ? blogs.comments[j].user.picture.url : ''
-							},
+							} : {},
 							reply: replies
 						});
 					}
