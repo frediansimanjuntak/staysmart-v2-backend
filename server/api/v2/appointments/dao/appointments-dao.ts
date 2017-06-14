@@ -251,17 +251,16 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                     var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;                                    
                                     var notification = {
                                       "user": appointment.landlord._id,
-                                      "message": "Viewing Received for "+unit+" "+appointment.property.development.name+" at "+appointment.chosen_time.date+" from "+appointment.chosen_time.from+" to "+appointment.chosen_time.to,
+                                      "message": "Viewing Received for "+appointment.property.development.name,
                                       "type": "appointment_proposed",
                                       "ref_id": appointmentId
                                     };
                                     Notifications.createNotifications(notification);  
                                     var emailTo = appointment.landlord.email;
                                     var fullname = appointment.landlord.username;
-                                    var tenant_username = appointment.tenant.username;                    
+                                    var tenant_username = appointment.tenant.username;              
                                     var full_address = appointment.property.address.full_address;
                                     var from = 'Staysmart';
-
                                     mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
                                     resolve({appointment_id: appointmentId, room: roomChatId, message: 'appoinment proposed'});
                                   }                                  
@@ -297,6 +296,344 @@ appointmentsSchema.static('updateAppointmentsRoomId', (landlord:string, tenant:s
               err ? reject({message: err.message})
                   : resolve(updated);
           });
+    });
+});
+
+appointmentsSchema.static('memberSectionAppointment', (type:string, userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+      let _query;
+      if (type == 'upcoming') {
+        _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": "archived"}; 
+      }
+      else if (type == 'archived') {
+        _query = {"status": "rejected", $or:[{"tenant": userId}, {"landlord": userId}]}; 
+      }
+      else {
+        _query = {$or:[{"tenant": userId}, {"landlord": userId}]}; 
+      }
+      console.log(type);
+        Appointments
+          .find(_query)
+          .populate({
+            path: 'landlord',
+            model: 'Users',
+            populate: {  
+              path: 'picture',
+              model: 'Attachments'
+            },
+            select: 'username email picture landlord.data'
+          })
+          .populate({
+            path: 'tenant',
+            model: 'Users',
+            populate: {
+              path: 'picture',
+              model: 'Attachments'
+            },
+            select: 'username email picture landlord.data'
+          })
+          .populate({
+            path: 'property',
+            populate: [{
+              path: 'pictures.living',
+              model: 'Attachments'
+            },{
+              path: 'pictures.dining',
+              model: 'Attachments'
+            },{
+              path: 'pictures.bed',
+              model: 'Attachments'
+            },{
+              path: 'pictures.toilet',
+              model: 'Attachments'
+            },{
+              path: 'pictures.kitchen',
+              model: 'Attachments'
+            },{
+              path: 'development',
+              model: 'Developments'
+            },{
+              path: 'owner.user',
+              model: 'Users'
+            }]
+          })
+          .exec((err, appointments) => {
+              if (err) { reject(err); }
+              else if (appointments){
+                let landlordUnread = 0;
+                let tenantUnread = 0;
+                let totalAppointmentLandlord = 0;
+                let totalAppointmentTenant = 0;
+                let readBy = [];
+                for (var a = 0; a < appointments.length; a++) {
+                  let appointment = appointments[a];
+                  if (appointment.tenant) {
+                    let tenant = appointment.tenant;
+                    if (tenant._id == userId.toString()){
+                      totalAppointmentTenant = totalAppointmentTenant + 1;
+                      if (appointment.tenant_read == false) {
+                        tenantUnread = tenantUnread + 1;
+                      }
+                      else if (appointment.tenant_read == true) {
+                        readBy.push(tenant._id);
+                      }
+                    }                    
+                  }                  
+                  let landlord = appointment.landlord;
+                  if (landlord._id == userId.toString()) {
+                    totalAppointmentLandlord = totalAppointmentLandlord + 1;
+                    if (appointment.landlord_read == false) {
+                      landlordUnread = landlordUnread + 1;
+                    }
+                    else if (appointment.landlord_read == true) {
+                      readBy.push(landlord._id);
+                    }
+                  }                  
+                }
+                let datas = [];
+                for (var i = 0; i < appointments.length; i++) {
+                  let appointment = appointments[i];
+                  let appointmentId = appointment._id;                                  
+                  let landlord = appointment.landlord;
+                  let landlordPic = "";
+                  let scheduleTime;
+                  let idSchedule = "";
+                  let timeFromSchedule = "";
+                  let timeToSchedule = "";
+                  let tenantPic = "";                  
+                  let read = false;
+                  let unread  = 0;
+                  let statusOwn  = "";
+                  let tenant;
+                  let unit = "";
+                  let unit2 = "";
+                  let blok = "";
+                  let streetName = "";
+                  let postalCode = "";
+                  let fullAddress = "";
+                  let country = "";
+                  let typeProp = "";
+                  let coordinates = [];
+                  let tenantUsername  = "";
+                  let pictureProp = [];
+                  let idProperties  = "";
+                  let DevelopmentName  = "";
+                  let totalAppointment  = 0;
+                  let message = ""
+                  if (appointment.message) {
+                    message = appointment.message;
+                  }
+                  if (appointment.tenant) {
+                    tenant = appointment.tenant;
+                    tenantUsername = tenant.username;
+                    if (tenant.picture) {
+                      tenantPic = tenant.picture.url;
+                    }
+                    if (tenant._id == userId.toString()){
+                      read = appointment.tenant_read;
+                      unread = tenantUnread; 
+                      statusOwn = "tenant";
+                      totalAppointment = totalAppointmentTenant;
+                    }
+                  }
+                  if (appointment.property) {
+                    let property = appointment.property;
+                    let scheduleId = appointment.schedule; 
+                    idProperties = property._id;
+                    DevelopmentName = property.development.name;
+                    unit = property.address.floor;
+                    unit2 = property.address.unit;
+                    blok = property.address.street_name;
+                    postalCode = property.address.postal_code.toString();                    
+                    streetName = property.address.block_number;
+                    fullAddress = property.address.full_address,
+                    country = property.address.country;
+                    typeProp = property.address.type;
+                    coordinates =  [Number(property.address.coordinates[0]) , Number(property.address.coordinates[1])];
+                    for (var j = 0; j < property.schedules.length; j++){
+                      let schedule = property.schedules[j];
+                      let idSchedule = schedule._id.toString();
+                      if (idSchedule == scheduleId) {
+                        scheduleTime = schedule;
+                      }
+                    }
+                    if (property.pictures.living.length > 0) {
+                      for (var k = 0; k < property.pictures.living.length; k++) {
+                        let pictureLiving = property.pictures.living[k].url;
+                        pictureProp.push(pictureLiving);
+                      }
+                    }                    
+                  }      
+                  if (scheduleTime) {
+                    idSchedule = scheduleTime._id;
+                    timeFromSchedule = scheduleTime.time_from;
+                    timeToSchedule =  scheduleTime.time_to;
+                  }
+                  if (landlord.picture) {
+                    landlordPic = landlord.picture.url;
+                  }                  
+                  if (landlord._id == userId.toString()) {
+                    read = appointment.landlord_read;
+                    unread = landlordUnread;
+                    statusOwn = "landlord";
+                    totalAppointment = totalAppointmentLandlord;
+                  }
+                  let data = {
+                    "_id": appointment._id,
+                    "landlord": {
+                      "username": landlord.username,
+                      "pictures": landlordPic
+                    },
+                    "tenant": {
+                      "username": tenantUsername,
+                      "pictures": tenantPic
+                    },
+                    "schedule": {
+                      "schedule_id": idSchedule,
+                      "date": appointment.chosen_time.date,
+                      "time": appointment.chosen_time.from,
+                      "time2": appointment.chosen_time.to,
+                      "time_from": timeFromSchedule,
+                      "time_to": timeToSchedule
+                    },
+                    "property": {
+                      "_id": idProperties,
+                      "development": DevelopmentName,
+                      "user": {
+                        "_id": landlord._id,
+                        "username": landlord.username,
+                        "pictures": landlordPic
+                      },
+                      "address": {
+                        "unit_no": unit,
+                        "unit_no_2": unit2,
+                        "block_no": blok,
+                        "street_name": streetName,
+                        "postal_code": postalCode,
+                        "full_address": fullAddress,
+                        "country": country,
+                        "type": typeProp,
+                        "coordinates": coordinates
+                      },
+                      "pictures": pictureProp
+                    },
+                    "status": appointment.status,
+                    "read_by": readBy,
+                    "message": message,
+                    "created_at": appointment.created_at,
+                    "state": appointment.state,
+                    "status_own": statusOwn,
+                    "read": read,
+                    "unread": unread,
+                    "total": totalAppointment
+                  }
+                  datas.push(data);
+                }
+                resolve(datas);
+              }
+          });
+    });
+});
+
+appointmentsSchema.static('memberSectionAction', (type:string, data:Object, userId:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body:any = data;
+        console.log(body);
+        Appointments 
+          .findById(body.appointment)
+          .exec((err, appointment) => {
+            if (err) { reject(err); }
+            else if (appointment) {
+              let landlord = appointment.landlord;
+              let tenant = appointment.tenant;
+              let status;
+              if (landlord == userId.toString() || tenant == userId.toString()) {
+                if (type == 'proposed') {
+                  if (body.action == 'cancel' || body.action == 'accepted' || body.action == 'rejected') {
+                    status = body.action;
+                  }
+                  else { reject({message: "Can not to do this action"}); }
+                }
+                else if (type == 'upcoming'){
+                  if (body.action == 'archived') { status = body.action; }
+                  else { reject({message: "Can not to do this action"}); }
+                }
+                else if (type == 'archived'){
+                  if (body.action == 'rejected') { status = body.action; }
+                  else { reject({message: "Can not to do this action"}); }
+                }
+                Appointments.updateAppointments(body.appointment, status).then((res) => {
+                  if (!res.message) {
+                    Appointments
+                      .findById(body.appointment)
+                      .populate("property")
+                      .exec((err, appointments) => {
+                        if (err) { reject(err); }
+                        else if (appointments) {
+                          let scheduleId = "";
+                          let scheduleTime;
+                          let idSchedule = "";
+                          let timeFromSchedule = "";
+                          let timeToSchedule = "";
+                          let readBy = [];
+                          let property = appointments.property;
+                          let message = "";
+                          let createdAt = ""
+                          if (appointments.created_at) {
+                            createdAt = appointments.created_at;
+                          }
+                          if (appointment.message) {
+                            message = appointment.message;
+                          }
+                          for (var j = 0; j < property.schedules.length; j++){
+                            let schedule = property.schedules[j];
+                            let idSchedule = schedule._id.toString();
+                            if (idSchedule == scheduleId) {
+                              scheduleTime = schedule;
+                            }
+                          }
+                          if (scheduleTime) {
+                            idSchedule = scheduleTime._id;
+                            timeFromSchedule = scheduleTime.time_from;
+                            timeToSchedule =  scheduleTime.time_to;
+                          }
+                          if (appointments.tenant_read == true) {
+                            readBy.push(tenant);
+                          }
+                          else if (appointments.landlord_read == true) {
+                            readBy.push(landlord);
+                          }
+                          let data = {
+                            "_id": appointments._id,
+                            "landlord": appointments.landlord,
+                            "tenant": appointments.tenant,
+                            "schedule": {
+                              "schedule_id": idSchedule,
+                              "date": appointments.chosen_time.date,
+                              "time": appointments.chosen_time.from,
+                              "time2": appointments.chosen_time.to,
+                              "time_from": timeFromSchedule,
+                              "time_to": timeToSchedule
+                            },
+                            "property": appointments.property._id,
+                            "status": appointments.status,
+                            "read_by": readBy,
+                            "message": message,
+                            "created_at": createdAt,
+                            "state": appointments.state
+                          }
+                          resolve(data);
+                        }
+                      })
+                  }
+                  else { reject(res); }
+                })
+                .catch((err) => { reject(err); })
+              }
+              else { reject({message: "forbidden"});}
+            }
+            else { reject({message: "Appointment not found"}); }
+          })
     });
 });
 

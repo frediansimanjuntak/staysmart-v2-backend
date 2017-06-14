@@ -36,7 +36,7 @@ var AppointmentsSchema = new mongoose.Schema({
 	},
 	status: {
 		type: String, 
-		enum: ['pending','accepted','rejected','archived'], 
+		enum: ['cancel', 'pending','accepted','rejected','archived'], 
 		default: 'pending'
 	},
 	state: {
@@ -44,6 +44,7 @@ var AppointmentsSchema = new mongoose.Schema({
 		enum: ['under consideration', 'initiate letter of intent', 'initiate tenancy agreement'], 
 		default: 'under consideration'
 	},
+	message: {type: String},
 	tenant_read: {
 		type: Boolean,
 		default: false
@@ -51,7 +52,8 @@ var AppointmentsSchema = new mongoose.Schema({
 	landlord_read: {
 		type: Boolean,
 		default: false
-	}
+	},
+	created_at: {type: Date, default: Date.now}
 });
 
 
