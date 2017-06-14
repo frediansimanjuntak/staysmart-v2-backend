@@ -48,8 +48,8 @@ export class blogHelper{
 					for (var j = 0; j < blogs.comments.length; j++) {
 						let replies = [];
 
-						for (var k = 0; k < blogs.comments[i].replies.length; k++) {
-							let reply = blogs.comments[i].replies[k];
+						for (var k = 0; k < blogs.comments[j].replies.length; k++) {
+							let reply = blogs.comments[j].replies[k];
 
 							replies.push({
 								_id: reply._id,
@@ -58,20 +58,7 @@ export class blogHelper{
 								comment: reply.content,
 								type_comment: reply.type == 'comment/' ? 'blog' : reply.type == 'reply/' ? 'comment' : reply.type,
 								blog: reply.blog,
-								user_id: reply.user._id,
 								created_at: reply.created_at,
-								user: {
-									_id: reply.user._id,
-									username: reply.user.username,
-									role : reply.user.role,
-									emails: [
-										{
-											address: reply.user.email,
-											verified: reply.user.verification.verified
-										}
-									],
-									picture: reply.user.picture ? reply.user.picture.url : ''
-								}
 							});
 						}
 
