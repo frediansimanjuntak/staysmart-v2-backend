@@ -826,7 +826,6 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			return reject(new TypeError('LOI is not a valid object.'));
 		}		
 		let bodies:any = data;	
-		console.log(bodies);
 		let body:any = GlobalService.validObjectEmpty(data);
 		let typeDataa = "letter_of_intent";
 		let tenant = body.tenant;
@@ -836,8 +835,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			.findById(id)
 			.populate("landlord tenant property appointment")
 			.exec((err, agreement) => {
-				if (agreement) {			
-					console.log(agreement);		
+				if (agreement) {				
 					let propertyID = agreement.property._id;
 					let landlordID = agreement.landlord._id;
 					let landlordData = agreement.landlord.landlord.data;
@@ -2375,13 +2373,14 @@ agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
 					let datas = [];
 					for(var i = 0; i < il.length; i++) {
 						let ilArr = il[i];
-						let history;
-						if(ilArr.inventory_list.histories.length == 0){
-								history = false;
+						let history = false;
+						if(ilArr.inventory_list.histories.length > 0){
+							for (var j = 0; j < ilArr.inventory_list.histories.length; j++) {
+								if (ilArr.inventory_list.histories[j].delete == false) {
+									history = true;
+								}
 							}
-							else {
-								history = true;
-							}
+						}
 						if (ilArr.inventory_list.data) {
 							if (ilArr.inventory_list.data.status) {
 								let data = {
@@ -3660,67 +3659,67 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 			          Developments
 			            .findById(devID, (error, devResult) => {
 			            	if (type == "initiateLoi") {
-								message = "Letter of Intent (LOI) received for" + unit + " " + devResult.name;
+								message = "Letter of Intent (LOI) received for " + unit + " " + devResult.name;
 								type_notif = "received_LOI";
 								user = landlordId;
 							}
 			            	if (type == "rejectLoi") {
-								message = "Letter of Intent (LOI) rejected for" + unit + " " + devResult.name;
+								message = "Letter of Intent (LOI) rejected for " + unit + " " + devResult.name;
 								type_notif = "rejected_LOI";
 								user = tenantId;
 							}
 							if (type == "acceptLoi") {
-								message = "Letter of Intent (LOI) accepted for" + unit + " " + devResult.name;
+								message = "Letter of Intent (LOI) accepted for " + unit + " " + devResult.name;
 								type_notif = "accepted_LOI";
 								user = tenantId;
 							}
 							if (type == "initiateTA") {
-								message = "Tenancy Agreement (TA) received for" + unit + " " + devResult.name;
+								message = "Tenancy Agreement (TA) received for " + unit + " " + devResult.name;
 								type_notif = "received_TA";
 								user = tenantId;
 							}
 			            	if (type == "rejectTA") {
-								message = "Tenancy Agreement (TA) rejected for" + unit + " " + devResult.name;
+								message = "Tenancy Agreement (TA) rejected for " + unit + " " + devResult.name;
 								type_notif = "rejected_TA";
 								user = landlordId;
 							}
 							if (type == "acceptTA") {
-								message = "Tenancy Agreement (TA) accepted for" + unit + " " + devResult.name;
+								message = "Tenancy Agreement (TA) accepted for " + unit + " " + devResult.name;
 								type_notif = "accepted_TA";
 								user = landlordId;
 							}
 							if (type == "initiateIL") {
-								message = "Inventory List received for" + unit + " " + devResult.name;
+								message = "Inventory List received for " + unit + " " + devResult.name;
 								type_notif = "received_Inventory";
 								user = tenantId;
 							}
 			            	if (type == "confirmedIL") {
-								message = "Inventory List confirmed for" + unit + " " + devResult.name;
+								message = "Inventory List confirmed for " + unit + " " + devResult.name;
 								type_notif = "confirm_Inventory";
 								user = landlordId;
 							}
 							if (type == "paymentLOIAccepted") {
-								message = "Good Faith Deposit (GFD) received for" + unit + " " + devResult.name;
+								message = "Good Faith Deposit (GFD) received for " + unit + " " + devResult.name;
 								type_notif = "payment_LOI";
 								user = landlordId;
 							}
 							if (type == "paymentLOIRejected") {
-								message = "Good Faith Deposit (GFD) rejected for" + unit + " " + devResult.name;
+								message = "Good Faith Deposit (GFD) rejected for " + unit + " " + devResult.name;
 								type_notif = "payment_LOI";
 								user = landlordId;
 							}
 							if (type == "paymentTAAccepted") {
-								message = "Security Deposit (SD) received for" + unit + " " + devResult.name;
+								message = "Security Deposit (SD) received for " + unit + " " + devResult.name;
 								type_notif = "payment_TA";
 								user = landlordId;
 							}
 							if (type == "paymentTARejected") {
-								message = "Security Deposit (SD) rejected for" + unit + " " + devResult.name;
+								message = "Security Deposit (SD) rejected for " + unit + " " + devResult.name;
 								type_notif = "payment_TA";
 								user = landlordId;
 							}
 							if (type == "certificateStampDuty") {
-								message = "Certificate of Stamp Duty received for" + unit + " " + devResult.name;
+								message = "Certificate of Stamp Duty received for " + unit + " " + devResult.name;
 								type_notif = "certificate_ta";
 								user = landlordId;
 							}
