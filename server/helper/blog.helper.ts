@@ -44,15 +44,71 @@ export class blogHelper{
 					for (var i = 0; i < subscribe.length; i++) {
 						subscribes.push(subscribe[i].email);
 					}
+					let comments = [];
+					for (var j = 0; j < blogs.comments.length; j++) {
+						let replies = [];
+
+						for (var k = 0; k < blogs.comments[i].replies.length; k++) {
+							let reply = blogs.comments[i].replies[k];
+
+							replies.push({
+								_id: reply._id,
+								name: reply.name,
+								email: reply.email,
+								comment: reply.content,
+								type_comment: reply.type == 'comment/' ? 'blog' : reply.type == 'reply/' ? 'comment' : reply.type,
+								blog: reply.blog,
+								user_id: reply.user._id,
+								created_at: reply.created_at,
+								user: {
+									_id: reply.user._id,
+									username: reply.user.username,
+									role : reply.user.role,
+									emails: [
+										{
+											address: reply.user.email,
+											verified: reply.user.verification.verified
+										}
+									],
+									picture: reply.user.picture ? reply.user.picture.url : ''
+								}
+							});
+						}
+
+						comments.push({
+							_id: blogs.comments[j]._id,
+							name: blogs.comments[j].name,
+							email: blogs.comments[j].email,
+							comment: blogs.comments[j].content,
+							type_comment: blogs.comments[j].type == 'comment/' ? 'blog' : blogs.comments[j].type == 'reply/' ? 'comment' : blogs.comments[j].type,
+							blog: blogs.comments[j].blog,
+							user_id: blogs.comments[j].user._id,
+							created_at: blogs.comments[j].created_at,
+							user: {
+								_id: blogs.comments[j].user._id,
+								username: blogs.comments[j].user.username,
+								role : blogs.comments[j].user.role,
+								emails: [
+									{
+										address: blogs.comments[j].user.email,
+										verified: blogs.comments[j].user.verification.verified
+									}
+								],
+								picture: blogs.comments[j].user.picture ? blogs.comments[j].user.picture.url : ''
+							},
+							reply: replies
+						});
+					}
 					resolve({
 						_id: blogs._id,
 						title: blogs.title,
 						content: blogs.content,
 						category: blogs.category,
 						cover: blogs.cover.url,
+						source: blogs.source,
 						created_at: blogs.created_at,
-						created_by: blogs.created_by,
-						comment: blogs.comments,
+						created_by: blogs.created_by._id,
+						comment: comments,
 						subscribe: subscribes
 					});
 				}
