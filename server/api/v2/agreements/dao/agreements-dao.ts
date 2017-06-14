@@ -2335,6 +2335,534 @@ agreementsSchema.static('stampCertificateTA', (id:string, data:Object):Promise<a
 	});
 });
 
+agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let IDUser = userId.toString();
+		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
+
+		Agreements
+			.find(_query)
+			.populate("landlord tenant tenancy_agreement.data.stamp_certificate tenancy_agreement.data.payment")
+			.populate({
+				path: 'property',
+	            populate: [{
+					path: 'development',
+					model: 'Developments'
+				},{
+					path: 'pictures.living',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.dining',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.bed',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.toilet',
+					model: 'Attachments'
+	            },{
+					path: 'pictures.kitchen',
+					model: 'Attachments'
+	            },{
+					path: 'amenities',
+					model: 'Amenities'
+	            },{
+					path: 'owner.user',
+					model: 'Users',
+					populate: {
+						path: 'picture',
+						model: 'Attachments'
+					}
+				}]
+			})	
+			.populate({
+				path: 'tenancy_agreement.data.payment',
+				populate: [{
+					path: 'attachment.payment',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.payment_confirm',
+					model: 'Attachments'
+				},
+				{
+					path: 'attachment.refund_confirm',
+					model: 'Attachments'
+				}]
+			})
+			.exec((err, agreements) => {
+				if (err) { reject(err); }
+				else {				
+					let landlordUnread = 0;
+					let tenantUnread = 0;
+					let totalAgreementLandlord = 0;
+					let totalAgreementTenant = 0;
+					let readBy = [];
+					for (var a = 0; a < agreements.length; a++) {
+						let agreement = agreements[a];
+						if (agreement.tenant) {
+							let tenant = agreement.tenant;
+							if (tenant._id == userId.toString()){
+							totalAgreementTenant = totalAgreementTenant + 1;
+							if (agreement.tenant_seen == false) {
+								tenantUnread = tenantUnread + 1;
+							}
+							else if (agreement.tenant_seen == true) {
+								readBy.push(tenant._id);
+							}
+						}                    
+					}                  
+					let landlord = agreement.landlord;
+					if (landlord._id == userId.toString()) {
+						totalAgreementLandlord = totalAgreementLandlord + 1;
+						if (agreement.landlord_seen == false) {
+						landlordUnread = landlordUnread + 1;
+						}
+						else if (agreement.landlord_seen == true) {
+						readBy.push(landlord._id);
+						}
+					}                  
+					}	
+					let datas = [];
+					for (var i = 0; i < agreements.length; i++) {
+						let agreement = agreements[i];
+						let property = agreement.property;
+						let tenant = agreement.tenant;
+						let ta = agreement.tenancy_agreement.data;
+						let unread = tenantUnread;
+						let read = ta.tenant_seen;
+						let totalTa = totalAgreementTenant;
+						let appointment = "";
+						let asLandlord = false;
+						if (agreement.appointment) {
+							appointment = agreement.appointment;
+						}
+						if (agreement.landlord._id == IDUser) {
+							asLandlord = true;
+							unread = landlordUnread;
+							let read = ta.landlord_seen;
+							let totalTa = totalAgreementLandlord;
+						}
+						let unit = "";
+						let unit2 = "";
+						let blokNo = "";
+						let streetName = "";
+						let postalCode = "";
+						let coordinates = [];
+						let country = "";
+						let fullAddress = "";
+						let typeAddress = "";
+						let pictureLiving = [];
+						let pictureDining = [];
+						let pictureBed = [];
+						let pictureToilet = [];
+						let pictureKitchen = [];
+						let favorite = false;
+						let amenities = [];
+						let detailsSize = 0;
+						let detailsSizeSqm = 0;
+						let detailsBedroom = 0;
+						let detailsBathrom = 0;
+						let detailsPrice = 0;
+						let detailsPsqft = 0;
+						let detailsAvailable = "";
+						let detailsFurnishing = "";
+						let detailsDescription = "";
+						let detailsType = "";
+						let idProperty = "";
+						let propertyDevelopmentName = "";
+						let propertyOwnerId = "";
+						let propertyOwnerUsername = "";
+						let propertyOwnerPicture = "";
+						if (agreement.property) {
+							let property = agreement.property;
+							if (property.owner.user){
+								propertyOwnerId = property.owner.user._id;
+								propertyOwnerUsername = property.owner.user.username;
+								if (property.owner.user.picture) {
+									propertyOwnerPicture = property.owner.user.picture.url;
+								}
+							}
+							idProperty = property._id;
+							propertyDevelopmentName = property.development.name;
+							unit = property.address.floor;
+							unit2 = property.address.unit;
+							blokNo = property.address.block_number;
+							streetName = property.address.street_name;
+							postalCode = property.address.postal_code;
+							coordinates = [Number(property.address.coordinates[0]) , Number(property.address.coordinates[1])];
+							country = property.address.country;
+							fullAddress = property.address.full_address;
+							typeAddress = property.address.type;
+							if (property.amenities) {
+								for (var k = 0; k < property.amenities.length; k++) {
+									let data = {
+										_id: property.amenities[k]._id,
+										name: property.amenities[k].name
+									}
+									amenities.push(data);
+								}
+							}
+							if (property.pictures.living){
+								for (var a = 0; a < property.pictures.living.length; a++) {
+									let data = property.pictures.living[a].url
+									pictureLiving.push(data);
+								}
+							}
+							if (property.pictures.dining){
+								for (var b = 0; b < property.pictures.dining.length; b++) {
+									let data = property.pictures.dining[b].url
+									pictureDining.push(data);
+								}
+							}
+							if (property.pictures.bed){
+								for (var c = 0; c < property.pictures.bed.length; c++) {
+									let data = property.pictures.bed[c].url
+									pictureBed.push(data);
+								}
+							}
+							if (property.pictures.kitchen){
+								for (var d = 0; d < property.pictures.kitchen.length; d++) {
+									let data = property.pictures.kitchen[d].url
+									pictureKitchen.push(data);
+								}
+							}
+							if (property.pictures.toilet){
+								for (var e = 0; e < property.pictures.toilet.length; e++) {
+									let data = property.pictures.toilet[e].url
+									pictureToilet.push(data);
+								}
+							}	
+							detailsSize = property.details.size_sqf;	
+							detailsSizeSqm = property.details.size_sqm;
+							detailsBedroom = property.details.bedroom;
+							detailsBathrom = property.details.bathroom;				
+							detailsPrice = property.details.price;
+							detailsPsqft = property.details.psqft;
+							detailsAvailable = property.details.available;
+							detailsFurnishing = property.details.furnishing;
+							detailsDescription = property.details.description;
+							detailsType = property.details.type;
+						}
+						let landlordName = "";
+						let landlordId = "";
+						let landlordIdNo = "";
+						let landlordUsername = "";
+						let landlordPicture = "";
+						if (agreement.landlord) {
+							let landlord = agreement.landlord;
+							landlordName = landlord.landlord.data.name;
+							landlordIdNo = landlord.landlord.data.identification_number;
+							landlordId = landlord._id;
+							landlordUsername = landlord.username;
+							if (landlord.picture) {
+								landlordPicture = landlord.picture.url;
+							}
+						}
+						let tenantName = "";
+						let tenantType = "";
+						let tenantIdNo = "";
+						let tenantIdentityFront = "";
+						let tenantidentityBack = "";
+						let tenantId = "";
+						let tenantUsername = "";
+						let tenantPicture = "";
+						if (agreement.tenant) {
+							let tenant = agreement.tenant;
+							tenantName = tenant.tenant.data.name;
+							tenantType = tenant.tenant.data.identification_type;
+							tenantIdNo = tenant.tenant.data.identification_number;
+							tenantId = tenant._id;
+							tenantIdentityFront = tenant.tenant.data.identification_proof.front;
+							if (tenant.tenant.data.identification_proof.back && tenant.tenant.data.identification_proof.back != null) {
+								tenantidentityBack = tenant.tenant.data.identification_proof.back;
+							}							
+							tenantUsername = tenant.username;
+							if (tenant.picture) {
+								tenantPicture = tenant.picture.url;
+							}
+						}
+						let stampCertificateStatus = false;
+						let stampCertificateUrl = "";
+						if (ta.stamp_certificate) {
+							stampCertificateStatus = true;
+							stampCertificateUrl = ta.stamp_certificate.url;
+						}
+						let send = false;
+						if (ta.status) {
+							send = true;
+						}
+						let paymentStatus = 'waiting';
+						if (ta.payment) {
+							if (ta.payment.status == 'accepted' || ta.payment.status == 'rejected') {
+								paymentStatus = ta.payment.status;
+							}
+						}
+						let seenCount = 0;
+						if (ta.seen_count) {
+							seenCount = ta.seen_count;
+						}
+						let data = {							
+							"_id": agreement._id,
+							"appointment_id": appointment,
+							"as_landlord": asLandlord,
+							"property": {
+								"_id": idProperty,
+								"development": propertyDevelopmentName,
+								"user": {
+									"_id": propertyOwnerId,
+									"username": propertyOwnerUsername,
+									"pictures": propertyOwnerPicture
+								},
+								"address": {
+									"unit_no": unit,
+									"unit_no_2": unit2,
+									"block_no": blokNo,
+									"street_name": streetName,
+									"postal_code": postalCode,
+									"coordinates": coordinates,
+									"country": country,
+									"full_address": fullAddress,
+									"type": typeAddress
+								},
+								"pictures": {
+									"living": pictureLiving,
+									"dining": pictureDining,
+									"bed": pictureBed,
+									"toilet": pictureToilet,
+									"kitchen": pictureKitchen
+								},
+								"favourite": favorite,
+								"amenities": amenities,
+								"details": {
+									"size": detailsSize,
+									"size_sqm": detailsSizeSqm,
+									"bedroom": detailsBedroom,
+									"bathroom": detailsBathrom,
+									"price": detailsPrice,
+									"psqft": detailsPsqft,
+									"available": detailsAvailable,
+									"furnishing": detailsFurnishing,
+									"description": detailsDescription,
+									"type": detailsType
+								},
+								"seen": {
+									"by": readBy,
+									"counts": seenCount
+								}
+							},
+							"landlord": {
+								"full_name": landlordName,
+								"id_number": landlordIdNo,
+								"_id": landlordId,
+								"username": landlordUsername,
+								"profile_picture": landlordPicture
+							},
+							"tenant": {
+								"name": tenantName,
+								"type": tenantType,
+								"id_no": tenantIdNo,
+								"identity_front": tenantIdentityFront,
+								"identity_back": tenantidentityBack,
+								"_id": tenantId,
+								"username": tenantUsername,
+								"profile_picture": tenantPicture
+							},
+							"status": ta.status,
+							"stamp_certificate": {
+								"uploaded": stampCertificateStatus,
+								"url": stampCertificateUrl
+							},
+							"send": send,
+							"created_at": ta.created_at,
+							"payment_details": {
+								"status": "waiting"
+							},
+							"seen_by": readBy,
+							"read": read,
+							"unread": unread,
+							"total": totalTa
+						}
+						datas.push(data);
+					}
+					resolve(datas);
+				}
+			})
+	});
+});
+
+agreementsSchema.static('memberSectionTaById', (id:string, userId:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let IdUser = userId.toString();
+		Agreements
+			.findById(id)
+			.populate("payment")
+			.populate ({
+				path: 'landlord',
+				populate: [{
+					path: 'landlord.data.identification_proof.front',
+					model: 'Attachments'
+				},{
+					path: 'landlord.data.identification_proof.back',
+					model: 'Attachments'
+				}]
+			})
+			.populate ({
+				path: 'tenant',
+				populate: [{
+					path: 'tenant.data.identification_proof.front',
+					model: 'Attachments'
+				},{
+					path: 'tenant.data.identification_proof.back',
+					model: 'Attachments'
+				}]
+			})
+			.populate ({
+				path: 'tenancy_agreement.data.payment',
+				populate: {
+					path: 'attachment.payment',
+					model: 'Attachments'
+				}
+			})
+			
+			.exec((err, agreement) => {
+				if (err) { reject(err); }
+				else if (agreement) {
+					let ta = agreement.tenancy_agreement.data;
+					let asLandlord = false;
+					if (agreement.landlord._id == IdUser){
+						asLandlord = true;
+					}
+					let tenantSignStatus = false;
+					let tenantSign = "";
+					let tenantSignDate = "";
+					if (agreement.tenancy_agreement.data.confirmation.tenant) {
+						tenantSignStatus = true;
+						tenantSign = agreement.tenancy_agreement.data.confirmation.tenant.sign;
+						tenantSignDate = agreement.tenancy_agreement.data.confirmation.tenant.date;
+					}
+					let landlordSignStatus = false;
+					let landlordSign = "";
+					let landlordSignDate = "";
+					if (agreement.tenancy_agreement.data.confirmation.landlord) {
+						landlordSignStatus = true;
+						landlordSign = agreement.tenancy_agreement.data.confirmation.tenant.sign;
+						landlordSignDate = agreement.tenancy_agreement.data.confirmation.tenant.date;
+					}
+					let landlordName = "";
+					let landlordId = "";
+					let landlordIdNo = "";
+					let landlordIdType = "";
+					let landlordUsername = "";
+					let landlordIdFront = "";
+					let landlordIdBack = "";
+					if (agreement.landlord) {
+						let landlord = agreement.landlord;
+						landlordName = landlord.landlord.data.name;
+						landlordIdNo = landlord.landlord.data.identification_number;
+						landlordId = landlord._id;
+						landlordIdType = landlord.landlord.data.identification_type;
+						landlordUsername = landlord.username;
+						if (landlord.landlord.data.identification_proof.front) {
+							landlordIdFront = landlord.landlord.data.identification_proof.front.url;
+						}
+						if (landlord.landlord.data.identification_proof.back) {
+							landlordIdBack = landlord.landlord.data.identification_proof.back.url;
+						}
+					}
+					let tenantName = "";
+					let tenantId = "";
+					let tenantIdNo = "";
+					let tenantIdType = "";
+					let tenantUsername = "";
+					let tenantIdFront = "";
+					let tenantIdBack = "";
+					if (agreement.landlord) {
+						let tenant = agreement.tenant;
+						tenantName = tenant.tenant.data.name;
+						tenantIdNo = tenant.tenant.data.identification_number;
+						tenantId = tenant._id;
+						tenantIdType = tenant.tenant.data.identification_type;
+						tenantUsername = tenant.username;
+						if (tenant.tenant.data.identification_proof.front) {
+							tenantIdFront = tenant.tenant.data.identification_proof.front.url;
+						}
+						if (tenant.tenant.data.identification_proof.back) {
+							tenantIdBack = tenant.tenant.data.identification_proof.back.url;
+						}
+					}
+					let stampCertificateStatus = false;
+					let stampCertificateUrl = "";
+					if (ta.stamp_certificate) {
+						stampCertificateStatus = true;
+						stampCertificateUrl = ta.stamp_certificate.url;
+					}
+					let scd = 0;
+					let paymentApproved = false;
+					let statusPayment = "";
+					let paymentProof = "";
+
+					if (agreement.tenancy_agreement.data.payment.fee) {
+						let fees = agreement.tenancy_agreement.data.payment.fee;
+						for (var a = 0; a < fees.length; a++) {
+							let fee = fees[a];
+							if (fee.code_name == "scd") {
+								scd = fee.amount;
+							}
+							if (fee.received_amount > 0) {
+								paymentApproved = true;
+							}							
+						}
+						statusPayment = agreement.tenancy_agreement.data.payment.status;
+						paymentProof = agreement.tenancy_agreement.data.payment.attachment.payment.url;
+					}
+					let data = {
+						"as_landlord": asLandlord,
+						"created_at": agreement.tenancy_agreement.data.created_at,
+						"status": agreement.tenancy_agreement.data.status,
+						"landlord_acceptance": {
+							"signed": tenantSignStatus,
+							"sign": tenantSign, // only if signed true
+							"sign_date": tenantSignDate // only if signed true
+						},
+						"tenant_acceptance": {
+							"signed": landlordSignStatus,
+							"sign": landlordSign, // only if signed true
+							"sign_date": landlordSignDate // only if signed true
+						},
+						"landlord_details": {
+							"name": landlordName,
+							"id_no": landlordIdNo,
+							"id_type": landlordIdType,
+							"identity_front": landlordIdFront,
+							"identity_back": landlordIdBack
+						},
+						"tenant_details": {
+							"name": tenantName,
+							"id_no": tenantIdNo,
+							"id_type": tenantIdType,
+							"identity_front": tenantIdFront,
+							"identity_back": tenantIdBack
+						},
+						"payment_details": {
+							"security_deposit": scd,
+							"second_payment_approved": paymentApproved,
+							"status" :  statusPayment,
+							"second_payment_proof": paymentProof
+						},
+						"stamp_certificate": {
+							"uploaded": stampCertificateStatus,
+							"url": stampCertificateUrl//defined only if uploaded true
+						},
+						"doc": ""
+					}
+					resolve(data);
+				}
+				else { reject({message: "Agreement not found"});}
+			})
+	});
+});
+
 //inventory list
 agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {

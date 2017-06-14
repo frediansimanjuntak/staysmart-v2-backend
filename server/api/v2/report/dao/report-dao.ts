@@ -95,7 +95,6 @@ export class reportDAO{
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 6));
 						if(loi.payment){
 							payment_proof = loi.payment.attachment.payment;
-							secpayment_proof = loi.payment.attachment.payment_confirm;
 						}						
 						if(loi.landlord.bank_account.no && loi.landlord.bank_account.bank){
 							bankName = loi.landlord.bank_account.name,
@@ -119,8 +118,7 @@ export class reportDAO{
 						created_at = new Date(ta.created_at);
 						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
 						if (ta.payment) {
-							payment_proof = ta.payment.attachment.payment;
-							secpayment_proof = ta.payment.attachment.payment_confirm;
+							secpayment_proof = ta.payment.attachment.payment;
 						}	
 						if (loi.landlord.bank_account.no && loi.landlord.bank_account.bank) {
 							bankName = loi.landlord.bank_account.name
