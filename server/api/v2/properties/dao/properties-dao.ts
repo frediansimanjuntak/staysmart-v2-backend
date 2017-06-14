@@ -14,6 +14,7 @@ import {mail} from '../../../../email/mail';
 import config from '../../../../config/environment/index';
 import {socketIo} from '../../../../server';
 import {propertyHelper} from '../../../../helper/property.helper';
+import {GlobalService} from '../../../../global/global.service';
 import * as moment from 'moment';
 var split = require('split-string');
 
@@ -455,7 +456,7 @@ propertiesSchema.static('getUserProperties', (userId: Object, device: string):Pr
 
 propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        Properties
+      Properties
           .find({"owner.user": userId, "status": "draft"})
           .populate("development pictures.living pictures.dining pictures.bed pictures.toilet pictures.kitchen confirmation.proof confirmation.by temp.owner.identification_proof.front temp.owner.identification_proof.back temp.shareholders.identification_proof.front temp.shareholders.identification_proof.back ")
           .populate({
@@ -512,9 +513,9 @@ propertiesSchema.static('memberFavourite', (userId: Object, device: string):Prom
         else {
           Properties.getAll(device, userId).then(properties => {
             let favourite = [];
-            for (var i = 0; i < shortlisted.shortlisted_properties.length; i++) {
+            for (var i = 0; i < shortlisted.length; i++) {
               for (var j = 0; j < properties.length; j++) {
-                if (shortlisted.shortlisted_properties[i].toString() == properties[j]._id.toString()) {
+                if (shortlisted[i] == properties[j]._id) {
                   favourite.push(properties[j]);
                 }
               }
@@ -534,10 +535,10 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
       else if(!userId || userId == null) {
         reject({message: 'Please login first before continue.'});
       }
-      else{        
-        
+      else{                     
         var ObjectID = mongoose.Types.ObjectId;  
-        let body:any = propertiesObject;
+        let body:any = GlobalService.validObjectEmpty(propertiesObject);
+        console.log(body);   
         Developments
           .findById(body.development)
           .exec((err, development) => {
@@ -557,7 +558,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                       reject({message: 'property for this floor and unit in this development already exist.'});
                     }
                     else{
-                      var _properties = new Properties(propertiesObject);
+                      var _properties = new Properties(body);
                           _properties.slug = slug;
                           _properties.confirmation.status = 'pending';
                           _properties.save((err, saved)=>{
@@ -567,9 +568,10 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                             else if(saved){
                               let propertyID = saved._id;
                               if (saved.owner.user) {
-                                Properties.insertData(propertiesObject, propertyID, userId).then(res => {
+                                Properties.insertData(propertiesObject, propertyID, userId);
+                                let owner = body.owner.user
                                 Users
-                                  .update({"_id":userId}, {
+                                  .update({"_id": owner}, {
                                     $push: {
                                       "owned_properties": propertyID
                                     }
@@ -577,8 +579,7 @@ propertiesSchema.static('createProperties', (propertiesObject:Object, userId:Obj
                                   .exec((err, saved) => {
                                       err ? reject({message: err.message})
                                           : console.log(saved);
-                                  }) 
-                                })                                     
+                                  })                            
                               }
                               if(!body.address.full_address) {
                                 reject({message:'no full address'});

@@ -52,6 +52,25 @@ export class AppointmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static memberSectionAppointment(req: express.Request, res: express.Response):void {
+		let _type = req.params.type;
+		let _userId = req["user"]._id;
+		AppointmentsDAO
+		['memberSectionAppointment'](_type, _userId)
+		.then(appointments => res.status(200).json(appointments))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static memberSectionAction(req: express.Request, res: express.Response):void {
+		let _type = req.params.type;
+		let _userId = req["user"]._id;
+		let _data = req.body;
+		AppointmentsDAO
+		['memberSectionAction'](_type, _data, _userId)
+		.then(appointments => res.status(200).json(appointments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createAppointments(req: express.Request, res: express.Response):void {
 		let _appointments = req.body;
 		let _tenant = req["user"]._id;
