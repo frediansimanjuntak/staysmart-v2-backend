@@ -107,7 +107,7 @@ export class blogHelper{
 						cover: blogs.cover.url,
 						source: blogs.source,
 						created_at: blogs.created_at,
-						created_by: blogs.created_by,
+						created_by: blogs.created_by._id,
 						comment: comments,
 						subscribe: subscribes
 					});
