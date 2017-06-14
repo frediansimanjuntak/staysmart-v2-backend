@@ -627,7 +627,23 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
             }
         },
         {
-            path: 'tenant landlord manager',
+            path: 'tenant',
+            model: Users,
+            populate: {
+                path: 'picture',
+                model: Attachments
+            }
+        },
+        {
+            path: 'landlord',
+            model: Users,
+            populate: {
+                path: 'picture',
+                model: Attachments
+            }
+        },
+        {
+            path: 'manager',
             model: Users,
             populate: {
                 path: 'picture',
@@ -647,7 +663,7 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                     for (var i = 0; i < res.length; i++) {
                         let loi;
                         let ta;
-                        if (res[i].agreement.letter_of_intent.data.created_at) {
+                        if (res[i].agreement && res[i].agreement.letter_of_intent.data.created_at) {
                             loi = {
                                 _id: res[i].agreement._id,
                                 status: res[i].agreement.letter_of_intent.data.status
@@ -655,13 +671,14 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                         }
                         else { loi = ''; }
 
-                        if (res[i].agreement.tenancy_agreement.data.created_at) {
+                        if (res[i].agreement && res[i].agreement.tenancy_agreement.data.created_at) {
                             ta = {
                                 _id: res[i].agreement._id,
                                 status: res[i].agreement.tenancy_agreement.data.status
                             };
                         }
                         else { ta = ''; }
+                        
                         rooms.push({
                             tenantUser: {
                                 _id: res[i].tenant._id,
@@ -683,17 +700,17 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                                     unit_no_2: res[i].property.address.unit,
                                     block_no: res[i].property.address.block_number,
                                     street_name: res[i].property.address.street_name,
-                                    postal_code: res[i].property.address.postal_code,
-                                    coordinates: res[i].property.address.coordinates,
+                                    postal_code: String(res[i].property.address.postal_code),
+                                    coordinates: [Number(res[i].property.address.coordinates[0]), Number(res[i].property.address.coordinates[1])],
                                     country: res[i].property.address.country,
                                     full_address: res[i].property.address.full_address,
                                     type: res[i].property.address.type
                                 }
                             },
-                            manager: [ res[i].manager._id ],
+                            manager: res[i].manager ? [ res[i].manager._id ] : [],
                             roomId: res[i].room_id,
                             status: res[i].status,
-                            appointmentId: res[i].agreement.appointment,
+                            appointmentId: res[i].agreement ? res[i].agreement.appointment : '',
                             letterOfIntent: loi,
                             tenancyAgreement: ta
                         });
