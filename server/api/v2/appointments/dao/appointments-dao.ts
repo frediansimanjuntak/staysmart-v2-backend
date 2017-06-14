@@ -395,31 +395,34 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                   let appointment = appointments[i];
                   let appointmentId = appointment._id;                                  
                   let landlord = appointment.landlord;
-                  let landlordPic;
+                  let landlordPic = "";
                   let scheduleTime;
-                  let idSchedule;
-                  let timeFromSchedule;
-                  let timeToSchedule;
-                  let tenantPic;                  
-                  let read;
-                  let unread;
-                  let statusOwn;
+                  let idSchedule = "";
+                  let timeFromSchedule = "";
+                  let timeToSchedule = "";
+                  let tenantPic = "";                  
+                  let read = false;
+                  let unread  = 0;
+                  let statusOwn  = "";
                   let tenant;
-                  let unit;
-                  let unit2;
-                  let blok;
-                  let streetName;
-                  let postalCode;
-                  let fullAddress;
-                  let country;
-                  let typeProp;
-                  let coordinates;
-                  let pictureProperty;
-                  let tenantUsername;
-                  let pictureProp;
-                  let idProperties;
-                  let DevelopmentName;
-                  let totalAppointment;
+                  let unit = "";
+                  let unit2 = "";
+                  let blok = "";
+                  let streetName = "";
+                  let postalCode = "";
+                  let fullAddress = "";
+                  let country = "";
+                  let typeProp = "";
+                  let coordinates = [];
+                  let tenantUsername  = "";
+                  let pictureProp = [];
+                  let idProperties  = "";
+                  let DevelopmentName  = "";
+                  let totalAppointment  = 0;
+                  let message = ""
+                  if (appointment.message) {
+                    message = appointment.message;
+                  }
                   if (appointment.tenant) {
                     tenant = appointment.tenant;
                     tenantUsername = tenant.username;
@@ -441,13 +444,12 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                     unit = property.address.floor;
                     unit2 = property.address.unit;
                     blok = property.address.street_name;
-                    postalCode = property.address.postal_code;                    
+                    postalCode = property.address.postal_code.toString();                    
                     streetName = property.address.block_number;
                     fullAddress = property.address.full_address,
                     country = property.address.country;
                     typeProp = property.address.type;
-                    coordinates =  property.address.coordinates;
-                    pictureProp = [];
+                    coordinates =  [Number(property.address.coordinates[0]) , Number(property.address.coordinates[1])];
                     for (var j = 0; j < property.schedules.length; j++){
                       let schedule = property.schedules[j];
                       let idSchedule = schedule._id.toString();
@@ -461,7 +463,7 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                         pictureProp.push(pictureLiving);
                       }
                     }                    
-                  }                  
+                  }      
                   if (scheduleTime) {
                     idSchedule = scheduleTime._id;
                     timeFromSchedule = scheduleTime.time_from;
@@ -517,7 +519,7 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                     },
                     "status": appointment.status,
                     "read_by": readBy,
-                    "message": appointment.message,
+                    "message": message,
                     "created_at": appointment.created_at,
                     "state": appointment.state,
                     "status_own": statusOwn,
@@ -568,13 +570,21 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                       .exec((err, appointments) => {
                         if (err) { reject(err); }
                         else if (appointments) {
-                          let scheduleId;
+                          let scheduleId = "";
                           let scheduleTime;
-                          let idSchedule;
-                          let timeFromSchedule;
-                          let timeToSchedule;
+                          let idSchedule = "";
+                          let timeFromSchedule = "";
+                          let timeToSchedule = "";
                           let readBy = [];
                           let property = appointments.property;
+                          let message = "";
+                          let createdAt = ""
+                          if (appointments.created_at) {
+                            createdAt = appointments.created_at;
+                          }
+                          if (appointment.message) {
+                            message = appointment.message;
+                          }
                           for (var j = 0; j < property.schedules.length; j++){
                             let schedule = property.schedules[j];
                             let idSchedule = schedule._id.toString();
@@ -608,8 +618,8 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                             "property": appointments.property._id,
                             "status": appointments.status,
                             "read_by": readBy,
-                            "message": appointments.message,
-                            "created_at": appointments.created_at,
+                            "message": message,
+                            "created_at": createdAt,
                             "state": appointments.state
                           }
                           resolve(data);
