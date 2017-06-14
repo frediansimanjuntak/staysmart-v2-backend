@@ -12,7 +12,7 @@ export class BlogsController {
 
 	static getById(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-		let _device = 'phone';
+		let _device = req.device.type;
 		let _userEmail = req["user"].email;
 		BlogsDAO
 		['getById'](_id, _device, _userEmail)
