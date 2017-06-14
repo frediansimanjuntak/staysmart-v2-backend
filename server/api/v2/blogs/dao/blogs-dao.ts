@@ -75,11 +75,20 @@ blogsSchema.static('getById', (id:string, device: string, userEmail: Object):Pro
                   path: 'picture',
                   model: 'Attachments'
                 },
-                select: 'username picture'
+                select: 'username picture verification email'
               }, 
               {
                 path: 'replies',
-                model: 'Comments'
+                model: 'Comments',
+                populate: {
+                  path: 'user',
+                  model: 'Users',
+                  populate: {
+                    path: 'picture',
+                    model: 'Attachments'
+                  },
+                  select: 'username picture verification email'
+                }
             }]
           },{
             path: 'created_by',
