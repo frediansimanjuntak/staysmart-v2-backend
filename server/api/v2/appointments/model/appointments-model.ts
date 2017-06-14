@@ -36,7 +36,7 @@ var AppointmentsSchema = new mongoose.Schema({
 	},
 	status: {
 		type: String, 
-		enum: ['pending','accepted','rejected','archived'], 
+		enum: ['cancel', 'pending','accepted','rejected','archived'], 
 		default: 'pending'
 	},
 	state: {
