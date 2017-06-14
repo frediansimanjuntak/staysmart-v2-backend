@@ -36,5 +36,9 @@ export class BlogsRoutes {
 		router
 			.route('/blog/:id/subscribe')
 			.post(auth.isAuthenticated(), BlogsController.subscribeBlog);
+		
+		router
+			.route('/blog/:id/might')
+			.get(auth.isAuthenticated(), BlogsController.getMight);
 	}
 }
