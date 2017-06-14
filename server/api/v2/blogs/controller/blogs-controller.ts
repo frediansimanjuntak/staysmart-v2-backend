@@ -29,6 +29,16 @@ export class BlogsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getMight(req: express.Request, res: express.Response):void {
+		let _id = req.params.id;
+		let _device = req.device.type;
+		let _userEmail = req["user"].email;
+		BlogsDAO
+		['getMight'](_id, _device, _userEmail)
+		.then(blogs => res.status(200).json(blogs))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createBlogs(req: express.Request, res: express.Response):void {
 		let _blogs = req.body;
 		let _created_by = req["user"]._id;
