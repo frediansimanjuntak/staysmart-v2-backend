@@ -58,10 +58,27 @@ export class blogHelper{
 								comment: reply.content,
 								type_comment: reply.type == 'comment/' ? 'blog' : reply.type == 'reply/' ? 'comment' : reply.type,
 								blog: reply.blog,
-								created_at: reply.created_at,
+								created_at: reply.created_at
 							});
 						}
-
+						let user;
+						if (blogs.comments[j].user) {
+							user = {
+										_id: blogs.comments[j].user._id,
+										username: blogs.comments[j].user.username,
+										role : blogs.comments[j].user.role,
+										emails: [
+											{
+												address: blogs.comments[j].user.email,
+												verified: blogs.comments[j].user.verification.verified
+											}
+										],
+										picture: blogs.comments[j].user.picture ? blogs.comments[j].user.picture.url : ''
+									};
+						}
+						else {
+							user = {};
+						}
 						comments.push({
 							_id: blogs.comments[j]._id,
 							name: blogs.comments[j].name,
@@ -71,32 +88,20 @@ export class blogHelper{
 							blog: blogs.comments[j].blog,
 							user_id: blogs.comments[j].user ? blogs.comments[j].user._id : '',
 							created_at: blogs.comments[j].created_at,
-							user: blogs.comments[j].user ? {
-								_id: blogs.comments[j].user._id,
-								username: blogs.comments[j].user.username,
-								role : blogs.comments[j].user.role,
-								emails: [
-									{
-										address: blogs.comments[j].user.email,
-										verified: blogs.comments[j].user.verification.verified
-									}
-								],
-								picture: blogs.comments[j].user.picture ? blogs.comments[j].user.picture.url : ''
-							} : {},
+							user: user,
 							reply: replies
 						});
 					}
 					resolve({
 						_id: blogs._id,
+						cover: blogs.cover ? blogs.cover.url : '',
 						title: blogs.title,
 						content: blogs.content,
-						category: blogs.category,
-						cover: blogs.cover.url,
-						source: blogs.source,
 						created_at: blogs.created_at,
-						created_by: blogs.created_by._id,
-						comment: comments,
-						subscribe: subscribes
+						created_by: blogs.created_by ? blogs.created_by._id : '',
+						source: blogs.source ? blogs.source : '',
+						subscribe: subscribes,
+						comment: comments						
 					});
 				}
 			});
