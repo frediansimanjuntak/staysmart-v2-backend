@@ -87,7 +87,7 @@ notificationsSchema.static('getUnreadCount', (id:string):Promise<any> => {
             : resolve({
               message: 'success',
               code: 200,
-              counts: res.length 
+              data: res.length 
             });
       })
     });
