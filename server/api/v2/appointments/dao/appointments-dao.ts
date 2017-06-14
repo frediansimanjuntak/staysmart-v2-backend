@@ -553,16 +553,12 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                   else { reject({message: "Can not to do this action"}); }
                 }
                 else if (type == 'upcoming'){
-                  if (body.action != 'archived') {
-                    reject({message: "Can not to do this action"});
-                  }
-                  else { status = body.action; }
+                  if (body.action == 'archived') { status = body.action; }
+                  else { reject({message: "Can not to do this action"}); }
                 }
                 else if (type == 'archived'){
-                  if (body.action != 'rejected') {
-                    reject({message: "Can not to do this action"});
-                  }
-                  else { status = body.action; }
+                  if (body.action == 'rejected') { status = body.action; }
+                  else { reject({message: "Can not to do this action"}); }
                 }
                 Appointments.updateAppointments(body.appointment, status).then((res) => {
                   if (!res.message) {
@@ -586,7 +582,6 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                               scheduleTime = schedule;
                             }
                           }
-                          console.log(scheduleTime);
                           if (scheduleTime) {
                             idSchedule = scheduleTime._id;
                             timeFromSchedule = scheduleTime.time_from;
@@ -621,7 +616,9 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                         }
                       })
                   }
+                  else { reject(res); }
                 })
+                .catch((err) => { reject(err); })
               }
               else { reject({message: "forbidden"});}
             }
