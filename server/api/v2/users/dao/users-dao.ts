@@ -656,39 +656,51 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 					}
 					if(img.photo) {
 						Attachments.createAttachments(img.photo, {}, device).then(res => {
-							Users.update({"_id": user._id}, {
-								$set: {
-									picture: res.idAtt[0]
-								}
-							})
-							.exec((err, saved) => {
+							user.picture = res.imgId;
+							user.save((err, saved) => {
 								if(err){
 									reject(err);
+								}
+								if(saved){
+									if(body.oldpassword && body.newpassword) {
+										Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+											resolve(res);
+										})
+										.catch((err) => {
+											reject(err);
+										})
+									}
+									else{
+										Users.me(saved._id, headers, device).then(res => {
+											resolve(res);
+										})
+									}
 								}
 							});
 						})
 					}
-					user.save((err, saved) => {
-						if(err){
-							reject(err);
-						}
-						if(saved){
-							if(body.oldpassword && body.newpassword) {
-								Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
-									resolve(res);
-								})
-								.catch((err) => {
-									reject(err);
-								})
+					else {
+						user.save((err, saved) => {
+							if(err){
+								reject(err);
 							}
-							else{
-								Users.me(saved._id, headers, device).then(res => {
-									resolve(res);
-								})
+							if(saved){
+								if(body.oldpassword && body.newpassword) {
+									Users.changePassword(id, body.oldpassword, body.newpassword).then((res) => {
+										resolve(res);
+									})
+									.catch((err) => {
+										reject(err);
+									})
+								}
+								else{
+									Users.me(saved._id, headers, device).then(res => {
+										resolve(res);
+									})
+								}
 							}
-						}
-					});
-						
+						});
+					}
 				}						
 			});
 	});
