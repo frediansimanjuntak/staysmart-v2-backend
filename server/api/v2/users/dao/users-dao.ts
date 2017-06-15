@@ -730,6 +730,9 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 							if(body.email) {
 								user.email = body.email;
 							}
+							if(body.role) {
+								user.role = body.role;
+							}
 							if(body.phone) {
 								user.phone = body.phone;
 							}
