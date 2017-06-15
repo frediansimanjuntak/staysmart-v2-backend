@@ -6,5 +6,6 @@ export class Cron{
     AutoReject.autoRejectLetterOfIntent();
     AutoReject.autoRejectTenancyAgreement();
     UserCron.autoDeleteBlacklistToken();
+    AutoReject.autoRentedPropertyExpired();
   }
 }
