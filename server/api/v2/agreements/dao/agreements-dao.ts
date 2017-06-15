@@ -3463,6 +3463,7 @@ agreementsSchema.static('paymentReceiveAmount', (idAgreement:string, id:string, 
 						if (statusTA == "rejected" || statusTA == "expired") {
 							Agreements.penaltyPayment(idPaymentLoi, remarks);
 							Agreements.penaltyPayment(idPaymentTa, remarks);
+							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
 						}
 						else {
 							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
@@ -3666,6 +3667,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 						else {
 							if (taData.status == "admin-confirmation") {
 								agreement.tenancy_agreement.data.status = body.status_ta;
+								agreement.letter_of_intent.data.status = body.status_ta;
 							}							
 							Agreements.paymentCekStatus(paymentTaID).then((res) => {
 								if (res.message) {
@@ -3708,8 +3710,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 										}
 									}
 									if (body.status_payment == "rejected") {
-										Agreements.penaltyPayment(paymentLoiID, body.remarks);
-										Agreements.penaltyPayment(paymentTaID, body.remarks);
+										Agreements.updateReceivePayment(id, data);
 										Agreements.notification(id, type_notif);										
 										Agreements.email(id, typeMail);
 									}
