@@ -3,6 +3,7 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import Agreements from '../api/v2/agreements/dao/agreements-dao';
+import Properties from '../api/v2/properties/dao/properties-dao';
 
 var CronJob = require('cron').CronJob;
 var DateDiff = require('date-diff');
@@ -15,11 +16,11 @@ export class AutoReject {
         let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
         Agreements
           .find({})
-          .where("letter_of_intent.status").in(['pending', 'draft', 'payment-confirmed'])
-          .where("letter_of_intent.created_at").lte(oneWeeksAgo)
+          .where("letter_of_intent.data.status").in(['pending', 'draft', 'payment-confirmed'])
+          .where("letter_of_intent.data.created_at").lte(oneWeeksAgo)
           .exec((err, agreement) => {
               let agreementData = agreement;
-              for(var i = 0; i < agreementData.lenght; i++){
+              for(var i = 0; i < agreementData.length; i++){
                 let idAgreement = agreementData[i]._id;
                 let type = "expiredLoi";                
                 agreementData[i].letter_of_intent.status = "expired";
@@ -51,11 +52,11 @@ export class AutoReject {
         let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
         Agreements
           .find({})
-          .where("tenancy_agreement.status").in(['pending', 'admin-confirmation'])
-          .where("tenancy_agreement.created_at").lte(oneWeeksAgo)
+          .where("tenancy_agreement.data.status").in(['pending', 'admin-confirmation'])
+          .where("tenancy_agreement.data.created_at").lte(oneWeeksAgo)
           .exec((err, agreement) => {
               let agreementData = agreement;
-              for(var i = 0; i < agreementData.lenght; i++){
+              for(var i = 0; i < agreementData.length; i++){
                 let idAgreement = agreementData[i]._id;
                 let type = "expiredTa";                
                 agreementData[i].tenancy_agreement.status = "expired";
@@ -70,6 +71,23 @@ export class AutoReject {
                 });
               }
           })
+        }, function () {
+          /* This function is executed when the job stops */
+          console.log('success!')
+        },
+        true,
+        'Asia/Jakarta'
+      );
+    });
+  }
+
+  static autoRentedPropertyExpired():void{
+    return new Promise((resolve:Function, reject:Function) => {
+      new CronJob('00-10 08 1-31 * * *', function() {
+        /* runs once at the specified date. */
+        Agreements.expiredPropertyRented()
+        .then((res) => {console.log(res);})
+        .catch((err) => {console.log(err);})
         }, function () {
           /* This function is executed when the job stops */
           console.log('success!')

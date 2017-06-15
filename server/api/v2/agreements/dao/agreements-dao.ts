@@ -4529,6 +4529,43 @@ agreementsSchema.static('rejectTAMobile', (idAppointment:string, userId:string, 
 	});
 });
 
+agreementsSchema.static('expiredPropertyRented', ():Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let today = new Date();
+        Agreements
+          .find({})
+          .where("tenancy_agreement.data.status").in(['accepted'])
+          .exec((err, agreement) => {
+            if (err) {reject(err);}
+            else {
+              let agreementData = agreement;
+              for(var i = 0; i < agreementData.length; i++){				  
+                let idAgreement = agreementData[i]._id;
+                let dateCommencement = agreementData[i].letter_of_intent.data.date_commencement;
+                let termLease = agreementData[i].letter_of_intent.data.term_lease;
+                let expiredRented = new Date(dateCommencement.setMonth(dateCommencement.getMonth() + termLease));
+				let todayDate = today.getDate() +" - "+ today.getMonth() +" - "+ today.getFullYear();
+				let expiredDate = expiredRented.getDate() +" - "+ expiredRented.getMonth() +" - "+ expiredRented.getFullYear();
+                let type = "expiredRented";                
+                if (todayDate == expiredDate) {
+					console.log("today expired", idAgreement);
+					let typeDataa = ["letter_of_intent", "tenancy_agreement", "inventory_list"];
+					for (var a = 0; a < typeDataa.length; a++) {
+						Agreements.createHistory(idAgreement, typeDataa[a]);
+					}
+					Properties
+						.update({"_id":agreementData[i].property}, {$set: {status: "published"}})
+						.exec((err, updated) => {
+							err ? reject({message: err.message}) 
+								: resolve({message: "Property updated"});
+						})
+                }
+              }
+            }              
+          })
+	});
+});
+
 let Agreements = mongoose.model('Agreements', agreementsSchema);
 
 export default Agreements;
