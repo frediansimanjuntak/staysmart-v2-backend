@@ -419,7 +419,17 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                   let idProperties  = "";
                   let DevelopmentName  = "";
                   let totalAppointment  = 0;
-                  let message = ""
+                  let message = "";
+                  let detailsSize = 0;
+                  let detailsSizeSqm = 0;
+                  let detailsBedroom = 0;
+                  let detailsBathrom = 0;
+                  let detailsPrice = 0;
+                  let detailsPsqft = 0;
+                  let detailsAvailable = "";
+                  let detailsFurnishing = "";
+                  let detailsDescription = "";
+                  let detailsType = "";
                   if (appointment.message) {
                     message = appointment.message;
                   }
@@ -462,7 +472,17 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                         let pictureLiving = property.pictures.living[k].url;
                         pictureProp.push(pictureLiving);
                       }
-                    }                    
+                    }
+                    detailsSize = property.details.size_sqf;
+                    detailsSizeSqm = property.details.size_sqm;	
+                    detailsBedroom = property.details.bedroom;
+                    detailsBathrom = property.details.bathroom;				
+                    detailsPrice = property.details.price;
+                    detailsPsqft = property.details.psqft;
+                    detailsAvailable = property.details.available;
+                    detailsFurnishing = property.details.furnishing;
+                    detailsDescription = property.details.description;
+                    detailsType = property.details.type;                    
                   }      
                   if (scheduleTime) {
                     idSchedule = scheduleTime._id;
@@ -514,6 +534,18 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                         "country": country,
                         "type": typeProp,
                         "coordinates": coordinates
+                      },
+                      "details": {
+                        "size": detailsSize,
+                        "size_sqm": detailsSizeSqm,
+                        "bedroom": detailsBedroom,
+                        "bathroom": detailsBathrom,
+                        "price": detailsPrice,
+                        "psqft": detailsPsqft,
+                        "available": detailsAvailable,
+                        "furnishing": detailsFurnishing,
+                        "description": detailsDescription,
+                        "type": detailsType
                       },
                       "pictures": pictureProp
                     },
