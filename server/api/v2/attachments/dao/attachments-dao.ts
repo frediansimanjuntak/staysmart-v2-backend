@@ -84,7 +84,7 @@ attachmentsSchema.static('createAttachments', (attachments:Object, request:Objec
                 if (i >= files.length - 1){
                   if(errAtt == 0) {
                     if (device != 'desktop') {
-                      if (data.body.row_id) {
+                      if (data.body && data.body.row_id) {
                         resolve({
                           imgId: idAtt[0],
                           row_id: data.body.row_id,
