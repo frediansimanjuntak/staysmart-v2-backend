@@ -187,6 +187,7 @@ var AgreementsSchema = new mongoose.Schema({
 				type: Boolean,
 				default: false
 			},
+			seen_count : {type: Number},
 			created_at: {type: Date}
 		},
 		histories: 
