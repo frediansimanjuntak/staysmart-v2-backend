@@ -10,6 +10,14 @@ var Schema = mongoose.Schema;
 var DevelopmentsSchema = new mongoose.Schema({
 	name: {type: String, unique:false},
 	slug: {type: String},
+	header_image: {
+		type: Schema.Types.ObjectId,
+		ref: 'Attachments'
+	},
+	image: {
+		type: Schema.Types.ObjectId,
+		ref: 'Attachments'
+	},
 	number_of_units: {type: Number, default:0},
 	properties: 
 	[
