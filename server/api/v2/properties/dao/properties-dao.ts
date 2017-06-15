@@ -1411,6 +1411,24 @@ propertiesSchema.static('step1', (property: Object, userId: Object):Promise<any>
                 Properties.findByIdAndRemove(draft._id).exec();
               });
             }
+            if (draft.pictures) {
+              for (var i = 0; i < draft.pictures.living.length; i++) {
+                Attachments.deleteAttachments(draft.pictures.living[i]);
+              }
+              for (var i = 0; i < draft.pictures.dining.length; i++) {
+                Attachments.deleteAttachments(draft.pictures.dining[i]);
+              }
+              for (var i = 0; i < draft.pictures.bed.length; i++) {
+                Attachments.deleteAttachments(draft.pictures.bed[i]);
+              }
+              for (var i = 0; i < draft.pictures.kitchen.length; i++) {
+                Attachments.deleteAttachments(draft.pictures.kitchen[i]);
+              }
+              for (var i = 0; i < draft.pictures.toilet.length; i++) {
+                Attachments.deleteAttachments(draft.pictures.toilet[i]);
+              }
+            }
+            Properties.findByIdAndRemove(draft._id).exec();
           }
           let body: any = property;
           let _properties = new Properties();
@@ -1488,16 +1506,16 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
               let data: any = property;
               if (image.front) {
                 Attachments.createAttachments(image.front, {}, 'phone').then(res => {
-                  let file_front = res.idAtt[0];
+                  let file_front = res.imgId;
                   if (image.back) {
                     Attachments.createAttachments(image.back, {}, 'phone').then(res => {
-                      let file_back = res.idAtt[0];
+                      let file_back = res.imgId;
                       if (image.owner_back && !image.owner_front) {
                         reject({message: 'Owner_front is required.'});
                       }
                       else if (image.owner_front && !image.owner_back) {
                         Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
-                          let file_owner_front = res.idAtt;
+                          let file_owner_front = res.imgId;
                           let owner = [];
                           for(var i = 0; i < file_owner_front.length; i++) {
                             owner.push({
@@ -1530,9 +1548,9 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                       }
                       else if (image.owner_front && image.owner_back) {
                         Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
-                          let file_owner_front = res.idAtt;
+                          let file_owner_front = res.imgId;
                           Attachments.createAttachments(image.owner_back, {}, 'phone').then(res => {
-                            let file_owner_back = res.idAtt;
+                            let file_owner_back = res.imgId;
                             let owner = [];
                             for(var i = 0; i < file_owner_front.length; i++) {
                               owner.push({
@@ -1590,7 +1608,7 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                     }
                     else if (image.owner_front && !image.owner_back) {
                       Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
-                        let file_owner_front = res.idAtt;
+                        let file_owner_front = res.imgId;
                         let owner = [];
                         for(var i = 0; i < file_owner_front.length; i++) {
                           owner.push({
@@ -1622,9 +1640,9 @@ propertiesSchema.static('step3', (property: Object, userId: Object, files: Objec
                     }
                     else if (image.owner_front && image.owner_back) {
                       Attachments.createAttachments(image.owner_front, {}, 'phone').then(res => {
-                        let file_owner_front = res.idAtt;
+                        let file_owner_front = res.imgId;
                         Attachments.createAttachments(image.owner_back, {}, 'phone').then(res => {
-                          let file_owner_back = res.idAtt;
+                          let file_owner_back = res.imgId;
                           let owner = [];
                           for(var i = 0; i < file_owner_front.length; i++) {
                             owner.push({
@@ -1709,7 +1727,7 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
                     let companyData = {
                       name: body.name,
                       registration_number: body.company_number,
-                      documents: doc.idAtt
+                      documents: doc.imgId
                     };
                     Companies.createCompanies(companyData, userId).then(res => {
                       let companyId = res.companiesId;
@@ -1724,8 +1742,8 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
                 
               }
               if ( file.shareholder_front ) {
-                Attachments.createAttachments(file.shareholder_front, {}, 'phone').then(front => {
-                  Attachments.createAttachments(file.shareholder_back, {}, 'phone').then(back => {
+                Attachments.createAttachments(file.shareholder_front, {}, 'desktop').then(front => {
+                  Attachments.createAttachments(file.shareholder_back, {}, 'desktop').then(back => {
                     let shareholders = [];
                     for ( var i = 0; i < front.idAtt.length; i++ ) {
                       shareholders.push({
