@@ -637,7 +637,6 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 		}
 		let body:any = userData;
 		let img: any = image;
-		console.log(image);
 		Users
 			.findById(id)
 			.select('-phone')
