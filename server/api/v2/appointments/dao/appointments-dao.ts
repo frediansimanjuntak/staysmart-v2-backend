@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 // import * as newrelic from 'newrelic';
 import appointmentsSchema from '../model/appointments-model';
 import Users from '../../users/dao/users-dao'
@@ -498,6 +499,14 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                     statusOwn = "landlord";
                     totalAppointment = totalAppointmentLandlord;
                   }
+                  let dateChoosenTime = "";
+                  let timeChoosenTime = "";
+                  let time2ChoosenTime = "";
+                  if (appointment.chosen_time) {
+                    dateChoosenTime = moment(appointment.chosen_time.date, 'dddd, DD-MM-YYYY').format('YYYY-MM-DD');
+                    timeChoosenTime = appointment.chosen_time.from;
+                    time2ChoosenTime = appointment.chosen_time.to;
+                  }
                   let data = {
                     "_id": appointment._id,
                     "landlord": {
@@ -510,9 +519,9 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                     },
                     "schedule": {
                       "schedule_id": idSchedule,
-                      "date": appointment.chosen_time.date,
-                      "time": appointment.chosen_time.from,
-                      "time2": appointment.chosen_time.to,
+                      "date": dateChoosenTime,
+                      "time": timeChoosenTime,
+                      "time2": time2ChoosenTime,
                       "time_from": timeFromSchedule,
                       "time_to": timeToSchedule
                     },
