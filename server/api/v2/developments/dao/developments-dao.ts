@@ -189,7 +189,7 @@ developmentsSchema.static('getById', (id:string, userId:Object, device: string):
 
         Developments
           .findById(id)
-          .populate("properties")
+          .populate("properties header_image image")
           .exec((err, developments) => {
             if (err) {
                reject({message: err.message});
@@ -214,7 +214,7 @@ developmentsSchema.static('getDevelopment', (unit:string):Promise<any> => {
         Developments
           .find(_query)
           .where('number_of_units').gt(unit)
-          .populate("properties")
+          .populate("properties header_image image")
           .exec((err, developments) => {
               err ? reject({message: err.message})
                   : resolve(developments);
