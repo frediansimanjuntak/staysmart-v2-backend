@@ -4253,14 +4253,9 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 
 agreementsSchema.static('email', (idAgreement:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(idAgreement)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
 		let message = "";
 		let type_notif = "";
 		let user = "";
-
 		Agreements
 			.findById(idAgreement)
 			.populate("landlord tenant property")
