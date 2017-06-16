@@ -51,6 +51,7 @@ userReportsSchema.static('getGroupCount', ():Promise<any> => {
             }
             else {
                 resolve (res);
+                console.log(res);
             }
           })
     });
@@ -168,7 +169,7 @@ userReportsSchema.static('reportUser', (reported:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         if (!_.isString(reported)) {
             return reject(new TypeError('Id is not a valid string.'));
-        }      
+        }            
         Users
             .findById(reported)
             .exec((err, user) => {
@@ -189,21 +190,36 @@ userReportsSchema.static('reportUser', (reported:string):Promise<any> => {
                             : resolve(saved);
                     })
                 }
+                else {
+                    reject({message: "user not found"});
+                }
             })
     });
 });
 
 userReportsSchema.static('deleteUserReports', (reported:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(reported)) {
-            return reject(new TypeError('Id is not a valid string.'));
-        }
-        UserReports
-          .remove({"reported": reported})
-          .exec((err, deleted) => {
-              err ? reject({message: err.message})
-                  : resolve({message: "delete success"});
-          });        
+         Users
+            .findById(reported)
+            .exec((err, user) => {
+                if (err) { reject(err); }
+                else if (user) {
+                    let report  = false;
+                    user.reported = report;
+                    user.save((err, saved) => {
+                        if (err) {reject(err);}
+                        else { 
+                             UserReports
+                                .remove({"reported": reported}, false)
+                                .exec((err, deleted) => {
+                                    err ? reject({message: err.message})
+                                        : resolve({message: "delete success"});
+                                });
+                        }
+                    })
+                }
+                else { reject({message: "user not found"}); }
+            })
     });
 });
 
