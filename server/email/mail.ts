@@ -200,7 +200,7 @@ export class mail{
 
 	static initiateTaLandlord(emailTo, fullname, landlord_username, fulladdress, from){
 		return new Promise((resolve:Function, reject:Function) => {
-			var emailSubject = 'Initiate Tenantcy Agreement';
+			var emailSubject = 'Initiate Tenancy Agreement';
 			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname+', <br><br><p style="align:justify;">You have received a Tenancy Agreement (TA) from '+landlord_username+' for the property situated at '+fulladdress+' </p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the TA for your acceptance.</p><p style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br> Staysmart Team</body></html>';
 			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
 				resolve(res);
@@ -220,7 +220,7 @@ export class mail{
 
 	static initiateTaTenant(emailTo, fullname, tenant_username, fulladdress, from){
 		return new Promise((resolve:Function, reject:Function) => {
-			var emailSubject = 'Initiate Tenantcy Agreement';
+			var emailSubject = 'Initiate Tenancy Agreement';
 			var content = '<html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><title></title></head><body> Hi '+fullname+',<br><br><p style="align:justify;">You have received a Tenancy Agreement (TA) from '+tenant_username+' for the property situated at '+fulladdress+'.</p><p style="align:justify;">Please login to www.staysmart.sg to view the details of the TA for your acceptance.</p><p style="align:justify;">In the meantime if you have any queries, do feel free to contact us at '+from+'.</p><br><br>Thanks,<br> Staysmart Team</body></html>';
 			EmailService.sendEmail(emailTo, emailSubject, content).then(res => {
 				resolve(res);
