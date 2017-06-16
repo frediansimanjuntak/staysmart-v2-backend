@@ -706,6 +706,25 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 	});
 });
 
+usersSchema.static('setDeviceToken', (id: string, data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body: any = data;
+		Users.findByIdAndUpdate(id, {
+			$set: {
+				service: {
+					device: {
+						device_token: body.device_token,
+						device_type: body.device_type
+					}
+				}
+			}
+		}).exec((err, user) => {
+			err ? reject({message: err.message})
+				: resolve(1);
+		});
+	});
+});
+
 usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
