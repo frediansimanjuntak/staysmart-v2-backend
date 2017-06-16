@@ -2199,27 +2199,32 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 						resolve({message: "forbidden"})
 					}
 					else if (tenantId == IDUser) {	
-						if (body.sign) {
-							agreement.tenancy_agreement.data.status = "admin-confirmation";
-							agreement.tenancy_agreement.data.created_at = new Date();
-							agreement.save((err, saved)=>{
-								if (err) {
-									reject({message: err.message});
-								}
-								else if (saved) {
-									let type_notif = "acceptTA";
-									let typeEmail = "acceptTa";
-									let type = "tenancy_agreement";
-									Agreements.email(id, typeEmail);
-									Agreements.notification(id, type_notif);
-									Agreements.confirmation(id, data, type);
-									Agreements.getTotalTANeedApprove();
-									resolve({status: "TA "+ saved.tenancy_agreement.data.status});
-								}						
-							});
-						}			
+						if (agreement.tenancy_agreement.data.status != 'rejected' || agreement.tenancy_agreement.data.status != 'expired') {
+							if (body.sign) {
+								agreement.tenancy_agreement.data.status = "admin-confirmation";
+								agreement.tenancy_agreement.data.created_at = new Date();
+								agreement.save((err, saved)=>{
+									if (err) {
+										reject({message: err.message});
+									}
+									else if (saved) {
+										let type_notif = "acceptTA";
+										let typeEmail = "acceptTa";
+										let type = "tenancy_agreement";
+										Agreements.email(id, typeEmail);
+										Agreements.notification(id, type_notif);
+										Agreements.confirmation(id, data, type);
+										Agreements.getTotalTANeedApprove();
+										resolve({status: "TA "+ saved.tenancy_agreement.data.status});
+									}						
+								});
+							}			
+							else {
+								reject({mesage: "sign not found"});
+							}
+						}
 						else {
-							reject({mesage: "sign not found"});
+							reject({message: "ta is expired or rejected"});
 						}
 					}					
 				}
@@ -3473,6 +3478,21 @@ agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
 	});
 });
 
+agreementsSchema.static('updatePropertyStatus', (id:string, status:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Properties
+			.update({"_id": id}, {
+				$set: {
+					"status": status
+				}
+			})
+			.exec((err, updated) => {
+			err ? reject(err)
+				: resolve(updated);
+			})
+	});
+});
+
 agreementsSchema.static('paymentReceiveAmount', (idAgreement:string, id:string, code:string, receiveAmount:number, neededRefund:boolean, payment_confirm:string, status:string, remarks:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
@@ -3485,6 +3505,12 @@ agreementsSchema.static('paymentReceiveAmount', (idAgreement:string, id:string, 
 				else if (agreement) {
 					let data;
 					if (type == "loi") {
+						if (status == 'accepted') {
+							Agreements.updatePropertyStatus(agreement.property, "initiated");
+						}
+						else {
+							Agreements.updatePropertyStatus(agreement.property, "published");
+						}
 						let statusLOI = agreement.letter_of_intent.data.status;
 						if (statusLOI == "rejected" || statusLOI == "expired") {
 							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "remarks": remarks, "status": status }};
@@ -3493,18 +3519,8 @@ agreementsSchema.static('paymentReceiveAmount', (idAgreement:string, id:string, 
 							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
 						}
 					}
-					else if (type == "ta") {
-						let statusTA = agreement.tenancy_agreement.data.status;
-						let idPaymentLoi =  agreement.letter_of_intent.data.payment;
-						let idPaymentTa =  agreement.tenancy_agreement.data.payment;
-						if (statusTA == "rejected" || statusTA == "expired") {
-							Agreements.penaltyPayment(idPaymentLoi, remarks);
-							Agreements.penaltyPayment(idPaymentTa, remarks);
-							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
-						}
-						else {
-							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
-						}
+					else if (type == "ta") {						
+						data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
 					}
 					Payments
 						.update({"_id": id, "fee": {$elemMatch: {"code_name": code}}}, data)
@@ -3638,62 +3654,57 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 								}
 								else {
 									let totalFee = std + gfd;
-									if (receivePayment < totalFee) {
-										reject({message: "less payment"});
+									if (gfd <= std) {
+										receiveGfd = gfd;
+										temp = receivePayment - receiveGfd;
+										if (temp - std > 0) {
+											receiveStd = std;
+											refund = temp - std;
+										}
+										if (temp - std <= 0) {
+											receiveStd = temp;
+										}
 									}
 									else {
-										if (gfd <= std) {
+										receiveStd = std;
+										temp = receivePayment - receiveStd;
+										if (temp - gfd > 0) {
 											receiveGfd = gfd;
-											temp = receivePayment - receiveGfd;
-											if (temp - std > 0) {
-												receiveStd = std;
-												refund = temp - std;
-											}
-											if (temp - std <= 0) {
-												receiveStd = temp;
-											}
+											refund = temp - gfd;
 										}
-										else {
-											receiveStd = std;
-											temp = receivePayment - receiveStd;
-											if (temp - gfd > 0) {
-												receiveGfd = gfd;
-												refund = temp - gfd;
-											}
-											if (temp - gfd <= 0) {
-												receiveGfd = temp;
-											}
+										if (temp - gfd <= 0) {
+											receiveGfd = temp;
 										}
-										// if (body.status_payment == "rejected") {
-										// 	receiveGfd = 0;
-										// 	receiveStd = 0;
-										// }
-										var data ={
-											"paymentID": paymentLoiID,								
-											"receiveAmountStd": receiveStd,
-											"receiveAmountGfd": receiveGfd,
-											"payment_confirm": body.payment_confirm,
-											"refundPayment": refund,
-											"typeInput": "loi",
-											"status": body.status_payment,
-											"remarks": body.remarks
-										};						
+									}
+									// if (body.status_payment == "rejected") {
+									// 	receiveGfd = 0;
+									// 	receiveStd = 0;
+									// }
+									var data = {
+										"paymentID": paymentLoiID,								
+										"receiveAmountStd": receiveStd,
+										"receiveAmountGfd": receiveGfd,
+										"payment_confirm": body.payment_confirm,
+										"refundPayment": refund,
+										"typeInput": "loi",
+										"status": body.status_payment,
+										"remarks": body.remarks
+									};						
 
-										if (body.status_payment == "accepted") {
-											if (receivePayment >= totalFee) {
-												Agreements.updateReceivePayment(id, data);
-												Agreements.notification(id, type_notif);										
-												Agreements.email(id, typeMail);
-											}
-											else {
-												resolve({message: "cannot process this payment, because your payment less than payment LOI"})
-											}
-										}
-										if (body.status_payment == "rejected") {
+									if (body.status_payment == "accepted") {
+										if (receivePayment >= totalFee) {
 											Agreements.updateReceivePayment(id, data);
 											Agreements.notification(id, type_notif);										
 											Agreements.email(id, typeMail);
 										}
+										else {
+											resolve({message: "cannot process this payment, because your payment less than payment LOI"})
+										}
+									}
+									if (body.status_payment == "rejected") {
+										Agreements.updateReceivePayment(id, data);
+										Agreements.notification(id, type_notif);										
+										Agreements.email(id, typeMail);
 									}																		
 								}
 							})
@@ -3717,16 +3728,17 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 								}
 								else {
 									let totalFee = scd;
-									if (scd != 0) {
-										receiveScd = scd;
-										temp = receivePayment - receiveScd;
-										if (temp > 0) {
-											refund = temp;
+									if (scd > 0) {										
+										if (receivePayment < scd) {
+											receiveScd = receivePayment;
 										}
-									}
-
-									if (body.status_payment == "rejected") {
-										receiveScd = 0;
+										else {
+											receiveScd = scd;
+											temp = receivePayment - scd;
+											if (temp > 0) {
+												refund = temp;
+											}
+										}										
 									}
 									var data ={
 										"paymentID": paymentTaID,
@@ -3752,6 +3764,8 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 										}
 									}
 									if (body.status_payment == "rejected") {
+										Agreements.penaltyPaymentAdminReject(paymentTaID, body.remarks, receiveScd);
+										Agreements.penaltyPaymentAdminReject(paymentLoiID, body.remarks, receiveScd);
 										Agreements.updateReceivePayment(id, data);
 										Agreements.notification(id, type_notif);										
 										Agreements.email(id, typeMail);
@@ -3884,6 +3898,62 @@ agreementsSchema.static('getTotalStampCertificateNotUploaded', ():Promise<any> =
 					resolve(agreements);
 				}
 			})
+	});
+});
+
+agreementsSchema.static('penaltyPaymentAdminReject', (idPayment:string, remarks:string, receieveAmount:number):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Payments
+			.findById(idPayment)
+			.exec((err, res) => {
+				if (err) {
+					reject(err);
+				}
+				if (res) {
+					let fees = res.fee;
+					let needRefund = true
+					if (!res.attachment.payment) {
+						needRefund = false
+					}
+					for(var i = 0; i < fees.length; i++) {
+						let fee = fees[i];
+						let idFee = fee._id;
+						let codeFee = fee.code_name;
+						if (codeFee == "scd") {
+							Payments
+								.update({"_id": idPayment, "fee": {$elemMatch: {"_id": idFee}}},{
+									$set: {
+										"fee.$.needed_refund": needRefund,
+										"fee.$.received_amount": receieveAmount,
+										"fee.$.updated_at": new Date(),
+										"remarks": remarks,
+										"status": "rejected"
+									}
+								})
+								.exec((err, result) => {
+									err ? reject({message: err.message})
+					            	  	: resolve(result);
+								})
+						}
+						else if (codeFee != "gfd") {
+							Payments
+								.update({"_id": idPayment, "fee": {$elemMatch: {"_id": idFee}}},{
+									$set: {
+										"fee.$.needed_refund": needRefund,
+										"fee.$.updated_at": new Date(),
+										"remarks": remarks,
+										"status": "rejected"
+									}
+								})
+								.exec((err, result) => {
+									err ? reject({message: err.message})
+					            	  	: resolve(result);
+								})
+						}
+					}
+					resolve({message: "penalty payment updated"})
+				}
+			})					
 	});
 });
 
