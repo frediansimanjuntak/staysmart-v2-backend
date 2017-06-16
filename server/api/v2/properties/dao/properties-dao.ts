@@ -1904,9 +1904,9 @@ propertiesSchema.static('step4', (properties: Object, userId: Object, device: st
                     }
                     else {
                       if ( device != 'desktop' ) {
-                        propertyHelper.getById(res, userId).then(r => {
+                        Properties.getById(res._id, userId, 'phone').then(r => {
                           resolve(r);
-                        });
+                        })
                       }
                       else {
                         resolve(res);
