@@ -133,5 +133,9 @@ export class UserRoutes {
 		router
 			.route('/refunds')
 			.get(auth.isAuthenticated(), UsersController.refunds);
+		
+		router
+			.route('/device')
+			.post(auth.isAuthenticated(), UsersController.setDeviceToken);
 	}
 }

@@ -305,4 +305,13 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+	
+	static setDeviceToken(req: express.Request, res: express.Response):void {
+		let _id = req["user"]._id;
+		let _data = req.body;
+		UsersDAO
+		['setDeviceToken'](_id, _data)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 }
