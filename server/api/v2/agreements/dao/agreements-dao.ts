@@ -1072,18 +1072,23 @@ agreementsSchema.static('signLoi', (id:string, data:Object, userId:string):Promi
 							if (err) { reject(err); }
 							else if (agreement) {
 								if (agreement.tenant == IDUser) {
-									let data = {
-										"sign": body.signature,
-										"type": "letter_of_intent",
-										"status": "tenant"
-									}
-									Agreements.confirmation(id, data).then((res) => {
-										if (!res.message) {
-											resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
+									if (body.signature) {
+										let data = {
+											"sign": body.signature,
+											"type": "letter_of_intent",
+											"status": "tenant"
 										}
-										else { reject(res); }
-									})
-									.catch((err) => { reject(err); })
+										Agreements.confirmation(id, data).then((res) => {
+											if (!res.message) {
+												resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
+											}
+											else { reject(res); }
+										})
+										.catch((err) => { reject(err); })
+									}
+									else {
+										reject({message: "sign not found"});
+									}
 								}
 								else { reject({message: "forbidden"}); }								
 							}
@@ -1114,19 +1119,24 @@ agreementsSchema.static('acceptLoi_', (id:string, data:Object, userId:string):Pr
 							if (err) { reject(err); }
 							else if (agreement) {
 								if (agreement.landlord == IDUser) {
-									let data = {
-										"sign": body.signature,
-										"type": "letter_of_intent",
-										"status": "landlord"
-									}
-									Agreements.changeStatusChat(agreement.room.toString(), "pending");
-									Agreements.confirmation(id, data);
-									agreement.letter_of_intent.data.status = "accepted";
-									agreement.save((err, saved) => {
-										err ? reject(err)
-											: resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
-									})
-									.catch((err) => { reject(err); })
+									if (body.signature) {
+										let data = {
+											"sign": body.signature,
+											"type": "letter_of_intent",
+											"status": "landlord"
+										}
+										Agreements.changeStatusChat(agreement.room.toString(), "pending");
+										Agreements.confirmation(id, data);
+										agreement.letter_of_intent.data.status = "accepted";
+										agreement.save((err, saved) => {
+											err ? reject(err)
+												: resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
+										})
+										.catch((err) => { reject(err); })
+									}	
+									else {
+										reject({message: "sign not found"});
+									}								
 								}
 								else { reject({message: "forbidden"}); }								
 							}
@@ -1337,7 +1347,7 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 		let type_notif = "acceptLoi";
 		let type = "letter_of_intent";	
 		let IDUser = userId.toString();
-
+		let body:any = data;
 		Agreements
 			.findById(id)
 			.populate("landlord tenant property")
@@ -1348,23 +1358,28 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 				else if (agreement) {
 					let landlordId
 					if (agreement.landlord) {
-						landlordId = agreement.landlord._id;
-						if (landlordId != IDUser) {
-							resolve({message: "forbidden"});
+						if (body.sign) {
+							landlordId = agreement.landlord._id;
+							if (landlordId != IDUser) {
+								resolve({message: "forbidden"});
+							}
+							else if (landlordId == IDUser) {
+								agreement.letter_of_intent.data.status = "accepted";
+								agreement.save((err, saved) => {
+									Agreements.confirmation(id, data, type);
+									if (agreement.room) {
+										Agreements.changeStatusChat(agreement.room.toString(), "pending");
+									}								
+									Agreements.notification(id, type_notif).then(res => {
+										let typeMail = "acceptedLoiLandlord";
+										Agreements.email(id, typeMail);
+										resolve(saved);
+									});
+								})
+							}
 						}
-						else if (landlordId == IDUser) {
-							agreement.letter_of_intent.data.status = "accepted";
-							agreement.save((err, saved) => {
-								Agreements.confirmation(id, data, type);
-								if (agreement.room) {
-									Agreements.changeStatusChat(agreement.room.toString(), "pending");
-								}								
-								Agreements.notification(id, type_notif).then(res => {
-									let typeMail = "acceptedLoiLandlord";
-									Agreements.email(id, typeMail);
-									resolve(saved);
-								});
-							})
+						else {
+							reject({message: "sign not found"});
 						}
 					}	
 					else {
@@ -1978,6 +1993,7 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
 		let IDUser = userId.toString();
+		let body:any = data;
 		Agreements
 			.findById(id)
 			.populate("landlord tenant appointment property")
@@ -1992,31 +2008,36 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 						reject({message:"forbidden"});
 					}
 					else if (landlordId == IDUser) {
-						if (agreement.appointment) {
-							Appointments
-								.findById(agreement.appointment._id)
-								.exec((err, res) => {
-									if (err) {
-										reject({message: err.message});
-									}
-									if (res) {
-										res.state = "initiate tenancy agreement";
-										res.save((err, saved) => {
-											err ? reject({message: err.message})
-												: resolve(saved);
-										});
-									}
-								})
+						if (body.sign) {
+							if (agreement.appointment) {							
+								Appointments
+									.findById(agreement.appointment._id)
+									.exec((err, res) => {
+										if (err) {
+											reject({message: err.message});
+										}
+										if (res) {
+											res.state = "initiate tenancy agreement";
+											res.save((err, saved) => {
+												err ? reject({message: err.message})
+													: resolve(saved);
+											});
+										}
+									})
+							}
+							let type = "tenancy_agreement";
+							let typeNotif = "initiateTA";
+							let typeEmailLandlord = "initiateTaLandlord";
+							let typeEmailTenant = "initiateTaTenant";
+							Agreements.confirmation(id, data, type);
+							Agreements.email(id, typeEmailLandlord);
+							Agreements.email(id, typeEmailTenant);
+							Agreements.notification(id, typeNotif);
+							resolve({message: "Send Ta Success"});	
 						}
-						let type = "tenancy_agreement";
-						let typeNotif = "initiateTA";
-						let typeEmailLandlord = "initiateTaLandlord";
-						let typeEmailTenant = "initiateTaTenant";
-						Agreements.confirmation(id, data, type);
-						Agreements.email(id, typeEmailLandlord);
-						Agreements.email(id, typeEmailTenant);
-						Agreements.notification(id, typeNotif);
-						resolve({message: "Send Ta Success"});
+						else {
+							reject({message: "sign not found"});
+						}						
 					}
 				}
 		})
@@ -2161,6 +2182,7 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 		let IDUser = userId.toString();
+		let body:any = data;
 		Agreements
 			.findById(id)
 			.populate("landlord tenant property")
@@ -2176,24 +2198,29 @@ agreementsSchema.static('acceptTA', (id:string, data:Object, userId:string):Prom
 					if (tenantId != IDUser) {
 						resolve({message: "forbidden"})
 					}
-					else if (tenantId == IDUser) {				
-						agreement.tenancy_agreement.data.status = "admin-confirmation";
-						agreement.tenancy_agreement.data.created_at = new Date();
-						agreement.save((err, saved)=>{
-							if (err) {
-								reject({message: err.message});
-							}
-							else if (saved) {
-								let type_notif = "acceptTA";
-								let typeEmail = "acceptTa";
-								let type = "tenancy_agreement";
-								Agreements.email(id, typeEmail);
-								Agreements.notification(id, type_notif);
-								Agreements.confirmation(id, data, type);
-								Agreements.getTotalTANeedApprove();
-								resolve({status: "TA "+ saved.tenancy_agreement.data.status});
-							}						
-						});
+					else if (tenantId == IDUser) {	
+						if (body.sign) {
+							agreement.tenancy_agreement.data.status = "admin-confirmation";
+							agreement.tenancy_agreement.data.created_at = new Date();
+							agreement.save((err, saved)=>{
+								if (err) {
+									reject({message: err.message});
+								}
+								else if (saved) {
+									let type_notif = "acceptTA";
+									let typeEmail = "acceptTa";
+									let type = "tenancy_agreement";
+									Agreements.email(id, typeEmail);
+									Agreements.notification(id, type_notif);
+									Agreements.confirmation(id, data, type);
+									Agreements.getTotalTANeedApprove();
+									resolve({status: "TA "+ saved.tenancy_agreement.data.status});
+								}						
+							});
+						}			
+						else {
+							reject({mesage: "sign not found"});
+						}
 					}					
 				}
 			})					
