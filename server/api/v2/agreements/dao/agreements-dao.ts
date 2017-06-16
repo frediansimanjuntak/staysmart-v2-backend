@@ -3063,23 +3063,28 @@ agreementsSchema.static('createInventoryList', (id:string, data:Object, userId:s
 							resolve({message: "can not change"})
 						}
 						if (!il.status) {
-							agreement.inventory_list.data.confirmation.landlord.sign = body.sign;
-							agreement.inventory_list.data.confirmation.landlord.date = new Date();
-							agreement.inventory_list.data.status = "pending";
-							agreement.inventory_list.data.created_at = new Date();
-							agreement.inventory_list.data.property = propertyId;
-							agreement.inventory_list.data.lists = body.lists;
-							agreement.save((err, saved) => {
-								if (err) {
-									reject({message: err.message});
-								}
-								else if (saved) {
-									Agreements.notification(id, type_notif);
-									let type = "createInventory";
-									Agreements.email(id, type);
-									resolve({message: 'create inventory list success'});
-								}
-							})
+							if (body.sign) {
+								agreement.inventory_list.data.confirmation.landlord.sign = body.sign;
+								agreement.inventory_list.data.confirmation.landlord.date = new Date();
+								agreement.inventory_list.data.status = "pending";
+								agreement.inventory_list.data.created_at = new Date();
+								agreement.inventory_list.data.property = propertyId;
+								agreement.inventory_list.data.lists = body.lists;
+								agreement.save((err, saved) => {
+									if (err) {
+										reject({message: err.message});
+									}
+									else if (saved) {
+										Agreements.notification(id, type_notif);
+										let type = "createInventory";
+										Agreements.email(id, type);
+										resolve({message: 'create inventory list success'});
+									}
+								})
+							}
+							else {
+								reject({message: "sign not found"});
+							}
 						}
 					}
 				}
@@ -3105,39 +3110,44 @@ agreementsSchema.static('tenantCheckInventoryList', (id:string, data:Object, use
 					reject ({message: "sorry you can not check this Inventory List"})
 				}
 				else if (tenantId == IDUser) {
-					for(var i = 0; i < body.lists.length; i++) {
-						for(var j = 0; j < agreement.inventory_list.data.lists.length; j++) {
-							if (agreement.inventory_list.data.lists[j]._id == body.lists[i].idList) {
-								for(var k = 0; k < body.lists[i].idItems.length; k++) {
-									for(var l = 0; l < agreement.inventory_list.data.lists[j].items.length; l++) {
-										if (body.lists[i].idItems[k] == agreement.inventory_list.data.lists[j].items[l]._id) {
-											agreement.inventory_list.data.lists[j].items[l].tenant_check = "true";
-											agreement.save((err, result) => {
-												if (err) {
-													reject({message: err.message});
-												}
-											});	
+					if (body.sign) {
+						for(var i = 0; i < body.lists.length; i++) {
+							for(var j = 0; j < agreement.inventory_list.data.lists.length; j++) {
+								if (agreement.inventory_list.data.lists[j]._id == body.lists[i].idList) {
+									for(var k = 0; k < body.lists[i].idItems.length; k++) {
+										for(var l = 0; l < agreement.inventory_list.data.lists[j].items.length; l++) {
+											if (body.lists[i].idItems[k] == agreement.inventory_list.data.lists[j].items[l]._id) {
+												agreement.inventory_list.data.lists[j].items[l].tenant_check = "true";
+												agreement.save((err, result) => {
+													if (err) {
+														reject({message: err.message});
+													}
+												});	
+											}
 										}
 									}
 								}
 							}
 						}
+						agreement.inventory_list.data.confirmation.tenant.sign = body.sign;
+						agreement.inventory_list.data.confirmation.tenant.date = new Date();
+						agreement.inventory_list.data.status = "completed";
+						agreement.save((err, update) => {
+							if (err) {
+								reject({message: err.message});
+							}
+							else if (update) {
+								Agreements.notification(id, type_notif).then(res => {
+									let typeEmail = "confirmInventory";
+									Agreements.email(id, typeEmail);
+									resolve({message: 'success'});
+								});		
+							}
+						});
 					}
-					agreement.inventory_list.data.confirmation.tenant.sign = body.sign;
-					agreement.inventory_list.data.confirmation.tenant.date = new Date();
-					agreement.inventory_list.data.status = "completed";
-					agreement.save((err, update) => {
-						if (err) {
-							reject({message: err.message});
-						}
-						else if (update) {
-							Agreements.notification(id, type_notif).then(res => {
-								let typeEmail = "confirmInventory";
-								Agreements.email(id, typeEmail);
-								resolve({message: 'success'});
-							});		
-						}
-					});
+					else {
+						reject({message: "sign not found"});
+					}					
 				}							
 			})
 	});
