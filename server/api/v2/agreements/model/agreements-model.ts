@@ -37,7 +37,7 @@ var AgreementsSchema = new mongoose.Schema({
 			[
 				{type: String}
 			],
-			populate_tenant: {type: Boolean},
+			populate_tenant: {type: Boolean, default: true},
 			landlord: {
 				name: {type: String},
 				identification_type: {type: String},
