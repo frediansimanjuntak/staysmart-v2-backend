@@ -1795,7 +1795,7 @@ propertiesSchema.static('step4', (properties: Object, userId: Object, device: st
               if (times.length > 0) {
                 for ( var t = 0; t < times.length; t++) {
                   let days = times[t].days;
-                  let time_from = times[t].time_from;
+                  let time_from = times[t].time_form;
                   let start_date = times[t].date;
 
                   if (days.length > 0) {
@@ -1886,12 +1886,12 @@ propertiesSchema.static('step4', (properties: Object, userId: Object, device: st
                   let push_schedules = [];
                   for ( var time = 0; time < times.length; time++ ) {
                     for ( var day = 0; day < times[time].days.length; day++ ) {
-                      for ( var time_from = 0; time_from < times[time].time_from.length; time_from++ ) {
+                      for ( var time_from = 0; time_from < times[time].time_form.length; time_from++ ) {
                         push_schedules.push({
                           day: times[time].days[day],
-                          start_date: times[time].date,
-                          time_from: times[time].time_from[time_from].time_from_hours+':'+times[time].time_from[time_from].time_from_minutes,
-                          time_to: times[time].time_from[time_from].time_to_hours+':'+times[time].time_from[time_from].time_to_minutes,
+                          start_date: moment(times[time].date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+                          time_from: times[time].time_form[time_from].time_from_hours+':'+times[time].time_form[time_from].time_from_minutes,
+                          time_to: times[time].time_form[time_from].time_to_hours+':'+times[time].time_form[time_from].time_to_minutes,
                         });
                       }
                     }
