@@ -12,7 +12,7 @@ var DateDiff = require('date-diff');
 export class AutoReject {
   static autoRejectLetterOfIntent():void{
     return new Promise((resolve:Function, reject:Function) => {
-      new CronJob('*/3 * * * *', function() {
+      new CronJob('*/5 * * * *', function() {
         /* runs once at the specified date. */
         let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
         Agreements
@@ -35,12 +35,14 @@ export class AutoReject {
                   .exec((err, updated) => {
                     if (err) { reject(err); }
                     else {
-                      if (agreement.letter_of_intent.data.payment) {
-                        let idPayment = agreement.letter_of_intent.data.payment._id;
-                        if (agreement.letter_of_intent.data.payment.attachment.payment && agreement.letter_of_intent.data.payment.status == "pending" || agreement.letter_of_intent.data.payment.status == "rejected") {
-                          Agreements.changeNeedRefundAfterRejectLOI(idPayment, "expired");
+                       if (agreement.letter_of_intent.data) {                         
+                        if (agreement.letter_of_intent.data.payment) {
+                          let idPayment = agreement.letter_of_intent.data.payment._id;
+                          if (agreement.letter_of_intent.data.payment.attachment.payment && agreement.letter_of_intent.data.payment.status == "pending" || agreement.letter_of_intent.data.payment.status == "rejected") {
+                            Agreements.changeNeedRefundAfterRejectLOI(idPayment, "expired");
+                          }
                         }
-                      }
+                       }
                       this.updatePropertyExpired(idProperty);
                       let type = "expiredLoi";
                       Agreements.email(idAgreement, type);
@@ -63,7 +65,7 @@ export class AutoReject {
 
   static autoRejectTenancyAgreement():void{
     return new Promise((resolve:Function, reject:Function) => {
-      new CronJob('*/3 * * * *', function() {
+      new CronJob('*/5 * * * *', function() {
       // new CronJob('00 08 1-31 * * *', function() {
         /* runs once at the specified date. */
         let oneWeeksAgo = new Date(+new Date() - 7*24*60*60*1000);
@@ -86,19 +88,25 @@ export class AutoReject {
                   .exec((err, updated) => {
                     if (err) { reject(err); }
                     else {
-                      if (agreement.tenancy_agreement.data.payment) {
-                        let idPaymentTA = agreement.tenancy_agreement.data.payment._id;
-                        let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
-                        if (agreement.tenancy_agreement.data.payment.status == "pending" || agreement.tenancy_agreement.data.payment.status == "rejected") {
-                          Agreements.penaltyPayment(idPaymentTA, "ta expired");
-                          Agreements.penaltyPayment(idPaymentLOI, "ta expired");
+                      if (agreement.tenancy_agreement.data) {
+                        if (agreement.tenancy_agreement.data.payment) {
+                          let idPaymentTA = agreement.tenancy_agreement.data.payment._id;
+                          let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
+                          if (agreement.tenancy_agreement.data.payment.status == "pending" || agreement.tenancy_agreement.data.payment.status == "rejected") {
+                            Agreements.penaltyPayment(idPaymentTA, "ta expired");
+                          }
                         }
+                        let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
+                        Agreements.penaltyPayment(idPaymentLOI, "ta expired");
+                        this.updatePropertyExpired(idProperty);
+                        let type = "expiredLoi";
+                        Agreements.email(idAgreement, type);
+                        resolve({message:"success"});
+                        console.log("updated");
+                      }                 
+                      else {
+                        reject({message: "ta not found"});
                       }
-                      this.updatePropertyExpired(idProperty);
-                      let type = "expiredLoi";
-                      Agreements.email(idAgreement, type);
-                      resolve({message:"success"});
-                      console.log("updated");
                     }
                   })
               }
