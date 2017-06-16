@@ -1282,31 +1282,48 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
 
     if(body.owned_type == 'company'){
       if(body.companyData) {
-        Users
-          .findById(userId, (err, result) => {                                    
-            Companies.createCompanies(body.companyData, userId).then(res => {
-              var companyId = res.companiesId;
-              Properties
-                .findByIdAndUpdate(propertyId, {
-                  $set: {
-                    "owner.company": companyId
-                  }
-                })
-                .exec((err, update) => {
-                    if(err) {
-                      reject({message: err.message});
+        if (body.companyData.documents && body.companyData.documents.length > 0) {
+          Users
+            .findById(userId, (err, result) => {     
+              body.companyData.documents                               
+              Companies.createCompanies(body.companyData, userId).then(res => {
+                var companyId = res.companiesId;
+                Properties
+                  .findByIdAndUpdate(propertyId, {
+                    $set: {
+                      "owner.company": companyId
                     }
-                });
-                
-              if(body.shareholders != null) {
-                if(body.status == 'draft') {
-                  if(body.shareholders.length > 0) {
-                    var shareholder_data = body.shareholders;
+                  })
+                  .exec((err, update) => {
+                      if(err) {
+                        reject({message: err.message});
+                      }
+                  });
+                  
+                if(body.shareholders != null) {
+                  if(body.status == 'draft') {
+                    if(body.shareholders.length > 0) {
+                      var shareholder_data = body.shareholders;
 
-                    Properties
-                      .findByIdAndUpdate(propertyId, {
+                      Properties
+                        .findByIdAndUpdate(propertyId, {
+                          $set: {
+                            "temp.shareholders": shareholder_data
+                          }
+                        })
+                        .exec((err, update) => {
+                            if(err) {
+                              reject({message: err.message});
+                            }
+                        });
+                    }
+                  }
+                  else{
+                    var shareholder_data = body.shareholders;
+                    Companies
+                      .findByIdAndUpdate(companyId, {
                         $set: {
-                          "temp.shareholders": shareholder_data
+                          "shareholders": shareholder_data
                         }
                       })
                       .exec((err, update) => {
@@ -1316,23 +1333,12 @@ propertiesSchema.static('insertData', (data:Object, propertyId: Object, userId:O
                       });
                   }
                 }
-                else{
-                  var shareholder_data = body.shareholders;
-                  Companies
-                    .findByIdAndUpdate(companyId, {
-                      $set: {
-                        "shareholders": shareholder_data
-                      }
-                    })
-                    .exec((err, update) => {
-                        if(err) {
-                          reject({message: err.message});
-                        }
-                    });
-                }
-              }
-            });
-          })  
+              });
+            }) 
+        }
+        else {
+          reject({message:'Please update min. 1 document.'});
+        }
       }
       else if(body.owner && body.owner.company && body.shareholders.length > 0) {
         if(body.status == 'draft') {
