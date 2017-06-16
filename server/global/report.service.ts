@@ -231,7 +231,7 @@ export class report {
 					let url = paymentProof.url;
 					let subType = fileType.substring(0, 5);
 					if(subType == 'image'){
-						getData = '<img src="' + url + '" height="500px" /> ';
+						getData = '<img src="' + url + '" height="250px" /> ';
 					}
 					else if(fileType == 'application/pdf'){
 						getData = '<embed src="' + url + '" width="800px" height="2100px" />'
@@ -293,7 +293,7 @@ export class report {
 					if (url) {
 						let subType = fileType.substring(0, 5);
 						if(subType == 'image'){
-							getData = '<img src="' + url + '" height="500px" /> ';
+							getData = '<img src="' + url + '" height="250px" /> ';
 						}
 						else if(fileType == 'application/pdf'){
 							getData = '<embed src="' + url + '" width="800px" height="2100px" />'
