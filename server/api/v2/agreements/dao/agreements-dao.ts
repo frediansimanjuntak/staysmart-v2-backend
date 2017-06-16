@@ -3227,7 +3227,7 @@ agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<a
             
             var historyObj = {$push: {}, $unset: {}};  
             historyObj.$push[typeDataa+'.histories'] = {"date": new Date(), "data": data};
-			historyObj.$unset[typeDataa+'.data'] = "";
+			// historyObj.$unset[typeDataa+'.data'] = "";
 
             Agreements
               .findByIdAndUpdate(id, historyObj)
@@ -3402,8 +3402,6 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 					var _payment = new Payments();
 					_payment.fee = paymentFee;
 					_payment.type = paymentType;
-					_payment.needed_refund = false;
-					_payment.refunded = false;
 					_payment.attachment.payment = body.attachment;
 					_payment.status = "pending";
 					_payment.created_at = new Date();
