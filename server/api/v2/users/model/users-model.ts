@@ -167,10 +167,10 @@ var UsersSchema = new mongoose.Schema({
       id: {type: String},
       token: {type: String}
     },
-    device: {
+    device: [{
       device_token: {type: String},
       device_type: {type: String}
-    }
+    }]
   },
   reset_password: {
     token: {type: String},
