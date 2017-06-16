@@ -229,4 +229,10 @@ PropertiesSchema
 		return this.seen.by.length;
 	});
 
+PropertiesSchema
+	.virtual("address.property_full_address")
+	.get(function() {
+		return this.address.block_number+' '+this.address.street_name+' #'+this.address.floor+'-'+this.address.unit;
+	});
+
 export default PropertiesSchema;
