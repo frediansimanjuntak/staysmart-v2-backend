@@ -23,7 +23,7 @@ export class ReportController{
 		let _id = req.params.id;
 
 		reportDAO.printReport(_id, _data)
-		.then(report => res.status(200).json(report))
+		.then(report => res.status(200).download(report))
 		.catch(error => res.status(400).json(error));
 	}		
 }

@@ -3855,6 +3855,10 @@ agreementsSchema.static('penaltyPayment', (idPayment:string, remarks:string):Pro
 				}
 				if (res) {
 					let fees = res.fee;
+					let needRefund = true
+					if (!res.attachment.payment) {
+						needRefund = false
+					}
 					for(var i = 0; i < fees.length; i++) {
 						let fee = fees[i];
 						let idFee = fee._id;
@@ -3863,10 +3867,9 @@ agreementsSchema.static('penaltyPayment', (idPayment:string, remarks:string):Pro
 							Payments
 								.update({"_id": idPayment, "fee": {$elemMatch: {"_id": idFee}}},{
 									$set: {
-										"fee.$.needed_refund": true,
+										"fee.$.needed_refund": needRefund,
 										"fee.$.updated_at": new Date(),
-										"remarks": remarks,
-										"status": "rejected"
+										"remarks": remarks
 									}
 								})
 								.exec((err, result) => {
