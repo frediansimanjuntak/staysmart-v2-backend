@@ -118,8 +118,9 @@ export class reportDAO{
 						created_day = ta.created_at;
 						created_at = new Date(ta.created_at);
 						dateCom = loi.date_commencement;
-						let dateCommencement = new Date(dateCom);
-						date_expired = new Date(dateCommencement.setMonth(dateCommencement.getMonth() + loi.term_lease));
+						let dateCommencement = new Date(dateCom);						
+						let dateEx = new Date(dateCommencement.setMonth(dateCommencement.getMonth() + loi.term_lease));
+						date_expired = new Date(dateEx.setDate(dateEx.getDate() - 1));
 						if (ta.payment) {
 							secpayment_proof = ta.payment.attachment.payment;
 						}	
@@ -137,7 +138,7 @@ export class reportDAO{
 						}					
 					}
 					let devName;
-					if (property.development.name) {
+					if (property.development) {
 						devName = property.development.name;
 					}		
 					else {
