@@ -298,7 +298,7 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                 if(property){
                     let landlordId = property.owner.user;
                     var members = [];
-                    // members.push(property.owner.user);
+                    members.push(property.owner.user);
                     var manager = '';
                     if(property.manager){
                         members.push(property.manager);    
@@ -413,6 +413,7 @@ chatsSchema.static('getUserRoom', (userId:string, roomName:string):Promise<any> 
     return new Promise((resolve:Function, reject:Function) => {
         DreamTalk.getUserRoom(userId, roomName).then(result => {
         	resolve(result);
+            console.log(result);
         });
     });
 });
@@ -529,9 +530,12 @@ chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => 
                     reject(err);
                 }
                 if(chat_room){
+                    let manager;
                     let landlord = chat_room.landlord.toString();
-                    let tenant = chat_room.tenant.toString();
-                    let manager = chat_room.manager.toString();
+                    let tenant = chat_room.tenant.toString();                    
+                    if (chat_room.manager) {
+                        manager = chat_room.manager.toString();
+                    }
                     if(landlord == idUser || tenant == idUser || manager == idUser) {
                         if(landlord){
                             DreamTalk.deleteRoom(roomId, landlord);
