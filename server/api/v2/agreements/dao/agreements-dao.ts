@@ -3601,58 +3601,63 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 								}
 								else {
 									let totalFee = std + gfd;
-									if (gfd <= std) {
-										receiveGfd = gfd;
-										temp = receivePayment - receiveGfd;
-										if (temp - std > 0) {
-											receiveStd = std;
-											refund = temp - std;
-										}
-										if (temp - std <= 0) {
-											receiveStd = temp;
-										}
+									if (receivePayment < totalFee) {
+										reject({message: "less payment"});
 									}
 									else {
-										receiveStd = std;
-										temp = receivePayment - receiveStd;
-										if (temp - gfd > 0) {
+										if (gfd <= std) {
 											receiveGfd = gfd;
-											refund = temp - gfd;
+											temp = receivePayment - receiveGfd;
+											if (temp - std > 0) {
+												receiveStd = std;
+												refund = temp - std;
+											}
+											if (temp - std <= 0) {
+												receiveStd = temp;
+											}
 										}
-										if (temp - gfd <= 0) {
-											receiveGfd = temp;
+										else {
+											receiveStd = std;
+											temp = receivePayment - receiveStd;
+											if (temp - gfd > 0) {
+												receiveGfd = gfd;
+												refund = temp - gfd;
+											}
+											if (temp - gfd <= 0) {
+												receiveGfd = temp;
+											}
 										}
-									}
-									// if (body.status_payment == "rejected") {
-									// 	receiveGfd = 0;
-									// 	receiveStd = 0;
-									// }
-									var data ={
-										"paymentID": paymentLoiID,								
-										"receiveAmountStd": receiveStd,
-										"receiveAmountGfd": receiveGfd,
-										"payment_confirm": body.payment_confirm,
-										"refundPayment": refund,
-										"typeInput": "loi",
-										"status": body.status_payment,
-										"remarks": body.remarks
-									};						
+										// if (body.status_payment == "rejected") {
+										// 	receiveGfd = 0;
+										// 	receiveStd = 0;
+										// }
+										var data ={
+											"paymentID": paymentLoiID,								
+											"receiveAmountStd": receiveStd,
+											"receiveAmountGfd": receiveGfd,
+											"payment_confirm": body.payment_confirm,
+											"refundPayment": refund,
+											"typeInput": "loi",
+											"status": body.status_payment,
+											"remarks": body.remarks
+										};						
 
-									if (body.status_payment == "accepted") {
-										if (receivePayment >= totalFee) {
+										if (body.status_payment == "accepted") {
+											if (receivePayment >= totalFee) {
+												Agreements.updateReceivePayment(id, data);
+												Agreements.notification(id, type_notif);										
+												Agreements.email(id, typeMail);
+											}
+											else {
+												resolve({message: "cannot process this payment, because your payment less than payment LOI"})
+											}
+										}
+										if (body.status_payment == "rejected") {
 											Agreements.updateReceivePayment(id, data);
 											Agreements.notification(id, type_notif);										
 											Agreements.email(id, typeMail);
 										}
-										else {
-											resolve({message: "cannot process this payment, because your payment less than payment LOI"})
-										}
-									}
-									if (body.status_payment == "rejected") {
-										Agreements.updateReceivePayment(id, data);
-										Agreements.notification(id, type_notif);										
-										Agreements.email(id, typeMail);
-									}									
+									}																		
 								}
 							})
 							.catch((err) => {
