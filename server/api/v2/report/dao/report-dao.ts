@@ -72,7 +72,8 @@ export class reportDAO{
 					let bankName;
 					let bankNo;
 					let landlordFullname;
-					let landlordIdNo;
+					let landlordIdNo;					
+					let dateCom;
 					if (landlord.landlord.data.name) {
 						landlordFullname = landlord.landlord.data.name;						
 					}
@@ -116,7 +117,9 @@ export class reportDAO{
 						confirmation_date = ta.confirmation.landlord.date;
 						created_day = ta.created_at;
 						created_at = new Date(ta.created_at);
-						date_expired = new Date(created_at.setDate(created_at.getDate() + 7));
+						dateCom = loi.date_commencement;
+						let dateCommencement = new Date(dateCom);
+						date_expired = new Date(dateCommencement.setMonth(dateCommencement.getMonth() + loi.term_lease));
 						if (ta.payment) {
 							secpayment_proof = ta.payment.attachment.payment;
 						}	
@@ -190,8 +193,9 @@ export class reportDAO{
 							"lapse_offer": loi.lapse_offer,
 							"term_lease": loi.term_lease,
 							"term_lease_extend": loi.term_lease_extend,
-							"date_commencement": loi.date_commencement,
+							"date_commencement": dateCom,
 							"term_payment": loi.term_payment,
+							"populate_tenant": loi.populate_tenant,
 							"minor_repair_cost": loi.minor_repair_cost,
 							"status_sign": "accept",
 							"status": status,
