@@ -1896,8 +1896,8 @@ propertiesSchema.static('step4', (properties: Object, userId: Object, device: st
                       }
                     }
                   }
-                  result[0].schedules = push_schedules;
-                  result[0].save((err, res) => {
+                  result[result.length - 1].schedules = push_schedules;
+                  result[result.length - 1].save((err, res) => {
                     if ( err ) {
                       reject({ message: err.message });
                     }
