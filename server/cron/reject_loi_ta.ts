@@ -40,12 +40,10 @@ export class AutoReject {
                           if (agreement.letter_of_intent.data) {                         
                             if (agreement.letter_of_intent.data.payment) {
                               let idPayment = agreement.letter_of_intent.data.payment._id;
-                              if (agreement.letter_of_intent.data.payment.attachment.payment && agreement.letter_of_intent.data.payment.status == "pending" || agreement.letter_of_intent.data.payment.status == "rejected") {
-                                Agreements.changeNeedRefundAfterRejectLOI(idPayment, "expired");
-                              }
+                              Agreements.changeNeedRefundAfterRejectLOI(idPayment, "loi expired");
                             }
                           }
-                          this.updatePropertyExpired(idProperty);
+                          AutoReject.updatePropertyExpired(idProperty);
                           let type = "expiredLoi";
                           Agreements.email(idAgreement, type);
                           resolve({message:"success"});
@@ -77,7 +75,7 @@ export class AutoReject {
           .find({})
           .where("tenancy_agreement.data.status").in(['pending'])
           // .where("tenancy_agreement.data.created_at").lte(oneWeeksAgo)
-          .populate("tenancy_agreement.data.payment")
+          .populate("tenancy_agreement.data.payment letter_of_intent.data.payment")
           .exec((err, agreement) => {
             if (err) {reject(err);}
             else {
@@ -105,14 +103,14 @@ export class AutoReject {
                             }
                             let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
                             Agreements.penaltyPayment(idPaymentLOI, "ta expired");
-                            this.updatePropertyExpired(idProperty);
+                            AutoReject.updatePropertyExpired(idProperty);
                             let type = "expiredLoi";
                             Agreements.email(idAgreement, type);
                             resolve({message:"success"});
                             console.log("updated");
                           }                 
                           else {
-                            reject({message: "ta not found"});
+                            console.log({message: "ta not found"});
                           }
                         }
                       })

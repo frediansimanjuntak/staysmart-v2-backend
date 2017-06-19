@@ -18,7 +18,7 @@ import {GlobalService} from '../../../../global/global.service';
 import * as moment from 'moment';
 var split = require('split-string');
 
-propertiesSchema.static('getAll', (device: string, userId: Object):Promise<any> => {
+propertiesSchema.static('getAll', (device: string, userId: Object, type: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       var today = new Date();
       let date = today.getDate() + 1;
@@ -26,7 +26,12 @@ propertiesSchema.static('getAll', (device: string, userId: Object):Promise<any> 
       let year = today.getFullYear();
       let _query = {};
       if ( device != 'desktop' ) {
-        _query = {"confirmation.status": "approved", "details.available": {$lt: new Date(year, month, date)}, "status": "published"};
+        if (type == 'browse') {
+          _query = {"confirmation.status": "approved", "details.available": {$lt: new Date(year, month, date)}, "status": "published"};
+        }
+        else {
+          _query = {};
+        }
       }
         Properties
           .find(_query)
@@ -258,10 +263,10 @@ propertiesSchema.static('memberProperty', (type:string, userId:Object, device: s
           .then(result => {
             let properties = [];
             if (type == 'landlord') {
-              Properties.getAll(device, userId).then(res => {
+              Properties.getAll(device, userId, 'all').then(res => {
                 let property = [];
                 for (var i = 0; i < res.length; i++) {
-                  if (String(res[i].user._id) == String(userId)) {
+                  if (res[i].user && String(res[i].user._id) == String(userId)) {
                     property.push(res[i]);
                   }
                 }
@@ -506,7 +511,7 @@ propertiesSchema.static('memberFavourite', (userId: Object, device: string):Prom
       Users.findById(userId).select("shortlisted_properties").exec((err, shortlisted) => {
         if (err) { reject({message: err.message}); }
         else {
-          Properties.getAll(device, userId).then(properties => {
+          Properties.getAll(device, userId, 'browse').then(properties => {
             let favourite = [];
             for (var i = 0; i < shortlisted.shortlisted_properties.length; i++) {
               for (var j = 0; j < properties.length; j++) {
