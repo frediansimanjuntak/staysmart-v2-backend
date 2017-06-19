@@ -93,7 +93,7 @@ export class UsersController {
 	static signUp(req: express.Request, res: express.Response):void {
 		let _user = req.body;
 		let _headers = req.headers;
-		let _device = req.device.type;
+		let _device = 'phone';
 		UsersDAO
 		['signUp'](_user, _headers, _device)
 		.then(users => res.status(201).json(users))
