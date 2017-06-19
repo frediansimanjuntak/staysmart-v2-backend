@@ -43,7 +43,7 @@ export class AutoReject {
                               Agreements.changeNeedRefundAfterRejectLOI(idPayment, "loi expired");
                             }
                           }
-                          AutoReject.updatePropertyExpired(idProperty);
+                          Agreements.updatePropertyStatusPayment(idProperty, "published");
                           let type = "expiredLoi";
                           Agreements.email(idAgreement, type);
                           resolve({message:"success"});
@@ -106,7 +106,7 @@ export class AutoReject {
                                 Agreements.penaltyPayment(idPaymentLOI, "ta expired");
                               }
                             }
-                            AutoReject.updatePropertyExpired(idProperty);
+                            Agreements.updatePropertyStatusPayment(idProperty, "published");
                             let type = "expiredLoi";
                             Agreements.email(idAgreement, type);
                             resolve({message:"success"});
@@ -146,21 +146,6 @@ export class AutoReject {
         true,
         'Asia/Jakarta'
       );
-    });
-  }
-
-  static updatePropertyExpired(id):void{
-    return new Promise((resolve:Function, reject:Function) => {
-      Properties
-        .update({"_id": id}, {
-          $set: {
-            "status": "published"
-          }
-        })
-        .exec((err, updated) => {
-          err ? reject(err)
-              : resolve(updated);
-        })
     });
   }
 }

@@ -814,6 +814,41 @@ agreementsSchema.static('getTotalLOINeedApprove', ():Promise<any> => {
 	});
 });
 
+agreementsSchema.static('checkLOIStatus', (id:string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let typeDataa = "letter_of_intent";
+		Agreements
+			.findById(id)
+			.exec((err, agreement) => {
+				if (err) { reject(err); }
+				else if (agreement) {
+					let loi = agreement.letter_of_intent.data;
+					if (loi.created_at || loi.status == "rejected" || loi.status == "expired") {
+						Agreements.createHistory(id, typeDataa).then((res) => {
+							Agreements
+								.update({"_id": id}, {
+									$unset: {
+										"letter_of_intent.data": ""
+									}
+								})
+								.exec((err, updated) => {
+									err ? reject (err)
+										: resolve (updated);
+								})
+						})
+						.catch((err) => {
+							reject(err)
+						})
+					}
+					else {
+						resolve({message: "LOI Already Exist"});
+					}	
+				}
+				else { reject({message: "Agreement not found"}); }
+			})
+	});
+});
+
 agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(data)) {
@@ -821,7 +856,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 		}		
 		let bodies:any = data;	
 		let body:any = GlobalService.validObjectEmpty(data);
-		let typeDataa = "letter_of_intent";
+		
 		let tenant = body.tenant;
 		let IDUser = userId.toString();
 		let inputBankNo = body.tenant.bank_account.no;
@@ -836,91 +871,57 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 						resolve({message: "forbidden"});
 					}
 					else if (tenantID == IDUser) {
-						if (loi.created_at || loi.status == "rejected" || loi.status == "expired") {
-							Agreements.createHistory(id, typeDataa).then((res) => {
-								Agreements
-									.update({"_id": id}, {
-										$unset: {
-											"letter_of_intent.data": ""
-										}
-									})
-									.exec((err, updated) => {
-										if (err) {reject(err);}
-										else {
-											Agreements.loiCreate(id, body);
-											resolve({message: "Loi created"});
-										}
-									})
-							})
-							.catch((err) => {
-								reject(err)
-							})
-						}
-						else {
-							Agreements.loiCreate(id, body);
-							resolve({message: "Loi created"});
-						}										
+						Agreements.checkLOIStatus(id).then((res) => {
+							let landlordData = agreement.landlord.landlord.data;
+							let tenantID = agreement.tenant._id;
+							let propertyID = agreement.property._id;
+							let landlordID = agreement.landlord._id;
+							let tenant = body.tenant;
+							Agreements.userUpdateDataTenant(tenantID.toString(), tenant);						
+							let monthly_rental = body.monthly_rental;
+							let term_lease = body.term_lease;
+							let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental)
+							let gfd_amount = monthly_rental;
+							let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
+							let remark = body.remark_payment;
+							let term_payment = GlobalService.calcTermPayment(term_lease);
+							// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+							let term_lease_extend = 0;
+							let _query = {"_id": id};
+							let loiObj = {$set: {}};
+							for(var param in body) {
+								loiObj.$set["letter_of_intent.data." + param] = body[param];
+							}
+							loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
+							loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
+							loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
+							loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
+							loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
+							loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
+							loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
+							loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
+							loiObj.$set["letter_of_intent.data.status"] = "draft";
+							loiObj.$set["letter_of_intent.data.created_at"] = new Date();
+							loiObj.$set["letter_of_intent.data.property"] = propertyID;
+							if (agreement.appointment) {
+								let appointmentID = agreement.appointment._id;
+								loiObj.$set["letter_of_intent.data.appointment"] = appointmentID;
+							}
+							Agreements
+								.update(_query, loiObj)
+								.exec((err, updated) => {
+									err ? reject({message: err.message})
+										: resolve({message: "Loi created"});
+								});
+						})
+						.catch((err) => {
+							reject(err);
+						})									
 					}
 				}
 				else if (err) {
 					reject({message: err.message});
 				}	
-			})		
-	});
-});
-
-agreementsSchema.static('loiCreate', (id:string, data:Object,):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		let body:any = data;
-
-		Agreements
-			.findById(id)
-			.populate("landlord tenant property appointment")
-			.exec((err, agreement) => {
-				if (err) {reject(err);}
-				else {
-					let landlordData = agreement.landlord.landlord.data;
-					let tenantID = agreement.tenant._id;
-					let propertyID = agreement.property._id;
-					let landlordID = agreement.landlord._id;
-					let tenant = body.tenant;
-					Agreements.userUpdateDataTenant(tenantID.toString(), tenant);						
-					let monthly_rental = body.monthly_rental;
-					let term_lease = body.term_lease;
-					let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental)
-					let gfd_amount = monthly_rental;
-					let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
-					let remark = body.remark_payment;
-					let term_payment = GlobalService.calcTermPayment(term_lease);
-					// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
-					let term_lease_extend = 0;
-					let _query = {"_id": id};
-					let loiObj = {$set: {}};
-					for(var param in body) {
-						loiObj.$set["letter_of_intent.data." + param] = body[param];
-					}
-					loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
-					loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
-					loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
-					loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
-					loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
-					loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
-					loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
-					loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
-					loiObj.$set["letter_of_intent.data.status"] = "draft";
-					loiObj.$set["letter_of_intent.data.created_at"] = new Date();
-					loiObj.$set["letter_of_intent.data.property"] = propertyID;
-					if (agreement.appointment) {
-						let appointmentID = agreement.appointment._id;
-						loiObj.$set["letter_of_intent.data.appointment"] = appointmentID;
-					}
-					Agreements
-						.update(_query, loiObj)
-						.exec((err, updated) => {
-							err ? reject({message: err.message})
-								: resolve({message: "Loi created"});
-						});
-				}
 			})		
 	});
 });
@@ -977,70 +978,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 		}		
 		let body:any = GlobalService.validObjectEmpty(data);
 		let IDUser = userId.toString();	
-		let typeDataa = "letter_of_intent";		
-		Appointments
-			.findById(id)
-			.exec((err, appointment) => {
-				if (err) { reject({message: err.message}); }
-				else if (appointment) {
-					let idAgreement = appointment.agreement;
-					Agreements
-						.findById(idAgreement)
-						.populate("landlord tenant property appointment")
-						.exec((err, agreement) => {
-							if (err) { reject({message: err.message}); }
-							else if (agreement) {
-								let propertyID = agreement.property._id;
-								let landlordID = agreement.landlord._id;
-								let landlordData = agreement.landlord.landlord.data;
-								let tenantID = agreement.tenant._id;
-								let tenantData = agreement.tenant.tenant.data;
-								if (tenantID != IDUser) {
-									resolve({message: "forbidden"});
-								}
-								else if (tenantID == IDUser) {
-									let loi = agreement.letter_of_intent.data;
-									if (loi.created_at || loi.status == "rejected" || loi.status == "expired") {
-										Agreements.createHistory(idAgreement, typeDataa).then((res) => {
-											Agreements
-												.update({"_id": idAgreement}, {
-													$unset: {
-														"letter_of_intent.data": ""
-													}
-												})
-												.exec((err, updated) => {
-													if (err) {reject(err);}
-													else {
-														Agreements.loiCreate(idAgreement, body).then((res) => {
-															resolve(res);
-														});
-													}
-												})
-										})
-										.catch((err) => {
-											reject(err)
-										})
-									}
-									else {
-										Agreements.loiCreate(idAgreement, body).then((res) => {
-											resolve(res);
-										});
-									}									
-								}
-							}
-							else { reject({message: "Agreement not found"}); };
-						})
-				}
-				else {
-					reject({message: "Appointment not found"})
-				}
-			})	
-	});
-});
-
-agreementsSchema.static('loiCreateMobile', (id:string, data:Object,):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		let body:any = data;
+		let typeDataa = "letter_of_intent";	
 		let tenant = {
 			'name': body.tenant.name,
 			'identification_type': body.tenant.type,
@@ -1063,64 +1001,83 @@ agreementsSchema.static('loiCreateMobile', (id:string, data:Object,):Promise<any
 				'front': body.occupants.identity_front,
 				'back': body.occupants.identity_back
 			}
-		};
-		Agreements
+		};	
+		Appointments
 			.findById(id)
-			.populate("landlord tenant property appointment")
-			.exec((err, agreement) => {
-				if (err) {reject(err);}
-				else {
-					let landlordData = agreement.landlord.landlord.data;
-					let tenantID = agreement.tenant._id;
-					let propertyID = agreement.property._id;
-					let landlordID = agreement.landlord._id;
-					let tenant = body.tenant;
-					Agreements.userUpdateDataTenant(tenantID.toString(), tenant);
-					let _query = {"_id": id};
-					let loiObj = {$set: {}};
-					let monthly_rental = body.monthly_rental;
-					let term_lease = body.term_lease;
-					let gfd_amount = monthly_rental;
-					let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental);
-					let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
-					let term_payment = GlobalService.calcTermPayment(term_lease);
-					// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
-					let term_lease_extend = 0;
-					let remark = body.remark_payment;
-					loiObj.$set["letter_of_intent.data.tenant"] = tenant;
-					loiObj.$set["letter_of_intent.data.occupiers"] = occupiers;
-					loiObj.$set["letter_of_intent.data.monthly_rental"] = body.monthly_rental;
-					loiObj.$set["letter_of_intent.data.date_commencement"] = body.date_commencement;
-					loiObj.$set["letter_of_intent.data.populate_tenant"] = body.populate_tenant;
-					loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
-					loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
-					loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
-					loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
-					loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
-					loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
-					loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
-					loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
-					loiObj.$set["letter_of_intent.data.status"] = "draft";
-					loiObj.$set["letter_of_intent.data.created_at"] = new Date();
-					loiObj.$set["letter_of_intent.data.property"] = propertyID;
-					loiObj.$set["letter_of_intent.data.appointment"] = id;
+			.exec((err, appointment) => {
+				if (err) { reject({message: err.message}); }
+				else if (appointment) {
+					let idAgreement = appointment.agreement;
 					Agreements
-						.update(_query, loiObj)
-						.exec((err, updated) => {
+						.findById(idAgreement)
+						.populate("landlord tenant property appointment")
+						.exec((err, agreement) => {
 							if (err) { reject({message: err.message}); }
-							else {
-								let result = {
-									"message": "success",
-									"code": 200,
-									"data": {
-										"_id": id
-									}
-								};
-								resolve(result);
+							else if (agreement) {
+								let propertyID = agreement.property._id;
+								let landlordID = agreement.landlord._id;
+								let landlordData = agreement.landlord.landlord.data;
+								let tenantID = agreement.tenant._id;
+								let tenantData = agreement.tenant.tenant.data;
+								if (tenantID != IDUser) {
+									resolve({message: "forbidden"});
+								}
+								else if (tenantID == IDUser) {
+									Agreements.checkLOIStatus(id).then((res) => {
+										Agreements.userUpdateDataTenant(tenantID.toString(), tenant);
+										let _query = {"_id": id};
+										let loiObj = {$set: {}};
+										let monthly_rental = body.monthly_rental;
+										let term_lease = body.term_lease;
+										let gfd_amount = monthly_rental;
+										let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental);
+										let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
+										let term_payment = GlobalService.calcTermPayment(term_lease);
+										// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+										let term_lease_extend = 0;
+										let remark = body.remark_payment;
+										loiObj.$set["letter_of_intent.data.tenant"] = tenant;
+										loiObj.$set["letter_of_intent.data.occupiers"] = occupiers;
+										loiObj.$set["letter_of_intent.data.monthly_rental"] = body.monthly_rental;
+										loiObj.$set["letter_of_intent.data.date_commencement"] = body.date_commencement;
+										loiObj.$set["letter_of_intent.data.populate_tenant"] = body.populate_tenant;
+										loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
+										loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
+										loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
+										loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
+										loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
+										loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
+										loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
+										loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
+										loiObj.$set["letter_of_intent.data.status"] = "draft";
+										loiObj.$set["letter_of_intent.data.created_at"] = new Date();
+										loiObj.$set["letter_of_intent.data.property"] = propertyID;
+										loiObj.$set["letter_of_intent.data.appointment"] = id;
+										Agreements
+											.update(_query, loiObj)
+											.exec((err, updated) => {
+												if (err) { reject({message: err.message}); }
+												else {
+													let result = {
+														"message": "success",
+														"code": 200,
+														"data": {
+															"_id": id
+														}
+													};
+													resolve(result);
+												}
+											});
+									})									
+								}
 							}
-						});
+							else { reject({message: "Agreement not found"}); };
+						})
 				}
-			})		
+				else {
+					reject({message: "Appointment not found"})
+				}
+			})	
 	});
 });
 
@@ -1493,6 +1450,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 						}
 						else if (paymentStatus == "pending" || paymentStatus == "accepted" || statusLoi == "payment-confirmed") {
 							Agreements.changeNeedRefundAfterRejectLOI(paymentId, body.reason);
+							Agreements.updatePropertyStatusPayment(agreement.property._id, "published");
 							agreement.letter_of_intent.data.status = "rejected";
 							agreement.save((err, saved)=>{
 								if (err) {
@@ -2226,22 +2184,22 @@ agreementsSchema.static('tenantAcceptance', (id:string, data:Object):Promise<any
 	});
 });
 
-agreementsSchema.static('tenantAcceptance', (id:string, data:Object):Promise<any> => {
-	return new Promise((resolve:Function, reject:Function) => {
-		Appointments
-			.findById(id)
-			.exec((err, appointment) => {
-				if (err) {reject({message: err.message});}
-				else {
-					if (appointment.agreement) {
-						let idAgreement = appointment.agreement;
-						Agreements.signTA(idAgreement, data, "tenant");
-						resolve(appointment);
-					}
-				}
-			})
-	});
-});
+// agreementsSchema.static('tenantAcceptance', (id:string, data:Object):Promise<any> => {
+// 	return new Promise((resolve:Function, reject:Function) => {
+// 		Appointments
+// 			.findById(id)
+// 			.exec((err, appointment) => {
+// 				if (err) {reject({message: err.message});}
+// 				else {
+// 					if (appointment.agreement) {
+// 						let idAgreement = appointment.agreement;
+// 						Agreements.signTA(idAgreement, data, "tenant");
+// 						resolve(appointment);
+// 					}
+// 				}
+// 			})
+// 	});
+// });
 
 agreementsSchema.static('signTA', (id:string, data:Object, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -2366,7 +2324,8 @@ agreementsSchema.static('rejectTA', (id:string, userId:string, role:string, ta:O
 						let ta = agreement.tenancy_agreement.data;
 						let paymentIdLoi = loi.payment;	
 						if (loi.status == "accepted" || ta.status == "pending") {
-							Agreements.penaltyPayment(paymentIdLoi, body.remarks);										
+							Agreements.penaltyPayment(paymentIdLoi, body.remarks);		
+							Agreements.updatePropertyStatusPayment(agreement.property._id, "published");								
 							agreement.tenancy_agreement.data.status = "rejected";
 							agreement.letter_of_intent.data.status = "rejected";
 							agreement.save((err, saved) => {
