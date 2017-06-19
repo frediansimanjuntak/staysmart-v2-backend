@@ -203,8 +203,6 @@ export class userHelper{
 		return new Promise((resolve:Function, reject:Function) => {
 			let data: any = userData;
 			let header: any = headers;
-			let auth = header.authorization;
-			let auth_code = auth.slice(7);
 			let tenant_data = {
 				_id: '',
 				user: data._id,
@@ -215,7 +213,7 @@ export class userHelper{
 				}
 			};
 			resolve({
-				'x-auth-token': auth_code,
+				'x-auth-token': token,
 				_id: data._id,
 				username: data.username,
 				email: data.email,
