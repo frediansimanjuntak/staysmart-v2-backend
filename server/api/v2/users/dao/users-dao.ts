@@ -1665,7 +1665,7 @@ usersSchema.static('refunds', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('facebookLoginMobile', (data: Object):Promise<any> => {
+usersSchema.static('facebookLoginMobile', (data: Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let body: any = data;
 		if (body.accessToken) {
@@ -1698,19 +1698,50 @@ usersSchema.static('facebookLoginMobile', (data: Object):Promise<any> => {
 					Users.find({"service.facebook.id": res.id}).exec((err, result) => {
 						if (err) { reject({message: err.message}); }
 						else if (result.length == 0) {
+							let email;
 							var _new_user = new Users();
-								_new_user.username = res.first_name.toLowerCase();
+								_new_user.username = res.id;
 								if (body.email) {
-									_new_user.email = body.email;
+									email = body.email;
 								}
 								else {
-									_new_user.email = res.email;
+									email = res.email;
 								}
+								_new_user.email = email;
 								_new_user.service.facebook.id = res.id;
 								_new_user.service.facebook.token = body.accessToken;
 								_new_user.service.facebook.picture = "http://graph.facebook.com/"+res.id+"/picture/?type=large";
 								_new_user.save((err, saved)=>{
-									if (err) { reject({message: err.message}); }
+									if (err) { 
+										if (device == 'desktop') { reject(err); }
+										else {
+											if (err.errors.email) {
+												Users.findOne({"email": email}).exec((err, user) => {
+													if (err) { reject({message: err.message}); }
+													else {
+														user.service.facebook.id = res.id;
+														user.service.facebook.token = body.accessToken;
+														user.service.facebook.picture = "http://graph.facebook.com/"+res.id+"/picture/?type=large";
+														user.save((err, userSaved) => {
+															if (err) { reject({message: err.message}); }
+															else {
+																let token = signToken(userSaved._id, userSaved.role, userSaved.username);
+																resolve({
+																	"x-auth-token": token,
+																	_id: userSaved._id,
+																	email: userSaved._id,
+																	roles: userSaved.role,
+																	verified: userSaved.verification.verified,
+																	picture: userSaved.service.facebook.picture
+																});
+															}
+														})
+													}
+												})
+											}
+											
+										}
+									}
 									else {
 										let token = signToken(saved._id, saved.role, saved.username);
 										resolve({

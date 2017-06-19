@@ -324,8 +324,9 @@ export class UsersController {
 
 	static facebookLoginMobile(req: express.Request, res: express.Response):void {
 		let _data = req.body;
+		let _device = req.device.type;
 		UsersDAO
-		['facebookLoginMobile'](_data)
+		['facebookLoginMobile'](_data, _device)
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
