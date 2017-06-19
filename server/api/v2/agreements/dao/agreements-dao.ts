@@ -3554,7 +3554,7 @@ agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
 	});
 });
 
-agreementsSchema.static('updatePropertyStatus', (id:string, status:string):Promise<any> => {
+agreementsSchema.static('updatePropertyStatusPayment', (id:string, status:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Properties
 			.update({"_id": id}, {
@@ -3582,10 +3582,10 @@ agreementsSchema.static('paymentReceiveAmount', (idAgreement:string, id:string, 
 					let data;
 					if (type == "loi") {
 						if (status == 'accepted') {
-							Agreements.updatePropertyStatus(agreement.property, "initiated");
+							Agreements.updatePropertyStatusPayment(agreement.property, "initiated");
 						}
 						else {
-							Agreements.updatePropertyStatus(agreement.property, "published");
+							Agreements.updatePropertyStatusPayment(agreement.property, "published");
 						}
 						let statusLOI = agreement.letter_of_intent.data.status;
 						if (statusLOI == "rejected" || statusLOI == "expired") {
