@@ -754,7 +754,7 @@ usersSchema.static('setDeviceToken', (id: string, data:Object):Promise<any> => {
 	});
 });
 
-usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Promise<any> => {
+usersSchema.static('updateUser', (id:string, user:Object, currentUser:string, headers: Object):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isObject(user)) {
 			return reject(new TypeError('User is not a valid object.'));
@@ -801,7 +801,13 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 										})
 									}
 									else{
-										resolve({message: 'success', code: 200});
+										Users.me(saved._id, headers, 'phone').then(result => {
+											resolve({
+												message: 'success', 
+												code: 200,
+												data: result
+											});
+										});
 									}
 								}
 				    	    });
