@@ -26,7 +26,7 @@ usersSchema.static('index', ():Promise<any> => {
 		Users
 			.find({})
 			.exec((err, users) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 				: resolve(users);
 			});
 	});
@@ -248,7 +248,7 @@ usersSchema.static('getUser', (query:Object):Promise<any> => {
 				model: 'Agreements'
 			})
 			.exec((err, users) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 				: resolve(users);
 			});
 	});
@@ -262,7 +262,7 @@ usersSchema.static('getAll', ():Promise<any> => {
 			resolve(res);
 		})
 		.catch((err)=> {
-			reject(err);
+			reject({message: err.message});
 		})
 	});
 });
@@ -287,7 +287,7 @@ usersSchema.static('me', (userId:string, headers:Object, device: string):Promise
 			}
 		})
 		.catch((err) => {
-			reject(err);
+			reject({message: err.message});
 		})
 	});
 });
@@ -299,7 +299,7 @@ usersSchema.static('username', (data:Object):Promise<any> => {
 			.findOne({"username": body.username})
 			.exec((err, user) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (user) {
 					resolve({message: "success"})
@@ -339,7 +339,7 @@ usersSchema.static('getById', (id:string):Promise<any> => {
 			})	
 		})
 		.catch((err) => {
-			reject(err);
+			reject({message: err.message});
 		})
 	});
 });
@@ -353,7 +353,7 @@ usersSchema.static('searchUser', (search:string):Promise<any> => {
 				"username": users.username,
 				"_id": users._id,
 			}
-			err ? reject(err)
+			err ? reject({message: err.message})
               	: resolve(userData);
 		})
 	});
@@ -365,7 +365,7 @@ usersSchema.static('checkUserData', (search:string):Promise<any> => {
 		.findOne({ $or: [{"username": search}, {"email": search}, {"phone": search}]})
 		.exec((err, users)=>{	
 			if(err) {
-				reject(err);
+				reject({message: err.message});
 			}
 			else{
 				if(users) {
@@ -393,7 +393,7 @@ usersSchema.static('getPropertyNonManager', (userId:string):Promise<any> => {
 			})
 			.exec((err, users) => {
 				if(err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if(users) {
 					let ownProperty = [].concat(users.owned_properties);
@@ -431,7 +431,7 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 		}
 		_user.save((err, saved)=>{
 			if(err){
-				reject(err);
+				reject({message: err.message});
 			}
 			else if(saved){
 				Users.getTotalUserSignupToday();
@@ -524,7 +524,7 @@ usersSchema.static('getTotalUserSignupToday', ():Promise<any> => {
 			.find({"created_at": {"$gte": new Date(year, month, date), "$lt": new Date(year, month, nextDate)}})
 			.exec((err, users) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (users) {
 					let data = { total: users.length }
@@ -550,13 +550,13 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 			})
 			.exec((err, update) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (update) {
 					Users
 						.findById(id, (err, user) => {
 							if(err){
-								reject(err);
+								reject({message: err.message});
 							}
 							if(user){
 								SMS.sendActivationCode(user.phone, randomCode)
@@ -575,9 +575,8 @@ usersSchema.static('resendCode', (data:Object):Promise<any> => {
 		Users
 			.findOne({"email":body.email})
 			.exec((err, user) => {
-				if (err) {reject(err);}
+				if (err) { reject({message: err.message}); }
 				else if (user) {
-					console.log(user);
 					if (user.verification.verified == true) {
 						reject({message: "user is verified"});
 					}
@@ -585,7 +584,7 @@ usersSchema.static('resendCode', (data:Object):Promise<any> => {
 						user.verification.expires = new Date(+ new Date() + 5 * 60 * 1000);
 						user.verification.code = randomCode;
 						user.save((err, saved) => {
-							if (err) {reject(err);}
+							if (err) {reject({message: err.message});}
 							else {
 								SMS.sendActivationCode(user.phone, randomCode);
 								resolve({message: "Success resend verification code"});
@@ -611,6 +610,13 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 			}
 			else if(res == true){
 				Users
+<<<<<<< HEAD
+					.findByIdAndRemove(id)
+					.exec((err, deleted) => {
+						err ? reject({message: err.message})
+							: resolve({message: 'user deleted'});
+					});
+=======
 					.findById(id)
 					.exec((err, user) => {
 						if (err) {reject(err);}
@@ -631,6 +637,7 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 							reject({message: "user not found"});
 						}
 					})				
+>>>>>>> upstream/development
 			}
 		});
 	});
@@ -646,17 +653,17 @@ usersSchema.static('changePassword', (id:string, oldpass:string, newpass:string)
 			.select('+password')
 			.exec((err, user) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(user){
 					user.authenticate(oldpass, (err, ok) => {
 				        if(err) {
-				          reject(err);
+				          reject({message: err.message});
 				        }
 				        if(ok) {
 				          	user.password = newpass;
 				        	user.save((err, res) => {
-				        		err ? reject(err)
+				        		err ? reject({message: err.message})
 									: resolve({message: 'data updated'});
 				        	});
 				        } else {
@@ -675,18 +682,18 @@ usersSchema.static('changeUserPassword', (id:string, oldpass:string, newpass:str
 			.select('+password -phone')
 			.exec((err, user) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(user){
 					user.authenticate(oldpass, (err, ok) => {
 				        if(err) {
-				          reject(err);
+				          reject({message: err.message});
 				        }
 				        if(ok) {
 				        	if (newpass == confpass) {
 				        		user.password = newpass;
 					        	user.save((err, res) => {
-					        		err ? reject(err)
+					        		err ? reject({message: err.message})
 										: resolve({message: 'Success please re-login'});
 					        	});
 				        	}
@@ -714,7 +721,7 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 			.select('-phone')
 			.exec((err, user)=>{
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(user){
 					if(body.username) {
@@ -731,7 +738,7 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 							user.picture = res.imgId;
 							user.save((err, saved) => {
 								if(err){
-									reject(err);
+									reject({message: err.message});
 								}
 								if(saved){
 									if(body.oldpassword && body.newpassword) {
@@ -739,7 +746,7 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 											resolve(res);
 										})
 										.catch((err) => {
-											reject(err);
+											reject({message: err.message});
 										})
 									}
 									else{
@@ -754,7 +761,7 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 					else {
 						user.save((err, saved) => {
 							if(err){
-								reject(err);
+								reject({message: err.message});
 							}
 							if(saved){
 								if(body.oldpassword && body.newpassword) {
@@ -762,7 +769,7 @@ usersSchema.static('updateMe', (id:string, userData:Object, image:Object, header
 										resolve(res);
 									})
 									.catch((err) => {
-										reject(err);
+										reject({message: err.message});
 									})
 								}
 								else{
@@ -810,7 +817,7 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string, he
 				Users
 					.findById(id, (err, user)=>{
 						if(err){
-							reject(err);
+							reject({message: err.message});
 						}
 						if(user){
 							if(body.username) {
@@ -838,7 +845,7 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string, he
 											resolve(res);
 										})
 										.catch((err) => {
-											reject(err);
+											reject({message: err.message});
 										})
 									}
 									else{
@@ -877,7 +884,7 @@ usersSchema.static('updateUserData', (id:Object, type:string, userData:Object, c
 					Users
 						.findByIdAndUpdate(id, userObj)
 						.exec((err, update) => {
-							err ? reject(err)
+							err ? reject({message: err.message})
 							: resolve({message: 'data updated.'});
 						});
 				});
@@ -905,7 +912,7 @@ usersSchema.static('updateUserDataOwners', (id:string, ownerData:Object):Promise
 					}
 				})
 				.exec((err, update) => {
-					err ? reject(err)
+					err ? reject({message: err.message})
 					: resolve(update);
 				});	
 		}
@@ -932,7 +939,7 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 						.findByIdAndUpdate(id, historyObj)
 						.exec((err, saved) => {
 							if(err) {
-								reject(err);
+								reject({message: err.message});
 							}
 							else{
 								var unsetObj = {$unset: {}};
@@ -944,7 +951,7 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 									.findByIdAndUpdate(id, unsetObj)
 									.exec((err, update) => {
 										if(err) {
-											reject(err);
+											reject({message: err.message});
 										}
 										else{
 											resolve({message: 'history created.'});
@@ -966,13 +973,11 @@ usersSchema.static('activationUser', (id:string, data:Object, headers:Object, de
 			return reject(new TypeError('Id is not a valid string.'));
 		}
 		let body:any = data;
-		console.log(body);
 		Users
 			.findById(id)
 			.exec((err, user) => {
-				if (err) {reject(err);}
+				if (err) { reject({message: err.message}); }
 				else if (user) {
-					console.log(user);
 					var code = user.verification.code;					
 					if (code == body.code){
 						if(user.verification.expires > new Date()) {
@@ -1035,7 +1040,7 @@ usersSchema.static('verifiedUser', (id:string, user:Object, headers:Object, devi
 							})
 							.exec((err, update) => {
 								if (err) {
-									reject(err);
+									reject({message: err.message});
 								}
 								else {
 									if (device == 'desktop') {
@@ -1071,7 +1076,7 @@ usersSchema.static('unActiveUser', (id:string):Promise<any> => {
 				$set:{"verification.verified": false}
 			})
 			.exec((err, deleted) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve();
 			});
 	});
@@ -1090,7 +1095,7 @@ usersSchema.static('updateChatsRoom', (id:string, block:boolean):Promise<any> =>
 				}
 			})
 			.exec((err, updated) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve(updated);
 			});
 	});
@@ -1129,7 +1134,7 @@ usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promis
 			.find({"_id": userId, "blocked_users": {$in: [id]}})
 			.exec((err, res) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(res){
 					if(res.length == 0){
@@ -1141,7 +1146,7 @@ usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promis
 							})
 							.exec((err, update) => {
 								if(err){
-									reject(err);
+									reject({message: err.message});
 								}
 								if(update){
 									Users.updateChatsRoom(roomId, true);
@@ -1167,7 +1172,7 @@ usersSchema.static('unblockUser', (id:string, userId:Object, roomId:string):Prom
 			.find({"_id": userId, "blocked_users": {$in: [id]}})
 			.exec((err, res) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(res){
 					if(res.length == 0){
@@ -1182,7 +1187,7 @@ usersSchema.static('unblockUser', (id:string, userId:Object, roomId:string):Prom
 							})
 							.exec((err, update) => {
 								if(err){
-									reject(err);
+									reject({message: err.message});
 								}
 								if(update){
 									Users.updateChatsRoom(roomId, false);
@@ -1234,7 +1239,7 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 						})
 						.exec((err, update) => {
 							if(err) {
-								reject(err);
+								reject({message: err.message});
 							}
 							else if(update) {
 								Users
@@ -1282,7 +1287,7 @@ usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<a
 					 	if(dateNow < result.reset_password.expired_at) {
 					 		result.password = body.password;
 					 		result.save((err, saved)=>{
-			        			err ? reject(err)
+			        			err ? reject({message: err.message})
 			        				: resolve(saved);
 			        		})
 			        		Users
@@ -1290,7 +1295,7 @@ usersSchema.static('resetPassword', (token:string, newPassword:Object):Promise<a
 			        				$unset: {"reset_password": ""}
 			        			})
 			        			.exec((err, update) => {
-									err ? reject(err)
+									err ? reject({message: err.message})
 										: resolve(update);
 								});
 					 	}
@@ -1339,14 +1344,14 @@ usersSchema.static('resetPasswordMobile', (data:string):Promise<any> => {
 						if (body.password == body.password_confirmation) {
 							res.password = body.password;
 							res.save((err, saved)=>{
-								if (err) { reject(err) };
+								if (err) { reject({message: err.message}) };
 							})
 							Users
 								.update({"reset_password.token": body.code}, {
 									$unset: {"reset_password": ""}
 								})
 								.exec((err, update) => {
-									err ? reject(err)
+									err ? reject({message: err.message})
 										: resolve({message: 'Success please re-login.'});
 								});
 						}
@@ -1413,7 +1418,7 @@ usersSchema.static('logout', (userId:string, authorization:string):Promise<any> 
 			}
 		})
 		.exec((err, updated) => {
-			err ? reject(err)
+			err ? reject({message: err.message})
 				: resolve(updated);
 		})
 	});

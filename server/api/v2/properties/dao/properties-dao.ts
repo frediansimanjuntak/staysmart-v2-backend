@@ -307,7 +307,7 @@ propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<a
           })
           .exec((err, update) => {
             if (err) {
-              reject(err);
+              reject({message: err.message});
             }
             else {
               resolve({
@@ -490,7 +490,7 @@ propertiesSchema.static('getTotalListing', ():Promise<any> => {
 			.find({"status": "pending", "confirmation.status": "pending"})
 			.exec((err, properties) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (properties) {
 					let data = { total: properties.length }
@@ -504,7 +504,7 @@ propertiesSchema.static('getTotalListing', ():Promise<any> => {
 propertiesSchema.static('memberFavourite', (userId: Object, device: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       Users.findById(userId).select("shortlisted_properties").exec((err, shortlisted) => {
-        if (err) { reject(err); }
+        if (err) { reject({message: err.message}); }
         else {
           Properties.getAll(device, userId).then(properties => {
             let favourite = [];
@@ -635,7 +635,7 @@ propertiesSchema.static('createPropertiesWithoutOwner', (propertiesObject:Object
                     _properties.created_by = userId;
                     _properties.save((err, saved)=>{
                       if(err){
-                        reject(err);
+                        reject({message: err.message});
                       }
                       if(saved){
                         Developments
@@ -704,7 +704,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
                                     .findById(id)
                                     .exec((err, property) => {
                                       if(err){
-                                        reject(err);
+                                        reject({message: err.message});
                                       }
                                       if(property){
                                         var owned_type = property.owned_type;
@@ -771,7 +771,7 @@ propertiesSchema.static('addOwnedPropertyUser', (id:string, idUser:string):Promi
           .findById(id)
           .exec((err, property) => {
             if(err){
-              reject(err);
+              reject({message: err.message});
             }
             else if(property){
               if(!property.owner.user){
@@ -783,7 +783,7 @@ propertiesSchema.static('addOwnedPropertyUser', (id:string, idUser:string):Promi
                   })
                   .exec((err, updated) => {
                     if(err){
-                      reject(err);
+                      reject({message: err.message});
                     }
                     else if(updated){
                       property.owner.user = idUser;
@@ -809,7 +809,7 @@ propertiesSchema.static('deleteOwnedPropertyUser', (id:string):Promise<any> => {
           .findById(id)
           .exec((err, property) => {
             if(err){
-              reject(err);
+              reject({message: err.message});
             }
             else if(property){
               if (property.owner.user) {
@@ -822,7 +822,7 @@ propertiesSchema.static('deleteOwnedPropertyUser', (id:string):Promise<any> => {
                   .exec((err, updated) => {
                     if(err){
                       console.log(err)
-                      reject(err);
+                      reject({message: err.message});
                     }
                     else if (updated) {
                       console.log(updated)

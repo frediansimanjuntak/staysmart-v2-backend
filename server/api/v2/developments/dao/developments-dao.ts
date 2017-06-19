@@ -81,7 +81,7 @@ developmentsSchema.static('getPropertyDraftWithoutOwnerDevelopment', (id:string,
           .select("properties")
           .exec((err, developments) => {
             if(err){
-              reject(err);
+              reject({message: err.message});
             }
             if(developments){ 
               let dev;     
@@ -161,7 +161,7 @@ developmentsSchema.static('getPropertyWithOwnerDevelopment', (id:string, data:Ob
           .select("properties")
           .exec((err, developments) => {
             if(err){
-              reject(err);
+              reject({message: err.message});
             }
             if(developments){
               let dev;     

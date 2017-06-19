@@ -8,7 +8,7 @@ import {notificationHelper} from '../../../../helper/notification.helper';
 notificationsSchema.static('countAll', (userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       Notifications.find({"user": userId}).exec((err, res) => {
-        err ? reject(err)
+        err ? reject({message: err.message})
             : resolve({
               message: 'All Notif',
               count: res.length,
@@ -21,7 +21,7 @@ notificationsSchema.static('countAll', (userId: Object):Promise<any> => {
 notificationsSchema.static('countUnread', (userId: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
       Notifications.find({"user": userId, "read": false}).exec((err, res) => {
-        err ? reject(err)
+        err ? reject({message: err.message})
             : resolve({
               message: 'Notread',
               count: res.length,
@@ -56,14 +56,14 @@ notificationsSchema.static('getAllLimit', (limit:string, userId:string):Promise<
           .sort({created_at: 'desc'})
           .exec((err, notifications) => {
             if(err){
-              reject(err);
+              reject({message: err.message});
             }
             if(notifications){
               Notifications
                 .find({"user": userId, "read": false})
                 .exec((err, res) => {
                   if(err){
-                    reject(err);
+                    reject({message: err.message});
                   }
                   if(res){
                     let data = {
