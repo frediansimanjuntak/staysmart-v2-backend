@@ -174,7 +174,7 @@ userReportsSchema.static('reportUser', (reported:string):Promise<any> => {
             .findById(reported)
             .exec((err, user) => {
                 if (err) {
-                    reject(err);
+                    reject({message: err.message});
                 }
                 else if (user) {
                     let report;
@@ -202,12 +202,12 @@ userReportsSchema.static('deleteUserReports', (reported:string):Promise<any> => 
          Users
             .findById(reported)
             .exec((err, user) => {
-                if (err) { reject(err); }
+                if (err) { reject({message: err.message}); }
                 else if (user) {
                     let report  = false;
                     user.reported = report;
                     user.save((err, saved) => {
-                        if (err) {reject(err);}
+                        if (err) {reject({message: err.message});}
                         else { 
                              UserReports
                                 .remove({"reported": reported}, false)

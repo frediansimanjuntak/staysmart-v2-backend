@@ -12,7 +12,7 @@ attachmentsSchema.static('getAll', ():Promise<any> => {
         Attachments
           .find(_query)
           .exec((err, attachments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(attachments);
           });
     });
@@ -24,7 +24,7 @@ attachmentsSchema.static('getById', (id:string):Promise<any> => {
         Attachments
           .findById(id)
           .exec((err, attachments) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(attachments);
           });
     });
@@ -131,7 +131,7 @@ attachmentsSchema.static('deleteManyAttachments', (data:string):Promise<any> => 
         Attachments
           .remove( { _id : { $in: body.ids} } )
           .exec((err, result) => {
-              err ? reject(err)
+              err ? reject({message: err.message})
                   : resolve(result);
           })
     });

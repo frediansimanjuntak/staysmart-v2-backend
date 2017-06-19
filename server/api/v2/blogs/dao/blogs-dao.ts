@@ -156,14 +156,14 @@ blogsSchema.static('getBySlug', (slug:string):Promise<any> => {
           }])
           .exec((err, blog) => {
             if (err) {
-              reject(err);
+              reject({message: err.message});
             }
             else if (blog) {
               Blogs.getBlogSimilar(blog.slug, blog.category._id).then((res) => {
                 resolve({"blog": blog, "similar": res});
               })
               .catch((err) => {
-                reject(err);
+                reject({message: err.message});
               })
             }
           });
@@ -202,7 +202,7 @@ blogsSchema.static('getBlogSimilar', (slug:string, category:string):Promise<any>
           .limit(4)        
           .exec((err, blogs) => {
               if (err) {
-                reject(err);
+                reject({message: err.message});
               }
               else if (blogs) {
                 let blogData = [];
@@ -227,7 +227,7 @@ blogsSchema.static('getBlogSimilar', (slug:string, category:string):Promise<any>
                     resolve(blogData);
                   })
                   .catch((err) => {
-                    reject(err);
+                    reject({message: err.message});
                   })
                 }
               }
@@ -245,7 +245,7 @@ blogsSchema.static('getNewBlog', (slug:string, category:string, limit:number):Pr
           .limit(limit)        
           .exec((err, blogs) => {
               if (err) {
-                reject(err);
+                reject({message: err.message});
               }
               else if (blogs) {
                 resolve(blogs);               
@@ -354,12 +354,12 @@ blogsSchema.static('subscribeBlog', (id:string, device: string, data:Object):Pro
         Blogs
           .findById(id)
           .exec((err, blogs) => {
-            if (err) { reject(err); }
+            if (err) { reject({message: err.message}); }
             else {
               Users
                 .findById(body.userId)
                 .exec((err, user) => {
-                  if (err) { reject(err); }
+                  if (err) { reject({message: err.message}); }
                   else if (user) { 
                     let data = {
                       email: user.email,
@@ -369,7 +369,7 @@ blogsSchema.static('subscribeBlog', (id:string, device: string, data:Object):Pro
                       Blogs
                         .findById(id)
                         .exec((err, blog) => {
-                          if (err) { reject(err); }
+                          if (err) { reject({message: err.message}); }
                           else{
                             if ( device != 'desktop' ) {
                               blogHelper.getSubscribeBlog(blog).then(result => {

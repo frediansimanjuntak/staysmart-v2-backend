@@ -59,7 +59,7 @@ commentsSchema.static('unSubscribeBlog', (blogObject:Object):Promise<any> => {
 			.findById(body.blog_id)
 			.exec((err, res) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(res){
 					let blogTitle = res.title;
@@ -95,7 +95,7 @@ commentsSchema.static('sendSubscribeBlog', (idBlog:string, email:string):Promise
 			.find({"extra.reference_id": idBlog})
 			.exec((err, subs) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(subs){
 					_.each(subs, (result) => {
@@ -104,7 +104,7 @@ commentsSchema.static('sendSubscribeBlog', (idBlog:string, email:string):Promise
 							.findById(blog)
 							.exec((err, res) => {
 								if(err){
-									reject(err);
+									reject({message: err.message});
 								}
 								if(res){
 									let blogTitle = res.blog.title;
@@ -117,7 +117,7 @@ commentsSchema.static('sendSubscribeBlog', (idBlog:string, email:string):Promise
 										resolve({message: "email sent"});
 									})
 									.catch(err => {
-										reject(err);
+										reject({message: err.message});
 									});	
 								}
 							})											
@@ -134,7 +134,7 @@ commentsSchema.static('sendSubscribeComment', (idBlog:string):Promise<any> => {
 			.populate("blog")	
 			.exec((err, com) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(com){
 					if(com.length == 0){
@@ -163,7 +163,7 @@ commentsSchema.static('sendBlogComment', (id:string):Promise<any> => {
 			.populate("blog")	
 			.exec((err, comment) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(comment){
 					let email = comment.email;
@@ -183,7 +183,7 @@ commentsSchema.static('checkEmailComment', (idComment:string, email:string):Prom
 			.findOne({"email": email})
 			.exec((err, user) => {
 				if(err){
-					reject(err);
+					reject({message: err.message});
 				}
 				if(user){
 					Comments
@@ -193,7 +193,7 @@ commentsSchema.static('checkEmailComment', (idComment:string, email:string):Prom
 							}
 						})
 						.exec((err, result) => {
-							err	? reject(err)
+							err	? reject({message: err.message})
 								: resolve(result);
 						})
 				}
@@ -254,7 +254,7 @@ commentsSchema.static('createComments', (comments:Object):Promise<any> => {
 		_comments.type = type;
 		_comments.save((err, saved) => {
 			if(err){
-				reject(err);
+				reject({message: err.message});
 			}
 			if(saved){
 				let idComment = saved._id;
@@ -301,7 +301,7 @@ commentsSchema.static('addComments', (comments:Object, id: string, device: strin
 		_comments.subscribes = body.subscribe;
 		_comments.save((err, saved) => {
 			if(err){
-				reject(err);
+				reject({message: err.message});
 			}
 			if(saved){
 				let idComment = saved._id;
