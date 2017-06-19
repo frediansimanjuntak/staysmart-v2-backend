@@ -124,7 +124,7 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
           }) 
         })
         .catch((err)=>{
-            reject(err.message);
+            reject({message: err.message});
         }) 
     });
 });
@@ -209,7 +209,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                     .find({"chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo, "status": {$nin: ["rejected", "cancel"]}})
                     .exec((err, res) => {
                       if (err) {
-                        reject(err);
+                        reject({message: err.message});
                       }
                       else if (res) {
                         if (res.length == 0) {
@@ -277,7 +277,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                 }
               })
               .catch(err => {
-                reject(err);
+                reject({message: err.message});
               });
             }                        
           }
@@ -359,7 +359,7 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
             }]
           })
           .exec((err, appointments) => {
-              if (err) { reject(err); }
+              if (err) { reject({message: err.message}); }
               else if (appointments){
                 let landlordUnread = 0;
                 let tenantUnread = 0;
@@ -583,7 +583,7 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
         Appointments 
           .findById(body.appointment)
           .exec((err, appointment) => {
-            if (err) { reject(err); }
+            if (err) { reject({message: err.message}); }
             else if (appointment) {
               let landlord = appointment.landlord;
               let tenant = appointment.tenant;
@@ -609,7 +609,7 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                       .findById(body.appointment)
                       .populate("property")
                       .exec((err, appointments) => {
-                        if (err) { reject(err); }
+                        if (err) { reject({message: err.message}); }
                         else if (appointments) {
                           let scheduleId = "";
                           let scheduleTime;
@@ -669,7 +669,7 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                   }
                   else { reject(res); }
                 })
-                .catch((err) => { reject(err); })
+                .catch((err) => { reject({message: err.message}); })
               }
               else { reject({message: "forbidden"});}
             }
@@ -709,7 +709,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
           })
           .exec((err, appointment)=> {
             if (err) {
-              reject(err);
+              reject({message: err.message});
             }
             else if (appointment) {
               let devID = appointment.property.development;  

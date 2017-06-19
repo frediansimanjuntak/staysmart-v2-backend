@@ -263,7 +263,7 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 			.find(_query)
 			.exec((err, res)=> {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (res) {
 					var taDocs = res;
@@ -546,7 +546,7 @@ agreementsSchema.static('getAllLoi', (userId:string, role:string):Promise<any> =
 			.sort({'letter_of_intent.data.created_at': -1})
 			.exec((err, loi) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				if (loi) {
 					let datas = [];
@@ -669,7 +669,7 @@ agreementsSchema.static('getLoiHistories', (id:string, userId:string, role:strin
 			})	
 			.exec((err, loi) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (loi) {
 					let datas = [];
@@ -726,7 +726,7 @@ agreementsSchema.static('getLoi', (id:string, userId:string, role:string):Promis
 			}
 		})
 		.catch((err)=> {
-			reject(err);
+			reject({message: err.message});
 		})		
 	});
 });
@@ -775,7 +775,7 @@ agreementsSchema.static('createLoiAppointment', (id:string, userId:string):Promi
 														}
 													})
 													.catch((err) => {
-														reject(err);
+														reject({message: err.message});
 													})
 												}
 											}
@@ -803,7 +803,7 @@ agreementsSchema.static('getTotalLOINeedApprove', ():Promise<any> => {
 			.where("letter_of_intent.data.created_at").lte(today)
 			.exec((err, agreements) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (agreements) {
 					let data = { total: agreements.length }
@@ -898,7 +898,7 @@ agreementsSchema.static('userUpdateDataTenant', (id:string, data:Object,):Promis
 			.findById(id)
 			.exec((err, res) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (res) {
 					if (res.tenant.data.name) {
@@ -970,14 +970,14 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (appointment) {
 					let idAgreement = appointment.agreement;
 					Agreements
 						.findById(idAgreement)
 						.populate("landlord tenant property appointment")
 						.exec((err, agreement) => {
-							if (err) { reject(err); }
+							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								let propertyID = agreement.property._id;
 								let landlordID = agreement.landlord._id;
@@ -1023,7 +1023,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 									Agreements
 										.update(_query, loiObj)
 										.exec((err, updated) => {
-											if (err) { reject(err); }
+											if (err) { reject({message: err.message}); }
 											else {
 												let result = {
 													"message": "success",
@@ -1057,13 +1057,13 @@ agreementsSchema.static('signLoi', (id:string, data:Object, userId:string):Promi
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (appointment) {
 					let idAgreement = appointment.agreement;
 					Agreements
 						.findById(idAgreement)
 						.exec((err, agreement) => {
-							if (err) { reject(err); }
+							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								if (agreement.tenant == IDUser) {
 									if (body.signature) {
@@ -1078,7 +1078,7 @@ agreementsSchema.static('signLoi', (id:string, data:Object, userId:string):Promi
 											}
 											else { reject(res); }
 										})
-										.catch((err) => { reject(err); })
+										.catch((err) => { reject({message: err.message}); })
 									}
 									else {
 										reject({message: "sign not found"});
@@ -1104,13 +1104,13 @@ agreementsSchema.static('acceptLoi_', (id:string, data:Object, userId:string):Pr
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (appointment) {
 					let idAgreement = appointment.agreement;
 					Agreements
 						.findById(idAgreement)
 						.exec((err, agreement) => {
-							if (err) { reject(err); }
+							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								if (agreement.landlord == IDUser) {
 									if (body.signature) {
@@ -1123,10 +1123,10 @@ agreementsSchema.static('acceptLoi_', (id:string, data:Object, userId:string):Pr
 										Agreements.confirmation(id, data);
 										agreement.letter_of_intent.data.status = "accepted";
 										agreement.save((err, saved) => {
-											err ? reject(err)
+											err ? reject({message: err.message})
 												: resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
 										})
-										.catch((err) => { reject(err); })
+										.catch((err) => { reject({message: err.message}); })
 									}	
 									else {
 										reject({message: "sign not found"});
@@ -1152,14 +1152,14 @@ agreementsSchema.static('rejectLoi_', (id:string, data:Object, userId:string):Pr
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (appointment) {
 					let idAgreement = appointment.agreement;
 					Agreements
 						.findById(idAgreement)
 						.populate("letter_of_intent.data.payment")
 						.exec((err, agreement) => {
-							if (err) { reject(err); }
+							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								if (agreement.landlord == IDUser) {
 									let payment = agreement.letter_of_intent.data.payment;
@@ -1203,7 +1203,7 @@ agreementsSchema.static('uploadPaymentLoi', (id:string, attachment:Object, userI
 			.findById(id)
 			.select("agreement")
 			.exec((err, appointment) => {
-				if (err) {reject(err);}
+				if (err) {reject({message: err.message});}
 				else if (appointment) {
 					if (appointment.agreement) {
 						let idAgreement = appointment.agreement._id;
@@ -1347,7 +1347,7 @@ agreementsSchema.static('acceptLoi', (id:string, data:Object, userId:string):Pro
 			.populate("landlord tenant property")
 			.exec((err, agreement) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (agreement) {
 					let landlordId
@@ -1445,7 +1445,7 @@ agreementsSchema.static('changeNeedRefundAfterRejectLOI', (id:string, reason:str
 		Payments
 			.findById(id)
 			.exec((err, payment) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (payment) {
 					let fees = payment.fee;
 					for (var i = 0; i < fees.length; i++) {
@@ -1458,7 +1458,7 @@ agreementsSchema.static('changeNeedRefundAfterRejectLOI', (id:string, reason:str
 								},
 							}, {multi: true})
 							.exec((err, update) => {
-								err ? reject(err)
+								err ? reject({message: err.message})
 									: resolve(update);
 							})
 					}
@@ -1477,7 +1477,7 @@ agreementsSchema.static('changeStatusChat', (id:string, status:string):Promise<a
 				}
 			})
 			.exec((err, updated) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve(updated)
 			})
 	});
@@ -1488,14 +1488,14 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (appointment) {
 					let idAgreement = appointment.agreement;
 					Agreements
 						.findById(idAgreement)
 						.populate("letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
 						.exec((err, agreement) => {
-							if (err) { reject(err); }
+							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								if (agreement.letter_of_intent.data.landlord.name || agreement.letter_of_intent.data.tenant.name) {
 									let tenant = agreement.letter_of_intent.data.tenant;
@@ -1609,7 +1609,7 @@ agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> =>
 			})
 			.exec((err, ta) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				if (ta) {
 					let datas = [];
@@ -1703,7 +1703,7 @@ agreementsSchema.static('getTaHistories', (id:string, userId:string, role:string
 			})
 			.exec((err, ta) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (ta) {
 					let datas = [];			
@@ -1770,7 +1770,7 @@ agreementsSchema.static('getTotalTANeedApprove', ():Promise<any> => {
 			.where("tenancy_agreement.data.created_at").lte(today)
 			.exec((err, agreements) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (agreements) {
 					let data = { total: agreements.length }
@@ -1796,7 +1796,7 @@ agreementsSchema.static('createTA', (id:string, data:Object, userId:string):Prom
 			resolve(res);
 		})
 		.catch((err) => {
-			reject(err);
+			reject({message: err.message});
 		})					
 	});
 });
@@ -1810,7 +1810,7 @@ agreementsSchema.static('initiateTA_', (id:string, data:Object, userId:string):P
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (appointment) {
 					if (appointment.agreement) {
 						let idAgreement = appointment.agreement;
@@ -1818,7 +1818,7 @@ agreementsSchema.static('initiateTA_', (id:string, data:Object, userId:string):P
 							resolve(res);
 						})
 						.catch((err) => {
-							reject(err);
+							reject({message: err.message});
 						})
 					}
 					else { reject({message: "Agreement not found"}); }
@@ -1876,7 +1876,7 @@ agreementsSchema.static('checklandlordBank', (id:string, data:Object):Promise<an
 		Users	
 			.findById(id)
 			.exec((err, user) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (user) {
 					if (user.landlord.data.bank_account) {
 						let landlordDataBank = user.landlord.data.bank_account;
@@ -1897,7 +1897,7 @@ agreementsSchema.static('checklandlordBank', (id:string, data:Object):Promise<an
 								}
 							})
 							.exec((err, updated) => {
-								err ? reject(err)
+								err ? reject({message: err.message})
 									: resolve(updated);
 							})
 					}
@@ -1913,7 +1913,7 @@ agreementsSchema.static('checklandlordBank', (id:string, data:Object):Promise<an
 								}
 							})
 							.exec((err, updated) => {
-								err ? reject(err)
+								err ? reject({message: err.message})
 									: resolve(updated);
 							})
 					}
@@ -1930,7 +1930,7 @@ agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
 			.findById(id)
 			.populate("landlord")
 			.exec((err, agreement) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (agreement) {
 					if (agreement.tenancy_agreement.data) {
 						let ta = agreement.tenancy_agreement.data;
@@ -1959,7 +1959,7 @@ agreementsSchema.static('uploadPaymentTA', (id:string, attachment:Object, userId
 			.findById(id)
 			.select("agreement")
 			.exec((err, appointment) => {
-				if (err) {reject(err);}
+				if (err) {reject({message: err.message});}
 				else if (appointment) {
 					if (appointment.agreement) {
 						let idAgreement = appointment.agreement._id;
@@ -2053,7 +2053,7 @@ agreementsSchema.static('updatePropertyStatus', (id:string, userId:string, until
 			.findById(id)
 			.exec((err, property) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (property) {
 					if (property.agreements.data) {
@@ -2099,7 +2099,7 @@ agreementsSchema.static('landlordSign', (id:string, data:Object):Promise<any> =>
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) {reject(err);}
+				if (err) {reject({message: err.message});}
 				else if (appointment) {
 					if (appointment.agreement) {
 						let idAgreement = appointment.agreement;
@@ -2118,7 +2118,7 @@ agreementsSchema.static('tenantAcceptance', (id:string, data:Object):Promise<any
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) {reject(err);}
+				if (err) {reject({message: err.message});}
 				else if (appointment) {
 					if (appointment.agreement) {
 						let idAgreement = appointment.agreement;
@@ -2137,7 +2137,7 @@ agreementsSchema.static('tenantAcceptance', (id:string, data:Object):Promise<any
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) {reject(err);}
+				if (err) {reject({message: err.message});}
 				else {
 					if (appointment.agreement) {
 						let idAgreement = appointment.agreement;
@@ -2158,7 +2158,7 @@ agreementsSchema.static('signTA', (id:string, data:Object, type:string):Promise<
 		Agreements
 			.findByIdAndUpdate(id, SignObj)
 			.exec((err, updated) => {
-				err ? reject(err)
+				err ? reject({message: err.message})
 					: resolve(updated);
 			})
 	});
@@ -2230,7 +2230,7 @@ agreementsSchema.static('tenantRejectTa', (id:string, userId:string, role:string
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
-				if (err) { reject(err) }
+				if (err) { reject({message: err.message}) }
 				else if (appointment) {
 					if (appointment.agreement) {
 						let idAgreement = appointment.agreement;
@@ -2380,7 +2380,7 @@ agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Pro
 				}]
 			})
 			.exec((err, agreements) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else {				
 					let landlordUnread = 0;
 					let tenantUnread = 0;
@@ -2715,7 +2715,7 @@ agreementsSchema.static('memberSectionTaById', (id:string, userId:string):Promis
 			})
 			
 			.exec((err, agreement) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (agreement) {
 					let ta = agreement.tenancy_agreement.data;
 					let asLandlord = false;
@@ -2884,7 +2884,7 @@ agreementsSchema.static('getAllInventoryList', (userId:string):Promise<any> => {
 			})
 			.exec((err, il) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				if (il) {
 					let datas = [];
@@ -2970,7 +2970,7 @@ agreementsSchema.static('getInventoryListHistories', (id:string, userId:string, 
 			})
 			.exec((err, il) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (il) {
 					let datas = [];			
@@ -3277,7 +3277,7 @@ agreementsSchema.static('loiPayment', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements.findById(id).exec((err, agreement) => {
 			if (err) {
-				reject(err);
+				reject({message: err.message});
 			}
 			else if (agreement) {
 				let loiData = agreement.letter_of_intent.data;
@@ -3308,7 +3308,7 @@ agreementsSchema.static('taPayment', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Agreements.findById(id).exec((err, agreement) => {
 			if (err) {
-				reject(err);
+				reject({message: err.message});
 			}
 			else if (agreement) {
 				let loiData = agreement.letter_of_intent.data;
@@ -3348,7 +3348,7 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 			.findById(id)
 			.exec((err, agreement) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (agreement) {
 					let loiData = agreement.letter_of_intent.data;
@@ -3395,7 +3395,7 @@ agreementsSchema.static('payment', (id:string, data:Object):Promise<any> => {
 					_payment.created_at = new Date();
 					_payment.save((err, saved)=>{
 						if (err) {
-							reject(err);
+							reject({message: err.message});
 						}
 						else if (saved) {
 							var paymentId = saved._id;
@@ -3447,7 +3447,7 @@ agreementsSchema.static('paymentCekStatus', (id:string):Promise<any> => {
 			.findById(id)
 			.exec((err, res) => {
 				if (err) {
-					reject(err)
+					reject({message: err.message})
 				}
 				else if (res) {
 					if (res.status == "accepted") {
@@ -3473,7 +3473,7 @@ agreementsSchema.static('updatePropertyStatus', (id:string, status:string):Promi
 				}
 			})
 			.exec((err, updated) => {
-			err ? reject(err)
+			err ? reject({message: err.message})
 				: resolve(updated);
 			})
 	});
@@ -3487,7 +3487,7 @@ agreementsSchema.static('paymentReceiveAmount', (idAgreement:string, id:string, 
 		Agreements
 			.findById(idAgreement)
 			.exec((err, agreement) => {
-				if (err) { reject(err); }
+				if (err) { reject({message: err.message}); }
 				else if (agreement) {
 					let data;
 					if (type == "loi") {
@@ -3695,7 +3695,7 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 								}
 							})
 							.catch((err) => {
-								reject(err);
+								reject({message: err.message});
 							})
 						}						
 					}
@@ -3811,7 +3811,7 @@ agreementsSchema.static('acceptPayment', (id:string, data:Object):Promise<any> =
 			resolve(res);
 		})
 		.catch(err => {
-			reject(err);
+			reject({message: err.message});
 		})
 	});
 });
@@ -3856,7 +3856,7 @@ agreementsSchema.static('rejectPayment', (id:string, data:Object):Promise<any> =
 			resolve(res);
 		})
 		.catch(err => {
-			reject(err);
+			reject({message: err.message});
 		})
 	});
 });
@@ -3869,7 +3869,7 @@ agreementsSchema.static('getTotalStampCertificateNotUploaded', ():Promise<any> =
 			.where("tenancy_agreement.data.created_at").lte(today)
 			.exec((err, agreements) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				else if (agreements) {
 					let count = 0;
@@ -3893,7 +3893,7 @@ agreementsSchema.static('penaltyPaymentAdminReject', (idPayment:string, remarks:
 			.findById(idPayment)
 			.exec((err, res) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				if (res) {
 					let fees = res.fee;
@@ -3949,7 +3949,7 @@ agreementsSchema.static('penaltyPayment', (idPayment:string, remarks:string):Pro
 			.findById(idPayment)
 			.exec((err, res) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				if (res) {
 					let fees = res.fee;
@@ -4160,7 +4160,7 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 			})
 			.exec((err, res) => {
 				if (err) {
-					reject(err);
+					reject({message: err.message});
 				}
 				if (res) {
 					if (res.length == 0) {
@@ -4633,7 +4633,7 @@ agreementsSchema.static('expiredPropertyRented', ():Promise<any> => {
           .find({})
           .where("tenancy_agreement.data.status").in(['accepted'])
           .exec((err, agreement) => {
-            if (err) {reject(err);}
+            if (err) {reject({message: err.message});}
             else {
               let agreementData = agreement;
               for(var i = 0; i < agreementData.length; i++){				  

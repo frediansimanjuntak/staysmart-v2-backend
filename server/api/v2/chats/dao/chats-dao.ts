@@ -126,7 +126,7 @@ chatsSchema.static('updateBlockedChat', (id:string, blocked:string):Promise<any>
             .findById(id)
             .exec((err, chatRoom) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(chatRoom){
                     chatRoom.blocked = blocked;
@@ -145,7 +145,7 @@ chatsSchema.static('checkBlock', (idCheck:string, idUser:string):Promise<any> =>
             .findById(idCheck)                    
             .exec((err, user) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(user){
                     let block;
@@ -308,7 +308,7 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                         .findOne({"tenant": uid, "property": propertyId})
                         .exec((err, chats) => {
                             if(err){
-                                reject(err);
+                                reject({message: err.message});
                             }
                             else if(chats){
                                 resolve(chats);
@@ -333,7 +333,7 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                                         _chat_rooms.tenant = uid;
                                         _chat_rooms.save((err, saved) => {
                                             if(err){
-                                                reject(err);
+                                                reject({message: err.message});
                                             }
                                             if(saved){
                                                 let agreementData = {
@@ -346,7 +346,7 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                                                     saved.agreement = idAgreement;
                                                     saved.save((err, result) => {
                                                         if(err){
-                                                            reject(err);
+                                                            reject({message: err.message});
                                                         }
                                                         if(result){
                                                             let userIds = [];
@@ -378,14 +378,14 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                                                     })
                                                 })
                                                 .catch((err) => {
-                                                    reject(err);
+                                                    reject({message: err.message});
                                                 })                                                                                            
                                             }
                                         });
                                     }
                                 })
                                 .catch((err) => {
-                                    reject(err);
+                                    reject({message: err.message});
                                 })                                 
                             }
                         })
@@ -527,7 +527,7 @@ chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => 
             .findById(roomId)
             .exec((err, chat_room) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(chat_room){
                     let manager;
@@ -574,7 +574,7 @@ chatsSchema.static('deleteRoomMany', (data:Object, role: string):Promise<any> =>
             .findById(roomId)
             .exec((err, chat_room) => {
                 if(err){
-                    reject(err);
+                    reject({message: err.message});
                 }
                 if(chat_room){
                     let landlord;
