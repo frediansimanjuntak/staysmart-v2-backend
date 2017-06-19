@@ -96,13 +96,16 @@ export class AutoReject {
                           if (agreement.tenancy_agreement.data) {
                             if (agreement.tenancy_agreement.data.payment) {
                               let idPaymentTA = agreement.tenancy_agreement.data.payment._id;
-                              let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
                               if (agreement.tenancy_agreement.data.payment.status == "pending" || agreement.tenancy_agreement.data.payment.status == "rejected") {
                                 Agreements.penaltyPayment(idPaymentTA, "ta expired");
                               }
                             }
-                            let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
-                            Agreements.penaltyPayment(idPaymentLOI, "ta expired");
+                            if (agreement.letter_of_intent.data) {
+                              if (agreement.letter_of_intent.data.payment) {
+                                let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
+                                Agreements.penaltyPayment(idPaymentLOI, "ta expired");
+                              }
+                            }
                             AutoReject.updatePropertyExpired(idProperty);
                             let type = "expiredLoi";
                             Agreements.email(idAgreement, type);
