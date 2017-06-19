@@ -204,7 +204,7 @@ export class userHelper{
 			let data: any = userData;
 			let header: any = headers;
 			let tenant_data = {
-				_id: '',
+				_id: data._id,
 				user: data._id,
 				phone: data.phone,
 				verification: {
