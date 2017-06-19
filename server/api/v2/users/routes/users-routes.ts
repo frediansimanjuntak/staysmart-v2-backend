@@ -137,5 +137,9 @@ export class UserRoutes {
 		router
 			.route('/device')
 			.post(auth.isAuthenticated(), UsersController.setDeviceToken);
+		
+		router
+			.route('/login/facebook')
+			.post(UsersController.facebookLoginMobile);
 	}
 }

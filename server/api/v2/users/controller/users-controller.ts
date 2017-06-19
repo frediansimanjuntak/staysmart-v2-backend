@@ -314,4 +314,12 @@ export class UsersController {
 		.then(users => res.status(201).json(users))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static facebookLoginMobile(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		UsersDAO
+		['facebookLoginMobile'](_data)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
 }

@@ -73,7 +73,7 @@ export class blogHelper{
 												verified: blogs.comments[j].user.verification.verified
 											}
 										],
-										picture: blogs.comments[j].user.picture ? blogs.comments[j].user.picture.url : ''
+										picture: blogs.comments[j].user.picture ? blogs.comments[j].user.picture.url : blogs.comments[j].user.service ? blogs.comments[j].user.service.facebook ? blogs.comments[j].user.service.facebook.picture : '' : ''
 									};
 						}
 						else {

@@ -45,7 +45,7 @@ export class notificationHelper{
                         user: {
                             _id: notifications[i].user._id,
                             username: notifications[i].user.username,
-                            picture: notifications[i].user.picture ? notifications[i].user.picture.url : ''
+                            picture: notifications[i].user.picture ? notifications[i].user.picture.url : notifications[i].user.service ? notifications[i].user.service.facebook ? notifications[i].user.service.facebook.picture : '' : ''
                         },
                         extra: extra
                     });
