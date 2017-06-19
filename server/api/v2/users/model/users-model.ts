@@ -165,7 +165,8 @@ var UsersSchema = new mongoose.Schema({
   service: {
     facebook: {
       id: {type: String},
-      token: {type: String}
+      token: {type: String},
+      picture: {type: String}
     },
     device: [{
       device_token: {type: String},

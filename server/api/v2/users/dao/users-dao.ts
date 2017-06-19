@@ -19,6 +19,7 @@ import {socketIo} from '../../../../server';
 import {userHelper} from '../../../../helper/user.helper';
 var split = require('split-string');
 var jwtDecode = require('jwt-decode');
+var FB = require('fb');
 
 usersSchema.static('index', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
@@ -1570,6 +1571,86 @@ usersSchema.static('refunds', ():Promise<any> => {
 				}
 			]
 		);
+	});
+});
+
+usersSchema.static('facebookLoginMobile', (data: Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body: any = data;
+		if (body.accessToken) {
+			FB.setAccessToken(body.accessToken);
+			FB.api('me', { fields: ['id', 'email', 'picture', 'name', 'first_name', 'last_name', 'link', 'gender', 'age_range'] }, function (res) {
+				if(!res || res.error) {
+					reject({message: res.error});
+				}
+				else if (!res.email || res.email == null || res.email == undefined || res.email == '') {
+					reject({
+						message: {
+							err: 'Email not found!',
+							data: {
+								id: res.id,
+								name: res.name,
+								first_name: res.first_name,
+								last_name: res.last_name,
+								link: res.link,
+								gender: res.gender,
+								locale: res.locale,
+								age_range: res.age_range,
+								accessToken: body.accessToken,
+								email: ''
+							}
+						},
+						code: 400
+					});
+				}
+				else {
+					Users.find({"service.facebook.id": res.id}).exec((err, result) => {
+						if (err) { reject({message: err.message}); }
+						else if (result.length == 0) {
+							var _new_user = new Users();
+								_new_user.username = res.first_name.toLowerCase();
+								if (body.email) {
+									_new_user.email = body.email;
+								}
+								else {
+									_new_user.email = res.email;
+								}
+								_new_user.service.facebook.id = res.id;
+								_new_user.service.facebook.token = body.accessToken;
+								_new_user.service.facebook.picture = res.picture.data.url;
+								_new_user.save((err, saved)=>{
+									if (err) { reject({message: err.message}); }
+									else {
+										let token = signToken(saved._id, saved.role, saved.username);
+										resolve({
+											"x-auth-token": token,
+											_id: saved._id,
+											email: saved._id,
+											roles: saved.role,
+											verified: saved.verification.verified,
+											picture: saved.service.facebook.picture
+										});
+									}
+								});
+						}
+						else {
+							let token = signToken(result[0]._id, result[0].role, result[0].username);
+							resolve({
+								"x-auth-token": token,
+								_id: result[0]._id,
+								email: result[0]._id,
+								roles: result[0].role,
+								verified: result[0].verification.verified,
+								picture: result[0].service.facebook.picture
+							});
+						}
+					});
+				}
+			});
+		}
+		else {
+			reject({message: 'Missing credential'});
+		}
 	});
 });
 

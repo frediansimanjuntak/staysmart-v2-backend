@@ -61,7 +61,7 @@ export class propertyHelper{
 								user: {
 									_id: properties[p].owner.user ? properties[p].owner.user._id : '',
 									username: properties[p].owner.user ? properties[p].owner.user.username : '',
-									pictures: properties[p].owner.user ? properties[p].owner.user.picture ? properties[p].owner.user.picture.url : '' : '' 
+									pictures: properties[p].owner.user ? properties[p].owner.user.picture ? properties[p].owner.user.picture.url : properties[p].owner.user.service ? properties[p].owner.user.service.facebook ? properties[p].owner.user.service.facebook.picture : '' : '' : '' 
 								},
 								address: {
 									unit_no: properties[p].address.floor,
@@ -193,7 +193,7 @@ export class propertyHelper{
 						user: {
 							_id: properties.owner.user._id,
 							username: properties.owner.user.username,
-							pictures: properties.owner.user.picture ? properties.owner.user.picture.url : ''
+							pictures: properties.owner.user.picture ? properties.owner.user.picture.url : properties.owner.user.service ? properties.owner.user.service.facebook ? properties.owner.user.service.facebook.picture : '' : ''
 						},
 						address: {
 							unit_no: properties.address.floor,
