@@ -757,7 +757,7 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 							}
 							user.save((err, saved) => {
 								if(err){
-									reject(err);
+									reject({message: err.message, code: 400});
 								}
 								if(saved){
 									if(body.oldpassword && body.newpassword) {
@@ -769,7 +769,7 @@ usersSchema.static('updateUser', (id:string, user:Object, currentUser:string):Pr
 										})
 									}
 									else{
-										resolve({message: 'data updated'});
+										resolve({message: 'success', code: 200});
 									}
 								}
 				    	    });

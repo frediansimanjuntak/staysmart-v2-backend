@@ -123,6 +123,17 @@ export class UsersController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static updateUserMobile(req: express.Request, res: express.Response):void {
+		let _id = req["user"]._id;
+		let _user = req.body;
+		let _currentUser = req["user"]._id;
+
+		UsersDAO
+		['updateUser'](_id, _user, _currentUser)
+		.then(users => res.status(201).json(users))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static updateUserData(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		let _type = req.params.type;
