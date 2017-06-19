@@ -177,9 +177,9 @@ export class UsersController {
 	}
 
 	static resendCode(req: express.Request, res: express.Response):void {
-		let _id = req["user"]._id;
+		let _body = req.body;
 		UsersDAO
-		['sendActivationCode'](_id)
+		['resendCode'](_body)
 		.then((user) => res.status(200).json(user))
 		.catch(error => res.status(400).json(error));
 	}

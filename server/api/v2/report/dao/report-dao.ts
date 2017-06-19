@@ -137,6 +137,17 @@ export class reportDAO{
 							bankCode = ""
 						}					
 					}
+					let occupants = []
+					if (loi.occupiers.length > 0) {
+						for (var g = 0; g < loi.occupiers.length; g++) {
+							let occupier = loi.occupiers[g];
+							let data = {
+								name: occupier.name,
+								id_no: occupier.identification_number
+							}
+							occupants.push(data);
+						}
+					}
 					let devName;
 					if (property.development) {
 						devName = property.development.name;
@@ -174,10 +185,7 @@ export class reportDAO{
 									"furnishing": property.details.furnishing
 								}
 							},
-							"occupants": {
-								"name": loi.occupiers.name,
-								"id_no": loi.occupiers.identification_number
-							},
+							"occupants": occupants,
 							"tenant": {
 								"name": loi.tenant.name,
 								"id_no": loi.tenant.identification_number
@@ -194,7 +202,7 @@ export class reportDAO{
 							"lapse_offer": loi.lapse_offer,
 							"term_lease": loi.term_lease,
 							"term_lease_extend": loi.term_lease_extend,
-							"date_commencement": dateCom,
+							"date_commencement": loi.date_commencement,
 							"term_payment": loi.term_payment,
 							"populate_tenant": loi.populate_tenant,
 							"minor_repair_cost": loi.minor_repair_cost,
