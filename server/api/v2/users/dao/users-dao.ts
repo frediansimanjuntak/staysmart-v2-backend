@@ -610,11 +610,34 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 			}
 			else if(res == true){
 				Users
+<<<<<<< HEAD
 					.findByIdAndRemove(id)
 					.exec((err, deleted) => {
 						err ? reject({message: err.message})
 							: resolve({message: 'user deleted'});
 					});
+=======
+					.findById(id)
+					.exec((err, user) => {
+						if (err) {reject(err);}
+						else if (user) {
+							if (user.owned_properties.length > 0 || user.rented_properties.length > 0 || user.managed_properties.length > 0 || user.chat_rooms.length > 0) {
+								reject({message: "can't to delete this user"})
+							}
+							else {
+								Users
+									.findByIdAndRemove(id)
+									.exec((err, deleted) => {
+										err ? reject(err)
+											: resolve({message: 'user deleted'});
+									});
+							}
+						}
+						else {
+							reject({message: "user not found"});
+						}
+					})				
+>>>>>>> upstream/development
 			}
 		});
 	});
@@ -944,51 +967,56 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('activationUser', (id:string, user:Object, headers:Object, device: string):Promise<any> => {
+usersSchema.static('activationUser', (id:string, data:Object, headers:Object, device:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		let body:any = user;
-
+		let body:any = data;
 		Users
-			.findById(id, (err,user)=>{
-				var code = user.verification.code;
-					
-				if (code == body.code){
-					if(user.verification.expires > new Date()) {
-						Users
-							.update({"_id": id},{
-								$set:
-								{
-									"verification.verified": true, 
-									"verification.verified_date": new Date()
-								}
-							})
-							.exec((err, update) => {
-								if (err) {
-									reject({message: err.message});
-								}
-								else {
-									if (device == 'desktop') {
-										resolve({message: 'user verified.'});
+			.findById(id)
+			.exec((err, user) => {
+				if (err) { reject({message: err.message}); }
+				else if (user) {
+					var code = user.verification.code;					
+					if (code == body.code){
+						if(user.verification.expires > new Date()) {
+							Users
+								.update({"_id": id},{
+									$set:
+									{
+										"verification.verified": true, 
+										"verification.verified_date": new Date()
+									}
+								})
+								.exec((err, update) => {
+									if (err) {
+										reject(err);
 									}
 									else {
-										userHelper.activationHelper(id, headers).then(result => {
-											resolve(result);
-										});
-									}
-								} 
-							});
+										if (device == 'desktop') {
+											resolve({message: 'user verified.'});
+										}
+										else {
+											userHelper.activationHelper(id, headers).then(result => {
+												resolve(result);
+											});
+										}
+									} 
+								});
+						}
+						else{
+							reject({message: 'Your code has expired.'});
+						}
 					}
-					else{
-						reject({message: 'Your code has expired.'});
+					else {
+						reject({message: 'Your code is wrong or has expired.'});
 					}	
 				}
-				else{
-					reject({message: 'Your code is wrong or has expired.'});
+				else {
+					reject({message: 'User not found'});
 				}
-			})
+			})		
 		});
 });
 

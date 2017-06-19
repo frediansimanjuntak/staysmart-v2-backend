@@ -22,34 +22,38 @@ export class AutoReject {
           .populate("letter_of_intent.data.payment")
           .exec((err, agreement) => {
             if (err) {reject(err);}
-            else {
+            else {             
               let agreementData = agreement;
               for(var i = 0; i < agreementData.length; i++){
                 let agreement = agreementData[i];
                 let idAgreement = agreement._id;
-                let idProperty = agreement.property;                
-                Agreements
-                  .findByIdAndUpdate(idAgreement, {
-                    $set: {"letter_of_intent.data.status": "expired"}
-                  })
-                  .exec((err, updated) => {
-                    if (err) { reject(err); }
-                    else {
-                       if (agreement.letter_of_intent.data) {                         
-                        if (agreement.letter_of_intent.data.payment) {
-                          let idPayment = agreement.letter_of_intent.data.payment._id;
-                          if (agreement.letter_of_intent.data.payment.attachment.payment && agreement.letter_of_intent.data.payment.status == "pending" || agreement.letter_of_intent.data.payment.status == "rejected") {
-                            Agreements.changeNeedRefundAfterRejectLOI(idPayment, "expired");
+                let idProperty = agreement.property;    
+                if (agreement.letter_of_intent.data) {                         
+                  if (agreement.letter_of_intent.data.status == 'payment-confirmed') {
+                    Agreements
+                      .findByIdAndUpdate(idAgreement, {
+                        $set: {"letter_of_intent.data.status": "expired"}
+                      })
+                      .exec((err, updated) => {
+                        if (err) { reject(err); }
+                        else {
+                          if (agreement.letter_of_intent.data) {                         
+                            if (agreement.letter_of_intent.data.payment) {
+                              let idPayment = agreement.letter_of_intent.data.payment._id;
+                              if (agreement.letter_of_intent.data.payment.attachment.payment && agreement.letter_of_intent.data.payment.status == "pending" || agreement.letter_of_intent.data.payment.status == "rejected") {
+                                Agreements.changeNeedRefundAfterRejectLOI(idPayment, "expired");
+                              }
+                            }
                           }
+                          this.updatePropertyExpired(idProperty);
+                          let type = "expiredLoi";
+                          Agreements.email(idAgreement, type);
+                          resolve({message:"success"});
+                          console.log("updated");
                         }
-                       }
-                      this.updatePropertyExpired(idProperty);
-                      let type = "expiredLoi";
-                      Agreements.email(idAgreement, type);
-                      resolve({message:"success"});
-                      console.log("updated");
-                    }
-                  })
+                      })
+                  }
+                }
               }
             }              
           })
@@ -79,36 +83,41 @@ export class AutoReject {
             else {
               let agreementData = agreement;
               for(var i = 0; i < agreementData.length; i++){
+                let agreement = agreementData[i];
                 let idAgreement = agreementData[i]._id;
                 let idProperty = agreementData[i].property;
-                Agreements
-                  .findByIdAndUpdate(idAgreement, {
-                    $set: {"tenancy_agreement.data.status": "expired", "letter_of_intent.data.status": "expired"}
-                  })
-                  .exec((err, updated) => {
-                    if (err) { reject(err); }
-                    else {
-                      if (agreement.tenancy_agreement.data) {
-                        if (agreement.tenancy_agreement.data.payment) {
-                          let idPaymentTA = agreement.tenancy_agreement.data.payment._id;
-                          let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
-                          if (agreement.tenancy_agreement.data.payment.status == "pending" || agreement.tenancy_agreement.data.payment.status == "rejected") {
-                            Agreements.penaltyPayment(idPaymentTA, "ta expired");
+                if (agreement.letter_of_intent.data) {                         
+                  if (agreement.tenancy_agreement.data.status == 'pending') {
+                    Agreements
+                      .findByIdAndUpdate(idAgreement, {
+                        $set: {"tenancy_agreement.data.status": "expired", "letter_of_intent.data.status": "expired"}
+                      })
+                      .exec((err, updated) => {
+                        if (err) { reject(err); }
+                        else {
+                          if (agreement.tenancy_agreement.data) {
+                            if (agreement.tenancy_agreement.data.payment) {
+                              let idPaymentTA = agreement.tenancy_agreement.data.payment._id;
+                              let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
+                              if (agreement.tenancy_agreement.data.payment.status == "pending" || agreement.tenancy_agreement.data.payment.status == "rejected") {
+                                Agreements.penaltyPayment(idPaymentTA, "ta expired");
+                              }
+                            }
+                            let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
+                            Agreements.penaltyPayment(idPaymentLOI, "ta expired");
+                            this.updatePropertyExpired(idProperty);
+                            let type = "expiredLoi";
+                            Agreements.email(idAgreement, type);
+                            resolve({message:"success"});
+                            console.log("updated");
+                          }                 
+                          else {
+                            reject({message: "ta not found"});
                           }
                         }
-                        let idPaymentLOI = agreement.letter_of_intent.data.payment._id;
-                        Agreements.penaltyPayment(idPaymentLOI, "ta expired");
-                        this.updatePropertyExpired(idProperty);
-                        let type = "expiredLoi";
-                        Agreements.email(idAgreement, type);
-                        resolve({message:"success"});
-                        console.log("updated");
-                      }                 
-                      else {
-                        reject({message: "ta not found"});
-                      }
-                    }
-                  })
+                      })
+                  }
+                }                
               }
             }
           })

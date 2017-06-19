@@ -83,7 +83,7 @@ appointmentsSchema.static('getAll', (userId:string):Promise<any> => {
 appointmentsSchema.static('getByProperty', (idproperty:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         var ObjectID = mongoose.Types.ObjectId;  
-        let _query = {"property": idproperty};
+        let _query = {"property": idproperty, };
         Appointments.getAppointment(_query).then(res => {
             resolve(res);
         })
@@ -206,7 +206,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                   let timeFrom = body.time[i];
                   let timeTo = body.time2[i];
                   Appointments
-                    .find({"chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo, "status": {$nin: ["rejected", "cancel"]}})
+                    .find({"property": body.property, "chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo, "status": {$nin: ["rejected", "cancel"]}})
                     .exec((err, res) => {
                       if (err) {
                         reject({message: err.message});

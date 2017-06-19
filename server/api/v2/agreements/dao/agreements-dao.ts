@@ -845,7 +845,21 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 					}
 					else if (tenantID == IDUser) {
 						if (loi.created_at || loi.status == "rejected" || loi.status == "expired") {
-							Agreements.createHistory(id, typeDataa);
+							Agreements.createHistory(id, typeDataa).then((res) => {
+								Agreements
+									.update({"_id": id}, {
+										$unset: {
+											"letter_of_intent.data": ""
+										}
+									})
+									.exec((err, updated) => {
+										err ? reject(err)
+											: console.log(updated);
+									})
+							})
+							.catch((err) => {
+								reject(err)
+							})
 						}
 						Agreements.userUpdateDataTenant(tenantID.toString(), tenant);						
 						let monthly_rental = body.monthly_rental;
@@ -855,7 +869,8 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 						let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
 						let remark = body.remark_payment;
 						let term_payment = GlobalService.calcTermPayment(term_lease);
-						let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+						// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+						let term_lease_extend = 0;
 						let _query = {"_id": id};
 						let loiObj = {$set: {}};
 					    for(var param in body) {
@@ -1001,7 +1016,8 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 									let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental);
 									let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
 									let term_payment = GlobalService.calcTermPayment(term_lease);
-									let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+									// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+									let term_lease_extend = 0;
 									let remark = body.remark_payment;
 									loiObj.$set["letter_of_intent.data.tenant"] = tenant;
 									loiObj.$set["letter_of_intent.data.occupiers"] = occupiers;
@@ -1936,8 +1952,21 @@ agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
 						let ta = agreement.tenancy_agreement.data;
 						if (ta.created_at) {
 							if (ta.status == "rejected" || ta.status == "expired") {
-								Agreements.createHistory(id, type);
-								resolve(ta);
+								Agreements.createHistory(id, type).then((res) => {
+									Agreements
+										.update({"_id": id}, {
+											$unset: {
+												"letter_of_intent.data": ""
+											}
+										})
+										.exec((err, updated) => {
+											err ? reject(err)
+												: resolve(ta);
+										})
+								})
+								.catch((err) => {
+									reject(err)
+								})
 							}
 							else { resolve({message: "TA Already Exist"}); }
 						}
