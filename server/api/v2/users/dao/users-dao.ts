@@ -513,10 +513,8 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
-		}
-		
+		}		
 		let randomCode = Math.random().toString(36).substr(2, 6);
-
 		Users
 			.update({"_id": id}, {
 				$set: {
@@ -525,10 +523,10 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 				}
 			})
 			.exec((err, update) => {
-				if(err){
+				if (err) {
 					reject(err);
 				}
-				else if(update){
+				else if (update) {
 					Users
 						.findById(id, (err, user) => {
 							if(err){
@@ -536,7 +534,7 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 							}
 							if(user){
 								SMS.sendActivationCode(user.phone, randomCode)
-								resolve({message: "code sent"});
+								resolve({message: "Success resend verification code"});
 							}
 						})
 				}

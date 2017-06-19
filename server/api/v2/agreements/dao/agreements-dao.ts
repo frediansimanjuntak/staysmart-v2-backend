@@ -479,13 +479,7 @@ agreementsSchema.static('updateAgreements', (id:string, agreements:Object):Promi
 agreementsSchema.static('getAllLoi', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let IDUser = userId.toString();
-		let _query;
-		if (role == "admin") {
-			_query = {};
-		}
-		else {
-			_query = { $or: [{"landlord": userId}, {"tenant": userId}]};
-		}
+		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
 		Agreements
 			.find(_query)
 			.populate("landlord tenant letter_of_intent.data.appointment letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
@@ -1572,13 +1566,7 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 agreementsSchema.static('getAllTa', (userId:string, role:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let IDUser = userId.toString();
-		let _query;
-		if (role == "admin") {
-			_query = {};
-		}
-		else {
-			_query = { $or: [{"landlord": userId}, {"tenant": userId}]};
-		}		
+		let _query = { $or: [{"landlord": userId}, {"tenant": userId}]};
 		Agreements
 			.find(_query)
 			.populate("landlord tenant tenancy_agreement.data.stamp_certificate")
