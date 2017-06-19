@@ -1665,7 +1665,7 @@ usersSchema.static('refunds', ():Promise<any> => {
 	});
 });
 
-usersSchema.static('facebookLoginMobile', (data: Object):Promise<any> => {
+usersSchema.static('facebookLoginMobile', (data: Object, device: string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		let body: any = data;
 		if (body.accessToken) {
@@ -1699,7 +1699,7 @@ usersSchema.static('facebookLoginMobile', (data: Object):Promise<any> => {
 						if (err) { reject({message: err.message}); }
 						else if (result.length == 0) {
 							var _new_user = new Users();
-								_new_user.username = res.first_name.toLowerCase();
+								_new_user.username = res.id;
 								if (body.email) {
 									_new_user.email = body.email;
 								}
@@ -1710,7 +1710,35 @@ usersSchema.static('facebookLoginMobile', (data: Object):Promise<any> => {
 								_new_user.service.facebook.token = body.accessToken;
 								_new_user.service.facebook.picture = "http://graph.facebook.com/"+res.id+"/picture/?type=large";
 								_new_user.save((err, saved)=>{
-									if (err) { reject({message: err.message}); }
+									if (err) { 
+										if (device == 'desktop') { reject(err); }
+										else {
+											let error = [];
+											err.errors.username ? error.push('username') : '';
+											err.errors.email ? error.push('email') : '';
+											err.errors.phone ? error.push('phone') : '';
+											err.errors.password ? error.push('password'): '';
+
+											let message;
+											if (error.length > 2) {
+												let error_message = '';
+												for (var i = 0; i < error.length - 1; i++){
+													error_message = error_message + error[i] + ', ';
+												}
+												message = 'Incorrect ' + error_message + 'or ' + error[error.length-1];
+											}
+											else if (error.length == 2) {
+												message = 'Incorrect ' + error[0] + ' or ' + error[1];
+											}
+											else {
+												message = error[0] + ' null';
+											}
+											reject({
+												message: message,
+												code: 400
+											});
+										}
+									}
 									else {
 										let token = signToken(saved._id, saved.role, saved.username);
 										resolve({
