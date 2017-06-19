@@ -1617,7 +1617,7 @@ usersSchema.static('facebookLoginMobile', (data: Object):Promise<any> => {
 								}
 								_new_user.service.facebook.id = res.id;
 								_new_user.service.facebook.token = body.accessToken;
-								_new_user.service.facebook.picture = res.picture.data.url;
+								_new_user.service.facebook.picture = "http://graph.facebook.com/"+res.id+"/picture/?type=large";
 								_new_user.save((err, saved)=>{
 									if (err) { reject({message: err.message}); }
 									else {
