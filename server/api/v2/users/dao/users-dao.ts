@@ -542,6 +542,38 @@ usersSchema.static('sendActivationCode', (id:string):Promise<any> => {
 	});
 });
 
+usersSchema.static('resendCode', (data:Object):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data;
+		let randomCode = Math.random().toString(36).substr(2, 6);
+		Users
+			.findOne({"email":body.email})
+			.exec((err, user) => {
+				if (err) {reject(err);}
+				else if (user) {
+					console.log(user);
+					if (user.verification.verified == true) {
+						reject({message: "user is verified"});
+					}
+					else {
+						user.verification.expires = new Date(+ new Date() + 5 * 60 * 1000);
+						user.verification.code = randomCode;
+						user.save((err, saved) => {
+							if (err) {reject(err);}
+							else {
+								SMS.sendActivationCode(user.phone, randomCode);
+								resolve({message: "Success resend verification code"});
+							}
+						})
+					}					
+				}
+				else {
+					reject({message: "user not found"});
+				}
+			})		
+	});
+});
+
 usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
