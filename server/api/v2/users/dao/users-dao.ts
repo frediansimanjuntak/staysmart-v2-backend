@@ -629,7 +629,7 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 						else {
 							reject({message: "user not found"});
 						}
-					})							
+					})				
 			}
 		});
 	});

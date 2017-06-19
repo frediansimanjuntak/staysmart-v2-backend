@@ -5,8 +5,9 @@ export class PropertiesController {
 	static getAll(req: express.Request, res: express.Response):void {
 		let _device = req.device.type;
 		let _userId = req["user"]._id;
+		let _type = 'browse';
 		PropertiesDAO
-		['getAll'](_device, _userId)
+		['getAll'](_device, _userId, _type)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
