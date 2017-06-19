@@ -585,11 +585,26 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 			}
 			else if(res == true){
 				Users
-					.findByIdAndRemove(id)
-					.exec((err, deleted) => {
-						err ? reject(err)
-							: resolve({message: 'user deleted'});
-					});
+					.findById(id)
+					.exec((err, user) => {
+						if (err) {reject(err);}
+						else if (user) {
+							if (user.owned_properties.length > 0 || user.rented_properties.length > 0 || user.managed_properties.length > 0 || user.chat_rooms.length > 0) {
+								reject({message: "can't to delete this user"})
+							}
+							else {
+								Users
+									.findByIdAndRemove(id)
+									.exec((err, deleted) => {
+										err ? reject(err)
+											: resolve({message: 'user deleted'});
+									});
+							}
+						}
+						else {
+							reject({message: "user not found"});
+						}
+					})				
 			}
 		});
 	});
