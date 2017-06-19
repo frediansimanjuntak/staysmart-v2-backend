@@ -830,15 +830,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 			.populate("landlord tenant property appointment")
 			.exec((err, agreement) => {
 				if (agreement) {				
-					let propertyID = agreement.property._id;
-					let landlordID = agreement.landlord._id;
-					let landlordData = agreement.landlord.landlord.data;
 					let tenantID = agreement.tenant._id;
-					let tenantData = agreement.tenant.tenant.data;
-					let appointmentID;
-					if (agreement.appointment) {
-						appointmentID = agreement.appointment._id;
-					}				
 					let loi = agreement.letter_of_intent.data;
 					if (tenantID != IDUser) {
 						resolve({message: "forbidden"});
@@ -853,55 +845,82 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 										}
 									})
 									.exec((err, updated) => {
-										err ? reject(err)
-											: console.log(updated);
+										if (err) {reject(err);}
+										else {
+											Agreements.loiCreate(id, body);
+											resolve({message: "Loi created"});
+										}
 									})
 							})
 							.catch((err) => {
 								reject(err)
 							})
 						}
-						Agreements.userUpdateDataTenant(tenantID.toString(), tenant);						
-						let monthly_rental = body.monthly_rental;
-						let term_lease = body.term_lease;
-						let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental)
-						let gfd_amount = monthly_rental;
-						let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
-						let remark = body.remark_payment;
-						let term_payment = GlobalService.calcTermPayment(term_lease);
-						// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
-						let term_lease_extend = 0;
-						let _query = {"_id": id};
-						let loiObj = {$set: {}};
-					    for(var param in body) {
-					    	loiObj.$set["letter_of_intent.data." + param] = body[param];
-					    }
-					    loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
-						loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
-						loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
-						loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
-						loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
-						loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
-					    loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
-					    loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
-					    loiObj.$set["letter_of_intent.data.status"] = "draft";
-					    loiObj.$set["letter_of_intent.data.created_at"] = new Date();
-					    loiObj.$set["letter_of_intent.data.property"] = propertyID;
-					    if (agreement.appointment) {
-							appointmentID = agreement.appointment._id;
-							loiObj.$set["letter_of_intent.data.appointment"] = appointmentID;
-						}
-						Agreements
-							.update(_query, loiObj)
-							.exec((err, updated) => {
-								err ? reject({message: err.message})
-									: resolve({message: "Loi created"});
-							});				
+						else {
+							Agreements.loiCreate(id, body);
+							resolve({message: "Loi created"});
+						}										
 					}
 				}
 				else if (err) {
 					reject({message: err.message});
 				}	
+			})		
+	});
+});
+
+agreementsSchema.static('loiCreate', (id:string, data:Object,):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data;
+
+		Agreements
+			.findById(id)
+			.populate("landlord tenant property appointment")
+			.exec((err, agreement) => {
+				if (err) {reject(err);}
+				else {
+					let landlordData = agreement.landlord.landlord.data;
+					let tenantID = agreement.tenant._id;
+					let propertyID = agreement.property._id;
+					let landlordID = agreement.landlord._id;
+					let tenant = body.tenant;
+					Agreements.userUpdateDataTenant(tenantID.toString(), tenant);						
+					let monthly_rental = body.monthly_rental;
+					let term_lease = body.term_lease;
+					let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental)
+					let gfd_amount = monthly_rental;
+					let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
+					let remark = body.remark_payment;
+					let term_payment = GlobalService.calcTermPayment(term_lease);
+					// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+					let term_lease_extend = 0;
+					let _query = {"_id": id};
+					let loiObj = {$set: {}};
+					for(var param in body) {
+						loiObj.$set["letter_of_intent.data." + param] = body[param];
+					}
+					loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
+					loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
+					loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
+					loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
+					loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
+					loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
+					loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
+					loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
+					loiObj.$set["letter_of_intent.data.status"] = "draft";
+					loiObj.$set["letter_of_intent.data.created_at"] = new Date();
+					loiObj.$set["letter_of_intent.data.property"] = propertyID;
+					if (agreement.appointment) {
+						let appointmentID = agreement.appointment._id;
+						loiObj.$set["letter_of_intent.data.appointment"] = appointmentID;
+					}
+					Agreements
+						.update(_query, loiObj)
+						.exec((err, updated) => {
+							err ? reject({message: err.message})
+								: resolve({message: "Loi created"});
+						});
+				}
 			})		
 	});
 });
@@ -958,30 +977,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 		}		
 		let body:any = GlobalService.validObjectEmpty(data);
 		let IDUser = userId.toString();	
-		let typeDataa = "letter_of_intent";
-		let tenant = {
-			'name': body.tenant.name,
-			'identification_type': body.tenant.type,
-			'identification_number': body.tenant.id_no,
-			'identification_proof': {
-				'front': body.tenant.identity_front,
-				'back': body.tenant.identity_back
-			},
-			'bank_account': {
-				'bank':body.bank_refund.bank_id,
-				'name': body.bank_refund.name,
-				'no': body.bank_refund.no
-			}
-		};
-		let occupiers = {
-			'name': body.occupants.name,
-			'identification_type': body.occupants.type,
-			'identification_number': body.occupants.id_no,
-			'identification_proof': {
-				'front': body.occupants.identity_front,
-				'back': body.occupants.identity_back
-			}
-		};
+		let typeDataa = "letter_of_intent";		
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
@@ -1005,52 +1001,31 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 								else if (tenantID == IDUser) {
 									let loi = agreement.letter_of_intent.data;
 									if (loi.created_at || loi.status == "rejected" || loi.status == "expired") {
-										Agreements.createHistory(id, typeDataa);
-									}
-									Agreements.userUpdateDataTenant(tenantID.toString(), tenant);
-									let _query = {"_id": idAgreement};
-									let loiObj = {$set: {}};
-									let monthly_rental = body.monthly_rental;
-									let term_lease = body.term_lease;
-									let gfd_amount = monthly_rental;
-									let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental);
-									let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
-									let term_payment = GlobalService.calcTermPayment(term_lease);
-									// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
-									let term_lease_extend = 0;
-									let remark = body.remark_payment;
-									loiObj.$set["letter_of_intent.data.tenant"] = tenant;
-									loiObj.$set["letter_of_intent.data.occupiers"] = occupiers;
-									loiObj.$set["letter_of_intent.data.monthly_rental"] = body.monthly_rental;
-									loiObj.$set["letter_of_intent.data.date_commencement"] = body.date_commencement;
-									loiObj.$set["letter_of_intent.data.populate_tenant"] = body.populate_tenant;
-									loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
-									loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
-									loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
-									loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
-									loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
-									loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
-									loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
-									loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
-									loiObj.$set["letter_of_intent.data.status"] = "draft";
-									loiObj.$set["letter_of_intent.data.created_at"] = new Date();
-									loiObj.$set["letter_of_intent.data.property"] = propertyID;
-									loiObj.$set["letter_of_intent.data.appointment"] = id;
-									Agreements
-										.update(_query, loiObj)
-										.exec((err, updated) => {
-											if (err) { reject({message: err.message}); }
-											else {
-												let result = {
-													"message": "success",
-													"code": 200,
-													"data": {
-														"_id": idAgreement
+										Agreements.createHistory(idAgreement, typeDataa).then((res) => {
+											Agreements
+												.update({"_id": idAgreement}, {
+													$unset: {
+														"letter_of_intent.data": ""
 													}
-												};
-												resolve(result);
-											}
+												})
+												.exec((err, updated) => {
+													if (err) {reject(err);}
+													else {
+														Agreements.loiCreate(idAgreement, body).then((res) => {
+															resolve(res);
+														});
+													}
+												})
+										})
+										.catch((err) => {
+											reject(err)
+										})
+									}
+									else {
+										Agreements.loiCreate(idAgreement, body).then((res) => {
+											resolve(res);
 										});
+									}									
 								}
 							}
 							else { reject({message: "Agreement not found"}); };
@@ -1060,6 +1035,92 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 					reject({message: "Appointment not found"})
 				}
 			})	
+	});
+});
+
+agreementsSchema.static('loiCreateMobile', (id:string, data:Object,):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		let body:any = data;
+		let tenant = {
+			'name': body.tenant.name,
+			'identification_type': body.tenant.type,
+			'identification_number': body.tenant.id_no,
+			'identification_proof': {
+				'front': body.tenant.identity_front,
+				'back': body.tenant.identity_back
+			},
+			'bank_account': {
+				'bank':body.bank_refund.bank_id,
+				'name': body.bank_refund.name,
+				'no': body.bank_refund.no
+			}
+		};
+		let occupiers = {
+			'name': body.occupants.name,
+			'identification_type': body.occupants.type,
+			'identification_number': body.occupants.id_no,
+			'identification_proof': {
+				'front': body.occupants.identity_front,
+				'back': body.occupants.identity_back
+			}
+		};
+		Agreements
+			.findById(id)
+			.populate("landlord tenant property appointment")
+			.exec((err, agreement) => {
+				if (err) {reject(err);}
+				else {
+					let landlordData = agreement.landlord.landlord.data;
+					let tenantID = agreement.tenant._id;
+					let propertyID = agreement.property._id;
+					let landlordID = agreement.landlord._id;
+					let tenant = body.tenant;
+					Agreements.userUpdateDataTenant(tenantID.toString(), tenant);
+					let _query = {"_id": id};
+					let loiObj = {$set: {}};
+					let monthly_rental = body.monthly_rental;
+					let term_lease = body.term_lease;
+					let gfd_amount = monthly_rental;
+					let security_deposit = GlobalService.calcSecurityDeposit(term_lease, monthly_rental);
+					let sd_amount = GlobalService.calcSDA(term_lease, monthly_rental);
+					let term_payment = GlobalService.calcTermPayment(term_lease);
+					// let term_lease_extend = GlobalService.termLeaseExtend(term_lease);
+					let term_lease_extend = 0;
+					let remark = body.remark_payment;
+					loiObj.$set["letter_of_intent.data.tenant"] = tenant;
+					loiObj.$set["letter_of_intent.data.occupiers"] = occupiers;
+					loiObj.$set["letter_of_intent.data.monthly_rental"] = body.monthly_rental;
+					loiObj.$set["letter_of_intent.data.date_commencement"] = body.date_commencement;
+					loiObj.$set["letter_of_intent.data.populate_tenant"] = body.populate_tenant;
+					loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
+					loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
+					loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
+					loiObj.$set["letter_of_intent.data.term_lease_extend"] = term_lease_extend;
+					loiObj.$set["letter_of_intent.data.lapse_offer"] = 7;
+					loiObj.$set["letter_of_intent.data.minor_repair_cost"] = 200;
+					loiObj.$set["letter_of_intent.data.security_deposit"] = security_deposit;
+					loiObj.$set["letter_of_intent.data.landlord"] = landlordData;
+					loiObj.$set["letter_of_intent.data.status"] = "draft";
+					loiObj.$set["letter_of_intent.data.created_at"] = new Date();
+					loiObj.$set["letter_of_intent.data.property"] = propertyID;
+					loiObj.$set["letter_of_intent.data.appointment"] = id;
+					Agreements
+						.update(_query, loiObj)
+						.exec((err, updated) => {
+							if (err) { reject({message: err.message}); }
+							else {
+								let result = {
+									"message": "success",
+									"code": 200,
+									"data": {
+										"_id": id
+									}
+								};
+								resolve(result);
+							}
+						});
+				}
+			})		
 	});
 });
 
@@ -3242,7 +3303,7 @@ agreementsSchema.static('createHistory', (id:string, typeDataa:string):Promise<a
             	data = result.inventory_list.data;
             }
             
-            var historyObj = {$push: {}, $unset: {}};  
+            var historyObj = {$push: {}};  
             historyObj.$push[typeDataa+'.histories'] = {"date": new Date(), "data": data};
 			// historyObj.$unset[typeDataa+'.data'] = "";
 

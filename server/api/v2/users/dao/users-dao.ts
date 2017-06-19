@@ -610,13 +610,6 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 			}
 			else if(res == true){
 				Users
-<<<<<<< HEAD
-					.findByIdAndRemove(id)
-					.exec((err, deleted) => {
-						err ? reject({message: err.message})
-							: resolve({message: 'user deleted'});
-					});
-=======
 					.findById(id)
 					.exec((err, user) => {
 						if (err) {reject(err);}
@@ -636,8 +629,7 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 						else {
 							reject({message: "user not found"});
 						}
-					})				
->>>>>>> upstream/development
+					})							
 			}
 		});
 	});
