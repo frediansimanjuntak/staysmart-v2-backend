@@ -258,20 +258,15 @@ propertiesSchema.static('memberProperty', (type:string, userId:Object, device: s
           .then(result => {
             let properties = [];
             if (type == 'landlord') {
-              properties = result.owned_properties;
-              if (properties.length > 0) {
-                if ( device != 'desktop' ) {
-                  propertyHelper.getAll(properties, userId).then(res => {
-                    resolve(res);
-                  });
+              Properties.getAll(device, userId).then(res => {
+                let property = [];
+                for (var i = 0; i < res.length; i++) {
+                  if (String(res[i].user._id) == String(userId)) {
+                    property.push(res[i]);
+                  }
                 }
-                else {
-                  resolve(properties);
-                }
-              }
-              else {
-                resolve([]);
-              }
+                resolve(property);
+              })
             }
             else {
               properties = result.rented_properties;
