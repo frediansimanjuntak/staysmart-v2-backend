@@ -913,51 +913,58 @@ usersSchema.static('createHistory', (id:string, type:string):Promise<any> => {
 	});
 });
 
-usersSchema.static('activationUser', (id:string, user:Object, headers:Object, device: string):Promise<any> => {
+usersSchema.static('activationUser', (id:string, data:Object, headers:Object, device:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		if (!_.isString(id)) {
 			return reject(new TypeError('Id is not a valid string.'));
 		}
-		let body:any = user;
-
+		let body:any = data;
+		console.log(body);
 		Users
-			.findById(id, (err,user)=>{
-				var code = user.verification.code;
-					
-				if (code == body.code){
-					if(user.verification.expires > new Date()) {
-						Users
-							.update({"_id": id},{
-								$set:
-								{
-									"verification.verified": true, 
-									"verification.verified_date": new Date()
-								}
-							})
-							.exec((err, update) => {
-								if (err) {
-									reject(err);
-								}
-								else {
-									if (device == 'desktop') {
-										resolve({message: 'user verified.'});
+			.findById(id)
+			.exec((err, user) => {
+				if (err) {reject(err);}
+				else if (user) {
+					console.log(user);
+					var code = user.verification.code;					
+					if (code == body.code){
+						if(user.verification.expires > new Date()) {
+							Users
+								.update({"_id": id},{
+									$set:
+									{
+										"verification.verified": true, 
+										"verification.verified_date": new Date()
+									}
+								})
+								.exec((err, update) => {
+									if (err) {
+										reject(err);
 									}
 									else {
-										userHelper.activationHelper(id, headers).then(result => {
-											resolve(result);
-										});
-									}
-								} 
-							});
+										if (device == 'desktop') {
+											resolve({message: 'user verified.'});
+										}
+										else {
+											userHelper.activationHelper(id, headers).then(result => {
+												resolve(result);
+											});
+										}
+									} 
+								});
+						}
+						else{
+							reject({message: 'Your code has expired.'});
+						}
 					}
-					else{
-						reject({message: 'Your code has expired.'});
+					else {
+						reject({message: 'Your code is wrong or has expired.'});
 					}	
 				}
-				else{
-					reject({message: 'Your code is wrong or has expired.'});
+				else {
+					reject({message: 'User not found'});
 				}
-			})
+			})		
 		});
 });
 
