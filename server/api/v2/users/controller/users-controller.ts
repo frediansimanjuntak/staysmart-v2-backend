@@ -178,25 +178,22 @@ export class UsersController {
 
 	static resendCode(req: express.Request, res: express.Response):void {
 		let _id = req["user"]._id;
-
 		UsersDAO
 		['sendActivationCode'](_id)
-		.then(() => res.status(200).end())
+		.then((user) => res.status(200).json(user))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static sendActivationCode(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-
 		UsersDAO
 		['sendActivationCode'](_id)
-		.then(() => res.status(200).end())
+		.then((user) => res.status(200).json(user))
 		.catch(error => res.status(400).json(error));
 	}
 
 	static unActiveUser(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
-
 		UsersDAO
 		['unActiveUser'](_id)
 		.then(users => res.status(201).json(users))
@@ -207,7 +204,6 @@ export class UsersController {
 		let _id = req.body.user_id;
 		let _userId = req['user']._id;
 		let _headers = req.headers;
-
 		UsersDAO
 		['blockUserMobile'](_id, _userId, _headers)
 		.then(users => res.status(201).json(users))
