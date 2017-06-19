@@ -1927,16 +1927,20 @@ agreementsSchema.static('initiateTA', (id:string, data:Object, userId:string):Pr
 						resolve({message: "forbidden"});
 					}
 					else if (landlordId == IDUser) {
-						Agreements.checkTAStatus(id);						
-						Agreements.checklandlordBank(landlordId, data);
-						agreement.letter_of_intent.data.landlord.bank_account.no = body.bank_account_no;
-						agreement.letter_of_intent.data.landlord.bank_account.name = body.bank_account_name;
-						agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank_id;	
-						agreement.tenancy_agreement.data.status = "pending";
-						agreement.tenancy_agreement.data.created_at = new Date();
-						agreement.save((err, saved)=>{
-							err ? reject({message: err.message})
-								: resolve(saved);
+						Agreements.checkTAStatus(id).then((res) => {
+							Agreements.checklandlordBank(landlordId, data);
+							agreement.letter_of_intent.data.landlord.bank_account.no = body.bank_account_no;
+							agreement.letter_of_intent.data.landlord.bank_account.name = body.bank_account_name;
+							agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank_id;	
+							agreement.tenancy_agreement.data.status = "pending";
+							agreement.tenancy_agreement.data.created_at = new Date();
+							agreement.save((err, saved)=>{
+								err ? reject({message: err.message})
+									: resolve(saved);
+							});
+						})					
+						.catch((err) => {
+							reject(err);
 						});
 					}
 				}
@@ -2017,7 +2021,7 @@ agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
 									Agreements
 										.update({"_id": id}, {
 											$unset: {
-												"letter_of_intent.data": ""
+												"tenancy_agreement.data": ""
 											}
 										})
 										.exec((err, updated) => {
