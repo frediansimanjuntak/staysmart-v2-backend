@@ -134,6 +134,13 @@ export class userHelper{
 				rooms.push(result.chat_rooms[r]._id);
 			}
 			let dreamtalk = result.dreamtalk.length > 0 ? { token, id, rooms } : {};
+			let userData = {
+				confirmation_status: status,
+				verified_date: result.verification.verified_date ? result.verification.verified_date : '',
+				picture: result.picture ? result.picture.url : result.service ? result.service.facebook ? result.service.facebook.picture : '' : '',
+				pictures: result.picture ? result.picture.url : result.service ? result.service.facebook ? result.service.facebook.picture : '' : '',
+				verified: result.verification.verified 
+			};
 			Managers
 				.find({"manager": result._id, "status": "pending"}, '-_id property')
 				.exec((err, res) => {
@@ -151,6 +158,7 @@ export class userHelper{
 									},
 									dreamtalk: dreamtalk
 								},
+								user: userData,
 								username: result.username,
 								email: result.email,
 								roles: result.role,
@@ -174,6 +182,7 @@ export class userHelper{
 									},
 									dreamtalk: dreamtalk
 								},
+								user: userData,
 								username: result.username,
 								email: result.email,
 								roles: result.role,
