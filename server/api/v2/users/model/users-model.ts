@@ -222,7 +222,7 @@ UsersSchema
   .path('password')
   .validate(function(password) {
     return password.length;
-  }, 'Password cannot be blank');
+  }, 'password null');
 
 // Validate email is not taken
 UsersSchema
