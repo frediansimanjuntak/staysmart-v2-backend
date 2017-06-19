@@ -206,7 +206,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                   let timeFrom = body.time[i];
                   let timeTo = body.time2[i];
                   Appointments
-                    .find({"chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo})
+                    .find({"chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo, "status": {$nin: ["rejected", "cancel"]}})
                     .exec((err, res) => {
                       if (err) {
                         reject(err);

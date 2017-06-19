@@ -83,7 +83,7 @@ export class AutoReject {
                 let idProperty = agreementData[i].property;
                 Agreements
                   .findByIdAndUpdate(idAgreement, {
-                    $set: {"tenancy_agreement.data.status": "expired"}
+                    $set: {"tenancy_agreement.data.status": "expired", "letter_of_intent.data.status": "expired"}
                   })
                   .exec((err, updated) => {
                     if (err) { reject(err); }
