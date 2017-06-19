@@ -43,7 +43,7 @@ export class UserRoutes {
 		
 		router
 			.route('/me/phone')
-			.post(auth.isAuthenticated(), UsersController.updateUser);
+			.post(auth.isAuthenticated(), UsersController.updateUserMobile);
 
 		router
 			.route('/me/:type')
