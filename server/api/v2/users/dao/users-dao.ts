@@ -1215,7 +1215,7 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 		if (!_.isString(email)) {
 			return reject(new TypeError('Email is not a valid string.'));
 		}
-		var randomToken = Math.random().toString(36).substr(2, 30);
+		var randomToken = Math.random().toString(20).substr(2, 12);
 		var validateEmail = GlobalService.validateEmail(email);
 		if(validateEmail == true) {
 			Users.checkUserData(email).then(res => {
@@ -1240,7 +1240,7 @@ usersSchema.static('sendResetPassword', (email:string):Promise<any> => {
 											var fullname = result.username;
 											var from = 'Staysmart';
 											var url = config.url.reset_password+randomToken;
-											mail.resetPassword(email, fullname, url, from);
+											mail.resetPassword(email, fullname, url, randomToken, from);
 											resolve({message: 'mail sent'});
 										}
 										else{
