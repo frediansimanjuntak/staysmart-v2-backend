@@ -20,7 +20,7 @@ export class UsersController {
 	static me(req: express.Request, res: express.Response):void {
 		let _userId = req["user"]._id;
 		let _headers = req.headers;
-		let _device = 'phone';
+		let _device = req.device.type;
 		UsersDAO
 		['me'](_userId, _headers, _device)
 		.then(users => res.status(200).json(users))
