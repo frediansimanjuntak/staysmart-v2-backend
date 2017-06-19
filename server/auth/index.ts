@@ -15,6 +15,6 @@ var router = express.Router();
 router.use('/local', require('./local').default);
 router.use('/api/v2/login', require('./local').default);
 router.use('/facebook', require('./facebook').default);
-router.use('/api/v2/login/facebook', require('./facebook').default);
+// router.use('/api/v2/login/facebook', require('./facebook').default);
 
 export default router;
