@@ -465,7 +465,33 @@ usersSchema.static('signUp', (user:Object, headers:Object, device: string):Promi
 			_user.role = 'user';
 			_user.save((err, saved)=>{
 				if(err){
-					reject(err);
+					if (device == 'desktop') { reject(err); }
+					else {
+						let error = [];
+						err.errors.username ? error.push('username') : '';
+						err.errors.email ? error.push('email') : '';
+						err.errors.phone ? error.push('phone') : '';
+						err.errors.password ? error.push('password'): '';
+
+						let message;
+						if (error.length > 2) {
+							let error_message = '';
+							for (var i = 0; i < error.length - 1; i++){
+								error_message = error_message + error[i] + ', ';
+							}
+							message = 'Incorrect ' + error_message + 'or ' + error[error.length-1];
+						}
+						else if (error.length == 2) {
+							message = 'Incorrect ' + error[0] + ' or ' + error[1];
+						}
+						else {
+							message = error[0] + ' null';
+						}
+						reject({
+							message: message,
+							code: 400
+						});
+					}
 				}
 				else if(saved){
 				 	var token = signToken(_user._id, _user.role, _user.username);
