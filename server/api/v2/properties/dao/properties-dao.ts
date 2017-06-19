@@ -1005,12 +1005,15 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                 var url = config.url.approveProperty;
                 var from = 'Staysmart';
                 if(confirmation == 'approve' || confirmation == 'reject'){
+                  let statusProperty;
                   if(confirmation == 'approve') {
                     var confirmation_result = 'approved';
+                    statusProperty = "published";
                     mail.approveProperty(emailTo, full_name, full_address, url, from);
                   }
                   if(confirmation == 'reject'){
                     confirmation_result = 'rejected';
+                    statusProperty = 'rejected';
                     mail.rejectProperty(emailTo, full_name, full_address, from);
                   }
                   let body:any = proof;
@@ -1021,7 +1024,8 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
                         "confirmation.proof": body.proofId,
                         "confirmation.by": userId,
                         "confirmation.date": new Date(),
-                        "confirmation.remarks": body.remarks
+                        "confirmation.remarks": body.remarks,
+                        "status": statusProperty
                       }
                     })
                     .exec((err, update) => {
