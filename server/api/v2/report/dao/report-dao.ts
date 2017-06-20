@@ -207,7 +207,7 @@ export class reportDAO{
 							"term_lease_extend": loi.term_lease_extend,
 							"date_commencement": loi.date_commencement,
 							"term_payment": loi.term_payment,
-							"populate_tenant": loi.populate_tenant,
+							"populate_tenant": loi.tenant.not_occupier,
 							"minor_repair_cost": loi.minor_repair_cost,
 							"status_sign": "accept",
 							"status": status,

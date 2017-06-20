@@ -899,6 +899,24 @@ propertiesSchema.static('createPropertyHistory', (id:string, action:string, type
                             : resolve({message: 'updated'});
                       }); 
                   }
+                  else if(type == 'resubmit'){
+                    Properties
+                      .findByIdAndUpdate(id, {
+                        $unset: {
+                          "confirmation.proof": "",
+                          "confirmation.by": "",
+                          "confirmation.date": "",
+                          "confirmation.remarks": ""
+                        }
+                      })
+                      .exec((err, update) => {
+                        err ? reject({message: err.message})
+                            : resolve({message: 'updated'});
+                      }); 
+                  }
+                  else {
+                    resolve(saved);
+                  }
                 }
               });
           })
@@ -1084,7 +1102,7 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
 propertiesSchema.static('resubmitProperty', (id:string, userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
       var action = 'update';
-      var type = 'confirmation';
+      var type = 'resubmit';
       var idUser = userId.toString();
       Properties.createPropertyHistory(id, action, type).then((res) => {
         Properties
