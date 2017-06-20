@@ -156,7 +156,7 @@ notificationsSchema.static('createNotifications', (notifications:Object):Promise
           reject({message: err.message})
         }
         if(saved){
-          socketIo.notif(saved);
+          socketIo.socket(saved, 'notif');
           resolve(saved);
         }            
       });

@@ -499,7 +499,7 @@ propertiesSchema.static('getTotalListing', ():Promise<any> => {
 				}
 				else if (properties) {
 					let data = { total: properties.length }
-					socketIo.counterUser(data);
+					socketIo.socket(data, 'counterCertificate');
 					resolve(properties);
 				}
 			})
