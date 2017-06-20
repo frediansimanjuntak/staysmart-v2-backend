@@ -455,9 +455,9 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                     DevelopmentName = property.development.name;
                     unit = property.address.floor;
                     unit2 = property.address.unit;
-                    blok = property.address.street_name;
+                    blok = property.address.block_number;
                     postalCode = property.address.postal_code.toString();                    
-                    streetName = property.address.block_number;
+                    streetName = property.address.street_name;
                     fullAddress = property.address.full_address,
                     country = property.address.country;
                     typeProp = property.address.type;
@@ -561,7 +561,7 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                     },
                     "status": appointment.status,
                     "read_by": readBy,
-                    "message": message,
+                    // "message": message,
                     "created_at": appointment.created_at,
                     "state": appointment.state,
                     "status_own": statusOwn,
