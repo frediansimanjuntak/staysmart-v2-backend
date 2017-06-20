@@ -52,49 +52,30 @@ var server = https.createServer(opts, app)
 var io = require('socket.io')(server);
 // var ioo = require('socket.io-client');
 export class socketIo{  
-  static notif(data){   
-    let body:any = data;    
-    let userId = body.user.toString();
-     console.log('notification_'+userId);
+  static socket (data, form){
+    let body:any = data; 
     io.on('connect', onConnect);
     function onConnect(socket){
-      socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id });
-    }
-  }
-  static counterUser(data){
-    let body:any = data;    
-    io.on('connect', onConnect);
-    function onConnect(socket){
-      socket.emit('counter_user', { message: 'You got new user', total_user_today: body.total });
-    }
-  }
-  static counterListing(data){
-    let body:any = data;    
-    io.on('connect', onConnect);
-    function onConnect(socket){
-      socket.emit('counter_listing', { message: 'You got new listing', total_listing_today: body.total });
-    }
-  }
-  static counterLOI(data){
-    let body:any = data;    
-    io.on('connect', onConnect);
-    function onConnect(socket){
-      socket.emit('counter_loi', { message: 'You got loi need to approved', total_loi: body.total });
-    }
-  }
-  static counterTA(data){
-    let body:any = data;    
-    io.on('connect', onConnect);
-    function onConnect(socket){
-      socket.emit('counter_ta', { message: 'You got ta need to approved', total_ta: body.total });
-    }
-  }
-  static counterCertificate(data){
-    let body:any = data;    
-    io.on('connect', onConnect);
-    function onConnect(socket){
-      socket.emit('counter_ta', { message: 'You got certificate need to uploaded', total_certificate: body.total });
-    }
+      if (form == 'notif') {
+        let userId = body.user.toString();
+        socket.emit('notification_'+userId, { message: 'You get new notification', type: body.type, referenceId: body.ref_id });
+      }   
+      if (form == 'counterUser') {
+        socket.emit('counter_user', { message: 'You got new user', total_user_today: body.total });
+      }  
+      if (form == 'counterListing') {
+        socket.emit('counter_listing', { message: 'You got new listing', total_listing_today: body.total });
+      }  
+      if (form == 'counterLOI') {
+        socket.emit('counter_loi', { message: 'You got loi need to approved', total_loi: body.total });
+      }  
+      if (form == 'counterTA') {
+        socket.emit('counter_ta', { message: 'You got ta need to approved', total_ta: body.total });
+      }  
+      if (form == 'counterCertificate') {
+        socket.emit('counter_certificate', { message: 'You got certificate need to uploaded', total_certificate: body.total });
+      }    
+    }   
   }
 }
 
