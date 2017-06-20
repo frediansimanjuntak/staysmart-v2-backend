@@ -185,4 +185,13 @@ export class ChatsController {
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static getUserRoomById(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _roomId = req.params.room_id;
+		ChatsDAO
+		['getUserRoomById'](_roomId, _userId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
 }
