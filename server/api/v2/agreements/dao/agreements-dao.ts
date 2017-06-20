@@ -807,7 +807,7 @@ agreementsSchema.static('getTotalLOINeedApprove', ():Promise<any> => {
 				}
 				else if (agreements) {
 					let data = { total: agreements.length }
-					socketIo.counterLOI(data);
+					socketIo.socket(data, 'counterLOI');
 					resolve(agreements);
 				}
 			})
@@ -1426,7 +1426,6 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 		}
 		let IDUser = userId.toString();
 		let body:any = loi;
-
 		Agreements
 			.findById(id)
 			.populate("landlord tenant letter_of_intent.data.payment")
@@ -1448,9 +1447,9 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 						if (paymentStatus == "rejected") {
 							resolve({message: "this payment has rejected"});
 						}
-						else if (paymentStatus == "pending" || paymentStatus == "accepted" || statusLoi == "payment-confirmed") {
+						else if (paymentStatus == "pending" || paymentStatus == "accepted" || statusLoi == "payment-confirmed" || statusLoi == "pending") {
 							Agreements.changeNeedRefundAfterRejectLOI(paymentId, body.reason);
-							Agreements.updatePropertyStatusPayment(agreement.property._id, "published");
+							Agreements.updatePropertyStatusPayment(agreement.property, "published");
 							agreement.letter_of_intent.data.status = "rejected";
 							agreement.save((err, saved)=>{
 								if (err) {
@@ -1465,6 +1464,7 @@ agreementsSchema.static('rejectLoi', (id:string, userId:string, role:string, loi
 										typeMail = "rejectLoiLandlord";
 									}
 									Agreements.email(id, typeMail);
+									Agreements.notification(id, "rejectLoi");
 									resolve(saved);
 								}
 							});							
@@ -1809,7 +1809,7 @@ agreementsSchema.static('getTotalTANeedApprove', ():Promise<any> => {
 				}
 				else if (agreements) {
 					let data = { total: agreements.length }
-					socketIo.counterTA(data);
+					socketIo.socket(data, 'counterTA');
 					resolve(agreements);
 				}
 			})
@@ -1865,9 +1865,6 @@ agreementsSchema.static('initiateTA_', (id:string, data:Object, userId:string):P
 
 agreementsSchema.static('initiateTA', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(data)) {
-			return reject(new TypeError('TA is not a valid object.'));
-		}
 		let body:any = data;
 		let type = "tenancy_agreement";
 		let bankNo = body.bank_account_no;
@@ -1993,7 +1990,9 @@ agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
 							}
 							else { resolve({message: "TA Already Exist"}); }
 						}
+						else { resolve({message: "TA not created"}); }
 					}
+					else { resolve({message: "TA not available"}); }
 				}
 				else {
 					reject({message: "Agreement not found"});
@@ -3742,7 +3741,9 @@ agreementsSchema.static('paymentProcess', (id:string, data:Object):Promise<any> 
 									}
 									if (body.status_payment == "rejected") {
 										Agreements.updateReceivePayment(id, data);
-										Agreements.notification(id, type_notif);										
+										Agreements.notification(id, type_notif);	
+										Agreements.notification(id, "rejectLoi");
+										Agreements.notification(id, "rejectLoiLandlord");									
 										Agreements.email(id, typeMail);
 									}																		
 								}
@@ -3933,7 +3934,7 @@ agreementsSchema.static('getTotalStampCertificateNotUploaded', ():Promise<any> =
 						}
 					}
 					let data = { total: count };
-					socketIo.counterCertificate(data);
+					socketIo.socket(data, 'counterCertificate');
 					resolve(agreements);
 				}
 			})
@@ -4303,21 +4304,15 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 //notification
 agreementsSchema.static('notification', (id:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
 		let message = "";
 		let type_notif = "";
 		let user = "";
-
 		Agreements
 			.findById(id, (err, agreement) => {
 				let agreementId = agreement._id;
 				let tenantId = agreement.tenant;
 				let landlordId = agreement.landlord;
 				let propertyId = agreement.property;
-
 				Properties
 			        .findById(propertyId, (err, result) => {
 			          var devID = result.development;
@@ -4333,6 +4328,21 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 								message = "Letter of Intent (LOI) rejected for " + unit + " " + devResult.name;
 								type_notif = "rejected_LOI";
 								user = tenantId;
+							}
+							if (type == "rejectLoiLandlord") {
+								message = "Letter of Intent (LOI) rejected for " + unit + " " + devResult.name;
+								type_notif = "rejected_LOI";
+								user = tenantId;
+							}
+							if (type == "expiredLoi") {
+								message = "Letter of Intent (LOI) expired for " + unit + " " + devResult.name;
+								type_notif = "rejected_LOI";
+								user = tenantId;
+							}
+							if (type == "expiredLoilandlord") {
+								message = "Letter of Intent (LOI) expired for " + unit + " " + devResult.name;
+								type_notif = "rejected_LOI";
+								user = landlordId;
 							}
 							if (type == "acceptLoi") {
 								message = "Letter of Intent (LOI) accepted for " + unit + " " + devResult.name;
@@ -4354,6 +4364,16 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 								type_notif = "accepted_TA";
 								user = landlordId;
 							}
+							if (type == "expiredTA") {
+								message = "Tenancy Agreement (TA) expired for " + unit + " " + devResult.name;
+								type_notif = "rejected_LOI";
+								user = tenantId;
+							}
+							if (type == "expiredTALandlord") {
+								message = "Tenancy Agreement (TA) expired for " + unit + " " + devResult.name;
+								type_notif = "rejected_LOI";
+								user = landlordId;
+							}
 							if (type == "initiateIL") {
 								message = "Inventory List received for " + unit + " " + devResult.name;
 								type_notif = "received_Inventory";
@@ -4372,7 +4392,7 @@ agreementsSchema.static('notification', (id:string, type:string):Promise<any> =>
 							if (type == "paymentLOIRejected") {
 								message = "Good Faith Deposit (GFD) rejected for " + unit + " " + devResult.name;
 								type_notif = "payment_LOI";
-								user = landlordId;
+								user = tenantId;
 							}
 							if (type == "paymentTAAccepted") {
 								message = "Security Deposit (SD) received for " + unit + " " + devResult.name;
