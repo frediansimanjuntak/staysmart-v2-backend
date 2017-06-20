@@ -169,6 +169,14 @@ export class ChatsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static removeRoomMobile(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		ChatsDAO
+		['removeRoomMobile'](_data)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static deleteRoomMany(req: express.Request, res: express.Response):void {
 		let _roomId = req.body;
 		let _roleId = req["user"].role;

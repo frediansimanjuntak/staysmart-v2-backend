@@ -553,12 +553,12 @@ chatsSchema.static('deleteRoom', (roomId:string, userId:string):Promise<any> => 
                                     reject({message: err.message});
                                 }
                                 else{
-                                    resolve({message: 'chat room deleted.'});
+                                    resolve({message: 'chat room deleted.', code: 200});
                                 }
                             })
                     }
                     else{
-                        reject({message: 'you do not have access to this room.'});
+                        reject({message: 'you do not have access to this room.', code: 400});
                     }
                 }                
             })
@@ -754,6 +754,53 @@ chatsSchema.static('getUserRoomByScheduleId', (scheduleId: string, userId: Objec
             }
             if (index == -1) { resolve({}); }
             else { resolve(res[index]); }
+        })
+    });
+});
+
+chatsSchema.static('removeRoomMobile', (data: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        let body: any = data;
+
+        ChatRooms.findOne({"room_id":body.room_id}).exec((err, room) => {
+            if (err) { reject({ message: err.message });}
+            else {
+                Users.findByIdAndUpdate(body.tenantUser_id, {
+                    $pull: {
+                        chat_rooms: room._id
+                    }
+                })
+                .exec((err, updated) => {
+                    if (err) { reject({message: err.message}); }
+                });
+                Properties.findById(body.property_id).exec((err, property) => {
+                    if (err) { reject({message: err.message}); }
+                    else {
+                        Users.findByIdAndUpdate(property.owner.user, {
+                            $pull: {
+                                chat_rooms: room._id
+                            }
+                        })
+                        .exec((err, updated) => {
+                            if (err) { reject({message: err.message}); }
+                        });
+                    }
+                })
+                ChatRooms.deleteRoom(room._id, body.tenantUser_id).then(result => {
+                    if (result.code == 200) {
+                        resolve({
+                            message: body.room_id+" room removed from 2 users data",
+                            code: 200
+                        });
+                    }
+                    else {
+                        reject({
+                            message: result.message,
+                            code: 400
+                        })
+                    }
+                })
+            }
         })
     });
 });
