@@ -27,7 +27,7 @@ blogsSchema.static('getAll', (device: string):Promise<any> => {
                 path: 'picture',
                 model: 'Attachments'
               },
-              select: 'username picture'
+              select: 'username picture service'
             },
             {
               path: 'replies',
