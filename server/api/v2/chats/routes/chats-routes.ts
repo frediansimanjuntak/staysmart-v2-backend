@@ -81,6 +81,10 @@ export class ChatsRoutes {
 		router
 			.route('/rooms/status')
 			.post(auth.isAuthenticated(), ChatsController.updateRoomMobile);
+		
+		router
+			.route('/rooms/remove')
+			.post(auth.isAuthenticated(), ChatsController.removeRoomMobile);
 
 		router
 			.route('/chats/profile/update')
@@ -93,7 +97,11 @@ export class ChatsRoutes {
 		router
 			.route('/rooms/:room_id')
 			.get(auth.isAuthenticated(), ChatsController.getUserRoomById)
-			
+		
+		router
+			.route('/rooms/appointment/:schedule_id')
+			.get(auth.isAuthenticated(), ChatsController.getUserRoomByScheduleId)
+
 		router
 			.route('/chats/:id')
 			.get(auth.isAuthenticated(),ChatsController.getById);
