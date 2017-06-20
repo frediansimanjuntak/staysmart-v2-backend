@@ -1865,9 +1865,6 @@ agreementsSchema.static('initiateTA_', (id:string, data:Object, userId:string):P
 
 agreementsSchema.static('initiateTA', (id:string, data:Object, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isObject(data)) {
-			return reject(new TypeError('TA is not a valid object.'));
-		}
 		let body:any = data;
 		let type = "tenancy_agreement";
 		let bankNo = body.bank_account_no;
@@ -1993,7 +1990,9 @@ agreementsSchema.static('checkTAStatus', (id:string):Promise<any> => {
 							}
 							else { resolve({message: "TA Already Exist"}); }
 						}
+						else { resolve({message: "TA not created"}); }
 					}
+					else { resolve({message: "TA not available"}); }
 				}
 				else {
 					reject({message: "Agreement not found"});
@@ -4305,21 +4304,15 @@ agreementsSchema.static('getCertificateStampDuty', ():Promise<any> => {
 //notification
 agreementsSchema.static('notification', (id:string, type:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
 		let message = "";
 		let type_notif = "";
 		let user = "";
-
 		Agreements
 			.findById(id, (err, agreement) => {
 				let agreementId = agreement._id;
 				let tenantId = agreement.tenant;
 				let landlordId = agreement.landlord;
 				let propertyId = agreement.property;
-
 				Properties
 			        .findById(propertyId, (err, result) => {
 			          var devID = result.development;
