@@ -2016,6 +2016,7 @@ propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string,
         reject({message: 'No appointments.'});
       }
       else {
+        let dateName = moment(date).format('dddd');
         for ( var a = 0; a < appointments.length; a++ ) {
           let _appointments = appointments[a];
           Properties.getSchedules(propertyId).then(res => {
@@ -2023,7 +2024,7 @@ propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string,
             for ( var i = 0; i < res.length; i++ ) {
               let res_date = res[i].date;
               let _fullDate = moment(res_date).format("YYYY-MM-DD");
-              if ( _fullDate <= date) {
+              if ( _fullDate <= date && res[i].day == dateName) {
                 let status;
                 if(_appointments.property) {
                   if ( 
