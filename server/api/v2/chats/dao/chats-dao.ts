@@ -682,7 +682,7 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                             };
                         }
                         else { ta = ''; }
-                        if (res[i].property.development && res[i].property.development != null) {
+                        if (res[i].property && res[i].property != null && res[i].property.development && res[i].property.development != null) {
                             rooms.push({
                                 tenantUser: {
                                     _id: res[i].tenant._id,
