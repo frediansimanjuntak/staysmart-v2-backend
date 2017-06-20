@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import {report} from '../../../../global/report.service';
 import * as fs from 'fs';
 import * as phantom from 'phantom';
+import * as moment from 'moment';
 // import * as pdf from 'html-pdf';
 import Properties from '../../properties/dao/properties-dao';
 import Agreements from '../../agreements/dao/agreements-dao';
@@ -74,6 +75,8 @@ export class reportDAO{
 					let landlordFullname;
 					let landlordIdNo;					
 					let dateCom;
+					let dateCommence = moment(loi.date_commencement).local().format();
+					console.log(dateCommence);
 					if (landlord.landlord.data.name) {
 						landlordFullname = landlord.landlord.data.name;						
 					}
@@ -202,7 +205,7 @@ export class reportDAO{
 							"lapse_offer": loi.lapse_offer,
 							"term_lease": loi.term_lease,
 							"term_lease_extend": loi.term_lease_extend,
-							"date_commencement": loi.date_commencement,
+							"date_commencement": dateCommence,
 							"term_payment": loi.term_payment,
 							"populate_tenant": loi.populate_tenant,
 							"minor_repair_cost": loi.minor_repair_cost,
