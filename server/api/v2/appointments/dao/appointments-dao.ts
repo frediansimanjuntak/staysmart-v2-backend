@@ -302,17 +302,18 @@ appointmentsSchema.static('updateAppointmentsRoomId', (landlord:string, tenant:s
 
 appointmentsSchema.static('memberSectionAppointment', (type:string, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-      let _query;
-      if (type == 'upcoming') {
-        _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": "archived"}; 
-      }
-      else if (type == 'archived') {
-        _query = {"status": "rejected", $or:[{"tenant": userId}, {"landlord": userId}]}; 
-      }
-      else {
-        _query = {$or:[{"tenant": userId}, {"landlord": userId}]}; 
-      }
-      console.log(type);
+      let exist_type = ["proposed", "upcoming", "archived"];
+      if (exist_type.indexOf(type) > -1) {
+        let _query;
+        if (type == 'upcoming') {
+          _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": "archived"}; 
+        }
+        else if (type == 'archived') {
+          _query = {"status": "rejected", $or:[{"tenant": userId}, {"landlord": userId}]}; 
+        }
+        else {
+          _query = {$or:[{"tenant": userId}, {"landlord": userId}]}; 
+        }
         Appointments
           .find(_query)
           .populate({
@@ -573,6 +574,10 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
                 resolve(datas);
               }
           });
+      }
+      else {
+        reject({message: 'Invalid type', code: 400});
+      }
     });
 });
 
