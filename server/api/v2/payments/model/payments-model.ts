@@ -20,6 +20,7 @@ var PaymentsSchema = new mongoose.Schema({
 			updated_at: {type: Date}
 		}
 	],
+	received_at: {type: Date},
 	attachment: {
 		payment: {
 			type: Schema.Types.ObjectId,

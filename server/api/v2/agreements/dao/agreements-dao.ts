@@ -3551,14 +3551,14 @@ agreementsSchema.static('paymentReceiveAmount', (idAgreement:string, id:string, 
 						}
 						let statusLOI = agreement.letter_of_intent.data.status;
 						if (statusLOI == "rejected" || statusLOI == "expired") {
-							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "remarks": remarks, "status": status }};
+							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "remarks": remarks, "status": status, "received_at": new Date() }};
 						}
 						else {
-							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
+							data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks, "received_at": new Date() }};
 						}
 					}
 					else if (type == "ta") {						
-						data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks }};
+						data = { $set: { "fee.$.received_amount": receiveAmount, "fee.$.needed_refund": neededRefund, "fee.$.refunded": false, "fee.$.updated_at": new Date(), "attachment.payment_confirm": payment_confirm, "status": status, "remarks": remarks, "received_at": new Date() }};
 					}
 					Payments
 						.update({"_id": id, "fee": {$elemMatch: {"code_name": code}}}, data)
