@@ -743,6 +743,21 @@ chatsSchema.static('getUserRoomById', (roomId: string, userId: Object):Promise<a
     });
 });
 
+chatsSchema.static('getUserRoomByScheduleId', (scheduleId: string, userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        ChatRooms.getAllUserRooms(userId).then(res => {
+            let index = -1;
+            for (var i = 0; i < res.length; i++) {
+                if (String(res[i].appointmentId) == String(scheduleId)) {
+                    index = i;
+                }
+            }
+            if (index == -1) { resolve({}); }
+            else { resolve(res[index]); }
+        })
+    });
+});
+
 let ChatRooms = mongoose.model('ChatRooms', chatsSchema);
 
 export default ChatRooms;
