@@ -2057,30 +2057,37 @@ propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string,
               if ( _fullDate <= date && res[i].day == dateName) {
                 let status;
                 if(_appointments.property) {
-                  if ( 
-                    res[i].property.address == _appointments.property.address.full_address && 
-                    res[i].date == _appointments.chosen_time.date && 
-                    res[i].time_from == _appointments.chosen_time.from
-                  ) {
-                    if ( _appointments.status == 'pending') {
-                      status = 'Pending Confirmation';  
+                  
+                  let slot30min = res[i].slot30min;
+                  let time_from = res[i].time_from;
+                  let time_to = res[i].time_to;
+                  for (var j = 0; j < slot30min; j++) {
+                    let timeFrom = moment(time_from, "HH:mm").add((j+0)*30, 'minutes').format("HH:mm");
+                    let timeTo = moment(time_from, "HH:mm").add((j+1)*30, 'minutes').format("HH:mm");
+                    if ( 
+                      res[i].property.address == _appointments.property.address.full_address && 
+                      res[i].date == _appointments.chosen_time.date && 
+                      timeFrom == _appointments.chosen_time.from
+                    ) {
+                      if ( _appointments.status == 'pending') {
+                        status = 'Pending Confirmation';  
+                      }
+                      else {
+                        status = _appointments.status.charAt(0).toUpperCase() + _appointments.status.slice(1);
+                      }
                     }
                     else {
-                      status = _appointments.status.charAt(0).toUpperCase() + _appointments.status.slice(1);
+                      status = 'Available';
                     }
-                    
+                    schedules.push({
+                      id: res[i]._id,
+                      time: timeFrom,
+                      time2: timeTo,
+                      idx: res[i].form_index > 9 ? res[i].form_index : '0'+res[i].form_index,
+                      date: date,
+                      status: status
+                    });
                   }
-                  else {
-                    status = 'Available';
-                  }
-                  schedules.push({
-                    id: res[i]._id,
-                    time: res[i].time_from,
-                    time2: res[i].time_to,
-                    idx: res[i].form_index > 9 ? res[i].form_index : '0'+res[i].form_index,
-                    date: date,
-                    status: status
-                  });
                 }
               }
             }
