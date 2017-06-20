@@ -687,12 +687,12 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                                 tenantUser: {
                                     _id: res[i].tenant._id,
                                     username: res[i].tenant.username,
-                                    pictures: res[i].tenant.picture ? res[i].tenant.picture.url : res[i].tenant.service ? res[i].tenant.service.facebook ? res[i].tenant.service.facebook.picture : '' : ''
+                                    pictures: res[i].tenant.picture ? res[i].tenant.picture.url : res[i].tenant.service ? res[i].tenant.service.facebook ? res[i].tenant.service.facebook.picture ? res[i].tenant.service.facebook.picture : '' : '' : ''
                                 },
                                 landlordUser: {
                                     _id: res[i].landlord._id,
                                     username: res[i].landlord.username,
-                                    pictures: res[i].landlord.picture ? res[i].landlord.picture.url : res[i].landlord.service ? res[i].landlord.service.facebook ? res[i].landlord.service.facebook.picture : '' : ''
+                                    pictures: res[i].landlord.picture ? res[i].landlord.picture.url : res[i].landlord.service ? res[i].landlord.service.facebook ? res[i].landlord.service.facebook.picture ? res[i].landlord.service.facebook.picture : '' : '' : ''
                                 },
                                 development: {
                                     name: res[i].property.development.name
@@ -724,6 +724,21 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                 }
                 else { resolve([]); }
             }
+        })
+    });
+});
+
+chatsSchema.static('getUserRoomById', (roomId: string, userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        ChatRooms.getAllUserRooms(userId).then(res => {
+            let index = -1;
+            for (var i = 0; i < res.length; i++) {
+                if (String(res[i].roomId) == String(roomId)) {
+                    index = i;
+                }
+            }
+            if (index == -1) { resolve({}); }
+            else { resolve(res[index]); }
         })
     });
 });

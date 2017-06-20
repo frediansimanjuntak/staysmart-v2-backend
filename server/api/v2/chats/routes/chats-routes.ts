@@ -89,7 +89,11 @@ export class ChatsRoutes {
 		router
 			.route('/chats/answer/:id/:option')
 			.post(auth.isAuthenticated(),ChatsController.postAnswer)
-
+		
+		router
+			.route('/rooms/:room_id')
+			.get(auth.isAuthenticated(), ChatsController.getUserRoomById)
+			
 		router
 			.route('/chats/:id')
 			.get(auth.isAuthenticated(),ChatsController.getById);
