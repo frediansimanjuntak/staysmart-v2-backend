@@ -169,6 +169,14 @@ export class ChatsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static removeRoomMobile(req: express.Request, res: express.Response):void {
+		let _data = req.body;
+		ChatsDAO
+		['removeRoomMobile'](_data)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static deleteRoomMany(req: express.Request, res: express.Response):void {
 		let _roomId = req.body;
 		let _roleId = req["user"].role;
@@ -191,6 +199,15 @@ export class ChatsController {
 		let _roomId = req.params.room_id;
 		ChatsDAO
 		['getUserRoomById'](_roomId, _userId)
+		.then(chats => res.status(200).json(chats))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getUserRoomByScheduleId(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _scheduleId = req.params.schedule_id;
+		ChatsDAO
+		['getUserRoomByScheduleId'](_scheduleId, _userId)
 		.then(chats => res.status(200).json(chats))
 		.catch(error => res.status(400).json(error));
 	}
