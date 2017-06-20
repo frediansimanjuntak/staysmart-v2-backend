@@ -1076,10 +1076,6 @@ usersSchema.static('unActiveUser', (id:string):Promise<any> => {
 
 usersSchema.static('updateChatsRoom', (id:string, block:boolean):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		if (!_.isString(id)) {
-			return reject(new TypeError('Id is not a valid string.'));
-		}
-
 		ChatRooms
 			.findByIdAndUpdate(id, {
 				$set: {
@@ -1140,7 +1136,7 @@ usersSchema.static('blockUser', (id:string, userId:Object, roomId:string):Promis
 								if(err){
 									reject({message: err.message});
 								}
-								if(update){
+								else if (update){
 									Users.updateChatsRoom(roomId, true);
 									resolve(update);
 								}
