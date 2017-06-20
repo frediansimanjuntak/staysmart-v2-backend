@@ -431,7 +431,7 @@ usersSchema.static('createUser', (user:Object):Promise<any> => {
 		}
 		_user.save((err, saved)=>{
 			if(err){
-				reject({message: err.message});
+				reject(err);
 			}
 			else if(saved){
 				Users.getTotalUserSignupToday();
