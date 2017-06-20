@@ -46,6 +46,8 @@ export class AutoReject {
                           Agreements.updatePropertyStatusPayment(idProperty, "published");
                           let type = "expiredLoi";
                           Agreements.email(idAgreement, type);
+                          Agreements.notification(idAgreement, "expiredLoi");
+                          Agreements.notification(idAgreement, "expiredLoilandlord");
                           resolve({message:"success"});
                           console.log("updated");
                         }
@@ -109,6 +111,8 @@ export class AutoReject {
                             Agreements.updatePropertyStatusPayment(idProperty, "published");
                             let type = "expiredLoi";
                             Agreements.email(idAgreement, type);
+                            Agreements.notification(idAgreement, "expiredTA");
+                            Agreements.notification(idAgreement, "expiredTALandlord");
                             resolve({message:"success"});
                             console.log("updated");
                           }                 
