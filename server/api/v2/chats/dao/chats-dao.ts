@@ -682,42 +682,43 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                             };
                         }
                         else { ta = ''; }
-                        
-                        rooms.push({
-                            tenantUser: {
-                                _id: res[i].tenant._id,
-                                username: res[i].tenant.username,
-                                pictures: res[i].tenant.picture ? res[i].tenant.picture.url : ''
-                            },
-                            landlordUser: {
-                                _id: res[i].landlord._id,
-                                username: res[i].landlord.username,
-                                pictures: res[i].landlord.picture ? res[i].landlord.picture.url : ''
-                            },
-                            development: {
-                                name: res[i].property.development.name
-                            },
-                            property: {
-                                _id: res[i].property._id,
-                                address: {
-                                    unit_no: res[i].property.address.floor,
-                                    unit_no_2: res[i].property.address.unit,
-                                    block_no: res[i].property.address.block_number,
-                                    street_name: res[i].property.address.street_name,
-                                    postal_code: String(res[i].property.address.postal_code),
-                                    coordinates: [Number(res[i].property.address.coordinates[0]), Number(res[i].property.address.coordinates[1])],
-                                    country: res[i].property.address.country,
-                                    full_address: res[i].property.address.full_address,
-                                    type: res[i].property.address.type
-                                }
-                            },
-                            manager: res[i].manager ? [ res[i].manager._id ] : [],
-                            roomId: res[i].room_id,
-                            status: res[i].status,
-                            appointmentId: res[i].agreement ? res[i].agreement.appointment : '',
-                            letterOfIntent: loi,
-                            tenancyAgreement: ta
-                        });
+                        if (res[i].property.development) {
+                            rooms.push({
+                                tenantUser: {
+                                    _id: res[i].tenant._id,
+                                    username: res[i].tenant.username,
+                                    pictures: res[i].tenant.picture ? res[i].tenant.picture.url : ''
+                                },
+                                landlordUser: {
+                                    _id: res[i].landlord._id,
+                                    username: res[i].landlord.username,
+                                    pictures: res[i].landlord.picture ? res[i].landlord.picture.url : ''
+                                },
+                                development: {
+                                    name: res[i].property.development.name
+                                },
+                                property: {
+                                    _id: res[i].property._id,
+                                    address: {
+                                        unit_no: res[i].property.address.floor,
+                                        unit_no_2: res[i].property.address.unit,
+                                        block_no: res[i].property.address.block_number,
+                                        street_name: res[i].property.address.street_name,
+                                        postal_code: String(res[i].property.address.postal_code),
+                                        coordinates: [Number(res[i].property.address.coordinates[0]), Number(res[i].property.address.coordinates[1])],
+                                        country: res[i].property.address.country,
+                                        full_address: res[i].property.address.full_address,
+                                        type: res[i].property.address.type
+                                    }
+                                },
+                                manager: res[i].manager ? [ res[i].manager._id ] : [],
+                                roomId: res[i].room_id,
+                                status: res[i].status,
+                                appointmentId: res[i].agreement ? res[i].agreement.appointment : '',
+                                letterOfIntent: loi,
+                                tenancyAgreement: ta
+                            });
+                        }
                     }
                     resolve(rooms);
                 }
