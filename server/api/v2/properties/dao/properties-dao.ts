@@ -2023,7 +2023,7 @@ propertiesSchema.static('getSchedulesByDate', (propertyId: Object, date: string,
             for ( var i = 0; i < res.length; i++ ) {
               let res_date = res[i].date;
               let _fullDate = moment(res_date).format("YYYY-MM-DD");
-              if ( _fullDate == date) {
+              if ( _fullDate <= date) {
                 let status;
                 if(_appointments.property) {
                   if ( 
