@@ -105,6 +105,10 @@ export class PropertiesRoutes {
 		router
 			.route('/properties/update/:id')
 			.put(auth.isAuthenticated(),PropertiesController.updateProperties);
+		
+		router
+			.route('/properties/resubmit/:id')
+			.post(auth.isAuthenticated(), PropertiesController.resubmitProperty);
 
 		router
 			.route('/properties/:confirmation/:id')

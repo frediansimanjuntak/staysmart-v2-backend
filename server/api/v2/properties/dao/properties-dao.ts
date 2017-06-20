@@ -1081,6 +1081,36 @@ propertiesSchema.static('confirmationProperty', (id:string, userId:string, confi
   });
 });
 
+propertiesSchema.static('resubmitProperty', (id:string, userId:string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+      var action = 'update';
+      var type = 'confirmation';
+      var idUser = userId.toString();
+      Properties.createPropertyHistory(id, action, type).then((res) => {
+        Properties
+          .findById(id)
+          .populate("owner.user")  
+          .exec((err, property) => {
+            if(err) { reject({message: err.message}); }
+            else if (property) {
+              if (property.owner.user._id == idUser){
+                if(property.status == 'rejected' && property.confirmation.status == 'rejected') {                
+                  property.confirmation.status = "pending";
+                  property.status = "pending";
+                  property.save((err, saved) => {
+                    err ? reject(err)
+                        : resolve (saved);
+                  })
+                }
+                else { reject({message: "Property status is not on rejected"}); }
+              }
+              else { reject({message: "forbidden"}); }
+            }
+          })
+      });                 
+  });
+});
+
 propertiesSchema.static('favourite', (id:string, userId:string):Promise<any> => {
   return new Promise((resolve:Function, reject:Function) => {
     Users
