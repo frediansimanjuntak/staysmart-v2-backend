@@ -312,7 +312,7 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
           _query = {"status": "rejected", $or:[{"tenant": userId}, {"landlord": userId}]}; 
         }
         else {
-          _query = {$or:[{"tenant": userId}, {"landlord": userId}]}; 
+          _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": {$in: [ "cancel", "accepted", "rejected"]}}; 
         }
         Appointments
           .find(_query)
