@@ -664,7 +664,7 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                             "property": appointments.property._id,
                             "status": appointments.status,
                             "read_by": readBy,
-                            "message": message,
+                            // "message": message,
                             "created_at": createdAt,
                             "state": appointments.state
                           }
@@ -699,9 +699,6 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
 
 appointmentsSchema.static('updateAppointments', (id:string, status:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
-        if (!_.isString(status)) {
-          return reject(new TypeError('Status is not a valid string.'));
-        }
         Appointments
           .findById(id)
           .populate("landlord tenant")
