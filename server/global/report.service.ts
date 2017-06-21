@@ -175,6 +175,8 @@ export class report {
 				break;
 			case 'form_data.tenant':
 				let populate = report.objectByString(data, 'form_data.populate_tenant');
+				console.log(populate);
+				// let populate = 'form_data.populate_tenant';
 				var modifiedData = "";
 				if(populate) {
 					modifiedData += '<li><table width="100%"><tr><td width="50%">Name: <i class="b">' + getData.name + '</i></td>' +

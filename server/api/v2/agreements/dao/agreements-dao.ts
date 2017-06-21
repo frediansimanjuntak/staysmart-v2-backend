@@ -2034,7 +2034,11 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 			return reject(new TypeError('Id is not a valid string.'));
 		}		
 		let IDUser = userId.toString();
-		let body:any = data;
+		let body:any = data;		
+		let type = "tenancy_agreement";
+		let typeNotif = "initiateTA";
+		let typeEmailLandlord = "initiateTaLandlord";
+		let typeEmailTenant = "initiateTaTenant";
 		Agreements
 			.findById(id)
 			.populate("landlord tenant appointment property")
@@ -2050,35 +2054,35 @@ agreementsSchema.static('sendTA', (id:string, data:Object, userId:string):Promis
 					}
 					else if (landlordId == IDUser) {
 						if (body.sign) {
-							if (agreement.appointment) {							
-								Appointments
-									.findById(agreement.appointment._id)
-									.exec((err, res) => {
-										if (err) {
-											reject({message: err.message});
-										}
-										if (res) {
-											res.state = "initiate tenancy agreement";
-											res.save((err, saved) => {
-												err ? reject({message: err.message})
-													: resolve(saved);
-											});
-										}
-									})
-							}
-							let type = "tenancy_agreement";
-							let typeNotif = "initiateTA";
-							let typeEmailLandlord = "initiateTaLandlord";
-							let typeEmailTenant = "initiateTaTenant";
-							Agreements.confirmation(id, data, type);
-							Agreements.email(id, typeEmailLandlord);
-							Agreements.email(id, typeEmailTenant);
-							Agreements.notification(id, typeNotif);
-							resolve({message: "Send Ta Success"});	
+							agreement.tenancy_agreement.data.status = 'pending';
+							agreement.save((err, saved) => {
+								if (err) { reject(err); }
+								else {
+									if (agreement.appointment) {							
+										Appointments
+											.findById(agreement.appointment._id)
+											.exec((err, res) => {
+												if (err) {
+													reject({message: err.message});
+												}
+												if (res) {
+													res.state = "initiate tenancy agreement";
+													res.save((err, saved) => {
+														err ? reject({message: err.message})
+															: resolve(saved);
+													});
+												}
+											})
+									}
+									Agreements.confirmation(id, data, type);
+									Agreements.email(id, typeEmailLandlord);
+									Agreements.email(id, typeEmailTenant);
+									Agreements.notification(id, typeNotif);
+									resolve({message: "Send Ta Success"});
+								}
+							})								
 						}
-						else {
-							reject({message: "sign not found"});
-						}						
+						else { reject({message: "sign not found"}); }						
 					}
 				}
 		})
