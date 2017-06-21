@@ -233,28 +233,40 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
                       }
                     }
                   }
+                  let propertiesData = [];
+                  for (var w = 0; w < properties_data.length; w++) {
+                    if (properties_data[w].owner.user) {
+                      propertiesData.push(properties_data[w]);
+                    }
+                  }
                   let req: any = request;
                   if (req.user) {
-                    propertyHelper.getAll(properties_data, req.user._id).then(result => {
+                    propertyHelper.getAll(propertiesData, req.user._id).then(result => {
                       resolve(result);  
                     });
                   }
                   else {
-                    console.log(properties_data);
-                    resolve(properties_data);
+                    console.log(propertiesData);
+                    resolve(propertiesData);
                   }
                 }
               })
             }
             else {
               let req: any = request;
+              let propertiesData = [];
+              for (var z = 0; z < prop_data.length; z++) {
+                if (prop_data[z].owner.user) {
+                  propertiesData.push(prop_data[z]);
+                }
+              }
               if (req.user) {
-                propertyHelper.getAll(prop_data, req.user._id).then(result => {
+                propertyHelper.getAll(propertiesData, req.user._id).then(result => {
                   resolve(result);  
                 });
               }
               else {
-                resolve(prop_data);
+                resolve(propertiesData);
               }
             }
           }
