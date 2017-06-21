@@ -40,5 +40,9 @@ export class AppointmentsRoutes {
 			.route('/member/appointments/:type')
 			.get(auth.isAuthenticated(), AppointmentsController.memberSectionAppointment)
 			.post(auth.isAuthenticated(), AppointmentsController.memberSectionAction);
+
+		router
+			.route('/schedules/:property_id')
+			.post(auth.isAuthenticated(), AppointmentsController.addSchedule);
 	}
 }
