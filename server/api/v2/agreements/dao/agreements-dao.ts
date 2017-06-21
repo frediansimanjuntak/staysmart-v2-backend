@@ -1565,11 +1565,12 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 								path: 'tenant.data.identification_proof.back',
 								model: 'Attachments'
 							}],
-							select: 'username email picture landlord.data phone'
+							select: 'username email picture tenant.data phone'
 						})
 						.exec((err, agreement) => {
 							if (err) { reject({message: err.message}); }
 							else if (agreement) {
+								console.log(agreement);
 								if (agreement.letter_of_intent.data.landlord.name || agreement.letter_of_intent.data.tenant.name) {
 									let tenant = agreement.tenant.tenant.data;
 									let landlord =  agreement.landlord.landlord.data;
