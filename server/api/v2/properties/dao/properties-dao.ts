@@ -1115,7 +1115,7 @@ propertiesSchema.static('resubmitProperty', (id:string, userId:string):Promise<a
           .findById(id)
           .populate("owner.user")  
           .exec((err, property) => {
-            if(err) { reject({message: err.message}); }
+            if(err) { reject(err); }
             else if (property) {
               if (property.owner.user._id == idUser){
                 if(property.status == 'rejected' && property.confirmation.status == 'rejected') {                
@@ -1131,7 +1131,10 @@ propertiesSchema.static('resubmitProperty', (id:string, userId:string):Promise<a
               else { reject({message: "forbidden"}); }
             }
           })
-      });                 
+      })
+      .catch((err) => {
+        reject(err);
+      })                 
   });
 });
 
