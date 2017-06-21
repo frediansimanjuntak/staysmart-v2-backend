@@ -188,7 +188,7 @@ export class propertyHelper{
 						development: properties.development.name,
 						landlord: {
 							_id: properties.owner.user._id,
-							full_name: properties.owner.user.landlord.data.name
+							full_name: properties.owner.user.landlord ? properties.owner.user.landlord.data ? properties.owner.user.landlord.data.name : properties.temp.owner ? properties.temp.owner.name : '' : ''
 						},
 						user: {
 							_id: properties.owner.user._id,
