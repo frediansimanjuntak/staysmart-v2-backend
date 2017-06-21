@@ -748,6 +748,97 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
     });
 });
 
+appointmentsSchema.static('addSchedule', (appointments: Object, tenant: Object, propertyId: string):Promise<any> => {
+  return new Promise((resolve:Function, reject:Function) => {
+    let body: any = appointments;
+    Properties.findById(propertyId).exec((err, properties) => {
+      if (err) { reject({message: err.message}); }
+      else {
+        Agreements.createAgreements({"property": propertyId}, tenant).then(res => {
+          let agreementId = res._id;
+          let roomId;
+          if (res.room) {
+            roomId = res.room;
+          }
+          let schedules_id = [];
+          for (var i = 0; i < body.schedules.length; i++) {
+            let schedules = body.schedules[i];
+            let appointment = {
+              date: body.date,
+              time: [schedules.time],
+              time2: [schedules.time2],
+              property: propertyId,
+              schedule: schedules.schedule_id,
+              message: body.message
+            };
+            let _appointment = new Appointments();
+                _appointment.room = roomId;
+                _appointment.agreement = agreementId;
+                _appointment.landlord = properties.owner.user;
+                _appointment.tenant = tenant;
+                _appointment.property = propertyId;
+                _appointment.schedule = schedules.schedule_id;
+                _appointment.chosen_time.date = body.date;
+                _appointment.chosen_time.from = schedules.time;
+                _appointment.chosen_time.to = schedules.time2;
+                _appointment.message = body.message;
+                _appointment.save((err, saved) => {
+                  if (err) { reject({message: err.message}); }
+                  else if (saved) {
+                    let appointmentId = saved._id;
+                    let roomChatId;
+                    if (saved.room) {
+                      roomChatId = saved.room;
+                    }
+                    Appointments
+                      .findById(appointmentId)
+                      .populate("landlord tenant")
+                      .populate({
+                        path: 'property',
+                        populate: {
+                          path: 'development',
+                          model: 'Developments',
+                        },
+                      })
+                      .exec((err, appointment) => {
+                        if (err) {
+                          reject({message: err.message})
+                        }
+                        else if (appointment) {
+                          var devID = appointment.property.development;
+                          var unit = '#'+appointment.property.address.floor+'-'+appointment.property.address.unit;                                    
+                          var notification = {
+                            "user": appointment.landlord._id,
+                            "message": "Viewing Received for "+appointment.property.development.name,
+                            "type": "appointment_proposed",
+                            "ref_id": appointmentId
+                          };
+                          Notifications.createNotifications(notification);  
+                          var emailTo = appointment.landlord.email;
+                          var fullname = appointment.landlord.username;
+                          var tenant_username = appointment.tenant.username;              
+                          var full_address = appointment.property.address.full_address;
+                          var from = 'Staysmart';
+                          mail.proposedAppointment(emailTo, fullname, tenant_username, full_address, from);
+                        }                                  
+                      });                 
+                  }
+                });
+                schedules_id.push(_appointment._id);
+          }
+          resolve({
+            message: "success",
+            code: 200,
+            data: {
+              _id: schedules_id
+            }
+          });
+        });
+      }
+    })
+  });
+});
+
 let Appointments = mongoose.model('Appointments', appointmentsSchema);
 
 export default Appointments;
