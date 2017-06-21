@@ -43,7 +43,7 @@ export class PropertiesController {
 		let _device = req.device.type;
 		let _user = "";
 		PropertiesDAO
-		['getById'](_id, _user, _device)
+		['getById'](_id, _user, _device, 'none')
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -54,7 +54,7 @@ export class PropertiesController {
 		let _user = req["user"]._id;
 		
 		PropertiesDAO
-		['getById'](_id, _user, _device)
+		['getById'](_id, _user, _device, 'none')
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -184,7 +184,7 @@ export class PropertiesController {
 	static step4(req: express.Request, res: express.Response):void {
 		let _body = req.body;
 		let _userId = req["user"]._id;
-		let _device = req.device.type;
+		let _device = 'phone';
 		PropertiesDAO
 		['step4'](_body, _userId, _device)
 		.then(properties => res.status(200).json(properties))
