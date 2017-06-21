@@ -687,7 +687,6 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                                         status: res[i].agreement.letter_of_intent.data.status
                                     };
                                 }
-                                else { loi = {}; }
 
                                 if (res[i].agreement && res[i].agreement.tenancy_agreement.data.created_at) {
                                     ta = {
@@ -695,7 +694,7 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
                                         status: res[i].agreement.tenancy_agreement.data.status
                                     };
                                 }
-                                else { ta = {}; }
+                                
                                 let appointment_id = '';
                                 for (var ap = 0; ap < appointments.length; ap++) {
                                     if (String(res[i]._id) == String(appointments[ap].room)) {
@@ -881,7 +880,6 @@ chatsSchema.static('updateAgreementAndAppointmentRoom', (agreement: string, room
                                                 status: res.agreement.letter_of_intent.data.status
                                             };
                                         }
-                                        else { loi = {}; }
 
                                         if (res.agreement && res.agreement.tenancy_agreement.data.created_at) {
                                             ta = {
@@ -889,7 +887,6 @@ chatsSchema.static('updateAgreementAndAppointmentRoom', (agreement: string, room
                                                 status: res.agreement.tenancy_agreement.data.status
                                             };
                                         }
-                                        else { ta = {}; }
                                         let appointment_id = '';
                                         for (var ap = 0; ap < appointments.length; ap++) {
                                             if (String(res._id) == String(appointments[ap].room)) {
