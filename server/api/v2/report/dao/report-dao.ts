@@ -333,7 +333,7 @@ export class reportDAO{
 					if(agreement){
 						let ta = agreement.tenancy_agreement.data;
 						let taStatus = ta.status;
-						if (taStatus == "pending") {
+						if (taStatus == "pending" || taStatus == "draft" || taStatus == "expired" || taStatus == "rejected") {
 							reportDAO.reportTAPending(id).then(res => {
 								let result = juice(res);
 								resolve(res);

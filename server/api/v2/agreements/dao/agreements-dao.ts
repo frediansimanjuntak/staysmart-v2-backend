@@ -1887,7 +1887,7 @@ agreementsSchema.static('initiateTA', (id:string, data:Object, userId:string):Pr
 							agreement.letter_of_intent.data.landlord.bank_account.no = body.bank_account_no;
 							agreement.letter_of_intent.data.landlord.bank_account.name = body.bank_account_name;
 							agreement.letter_of_intent.data.landlord.bank_account.bank = body.bank_id;	
-							agreement.tenancy_agreement.data.status = "pending";
+							agreement.tenancy_agreement.data.status = "draft";
 							agreement.tenancy_agreement.data.created_at = new Date();
 							agreement.save((err, saved)=>{
 								err ? reject({message: err.message})
