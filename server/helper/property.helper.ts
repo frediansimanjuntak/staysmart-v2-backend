@@ -109,26 +109,26 @@ export class propertyHelper{
 		});
 	}
 
-	static getById(properties, userId, cased) {
+	static getById(properties, userId) {
 		return new Promise((resolve:Function, reject:Function) => {
-			let picture = [];
 			for (var l = 0; l < properties.pictures.living.length; l++) {
-				cased == 'step4' ? picture.push(properties.pictures.living[l].url) : properties.pictures.living[l] = properties.pictures.living[l].url ;
+				properties.pictures.living[l] = properties.pictures.living[l].url;
 			}
+
 			for (var d = 0; d < properties.pictures.dining.length; d++) {
-				cased == 'step4' ? picture.push(properties.pictures.dining[d].url) : properties.pictures.dining[d] = properties.pictures.dining[d].url;
+				properties.pictures.dining[d] = properties.pictures.dining[d].url;
 			}
 
 			for (var b = 0; b < properties.pictures.bed.length; b++) {
-				cased == 'step4' ? picture.push(properties.pictures.bed[b].url) : properties.pictures.bed[b] = properties.pictures.bed[b].url;
+				properties.pictures.bed[b] = properties.pictures.bed[b].url;
 			}
 
 			for (var t = 0; t < properties.pictures.toilet.length; t++) {
-				cased == 'step4' ? picture.push(properties.pictures.toilet[t].url) : properties.pictures.toilet[t] = properties.pictures.toilet[t].url;
+				properties.pictures.toilet[t] = properties.pictures.toilet[t].url;
 			}
 
 			for (var k = 0; k < properties.pictures.kitchen.length; k++) {
-				cased == 'step4' ? picture.push(properties.pictures.kitchen[k].url) : properties.pictures.kitchen[k] = properties.pictures.kitchen[k].url;
+				properties.pictures.kitchen[k] = properties.pictures.kitchen[k].url;
 			}
 			let _amenities = [];
 			for ( var x = 0; x < properties.amenities.length; x++ ) {
@@ -226,7 +226,7 @@ export class propertyHelper{
 						},
 						favourite: favourite,
 						amenities: _amenities,
-						pictures: cased == 'step4' ? picture : properties.pictures,
+						pictures: properties.pictures,
 						room: room
 					});
 				}

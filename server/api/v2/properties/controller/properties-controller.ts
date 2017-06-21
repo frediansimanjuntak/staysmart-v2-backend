@@ -43,7 +43,7 @@ export class PropertiesController {
 		let _device = req.device.type;
 		let _user = "";
 		PropertiesDAO
-		['getById'](_id, _user, _device, 'none')
+		['getById'](_id, _user, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
@@ -54,7 +54,7 @@ export class PropertiesController {
 		let _user = req["user"]._id;
 		
 		PropertiesDAO
-		['getById'](_id, _user, _device, 'none')
+		['getById'](_id, _user, _device)
 		.then(properties => res.status(200).json(properties))
 		.catch(error => res.status(400).json(error));
 	}
