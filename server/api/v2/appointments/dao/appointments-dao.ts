@@ -58,7 +58,7 @@ appointmentsSchema.static('getAppointment', (query:Object):Promise<any> => {
           })
           .exec((err, appointments) => {
               if (err) {
-                reject({message: err.message});
+                reject({message: err.message, code: 400});
               }
               else {
                 resolve(appointments);
@@ -119,12 +119,12 @@ appointmentsSchema.static('getById', (id:string, userId:string):Promise<any> => 
               resolve(result);
             }
             else {
-              reject({message:"forbidden"});
+              reject({message:"forbidden", code: 400});
             } 
           }) 
         })
         .catch((err)=>{
-            reject({message: err.message});
+            reject({message: err.message, code: 400});
         }) 
     });
 });
@@ -142,10 +142,10 @@ appointmentsSchema.static('readAppointment', (id:string, userId:string):Promise<
             res.landlord_read = true;
           }
           else {
-            reject({message: 'You not a member of this appointment.'});
+            reject({message: 'You not a member of this appointment.', code: 400});
           }
           res.save((err, saved) => {
-            err ? reject({message: err.message})
+            err ? reject({message: err.message, code: 400})
                 : resolve({
                   message: 'success',
                   code: 200,
@@ -184,7 +184,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
         .populate("owner.user development")
         .exec((err, property) => {
           if (err) {
-            reject({message: err.message});
+            reject({message: err.message, code: 400});
           }
           else if (property) {
             let landlordId = property.owner.user._id;
@@ -209,7 +209,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                     .find({"property": body.property, "chosen_time.date": body.date, "chosen_time.from": timeFrom, "chosen_time.to": timeTo, "status": {$nin: ["rejected", "cancel"]}})
                     .exec((err, res) => {
                       if (err) {
-                        reject({message: err.message});
+                        reject({message: err.message, code: 400});
                       }
                       else if (res) {
                         if (res.length == 0) {
@@ -225,7 +225,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                           _appointments.chosen_time.to = timeTo;
                           _appointments.save((err, saved)=>{
                             if (err) {
-                              reject({message: err.message});
+                              reject({message: err.message, code: 400});
                             }
                             else if (saved) {
                               let appointmentId = saved._id;
@@ -245,7 +245,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                                 })
                                 .exec((err, appointment) => {
                                   if (err) {
-                                    reject({message: err.message})
+                                    reject({message: err.message, code: 400})
                                   }
                                   else if (appointment) {
                                     var devID = appointment.property.development;
@@ -277,7 +277,7 @@ appointmentsSchema.static('createAppointments', (appointments:Object, tenant:str
                 }
               })
               .catch(err => {
-                reject({message: err.message});
+                reject({message: err.message, code: 400});
               });
             }                        
           }
@@ -294,7 +294,7 @@ appointmentsSchema.static('updateAppointmentsRoomId', (landlord:string, tenant:s
             }
           }, {multi: true})
           .exec((err, updated) => {
-              err ? reject({message: err.message})
+              err ? reject({message: err.message, code: 400})
                   : resolve(updated);
           });
     });
@@ -360,7 +360,7 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
             }]
           })
           .exec((err, appointments) => {
-              if (err) { reject({message: err.message}); }
+              if (err) { reject({message: err.message, code: 400}); }
               else if (appointments){
                 let landlordUnread = 0;
                 let tenantUnread = 0;
@@ -587,7 +587,7 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
         Appointments 
           .findById(body.appointment)
           .exec((err, appointment) => {
-            if (err) { reject({message: err.message}); }
+            if (err) { reject({message: err.message, code: 400}); }
             else if (appointment) {
               let landlord = appointment.landlord;
               let tenant = appointment.tenant;
@@ -597,15 +597,15 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                   if (body.action == 'cancel' || body.action == 'accepted' || body.action == 'rejected') {
                     status = body.action;
                   }
-                  else { reject({message: "Can not to do this action"}); }
+                  else { reject({message: "Can not to do this action", code: 400}); }
                 }
                 else if (type == 'upcoming'){
                   if (body.action == 'archived') { status = body.action; }
-                  else { reject({message: "Can not to do this action"}); }
+                  else { reject({message: "Can not to do this action", code: 400}); }
                 }
                 else if (type == 'archived'){
                   if (body.action == 'rejected') { status = body.action; }
-                  else { reject({message: "Can not to do this action"}); }
+                  else { reject({message: "Can not to do this action", code: 400}); }
                 }
                 Appointments.updateAppointments(body.appointment, status).then((res) => {
                   if (!res.code || res.code != 400) {
@@ -715,8 +715,8 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                             pictures.push(appointments.property.pictures.kitchen[k].url);
                           }
                           let own;
-                          if (userId == appointments.landlord._id) { own = 'landlord'; }
-                          else { own = 'tenant'; }
+                          userId == appointments.landlord._id ? own = 'landlord' : own = 'tenant';
+
                           let data = {
                             "_id": appointments._id,
                             "landlord": {
@@ -781,11 +781,11 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                   }
                   else { reject(res); }
                 })
-                .catch((err) => { reject({message: err.message}); })
+                .catch((err) => { reject({message: err.message, code: 400}); })
               }
-              else { reject({message: "forbidden"});}
+              else { reject({message: "forbidden", code: 400});}
             }
-            else { reject({message: "Appointment not found"}); }
+            else { reject({message: "Appointment not found", code: 400}); }
           })
     });
 });
@@ -798,7 +798,7 @@ appointmentsSchema.static('deleteAppointments', (id:string):Promise<any> => {
         Appointments
           .findByIdAndRemove(id)
           .exec((err, deleted) => {
-              err ? reject({message: err.message})
+              err ? reject({message: err.message, code: 400})
                   : resolve({message: "delete success"});
           });
     });
@@ -859,7 +859,7 @@ appointmentsSchema.static('addSchedule', (appointments: Object, tenant: Object, 
   return new Promise((resolve:Function, reject:Function) => {
     let body: any = appointments;
     Properties.findById(propertyId).exec((err, properties) => {
-      if (err) { reject({message: err.message}); }
+      if (err) { reject({message: err.message, code: 400}); }
       else {
         Agreements.createAgreements({"property": propertyId}, tenant).then(res => {
           let agreementId = res._id;
@@ -890,7 +890,7 @@ appointmentsSchema.static('addSchedule', (appointments: Object, tenant: Object, 
                 _appointment.chosen_time.to = schedules.time2;
                 _appointment.message = body.message;
                 _appointment.save((err, saved) => {
-                  if (err) { reject({message: err.message}); }
+                  if (err) { reject({message: err.message, code: 400}); }
                   else if (saved) {
                     let appointmentId = saved._id;
                     let roomChatId;
@@ -909,7 +909,7 @@ appointmentsSchema.static('addSchedule', (appointments: Object, tenant: Object, 
                       })
                       .exec((err, appointment) => {
                         if (err) {
-                          reject({message: err.message})
+                          reject({message: err.message, code: 400})
                         }
                         else if (appointment) {
                           var devID = appointment.property.development;
