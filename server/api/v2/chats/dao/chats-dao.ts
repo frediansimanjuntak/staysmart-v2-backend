@@ -311,7 +311,16 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                                 reject({message: err.message});
                             }
                             else if(chats){
-                                resolve(chats);
+                                if (device == 'desktop') {
+                                    resolve(chats);    
+                                }
+                                else {
+                                    resolve({
+                                        message: 'success',
+                                        code: 200,
+                                        data: { _id: chats.room_id }
+                                    });
+                                }
                             }
                             else{
                                 let roomName = uid + '-' + property.owner.user + '-' + propertyId;
@@ -369,7 +378,7 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                                                                             resolve({
                                                                                 message: 'success',
                                                                                 code: 200,
-                                                                                data: { _id: saved._id }
+                                                                                data: { _id: room._id }
                                                                             });
                                                                         }
                                                                     }
