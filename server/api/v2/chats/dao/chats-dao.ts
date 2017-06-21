@@ -95,7 +95,7 @@ chatsSchema.static('getById', (id:string, userId:string):Promise<any> => {
                             idUser = tenant;
                             idCheck = landlord;
                         }
-                        ChatRooms.checkBlock(idCheck, idUser).then((result)=> {
+                        ChatRooms.checkBlock(idCheck, userIdStr).then((result)=> {
                             ChatRooms.updateBlockedChat(id, result.blocked).then((res)=> {
                                 let _queryupdate = {"_id":res._id};
                                 ChatRooms.getChatRooms(_queryupdate).then(chats => {
