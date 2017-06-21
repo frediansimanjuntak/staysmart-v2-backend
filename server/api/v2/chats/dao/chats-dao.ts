@@ -6,6 +6,7 @@ import Users from '../../users/dao/users-dao';
 import Agreements from '../../agreements/dao/agreements-dao'
 import Properties from '../../properties/dao/properties-dao';
 import Developments from '../../developments/dao/developments-dao';
+import Appointments from '../../appointments/dao/appointments-dao';
 import Attachments from '../../attachments/dao/attachments-dao';
 import {DreamTalk} from '../../../../global/chat.service';
 
@@ -672,64 +673,76 @@ chatsSchema.static('getAllUserRooms', (userId: Object):Promise<any> => {
             if (err) { reject({message: err.message}); }
             else {
                 if (res.length > 0) {
-                    let rooms = [];
-                    for (var i = 0; i < res.length; i++) {
-                        let loi;
-                        let ta;
-                        if (res[i].agreement && res[i].agreement.letter_of_intent.data.created_at) {
-                            loi = {
-                                _id: res[i].agreement._id,
-                                status: res[i].agreement.letter_of_intent.data.status
-                            };
-                        }
-                        else { loi = {}; }
+                    Appointments.find({}).exec((err, appointments) => {
+                        if (err) { reject({message: err.message, code: 400}); }
+                        else if (appointments.length == 0) { reject({message: 'no appointments yet', code: 400});}
+                        else {
+                            let rooms = [];
+                            for (var i = 0; i < res.length; i++) {
+                                let loi;
+                                let ta;
+                                if (res[i].agreement && res[i].agreement.letter_of_intent.data.created_at) {
+                                    loi = {
+                                        _id: res[i].agreement._id,
+                                        status: res[i].agreement.letter_of_intent.data.status
+                                    };
+                                }
+                                else { loi = {}; }
 
-                        if (res[i].agreement && res[i].agreement.tenancy_agreement.data.created_at) {
-                            ta = {
-                                _id: res[i].agreement._id,
-                                status: res[i].agreement.tenancy_agreement.data.status
-                            };
-                        }
-                        else { ta = {}; }
-                        if (res[i].property && res[i].property != null && res[i].property.development && res[i].property.development != null) {
-                            rooms.push({
-                                tenantUser: {
-                                    _id: res[i].tenant._id,
-                                    username: res[i].tenant.username,
-                                    pictures: res[i].tenant.picture ? res[i].tenant.picture.url : res[i].tenant.service ? res[i].tenant.service.facebook ? res[i].tenant.service.facebook.picture ? res[i].tenant.service.facebook.picture : '' : '' : ''
-                                },
-                                landlordUser: {
-                                    _id: res[i].landlord._id,
-                                    username: res[i].landlord.username,
-                                    pictures: res[i].landlord.picture ? res[i].landlord.picture.url : res[i].landlord.service ? res[i].landlord.service.facebook ? res[i].landlord.service.facebook.picture ? res[i].landlord.service.facebook.picture : '' : '' : ''
-                                },
-                                development: {
-                                    name: res[i].property.development.name
-                                },
-                                property: {
-                                    _id: res[i].property._id,
-                                    address: {
-                                        unit_no: res[i].property.address.floor,
-                                        unit_no_2: res[i].property.address.unit,
-                                        block_no: res[i].property.address.block_number,
-                                        street_name: res[i].property.address.street_name,
-                                        postal_code: String(res[i].property.address.postal_code),
-                                        coordinates: [Number(res[i].property.address.coordinates[0]), Number(res[i].property.address.coordinates[1])],
-                                        country: res[i].property.address.country,
-                                        full_address: res[i].property.address.full_address,
-                                        type: res[i].property.address.type
+                                if (res[i].agreement && res[i].agreement.tenancy_agreement.data.created_at) {
+                                    ta = {
+                                        _id: res[i].agreement._id,
+                                        status: res[i].agreement.tenancy_agreement.data.status
+                                    };
+                                }
+                                else { ta = {}; }
+                                let appointment_id = '';
+                                for (var ap = 0; ap < appointments.length; ap++) {
+                                    if (String(res[i]._id) == String(appointments[ap].room)) {
+                                        appointment_id = appointments[ap]._id;
                                     }
-                                },
-                                manager: res[i].manager ? [ res[i].manager._id ] : [],
-                                roomId: res[i].room_id,
-                                status: res[i].status,
-                                appointmentId: res[i].agreement ? res[i].agreement.appointment : '',
-                                letterOfIntent: loi,
-                                tenancyAgreement: ta
-                            });
+                                }
+                                if (res[i].agreement != undefined && res[i].property && res[i].property != null && res[i].property.development && res[i].property.development != null) {
+                                    rooms.push({
+                                        tenantUser: {
+                                            _id: res[i].tenant._id,
+                                            username: res[i].tenant.username,
+                                            pictures: res[i].tenant.picture ? res[i].tenant.picture.url : res[i].tenant.service ? res[i].tenant.service.facebook ? res[i].tenant.service.facebook.picture ? res[i].tenant.service.facebook.picture : '' : '' : ''
+                                        },
+                                        landlordUser: {
+                                            _id: res[i].landlord._id,
+                                            username: res[i].landlord.username,
+                                            pictures: res[i].landlord.picture ? res[i].landlord.picture.url : res[i].landlord.service ? res[i].landlord.service.facebook ? res[i].landlord.service.facebook.picture ? res[i].landlord.service.facebook.picture : '' : '' : ''
+                                        },
+                                        development: {
+                                            name: res[i].property.development.name
+                                        },
+                                        property: {
+                                            _id: res[i].property._id,
+                                            address: {
+                                                unit_no: res[i].property.address.floor,
+                                                unit_no_2: res[i].property.address.unit,
+                                                block_no: res[i].property.address.block_number,
+                                                street_name: res[i].property.address.street_name,
+                                                postal_code: String(res[i].property.address.postal_code),
+                                                coordinates: [Number(res[i].property.address.coordinates[0]), Number(res[i].property.address.coordinates[1])],
+                                                country: res[i].property.address.country,
+                                                full_address: res[i].property.address.full_address,
+                                                type: res[i].property.address.type
+                                            }
+                                        },
+                                        manager: res[i].manager ? [ res[i].manager._id ] : [],
+                                        roomId: res[i].room_id,
+                                        status: res[i].status,
+                                        appointmentId: appointment_id,
+                                        letterOfIntent: loi,
+                                        tenancyAgreement: ta
+                                    });
+                                }
+                            }
+                            resolve(rooms);
                         }
-                    }
-                    resolve(rooms);
+                    });
                 }
                 else { resolve([]); }
             }
