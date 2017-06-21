@@ -158,6 +158,10 @@ export class reportDAO{
 					else {
 						devName = "Development Not Found";
 					}		
+					let populateTenant;
+					if (loi.tenant.not_occupier == false) {
+						populateTenant = false;
+					}
 					var data = {
 						"property": {
 							"development": devName,
@@ -207,7 +211,7 @@ export class reportDAO{
 							"term_lease_extend": loi.term_lease_extend,
 							"date_commencement": loi.date_commencement,
 							"term_payment": loi.term_payment,
-							"populate_tenant": loi.tenant.not_occupier,
+							"populate_tenant": populateTenant,
 							"minor_repair_cost": loi.minor_repair_cost,
 							"status_sign": "accept",
 							"status": status,

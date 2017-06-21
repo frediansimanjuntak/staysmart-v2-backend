@@ -117,6 +117,10 @@ export class UserRoutes {
 			.route('/logout')
 			.get(auth.isAuthenticated(), UsersController.logout);
 
+		router
+			.route('/users/total_signup/today')
+			.get(auth.isAuthenticated(), UsersController.getTotalUserSignupToday);
+
 		//mobile api
 		router
 			.route('/username')
