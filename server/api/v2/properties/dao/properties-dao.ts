@@ -240,6 +240,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
                     });
                   }
                   else {
+                    console.log(properties_data);
                     resolve(properties_data);
                   }
                 }
