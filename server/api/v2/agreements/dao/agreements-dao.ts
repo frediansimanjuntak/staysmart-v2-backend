@@ -268,7 +268,9 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 				else if (res) {
 					var taDocs = res;
 					var savedComission = 12100;
-					_.each(taDocs, (ta) => {					
+					var calculation = 0;
+					for (var i = 0; i < taDocs.length; i++) {
+						let ta = taDocs[i];
 						let taData = ta.tenancy_agreement.data;
 						let loiData = ta.letter_of_intent.data;
 						let n;
@@ -293,7 +295,7 @@ agreementsSchema.static('getOdometer', ():Promise<any> => {
 						else {
 							savedComission = savedComission;
 						}
-					});
+					}			
 					resolve({odometer: savedComission});
 				}
 			})
