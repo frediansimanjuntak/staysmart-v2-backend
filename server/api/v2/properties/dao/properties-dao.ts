@@ -86,13 +86,19 @@ propertiesSchema.static('getAll', (device: string, userId: Object, type: string)
               reject({message: err.message})
             }
             else {
-              if ( device != 'desktop' ) {
-                propertyHelper.getAll(properties, userId).then(result => {
+              let propertiesData = [];
+              for (var i = 0; i < properties.length; i++) {
+                if (properties[i].owner.user) {
+                  propertiesData.push(properties[i]);
+                }
+              }
+              if ( device != 'desktop' ) {                
+                propertyHelper.getAll(propertiesData, userId).then(result => {
                   resolve(result);  
                 });
               }
               else {
-                resolve(properties);
+                resolve(propertiesData);
               }
             }
           });
