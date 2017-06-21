@@ -209,7 +209,7 @@ export class reportDAO{
 							"lapse_offer": loi.lapse_offer,
 							"term_lease": loi.term_lease,
 							"term_lease_extend": loi.term_lease_extend,
-							"date_commencement": loi.date_commencement,
+							"date_commencement": dateCommence,
 							"term_payment": loi.term_payment,
 							"populate_tenant": populateTenant,
 							"minor_repair_cost": loi.minor_repair_cost,
