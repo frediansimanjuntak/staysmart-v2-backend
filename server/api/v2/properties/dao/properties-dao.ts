@@ -680,7 +680,7 @@ propertiesSchema.static('updateProperties', (id:string, properties:Object, userI
         for(var param in body) {
           propertyObj.$set[param] = body[param];
         }
-
+        
         Properties.ownerProperty(id, userId).then(res => {
           if(res.message) {
             reject({message: res.message});
@@ -941,75 +941,80 @@ propertiesSchema.static('deleteProperties', (id:string, userId:Object, device: s
           }
           else if(res == true){
             Properties.findById(id, (err, result) => {
-              for(var i = 0; i < result.pictures.living.length; i++){
-                Attachments
-                  .findByIdAndRemove(result.pictures.living[i])
-                  .exec((err, deleted) => {
-                      err ? reject({message: err.message})
-                          : '';
-                  });
+              if (result.agreements.data) {
+                resolve({message: "property cannot to delete because have an active agreement"});
               }
-              for(var i = 0; i < result.pictures.dining.length; i++){
-                Attachments
-                  .findByIdAndRemove(result.pictures.dining[i])
-                  .exec((err, deleted) => {
-                      err ? reject({message: err.message})
-                          : '';
-                  });
-              }
-              for(var i = 0; i < result.pictures.bed.length; i++){
-                Attachments
-                  .findByIdAndRemove(result.pictures.bed[i])
-                  .exec((err, deleted) => {
-                      err ? reject({message: err.message})
-                          : '';
-                  });
-              }
-              for(var i = 0; i < result.pictures.toilet.length; i++){
-                Attachments
-                  .findByIdAndRemove(result.pictures.toilet[i])
-                  .exec((err, deleted) => {
-                      err ? reject({message: err.message})
-                          : '';
-                  });
-              }
-              for(var i = 0; i < result.pictures.kitchen.length; i++){
-                Attachments
-                  .findByIdAndRemove(result.pictures.kitchen[i])
-                  .exec((err, deleted) => {
-                      err ? reject({message: err.message})
-                          : '';
-                  });
-              }
-            })
-            Users
-              .findByIdAndUpdate(userId, {
-                $pull: {
-                  "owned_properties": id
+              else {
+                for(var i = 0; i < result.pictures.living.length; i++){
+                  Attachments
+                    .findByIdAndRemove(result.pictures.living[i])
+                    .exec((err, deleted) => {
+                        err ? reject({message: err.message})
+                            : '';
+                    });
                 }
-              })
-              .exec((err, deleted) => {
-                  err ? reject({message: err.message})
-                      : '';
-              });
+                for(var i = 0; i < result.pictures.dining.length; i++){
+                  Attachments
+                    .findByIdAndRemove(result.pictures.dining[i])
+                    .exec((err, deleted) => {
+                        err ? reject({message: err.message})
+                            : '';
+                    });
+                }
+                for(var i = 0; i < result.pictures.bed.length; i++){
+                  Attachments
+                    .findByIdAndRemove(result.pictures.bed[i])
+                    .exec((err, deleted) => {
+                        err ? reject({message: err.message})
+                            : '';
+                    });
+                }
+                for(var i = 0; i < result.pictures.toilet.length; i++){
+                  Attachments
+                    .findByIdAndRemove(result.pictures.toilet[i])
+                    .exec((err, deleted) => {
+                        err ? reject({message: err.message})
+                            : '';
+                    });
+                }
+                for(var i = 0; i < result.pictures.kitchen.length; i++){
+                  Attachments
+                    .findByIdAndRemove(result.pictures.kitchen[i])
+                    .exec((err, deleted) => {
+                        err ? reject({message: err.message})
+                            : '';
+                    });
+                }
+                Users
+                  .findByIdAndUpdate(userId, {
+                    $pull: {
+                      "owned_properties": id
+                    }
+                  })
+                  .exec((err, deleted) => {
+                      err ? reject({message: err.message})
+                          : '';
+                  });
 
-            Properties
-              .findByIdAndRemove(id)
-              .exec((err, deleted) => {
-                  if (err) { reject({message: err.message}); }
-                  else {
-                    if (device == 'desktop') {
-                      resolve(deleted);                      
-                    }
-                    else {
-                      resolve({
-                        message: 'success',
-                        code: 200,
-                        data: 1
-                      });
-                    }
-                  }
-              });
+                Properties
+                  .findByIdAndRemove(id)
+                  .exec((err, deleted) => {
+                      if (err) { reject({message: err.message}); }
+                      else {
+                        if (device == 'desktop') {
+                          resolve(deleted);                      
+                        }
+                        else {
+                          resolve({
+                            message: 'success',
+                            code: 200,
+                            data: 1
+                          });
+                        }
+                      }
+                  });
+              }
+            })              
           }
         });
     });
