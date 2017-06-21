@@ -148,7 +148,7 @@ export class propertyHelper{
 				});
 			}
 			var ObjectID = mongoose.Types.ObjectId;  
-			Users.findById(userId).exec((err, user) => {
+			Users.findById(userId).populate('chat_rooms').exec((err, user) => {
 				if (err) {
 					reject({message: err.message});
 				}
