@@ -306,13 +306,13 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
       if (exist_type.indexOf(type) > -1) {
         let _query;
         if (type == 'upcoming') {
-          _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": "archived"}; 
+          _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": "accepted"}; 
         }
         else if (type == 'archived') {
-          _query = {"status": "rejected", $or:[{"tenant": userId}, {"landlord": userId}]}; 
+          _query = {"status": "archived", $or:[{"tenant": userId}, {"landlord": userId}]}; 
         }
         else {
-          _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": {$in: [ "cancel", "accepted", "rejected"]}}; 
+          _query = {$or:[{"tenant": userId}, {"landlord": userId}], "status": {$in: [ "cancel", "pending", "rejected"]}}; 
         }
         Appointments
           .find(_query)
@@ -664,7 +664,7 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                             "property": appointments.property._id,
                             "status": appointments.status,
                             "read_by": readBy,
-                            // "message": message,
+                            "message": message,
                             "created_at": createdAt,
                             "state": appointments.state
                           }

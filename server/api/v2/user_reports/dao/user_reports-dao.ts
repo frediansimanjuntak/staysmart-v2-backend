@@ -2,7 +2,8 @@ import * as mongoose from 'mongoose';
 import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 import userReportsSchema from '../model/user_reports-model';
-import Users from '../../users/dao/users-dao'
+import Users from '../../users/dao/users-dao';
+import Properties from '../../properties/dao/properties-dao'
 import {userHelper} from '../../../../helper/user.helper';
 
 userReportsSchema.static('getAll', ():Promise<any> => {
@@ -186,13 +187,45 @@ userReportsSchema.static('reportUser', (reported:string):Promise<any> => {
                     }
                     user.reported = report;
                     user.save((err, saved) => {
-                        err ? reject({message: err.message})
-                            : resolve(saved);
+                        if (err) { reject({message: err.message}); }
+                        else {
+                            let ownProperty = saved.owned_properties;
+                            for (var i = 0; i < ownProperty.length; i++) {
+                                let propertyId = ownProperty[i];
+                                UserReports.updatePropertyStatus(propertyId);
+                            }
+                            resolve(saved);
+                        }
                     })
                 }
                 else {
                     reject({message: "user not found"});
                 }
+            })
+    });
+});
+
+userReportsSchema.static('updatePropertyStatus', (id:string):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Properties
+            .findById(id)
+            .exec((err, property) => {
+                if (err) { reject(err); }
+                else if (property) {
+                    let status;
+                    if (property.status == "published") {
+                        status = "unpublished";
+                    }
+                    else if (property.status == "unpublished") {
+                        status = "published";
+                    }
+                    property.status = status;
+                    property.save((err, saved) => {
+                        err ? reject(err)
+                            : resolve(saved);
+                    })
+                }
+                else { resolve({message: "property not found"}); }
             })
     });
 });
