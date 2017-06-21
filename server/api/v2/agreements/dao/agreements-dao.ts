@@ -894,6 +894,7 @@ agreementsSchema.static('createLoi', (id:string, data:Object, userId:string):Pro
 							for(var param in body) {
 								loiObj.$set["letter_of_intent.data." + param] = body[param];
 							}
+							loiObj.$set["letter_of_intent.data.date_commencement"] = new Date(body.date_commencement);
 							loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
 							loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
 							loiObj.$set["letter_of_intent.data.term_payment"] = term_payment;
@@ -1048,7 +1049,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 										loiObj.$set["letter_of_intent.data.tenant"] = tenant;
 										loiObj.$set["letter_of_intent.data.occupiers"] = occupiers;
 										loiObj.$set["letter_of_intent.data.monthly_rental"] = body.monthly_rental;
-										loiObj.$set["letter_of_intent.data.date_commencement"] = body.date_commencement;
+										loiObj.$set["letter_of_intent.data.date_commencement"] = new Date(body.date_commencement);
 										loiObj.$set["letter_of_intent.data.populate_tenant"] = body.populate_tenant;
 										loiObj.$set["letter_of_intent.data.gfd_amount"] = gfd_amount;
 										loiObj.$set["letter_of_intent.data.sd_amount"] = sd_amount;
