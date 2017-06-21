@@ -27,7 +27,7 @@ propertiesSchema.static('getAll', (device: string, userId: Object, type: string)
       let _query = {};
       if ( device != 'desktop' ) {
         if (type == 'browse') {
-          _query = {"confirmation.status": "approved", "details.available": {$lt: new Date(year, month, date)}, "status": "published", $and:[{"owner.user": {"$ne": null}}, {"owner.user": {"$ne": ""}}]};
+          _query = {"confirmation.status": "approved", "details.available": {$lt: new Date(year, month, date)}, "status": "published", "owner.user": {"$ne": null}};
         }
         else {
           _query = {};
@@ -105,7 +105,7 @@ propertiesSchema.static('searchProperties', (searchComponent:Object, from:string
         let date = today.getDate() + 1;
         let month = today.getMonth();
         let year = today.getFullYear();
-        let _query = {"confirmation.status": "approved", "details.available": {$lt: new Date(year, month, date)}, "status": "published", $and:[{"owner.user": {"$ne": null}}, {"owner.user": {"$ne": ""}}]};
+        let _query = {"confirmation.status": "approved", "details.available": {$lt: new Date(year, month, date)}, "status": "published", "owner.user": {"$ne": null}};
         var property = Properties.find(_query);
 
         let search:any = searchComponent;
