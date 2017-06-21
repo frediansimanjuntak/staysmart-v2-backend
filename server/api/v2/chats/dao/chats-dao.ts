@@ -774,11 +774,177 @@ chatsSchema.static('getUserRoomByScheduleId', (scheduleId: string, userId: Objec
                     index = i;
                 }
             }
-            if (index == -1) { resolve({}); }
+            if (index == -1) { 
+                ChatRooms.createNewRoomByAppointmentId(scheduleId, userId).then(result => {
+                    resolve(result);
+                })
+            }
             else { resolve(res[index]); }
         })
     });
 });
+
+chatsSchema.static('createNewRoomByAppointmentId', (appointment_id: string, userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Appointments.findById(appointment_id).exec((err, appointment) => {
+            if (err) { reject({message: err.message, code: 400}); }
+            else {
+                ChatRooms.find({"property": appointment.property, "tenant": appointment.tenant}).exec((err, rooms) => {
+                    if (err) { reject({message: err.message, code: 400}); }
+                    else if (rooms.length == 0) { 
+                        //create room, update to agreement and all appointment with same agreement
+                        ChatRooms.createRoom(appointment.tenant, {property_id: appointment.property}, 'phone').then(result => {
+                            let room_id = result.data._id;
+                            ChatRooms.updateAgreementAndAppointmentRoom(appointment.agreement, room_id, appointment_id, userId).then(res => {
+                                resolve(res);
+                            });
+                        })
+                    }
+                    else {
+                        ChatRooms.updateAgreementAndAppointmentRoom(appointment.agreement, rooms[0]._id, appointment_id, userId).then(res => {
+                            resolve(res);
+                        })
+                    }
+                })
+            }
+        });
+    });
+});
+
+chatsSchema.static('updateAgreementAndAppointmentRoom', (agreement: string, rooms: string, appointment_id: string, userId: Object):Promise<any> => {
+    return new Promise((resolve:Function, reject:Function) => {
+        Agreements.findByIdAndUpdate(agreement, {
+            $set: {
+                room: rooms
+            }
+        })
+        .exec((err, updated) => {
+            if (err) { reject({message: err.message, code: 400}); }
+            else {
+                Appointments.update({"agreement": agreement}, {
+                    $set: {
+                        room: rooms
+                    }
+                }, (err, done) => {
+                    if (err) { reject({message: err.message, code: 400}); }
+                    else {
+                        ChatRooms.findOne({"agreement": agreement})
+                        .populate([{
+                            path: 'property',
+                            model: Properties,
+                            populate: {
+                                path: 'development',
+                                model: Developments
+                            }
+                        },
+                        {
+                            path: 'tenant',
+                            model: Users,
+                            populate: {
+                                path: 'picture',
+                                model: Attachments
+                            }
+                        },
+                        {
+                            path: 'landlord',
+                            model: Users,
+                            populate: {
+                                path: 'picture',
+                                model: Attachments
+                            }
+                        },
+                        {
+                            path: 'manager',
+                            model: Users,
+                            populate: {
+                                path: 'picture',
+                                model: Attachments
+                            }
+                        },
+                        {
+                            path: 'agreement',
+                            model: Agreements
+                        }
+                        ]).exec((err, res) => {
+                            if (err) { reject({message: err.message, code: 400}); }
+                            else {
+                                Appointments.find({}).exec((err, appointments) => {
+                                    if (err) { reject({message: err.message, code: 400}); }
+                                    else if (appointments.length == 0) { reject({message: 'no appointments yet', code: 400});}
+                                    else {
+                                        let rooms = {};
+                                        let loi;
+                                        let ta;
+                                        if (res.agreement && res.agreement.letter_of_intent.data.created_at) {
+                                            loi = {
+                                                _id: res.agreement._id,
+                                                status: res.agreement.letter_of_intent.data.status
+                                            };
+                                        }
+                                        else { loi = {}; }
+
+                                        if (res.agreement && res.agreement.tenancy_agreement.data.created_at) {
+                                            ta = {
+                                                _id: res.agreement._id,
+                                                status: res.agreement.tenancy_agreement.data.status
+                                            };
+                                        }
+                                        else { ta = {}; }
+                                        let appointment_id = '';
+                                        for (var ap = 0; ap < appointments.length; ap++) {
+                                            if (String(res._id) == String(appointments[ap].room)) {
+                                                appointment_id = appointments[ap]._id;
+                                            }
+                                        }
+                                        if (res.agreement != undefined && res.property && res.property != null && res.property.development && res.property.development != null) {
+                                            rooms = {
+                                                tenantUser: {
+                                                    _id: res.tenant._id,
+                                                    username: res.tenant.username,
+                                                    pictures: res.tenant.picture ? res.tenant.picture.url : res.tenant.service ? res.tenant.service.facebook ? res.tenant.service.facebook.picture ? res.tenant.service.facebook.picture : '' : '' : ''
+                                                },
+                                                landlordUser: {
+                                                    _id: res.landlord._id,
+                                                    username: res.landlord.username,
+                                                    pictures: res.landlord.picture ? res.landlord.picture.url : res.landlord.service ? res.landlord.service.facebook ? res.landlord.service.facebook.picture ? res.landlord.service.facebook.picture : '' : '' : ''
+                                                },
+                                                development: {
+                                                    name: res.property.development.name
+                                                },
+                                                property: {
+                                                    _id: res.property._id,
+                                                    address: {
+                                                        unit_no: res.property.address.floor,
+                                                        unit_no_2: res.property.address.unit,
+                                                        block_no: res.property.address.block_number,
+                                                        street_name: res.property.address.street_name,
+                                                        postal_code: String(res.property.address.postal_code),
+                                                        coordinates: [Number(res.property.address.coordinates[0]), Number(res.property.address.coordinates[1])],
+                                                        country: res.property.address.country,
+                                                        full_address: res.property.address.full_address,
+                                                        type: res.property.address.type
+                                                    }
+                                                },
+                                                manager: res.manager ? [ res.manager._id ] : [],
+                                                roomId: res.room_id,
+                                                status: res.status,
+                                                appointmentId: appointment_id,
+                                                letterOfIntent: loi,
+                                                tenancyAgreement: ta
+                                            };
+                                        }
+                                        resolve(rooms);
+                                    }
+                                });
+                            }
+                        })
+                    }
+                })
+            }
+        });
+    });
+});
+
 
 chatsSchema.static('removeRoomMobile', (data: Object):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
