@@ -162,7 +162,7 @@ export class propertyHelper{
 								landlordUser: rooms[r].landlord,
 								property: rooms[r].property,
 								manager: rooms[r].manager,
-								roomId: rooms[r]._id
+								roomId: rooms[r].room_id
 							};
 						}
 					}
