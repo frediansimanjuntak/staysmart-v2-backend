@@ -981,29 +981,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 		let body:any = GlobalService.validObjectEmpty(data);
 		let IDUser = userId.toString();	
 		let typeDataa = "letter_of_intent";	
-		let tenant = {
-			'name': body.tenant.name,
-			'identification_type': body.tenant.type,
-			'identification_number': body.tenant.id_no,
-			'identification_proof': {
-				'front': body.tenant.identity_front,
-				'back': body.tenant.identity_back
-			},
-			'bank_account': {
-				'bank':body.bank_refund.bank_id,
-				'name': body.bank_refund.name,
-				'no': body.bank_refund.no
-			}
-		};
-		let occupiers = {
-			'name': body.occupants.name,
-			'identification_type': body.occupants.type,
-			'identification_number': body.occupants.id_no,
-			'identification_proof': {
-				'front': body.occupants.identity_front,
-				'back': body.occupants.identity_back
-			}
-		};	
+			
 		Appointments
 			.findById(id)
 			.exec((err, appointment) => {
@@ -1025,8 +1003,37 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 									resolve({message: "forbidden"});
 								}
 								else if (tenantID == IDUser) {
-									Agreements.checkLOIStatus(id).then((res) => {
-										Agreements.userUpdateDataTenant(tenantID.toString(), tenant);
+									Agreements.checkLOIStatus(id).then((res) => {						
+										let occupiers;
+										let tenant;
+										if (body.tenant) {
+											tenant = {
+												'name': body.tenant.name,
+												'identification_type': body.tenant.type,
+												'identification_number': body.tenant.id_no,
+												'identification_proof': {
+													'front': body.tenant.identity_front,
+													'back': body.tenant.identity_back
+												},
+												'bank_account': {
+													'bank':body.bank_refund.bank_id,
+													'name': body.bank_refund.name,
+													'no': body.bank_refund.no
+												}
+											};
+											Agreements.userUpdateDataTenant(tenantID.toString(), tenant);
+										}				
+										if (body.occupants) {
+											occupiers = {
+												'name': body.occupants.name,
+												'identification_type': body.occupants.type,
+												'identification_number': body.occupants.id_no,
+												'identification_proof': {
+													'front': body.occupants.identity_front,
+													'back': body.occupants.identity_back
+												}
+											};
+										}
 										let _query = {"_id": id};
 										let loiObj = {$set: {}};
 										let monthly_rental = body.monthly_rental;
@@ -1530,13 +1537,42 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 					let idAgreement = appointment.agreement;
 					Agreements
 						.findById(idAgreement)
-						.populate("letter_of_intent.data.tenant.identification_proof.front letter_of_intent.data.tenant.identification_proof.back letter_of_intent.data.landlord.identification_proof.front letter_of_intent.data.landlord.identification_proof.back")
+						.populate({
+							path: 'landlord',
+							model: 'Users',
+							populate: [{
+								path: 'picture',
+								model: 'Attachments'
+							}, {
+								path: 'landlord.data.identification_proof.front',
+								model: 'Attachments'
+							}, {
+								path: 'landlord.data.identification_proof.back',
+								model: 'Attachments'
+							}],
+							select: 'username email picture landlord.data phone'
+						})
+						.populate({
+							path: 'tenant',
+							model: 'Users',
+							populate: [{
+								path: 'picture',
+								model: 'Attachments'
+							}, {
+								path: 'tenant.data.identification_proof.front',
+								model: 'Attachments'
+							}, {
+								path: 'tenant.data.identification_proof.back',
+								model: 'Attachments'
+							}],
+							select: 'username email picture landlord.data phone'
+						})
 						.exec((err, agreement) => {
 							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								if (agreement.letter_of_intent.data.landlord.name || agreement.letter_of_intent.data.tenant.name) {
-									let tenant = agreement.letter_of_intent.data.tenant;
-									let landlord = agreement.letter_of_intent.data.landlord;
+									let tenant = agreement.tenant.tenant.data;
+									let landlord =  agreement.landlord.landlord.data;
 									let tenantIdentityFront;
 									let tenantIdentityBack;
 									let landlordIdentityFront;

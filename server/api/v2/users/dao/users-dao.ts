@@ -529,7 +529,7 @@ usersSchema.static('getTotalUserSignupToday', ():Promise<any> => {
 				else if (users) {
 					let data = { total: users.length }
 					socketIo.socket(data, 'counterUser');
-					resolve(users);
+					resolve(data);
 				}
 			})
 	});
