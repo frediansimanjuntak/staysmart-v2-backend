@@ -611,7 +611,53 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                   if (!res.code || res.code != 400) {
                     Appointments
                       .findById(body.appointment)
-                      .populate("property")
+                      .populate([{
+                        path: 'property',
+                        model: 'Properties',
+                        populate: [{
+                          path: 'development',
+                          model: 'Developments'
+                        },
+                        {
+                          path: 'owner.user',
+                          model: 'Users',
+                          populate: {
+                            path: 'picture',
+                            model: 'Attachments'
+                          }
+                        }, {
+                          path: 'pictures.living',
+                          model: 'Attachments'
+                        }, {
+                          path: 'pictures.dining',
+                          model: 'Attachments'
+                        }, {
+                          path: 'pictures.bed',
+                          model: 'Attachments'
+                        }, {
+                          path: 'pictures.toilet',
+                          model: 'Attachments'
+                        }, {
+                          path: 'pictures.kitchen',
+                          model: 'Attachments'
+                        }]
+                      }, 
+                      {
+                        path: 'tenant',
+                        model: 'Users',
+                        populate: {
+                          path: 'picture',
+                          model: 'Attachments'
+                        }
+                      },
+                      {
+                        path: 'landlord',
+                        model: 'Users',
+                        populate: {
+                          path: 'picture',
+                          model: 'Attachments'
+                        }
+                      }])
                       .exec((err, appointments) => {
                         if (err) { reject({message: err.message, code: 400}); }
                         else if (appointments) {
@@ -648,10 +694,39 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                           else if (appointments.landlord_read == true) {
                             readBy.push(landlord);
                           }
+                          let pictures = [];
+                          for (var l = 0; l < appointments.property.pictures.living.length; l++) {
+                            pictures.push(appointments.property.pictures.living[l].url);
+                          }
+
+                          for (var d = 0; d < appointments.property.pictures.dining.length; d++) {
+                            pictures.push(appointments.property.pictures.dining[d].url);
+                          }
+
+                          for (var b = 0; b < appointments.property.pictures.bed.length; b++) {
+                            pictures.push(appointments.property.pictures.bed[b].url);
+                          }
+
+                          for (var t = 0; t < appointments.property.pictures.toilet.length; t++) {
+                            pictures.push(appointments.property.pictures.toilet[t].url);
+                          }
+
+                          for (var k = 0; k < appointments.property.pictures.kitchen.length; k++) {
+                            pictures.push(appointments.property.pictures.kitchen[k].url);
+                          }
+                          let own;
+                          if (userId == appointments.landlord._id) { own = 'landlord'; }
+                          else { own = 'tenant'; }
                           let data = {
                             "_id": appointments._id,
-                            "landlord": appointments.landlord,
-                            "tenant": appointments.tenant,
+                            "landlord": {
+                              "username": appointments.landlord.username,
+                              "pictures": appointments.landlord.picture ? appointments.landlord.picture.url : appointments.landlord.service ? appointments.landlord.service.facebook ? appointments.landlord.service.facebook.picture ? appointments.landlord.service.facebook.picture : '' : '' : ''
+                            },
+                            "tenant": {
+                              "username": appointments.tenant.username,
+                              "pictures": appointments.tenant.picture ? appointments.tenant.picture.url : appointments.tenant.service ? appointments.tenant.service.facebook ? appointments.tenant.service.facebook.picture ? appointments.tenant.service.facebook.picture : '' : '' : ''
+                            },
                             "schedule": {
                               "schedule_id": idSchedule,
                               "date": appointments.chosen_time.date,
@@ -660,10 +735,43 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                               "time_from": timeFromSchedule,
                               "time_to": timeToSchedule
                             },
-                            "property": appointments.property._id,
+                            "property": {
+                              _id: appointments.property._id,
+                              development: appointments.property.development.name,
+                              user: {
+                                _id: appointments.property.owner.user._id,
+                                username: appointments.property.owner.user.username,
+                                pictures: appointments.property.owner.user.picture ? appointments.property.owner.user.picture.url : appointments.property.owner.user.service ? appointments.property.owner.user.service.facebook ? appointments.property.owner.user.service.facebook.picture ? appointments.property.owner.user.service.facebook.picture : '' : '' : ''
+                              },
+                              address: {
+                                postal_code: String(appointments.property.address.postal_code),
+                                unit_no: appointments.property.address.floor,
+                                unit_no_2: appointments.property.address.unit,
+                                block_no: appointments.property.address.block_number,
+                                street_name: appointments.property.address.street_name,
+                                country: appointments.property.address.country,
+                                full_address: appointments.property.address.full_address,
+                                type: appointments.property.address.type,
+                                coordinates: [Number(appointments.property.address.coordinates[0]), Number(appointments.property.address.coordinates[1])]
+                              },
+                              details: {
+                                size: appointments.property.details.size_sqf,
+                                size_sqm: appointments.property.details.size_sqm,
+                                bedroom: appointments.property.details.bedroom,
+                                bathroom: appointments.property.details.bathroom,
+                                price: appointments.property.details.price,
+                                psqft: appointments.property.details.psqft,
+                                available: appointments.property.details.available,
+                                furnishing: appointments.property.details.furnishing,
+                                description: appointments.property.details.description,
+                                type: appointments.property.details.type
+                              },
+                              pictures: pictures
+                            },
                             "status": appointments.status,
                             "read_by": readBy,
                             "message": message,
+                            "status_own": own,
                             "created_at": createdAt,
                             "state": appointments.state
                           }
