@@ -100,7 +100,7 @@ export class PropertiesRoutes {
 
 		router
 			.route('/schedules/:id')
-			.get(auth.isAuthenticated(),PropertiesController.getSchedules);
+			.get(auth.isAuthenticated(), PropertiesController.getSchedules)
 
 		router
 			.route('/properties/update/:id')

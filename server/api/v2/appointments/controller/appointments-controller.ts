@@ -80,6 +80,16 @@ export class AppointmentsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static addSchedule(req: express.Request, res: express.Response):void {
+		let _appointments = req.body;
+		let _tenant = req["user"]._id;
+		let _propertyId = req.params.property_id;
+		AppointmentsDAO
+		['addSchedule'](_appointments, _tenant, _propertyId)
+		.then(appointments => res.status(201).json(appointments))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static deleteAppointments(req: express.Request, res: express.Response):void {
 		let _id = req.params.id;
 		AppointmentsDAO
