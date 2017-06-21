@@ -195,7 +195,7 @@ export class propertyHelper{
 						user: {
 							_id: properties.owner.user._id,
 							username: properties.owner.user.username,
-							pictures: properties.owner.user.picture ? properties.owner.user.picture.url : properties.owner.user.service ? properties.owner.user.service.facebook ? properties.owner.user.service.facebook.picture : '' : ''
+							pictures: properties.owner.user.picture ? properties.owner.user.picture.url : properties.owner.user.service ? properties.owner.user.service.facebook ? properties.owner.user.service.facebook.picture ? properties.owner.user.service.facebook.picture : '' : '' : ''
 						},
 						address: {
 							unit_no: properties.address.floor,

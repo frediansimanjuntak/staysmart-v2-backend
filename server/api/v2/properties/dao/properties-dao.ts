@@ -353,7 +353,7 @@ propertiesSchema.static('getById', (id:string, user:string, device: string):Prom
               path: 'landlord.data.identification_proof.back',
               model: 'Attachments' 
             }],
-            select: 'username email phone picture landlord.data reported'
+            select: 'username email phone picture landlord.data reported service'
           })
           .populate({
               path: 'owner.company',
