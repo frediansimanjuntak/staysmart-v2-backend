@@ -369,7 +369,7 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                                                                             resolve({
                                                                                 message: 'success',
                                                                                 code: 200,
-                                                                                data: { _id: saved._id }
+                                                                                data: { _id: room._id }
                                                                             });
                                                                         }
                                                                     }
