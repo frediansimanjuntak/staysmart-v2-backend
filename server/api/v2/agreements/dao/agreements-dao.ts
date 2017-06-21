@@ -1603,18 +1603,18 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 									}
 									let data = {
 										"tenant": {
-											"name": tenant.name,
-											"type": tenant.identification_type,
-											"id_no": tenant.identification_number,
-											"identity_front": tenantIdentityFront,
-											"identity_back": tenantIdentityBack
+											"name": tenant.name ? tenant.name : "",
+											"type": tenant.identification_type ? tenant.identification_type : "",
+											"id_no": tenant.identification_number ? tenant.identification_number : "",
+											"identity_front": tenantIdentityFront ? tenantIdentityFront : "",
+											"identity_back": tenantIdentityBack ? tenantIdentityBack : ""
 										},
 										"landlord": {
-											"name": landlord.name,
-											"type": landlord.identification_type,
-											"id_no": landlord.identification_number,
-											"identity_front": landlordIdentityFront,
-											"identity_back": landlordIdentityBack
+											"name": landlord.name ? landlord.name : "",
+											"type": landlord.identification_type ? landlord.identification_type : "",
+											"id_no": landlord.identification_number ? landlord.identification_number : "",
+											"identity_front": landlordIdentityFront ? landlordIdentityFront : "",
+											"identity_back": landlordIdentityBack ? landlordIdentityBack : ""
 										}
 									}
 									resolve(data);
