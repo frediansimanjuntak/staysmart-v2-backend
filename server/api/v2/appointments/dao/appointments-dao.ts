@@ -584,7 +584,6 @@ appointmentsSchema.static('memberSectionAppointment', (type:string, userId:strin
 appointmentsSchema.static('memberSectionAction', (type:string, data:Object, userId:string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         let body:any = data;
-        console.log(body);
         Appointments 
           .findById(body.appointment)
           .exec((err, appointment) => {
@@ -609,12 +608,12 @@ appointmentsSchema.static('memberSectionAction', (type:string, data:Object, user
                   else { reject({message: "Can not to do this action"}); }
                 }
                 Appointments.updateAppointments(body.appointment, status).then((res) => {
-                  if (!res.message) {
+                  if (!res.code || res.code != 400) {
                     Appointments
                       .findById(body.appointment)
                       .populate("property")
                       .exec((err, appointments) => {
-                        if (err) { reject({message: err.message}); }
+                        if (err) { reject({message: err.message, code: 400}); }
                         else if (appointments) {
                           let scheduleId = "";
                           let scheduleTime;
@@ -711,7 +710,7 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
           })
           .exec((err, appointment)=> {
             if (err) {
-              reject({message: err.message});
+              reject({message: err.message, code: 400});
             }
             else if (appointment) {
               let devID = appointment.property.development;  
@@ -737,12 +736,12 @@ appointmentsSchema.static('updateAppointments', (id:string, status:string):Promi
                 mail.rejectAppointment(emailTo, fullname, full_address, landlord_username, from);
               }              
               appointment.save((err, saved)=>{
-                err ? reject({message: err.message})
+                err ? reject({message: err.message, code: 400})
                     : resolve(saved);
               })
             }
             else {
-              reject({message: "No Data in Appointment"});
+              reject({message: "No Data in Appointment", code: 400});
             }
           });        
     });
