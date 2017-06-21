@@ -109,29 +109,30 @@ export class propertyHelper{
 		});
 	}
 
-	static getById(properties, userId) {
+	static getById(properties, userId, cased) {
 		return new Promise((resolve:Function, reject:Function) => {
+			let picture = [];
 			for (var l = 0; l < properties.pictures.living.length; l++) {
-				properties.pictures.living[l] = properties.pictures.living[l].url;
+				cased == 'step4' ? picture.push(properties.pictures.living[l].url) : properties.pictures.living[l] = properties.pictures.living[l].url ;
 			}
-
 			for (var d = 0; d < properties.pictures.dining.length; d++) {
-				properties.pictures.dining[d] = properties.pictures.dining[d].url;
+				cased == 'step4' ? picture.push(properties.pictures.dining[d].url) : properties.pictures.dining[d] = properties.pictures.dining[d].url;
 			}
 
 			for (var b = 0; b < properties.pictures.bed.length; b++) {
-				properties.pictures.bed[b] = properties.pictures.bed[b].url;
+				cased == 'step4' ? picture.push(properties.pictures.bed[b].url) : properties.pictures.bed[b] = properties.pictures.bed[b].url;
 			}
 
 			for (var t = 0; t < properties.pictures.toilet.length; t++) {
-				properties.pictures.toilet[t] = properties.pictures.toilet[t].url;
+				cased == 'step4' ? picture.push(properties.pictures.toilet[t].url) : properties.pictures.toilet[t] = properties.pictures.toilet[t].url;
 			}
 
 			for (var k = 0; k < properties.pictures.kitchen.length; k++) {
-				properties.pictures.kitchen[k] = properties.pictures.kitchen[k].url;
+				cased == 'step4' ? picture.push(properties.pictures.kitchen[k].url) : properties.pictures.kitchen[k] = properties.pictures.kitchen[k].url;
 			}
 			let _amenities = [];
 			for ( var x = 0; x < properties.amenities.length; x++ ) {
+				let id = properties.amenities[x]._id;
 				let name = properties.amenities[x].name;
 				let icon;
 				if ( properties.amenities[x].icon == null ) {
@@ -141,6 +142,7 @@ export class propertyHelper{
 					icon = properties.amenities[x].icon.url;
 				}
 				_amenities.push({
+					_id: id,
 					name: name,
 					url: icon
 				});
@@ -188,7 +190,7 @@ export class propertyHelper{
 						development: properties.development.name,
 						landlord: {
 							_id: properties.owner.user._id,
-							full_name: properties.owner.user.landlord ? properties.owner.user.landlord.data ? properties.owner.user.landlord.data.name : properties.temp.owner ? properties.temp.owner.name : '' : ''
+							full_name: properties.owner.user.landlord.data ? properties.owner.user.landlord.data.name ? properties.owner.user.landlord.data.name : properties.temp.owner.name : ''
 						},
 						user: {
 							_id: properties.owner.user._id,
@@ -203,7 +205,7 @@ export class propertyHelper{
 							postal_code: String(properties.address.postal_code),
 							coordinates: [Number(properties.address.coordinates[0]) , Number(properties.address.coordinates[1])],
 							country: properties.address.country,
-							full_address: properties.address.full_address,
+							full_address: properties.address.full_address ? properties.address.full_address : '',
 							type: properties.address.type
 						},
 						details: {
@@ -216,7 +218,7 @@ export class propertyHelper{
 							available: properties.details.available,
 							furnishing: properties.details.furnishing,
 							description: properties.details.description,
-							type: properties.details.type
+							type: properties.details.type ? properties.details.type : ''
 						},
 						seen: {
 							by: properties.seen.by,
@@ -224,7 +226,7 @@ export class propertyHelper{
 						},
 						favourite: favourite,
 						amenities: _amenities,
-						pictures: properties.pictures,
+						pictures: cased == 'step4' ? picture : properties.pictures,
 						room: room
 					});
 				}

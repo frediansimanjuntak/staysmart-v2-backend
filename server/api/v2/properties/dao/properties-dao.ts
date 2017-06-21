@@ -86,13 +86,19 @@ propertiesSchema.static('getAll', (device: string, userId: Object, type: string)
               reject({message: err.message})
             }
             else {
-              if ( device != 'desktop' ) {
-                propertyHelper.getAll(properties, userId).then(result => {
+              let propertiesData = [];
+              for (var i = 0; i < properties.length; i++) {
+                if (properties[i].owner.user) {
+                  propertiesData.push(properties[i]);
+                }
+              }
+              if ( device != 'desktop' ) {                
+                propertyHelper.getAll(propertiesData, userId).then(result => {
                   resolve(result);  
                 });
               }
               else {
-                resolve(properties);
+                resolve(propertiesData);
               }
             }
           });
@@ -326,7 +332,7 @@ propertiesSchema.static('updatePropertySeen', (id:string, user:string):Promise<a
     });
 });
 
-propertiesSchema.static('getById', (id:string, user:string, device: string):Promise<any> => {
+propertiesSchema.static('getById', (id:string, user:string, device: string, cased: string):Promise<any> => {
     return new Promise((resolve:Function, reject:Function) => {
         Properties.updatePropertySeen(id, user);
 
@@ -385,7 +391,7 @@ propertiesSchema.static('getById', (id:string, user:string, device: string):Prom
             }
             else {
               if ( device != 'desktop' ) {
-                propertyHelper.getById(properties, user).then(result => {
+                propertyHelper.getById(properties, user, cased).then(result => {
                   resolve(result);  
                 });
               }
@@ -1149,7 +1155,7 @@ propertiesSchema.static('favourite', (id:string, userId:string):Promise<any> => 
                 .exec((err, update) => {
                   if (err) { reject({message: err.message}); }
                   else { 
-                    Properties.getById(id, userId, 'phone').then(res => {
+                    Properties.getById(id, userId, 'phone', 'none').then(res => {
                       res["favourites"] = 'Not Shortlisted';
                       resolve(res);
                     })
@@ -1166,7 +1172,7 @@ propertiesSchema.static('favourite', (id:string, userId:string):Promise<any> => 
                 .exec((err, update) => {
                   if (err) { reject({message: err.message}); }
                   else { 
-                    Properties.getById(id, userId, 'phone').then(res => {
+                    Properties.getById(id, userId, 'phone', 'none').then(res => {
                       res["favourites"] = 'Shortlisted';
                       resolve(res);
                     })
@@ -1939,7 +1945,7 @@ propertiesSchema.static('step4', (properties: Object, userId: Object, device: st
                     }
                     else {
                       if ( device != 'desktop' ) {
-                        Properties.getById(res._id, userId, 'phone').then(r => {
+                        Properties.getById(res._id, userId, 'phone', 'step4').then(r => {
                           resolve(r);
                         })
                       }
