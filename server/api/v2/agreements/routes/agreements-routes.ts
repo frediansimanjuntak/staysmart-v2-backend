@@ -181,6 +181,10 @@ export class AgreementsRoutes {
 			.get(AgreementsController.getOdometer);
 
 		router
+			.route('/letter-of-intent')
+			.get(auth.isAuthenticated(), AgreementsController.getUserLOI);
+
+		router
 			.route('/letter-of-intent/:id/seen')
 			.post(auth.isAuthenticated(), AgreementsController.loiSeen);
 
