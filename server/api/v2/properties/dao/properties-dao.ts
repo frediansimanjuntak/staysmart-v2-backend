@@ -511,7 +511,7 @@ propertiesSchema.static('getDraft', (userId:Object):Promise<any> => {
 propertiesSchema.static('getTotalListing', ():Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
 		Properties
-			.find({"confirmation.status": "pending"})
+			.find({"confirmation.status": "pending", "status": {$nin:["draft"]}})
 			.exec((err, properties) => {
 				if (err) {
 					reject({message: err.message});
