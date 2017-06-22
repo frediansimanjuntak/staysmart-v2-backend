@@ -615,7 +615,7 @@ usersSchema.static('deleteUser', (id:string, currentUser:string):Promise<any> =>
 						if (err) {reject(err);}
 						else if (user) {
 							if (user.owned_properties.length > 0 || user.rented_properties.length > 0 || user.managed_properties.length > 0 || user.chat_rooms.length > 0) {
-								reject({message: "can't to delete this user"})
+								reject({message: "can't delete this user because have active properties"})
 							}
 							else {
 								Users

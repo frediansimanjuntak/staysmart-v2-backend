@@ -118,7 +118,7 @@ export class AgreementsRoutes {
 		
 		router
 			.route('/loi/total_loi/today')
-			.post(auth.isAuthenticated(), AgreementsController.getTotalLOINeedApprove);
+			.get(auth.isAuthenticated(), AgreementsController.getTotalLOINeedApprove);
 
 		//TA
 		router
@@ -156,7 +156,7 @@ export class AgreementsRoutes {
 		
 		router
 			.route('/ta/total_ta/today')
-			.post(auth.isAuthenticated(), AgreementsController.getTotalTANeedApprove);
+			.get(auth.isAuthenticated(), AgreementsController.getTotalTANeedApprove);
 
 		//list certificate
 		router
