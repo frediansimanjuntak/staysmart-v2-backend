@@ -1004,7 +1004,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 									resolve({message: "forbidden"});
 								}
 								else if (tenantID == IDUser) {
-									Agreements.checkLOIStatus(id).then((res) => {						
+									Agreements.checkLOIStatus(idAgreement).then((res) => {						
 										let occupiers;
 										let tenant;
 										if (body.tenant) {
@@ -1035,7 +1035,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 												}
 											};
 										}
-										let _query = {"_id": id};
+										let _query = {"_id": idAgreement};
 										let loiObj = {$set: {}};
 										let monthly_rental = body.monthly_rental;
 										let term_lease = body.term_lease;
