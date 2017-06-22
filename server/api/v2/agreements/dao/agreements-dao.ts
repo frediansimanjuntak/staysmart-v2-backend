@@ -4838,7 +4838,7 @@ agreementsSchema.static('getUserLOI', (userId: string):Promise<any> => {
 												type: loi.tenant.identification_type,
 												id_no: loi.tenant.identification_number,
 												identity_front: loi.tenant.identification_proof.front && loi.tenant.identification_proof.front != undefined ? loi.tenant.identification_proof.front.url : '',
-												identity_back: loi.tenant.identification_proof.back ? loi.tenant.identification_proof.back.url : '',
+												identity_back: loi.tenant.identification_proof.back ? loi.tenant.identification_proof.back.url : undefined,
 												_id: agreements[a].tenant._id,
 												username: agreements[a].tenant.username,
 												profile_picture: agreements[a].tenant.picture && agreements[a].landlord.picture != undefined ? agreements[a].tenant.picture.url : agreements[a].tenant.service ? agreements[a].tenant.service.facebook ? agreements[a].tenant.service.facebook.picture ? agreements[a].tenant.service.facebook.picture : '' : '' : ''
@@ -4922,7 +4922,7 @@ agreementsSchema.static('getUserLOIByLOIID', (userId: string, loiId: string):Pro
 						id_no: loi.occupiers[j].identification_number,
 						id_type: loi.occupiers[j].identification_type,
 						identity_front: loi.occupiers[j].identification_proof.front && loi.occupiers[j].identification_proof.front != undefined ? loi.occupiers[j].identification_proof.front.url : '',
-						identity_back: loi.occupiers[j].identification_proof.back && loi.occupiers[j].identification_proof.back != undefined ? loi.occupiers[j].identification_proof.back.url : ''
+						identity_back: loi.occupiers[j].identification_proof.back && loi.occupiers[j].identification_proof.back != undefined ? loi.occupiers[j].identification_proof.back.url : undefined
 					});
 				}
 				reportDAO.reportLOI(String(agreement._id)).then(report => {
@@ -4943,14 +4943,14 @@ agreementsSchema.static('getUserLOIByLOIID', (userId: string, loiId: string):Pro
 							id_no: loi.landlord.identification_number,
 							id_type: loi.landlord.identification_type,
 							identity_front: loi.landlord.identification_proof.front && loi.landlord.identification_proof.front != undefined ? loi.landlord.identification_proof.front.url : '',
-							identity_back: loi.landlord.identification_proof.back && loi.landlord.identification_proof.back != undefined ? loi.landlord.identification_proof.back.url : ''
+							identity_back: loi.landlord.identification_proof.back && loi.landlord.identification_proof.back != undefined ? loi.landlord.identification_proof.back.url : undefined
 						},
 						tenant_details: {
 							name: loi.tenant.name,
 							id_no: loi.tenant.identification_number,
 							id_type: loi.tenant.identification_type,
 							identity_front: loi.tenant.identification_proof.front && loi.tenant.identification_proof.front != undefined ? loi.tenant.identification_proof.front.url : '',
-							identity_back: loi.tenant.identification_proof.back && loi.tenant.identification_proof.back != undefined ? loi.tenant.identification_proof.back.url : ''
+							identity_back: loi.tenant.identification_proof.back && loi.tenant.identification_proof.back != undefined ? loi.tenant.identification_proof.back.url : undefined
 						},
 						occupants: occupants,
 						payment_details: {
