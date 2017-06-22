@@ -1601,6 +1601,8 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 										"url": landlord.identification_proof.back.url
 									}
 								}
+								let tenantData;
+
 								let data = {
 									"tenant": {
 										"name": tenant.name ? tenant.name : "",
@@ -3957,7 +3959,7 @@ agreementsSchema.static('getTotalStampCertificateNotUploaded', ():Promise<any> =
 	return new Promise((resolve:Function, reject:Function) => {
 		let today = new Date();
 		Agreements
-			.find({})
+			.find({"tenancy_agreement.data.status": "accepted", "letter_of_intent.data.status": "accepted"})
 			.where("tenancy_agreement.data.created_at").lte(today)
 			.exec((err, agreements) => {
 				if (err) {
