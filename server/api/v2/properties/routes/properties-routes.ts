@@ -122,6 +122,9 @@ export class PropertiesRoutes {
 			.route('/properties/shortlist_property/:id')
 			.post(auth.isAuthenticated(), PropertiesController.shortlistProperty)
 			.delete(auth.isAuthenticated(), PropertiesController.unShortlistProperty);
-
+		
+		router
+			.route('/properties/total_listing/today')
+			.get(auth.isAuthenticated(), PropertiesController.getTotalListing);
 	}
 } 

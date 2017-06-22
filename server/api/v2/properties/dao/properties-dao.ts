@@ -518,8 +518,8 @@ propertiesSchema.static('getTotalListing', ():Promise<any> => {
 				}
 				else if (properties) {
 					let data = { total: properties.length }
-					socketIo.socket(data, 'counterCertificate');
-					resolve(properties);
+					socketIo.socket(data, 'counterListing');
+					resolve(data);
 				}
 			})
 	});
