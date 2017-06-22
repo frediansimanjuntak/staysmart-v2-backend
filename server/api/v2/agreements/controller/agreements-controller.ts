@@ -685,4 +685,12 @@ export class AgreementsController {
 		.then(agreements => res.status(201).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static getUserLOI(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		AgreementsDAO
+		['getUserLOI'](_userId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
 }
