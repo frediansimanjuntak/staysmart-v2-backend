@@ -75,8 +75,8 @@ export class reportDAO{
 					let landlordFullname;
 					let landlordIdNo;					
 					let dateCom;
-					let dateCommence = moment(loi.date_commencement).local().format();
-					console.log(dateCommence);
+					let dateCommence = new Date(loi.date_commencement);
+					// console.log(dateCommence);
 					if (landlord.landlord.data.name) {
 						landlordFullname = landlord.landlord.data.name;						
 					}
@@ -122,8 +122,8 @@ export class reportDAO{
 						created_at = new Date(ta.created_at);
 						dateCom = loi.date_commencement;
 						let dateCommencement = new Date(dateCom);						
-						let dateEx = new Date(dateCommencement.setMonth(dateCommencement.getMonth() + loi.term_lease));
-						date_expired = new Date(dateEx.setDate(dateEx.getDate() - 1));
+						let date_expired = new Date(dateCommencement.setMonth(dateCommencement.getMonth() + loi.term_lease));
+						// date_expired = new Date(dateEx.setDate(dateEx.getDate() - 1));
 						if (ta.payment) {
 							secpayment_proof = ta.payment.attachment.payment;
 						}	
