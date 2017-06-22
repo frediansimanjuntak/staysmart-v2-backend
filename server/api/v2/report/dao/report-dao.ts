@@ -76,6 +76,7 @@ export class reportDAO{
 					let landlordIdNo;					
 					let dateCom;
 					let dateCommence = new Date(loi.date_commencement);
+					let dCommencement = new Date(dateCommence.setDate(dateCommence.getDate() + 1));
 					// console.log(dateCommence);
 					if (landlord.landlord.data.name) {
 						landlordFullname = landlord.landlord.data.name;						
@@ -209,7 +210,7 @@ export class reportDAO{
 							"lapse_offer": loi.lapse_offer,
 							"term_lease": loi.term_lease,
 							"term_lease_extend": loi.term_lease_extend,
-							"date_commencement": dateCommence,
+							"date_commencement": dCommencement,
 							"term_payment": loi.term_payment,
 							"populate_tenant": populateTenant,
 							"minor_repair_cost": loi.minor_repair_cost,
