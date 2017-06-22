@@ -1807,7 +1807,7 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
                 Attachments.createAttachments(file.shareholder_front, {}, 'desktop').then(front => {
                   Attachments.createAttachments(file.shareholder_back, {}, 'desktop').then(back => {
                     let shareholders = [];
-                    for ( var i = 0; i < front.idAtt.length; i++ ) {
+                    for ( var i = 1; i < front.idAtt.length; i++ ) {
                       shareholders.push({
                         name: body.shareholder_full_name[i],
                         identification_type: body.shareholder_type[i],
@@ -1818,6 +1818,16 @@ propertiesSchema.static('step3Company', (properties: Object, userId: Object, fil
                         }
                       }); 
                     }
+                    let owner = {
+                      name: body.shareholder_full_name[0],
+                      identification_type: body.shareholder_type[0],
+                      identification_number: body.shareholder_id_number[0],
+                      identification_proof: {
+                        front: front.idAtt[0],
+                        back: back.idAtt[0]
+                      }
+                    };
+                    result[0].temp.owner = owner;
                     result[0].temp.shareholders = shareholders;
                     result[0].save();
                   })
@@ -1999,6 +2009,54 @@ propertiesSchema.static('step5', (userId: Object):Promise<any> => {
               reject({message: 'Fill step 1 first.'});
             }
             else {
+              let property = result[0];
+              if (property.owned_type == 'individual') {
+                Users.findById(property.owner.user).exec((err, user) => {
+                  if (err) { reject({message: err.message}); }
+                  else {
+                    user.landlord.data.name = property.temp.owner.name;
+                    user.landlord.data.identification_type = property.temp.owner.identification_type;
+                    user.landlord.data.identification_number = property.temp.owner.identification_number;
+                    user.landlord.data.identification_proof.front = property.temp.owner.identification_proof.front;
+                    user.landlord.data.identification_proof.back = property.temp.owner.identification_proof.back;
+                    user.landlord.data.owners = property.temp.shareholders;
+                    user.save();
+                  }
+                });
+              }
+              else {
+                Users.findById(property.owner.user).exec((err, user) => {
+                  if (err) { reject({message: err.message}); }
+                  else {
+                    user.landlord.data.name = property.temp.owner.name;
+                    user.landlord.data.identification_type = property.temp.owner.identification_type;
+                    user.landlord.data.identification_number = property.temp.owner.identification_number;
+                    user.landlord.data.identification_proof.front = property.temp.owner.identification_proof.front;
+                    user.landlord.data.identification_proof.back = property.temp.owner.identification_proof.back;
+                    user.save();
+                  }
+                });
+                Companies.findById(property.owner.company).exec((err, company) => {
+                  if (err) { reject({message: err.message}); }
+                  else {
+                    let shareholders = [];
+                    shareholders.push({
+                      name: property.temp.owner.name,
+                      identification_type: property.temp.owner.identification_type,
+                      identification_number: property.temp.owner.identification_number,
+                      identification_proof: {
+                        front: property.temp.owner.identification_proof.front,
+                        back: property.temp.owner.identification_proof.back
+                      }
+                    });
+                    for (var i = 0; i < property.temp.shareholders.length; i++) {
+                      shareholders.push(property.temp.shareholders[i]);
+                    }
+                    company.shareholders = shareholders;
+                    company.save();
+                  }
+                });
+              }
               Properties
                 .findByIdAndUpdate(result[0]._id, {
                   $set: {
