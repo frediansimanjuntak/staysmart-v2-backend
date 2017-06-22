@@ -693,4 +693,13 @@ export class AgreementsController {
 		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
+
+	static getUserLOIByLOIID(req: express.Request, res: express.Response):void {
+		let _userId = req["user"]._id;
+		let _loiId = req.params.loi_id;
+		AgreementsDAO
+		['getUserLOIByLOIID'](_userId, _loiId)
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
 }

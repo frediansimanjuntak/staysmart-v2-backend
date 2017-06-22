@@ -183,6 +183,10 @@ export class AgreementsRoutes {
 		router
 			.route('/letter-of-intent')
 			.get(auth.isAuthenticated(), AgreementsController.getUserLOI);
+		
+		router
+			.route('/letter-of-intent/:loi_id')
+			.get(auth.isAuthenticated(), AgreementsController.getUserLOIByLOIID);
 
 		router
 			.route('/letter-of-intent/:id/seen')
