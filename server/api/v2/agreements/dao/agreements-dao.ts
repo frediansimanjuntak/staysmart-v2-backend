@@ -1117,7 +1117,7 @@ agreementsSchema.static('signLoi', (id:string, data:Object, userId:string):Promi
 											"type": "letter_of_intent",
 											"status": "tenant"
 										}
-										Agreements.confirmation(id, data).then((res) => {
+										Agreements.confirmation(idAgreement, data).then((res) => {
 											if (!res.message) {
 												resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
 											}
@@ -1165,7 +1165,7 @@ agreementsSchema.static('acceptLoi_', (id:string, data:Object, userId:string):Pr
 											"status": "landlord"
 										}
 										Agreements.changeStatusChat(agreement.room.toString(), "pending");
-										Agreements.confirmation(id, data);
+										Agreements.confirmation(idAgreement, data);
 										agreement.letter_of_intent.data.status = "accepted";
 										agreement.save((err, saved) => {
 											err ? reject({message: err.message})
