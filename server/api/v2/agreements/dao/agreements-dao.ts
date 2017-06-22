@@ -1571,59 +1571,53 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 						.exec((err, agreement) => {
 							if (err) { reject({message: err.message}); }
 							else if (agreement) {
-								console.log(agreement);
-								if (agreement.letter_of_intent.data.landlord.name || agreement.letter_of_intent.data.tenant.name) {
-									let tenant = agreement.tenant.tenant.data;
-									let landlord =  agreement.landlord.landlord.data;
-									let tenantIdentityFront;
-									let tenantIdentityBack;
-									let landlordIdentityFront;
-									let landlordIdentityBack;
-									if (tenant.identification_proof.front) {
-										tenantIdentityFront = {
-											"_id": tenant.identification_proof.front._id,
-											"url": tenant.identification_proof.front.url
-										}
+								let tenant = agreement.tenant.tenant.data;
+								let landlord =  agreement.landlord.landlord.data;
+								let tenantIdentityFront;
+								let tenantIdentityBack;
+								let landlordIdentityFront;
+								let landlordIdentityBack;
+								if (tenant.identification_proof.front) {
+									tenantIdentityFront = {
+										"_id": tenant.identification_proof.front._id,
+										"url": tenant.identification_proof.front.url
 									}
-									if (landlord.identification_proof.front) {
-										landlordIdentityFront = {
-											"_id": landlord.identification_proof.front._id,
-											"url": landlord.identification_proof.front.url
-										}
-									}
-									if (tenant.identification_proof.back) {
-										tenantIdentityBack = {
-											"_id": tenant.identification_proof.back._id,
-											"url": tenant.identification_proof.back.url
-										}
-									}
-									if (landlord.identification_proof.back) {
-										landlordIdentityBack = {
-											"_id": landlord.identification_proof.back._id,
-											"url": landlord.identification_proof.back.url
-										}
-									}
-									let data = {
-										"tenant": {
-											"name": tenant.name ? tenant.name : "",
-											"type": tenant.identification_type ? tenant.identification_type : "",
-											"id_no": tenant.identification_number ? tenant.identification_number : "",
-											"identity_front": tenantIdentityFront ? tenantIdentityFront : "",
-											"identity_back": tenantIdentityBack ? tenantIdentityBack : ""
-										},
-										"landlord": {
-											"name": landlord.name ? landlord.name : "",
-											"type": landlord.identification_type ? landlord.identification_type : "",
-											"id_no": landlord.identification_number ? landlord.identification_number : "",
-											"identity_front": landlordIdentityFront ? landlordIdentityFront : "",
-											"identity_back": landlordIdentityBack ? landlordIdentityBack : ""
-										}
-									}
-									resolve(data);
 								}
-								else {
-									reject({message: "You must create LOI first"});
+								if (landlord.identification_proof.front) {
+									landlordIdentityFront = {
+										"_id": landlord.identification_proof.front._id,
+										"url": landlord.identification_proof.front.url
+									}
 								}
+								if (tenant.identification_proof.back) {
+									tenantIdentityBack = {
+										"_id": tenant.identification_proof.back._id,
+										"url": tenant.identification_proof.back.url
+									}
+								}
+								if (landlord.identification_proof.back) {
+									landlordIdentityBack = {
+										"_id": landlord.identification_proof.back._id,
+										"url": landlord.identification_proof.back.url
+									}
+								}
+								let data = {
+									"tenant": {
+										"name": tenant.name ? tenant.name : "",
+										"type": tenant.identification_type ? tenant.identification_type : "",
+										"id_no": tenant.identification_number ? tenant.identification_number : "",
+										"identity_front": tenantIdentityFront ? tenantIdentityFront : "",
+										"identity_back": tenantIdentityBack ? tenantIdentityBack : ""
+									},
+									"landlord": {
+										"name": landlord.name ? landlord.name : "",
+										"type": landlord.identification_type ? landlord.identification_type : "",
+										"id_no": landlord.identification_number ? landlord.identification_number : "",
+										"identity_front": landlordIdentityFront ? landlordIdentityFront : "",
+										"identity_back": landlordIdentityBack ? landlordIdentityBack : ""
+									}
+								}
+								resolve(data);
 							}
 							else {
 								reject({message: "Agreement not found"});
