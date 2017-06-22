@@ -4811,7 +4811,7 @@ agreementsSchema.static('getUserLOI', (userId: string):Promise<any> => {
 					let user_loi = [];
 					let unread = 0;
 					let total = 0;
-					for (var a = 0; a < agreements; a++) {
+					for (var a = 0; a < agreements.length; a++) {
 						if (agreements[a].letter_of_intent.data) {
 							let loi = agreements[a].letter_of_intent.data;
 							total += 1;
@@ -4819,7 +4819,7 @@ agreementsSchema.static('getUserLOI', (userId: string):Promise<any> => {
 							String(userId) == String(agreements[a].landlord._id) ? loi.landlord_seen == false ? unread += 1 : unread += 0 : unread += 0;
 						}
 					}
-					for (var a = 0; a < agreements; a++) {
+					for (var a = 0; a < agreements.length; a++) {
 						if (agreements[a].letter_of_intent.data) {
 							let loi = agreements[a].letter_of_intent.data;
 							let as_landlord = (String(userId) == String(agreements[a].tenant._id)) ? false : true;
@@ -4839,24 +4839,24 @@ agreementsSchema.static('getUserLOI', (userId: string):Promise<any> => {
 											id_number: loi.landlord.identification_number,
 											_id: agreements[a].landlord._id,
 											username: agreements[a].landlord.username,
-											profile_picture: agreements[a].landlord.picture ? agreements[a].landlord.picture.url : agreements[a].landlord.service ? agreements[a].landlord.service.facebook ? agreements[a].landlord.service.facebook.picture ? agreements[a].landlord.service.facebook.picture : '' : '' : ''
+											profile_picture: agreements[a].landlord.picture && agreements[a].landlord.picture != undefined ? agreements[a].landlord.picture.url : agreements[a].landlord.service ? agreements[a].landlord.service.facebook ? agreements[a].landlord.service.facebook.picture ? agreements[a].landlord.service.facebook.picture : '' : '' : ''
 										},
 										tenant: {
 											name: loi.tenant.name,
 											type: loi.tenant.identification_type,
 											id_no: loi.tenant.identification_number,
-											identity_front: loi.tenant.identification_proof.front.url,
+											identity_front: loi.tenant.identification_proof.front && loi.tenant.identification_proof.front != undefined ? loi.tenant.identification_proof.front.url : '',
 											identity_back: loi.tenant.identification_proof.back ? loi.tenant.identification_proof.back.url : '',
 											_id: agreements[a].tenant._id,
 											username: agreements[a].tenant.username,
-											profile_picture: agreements[a].tenant.picture ? agreements[a].tenant.picture.url : agreements[a].tenant.service ? agreements[a].tenant.service.facebook ? agreements[a].tenant.service.facebook.picture ? agreements[a].tenant.service.facebook.picture : '' : '' : ''
+											profile_picture: agreements[a].tenant.picture && agreements[a].landlord.picture != undefined ? agreements[a].tenant.picture.url : agreements[a].tenant.service ? agreements[a].tenant.service.facebook ? agreements[a].tenant.service.facebook.picture ? agreements[a].tenant.service.facebook.picture : '' : '' : ''
 										},
-										status: loi.status,
+										status: loi.status && loi.status != undefined ? loi.status : '',
 										send: loi.status == 'draft' ? false : true,
 										TA: TA,
 										created_at: loi.created_at,
 										payment_details: { 
-											status: loi.payment.status
+											status: loi.payment ? loi.payment.status : ''
 										},
 										seen_by: seen_by,
 										read: as_landlord == true ? loi.landlord_seen : loi.tenant_seen,
