@@ -1005,7 +1005,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 									resolve({message: "forbidden"});
 								}
 								else if (tenantID == IDUser) {
-									Agreements.checkLOIStatus(id).then((res) => {						
+									Agreements.checkLOIStatus(idAgreement).then((res) => {						
 										let occupiers;
 										let tenant;
 										if (body.tenant) {
@@ -1036,7 +1036,7 @@ agreementsSchema.static('initiateLoi', (id:string, data:Object, userId:string):P
 												}
 											};
 										}
-										let _query = {"_id": id};
+										let _query = {"_id": idAgreement};
 										let loiObj = {$set: {}};
 										let monthly_rental = body.monthly_rental;
 										let term_lease = body.term_lease;
@@ -1117,7 +1117,7 @@ agreementsSchema.static('signLoi', (id:string, data:Object, userId:string):Promi
 											"type": "letter_of_intent",
 											"status": "tenant"
 										}
-										Agreements.confirmation(id, data).then((res) => {
+										Agreements.confirmation(idAgreement, data).then((res) => {
 											if (!res.message) {
 												resolve({"message": "success", "code": 200, "data": {"_id": idAgreement}});
 											}
@@ -1165,7 +1165,7 @@ agreementsSchema.static('acceptLoi_', (id:string, data:Object, userId:string):Pr
 											"status": "landlord"
 										}
 										Agreements.changeStatusChat(agreement.room.toString(), "pending");
-										Agreements.confirmation(id, data);
+										Agreements.confirmation(idAgreement, data);
 										agreement.letter_of_intent.data.status = "accepted";
 										agreement.save((err, saved) => {
 											err ? reject({message: err.message})
@@ -1573,51 +1573,36 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								let tenant = agreement.tenant.tenant.data;
+								let tenantLandlord = agreement.tenant.landlord.data;
 								let landlord =  agreement.landlord.landlord.data;
-								let tenantIdentityFront;
-								let tenantIdentityBack;
-								let landlordIdentityFront;
-								let landlordIdentityBack;
-								if (tenant.identification_proof.front) {
-									tenantIdentityFront = {
-										"_id": tenant.identification_proof.front._id,
-										"url": tenant.identification_proof.front.url
+								let tenantData = {
+									"name": tenant.name ? tenant.name : tenantLandlord.name ? tenantLandlord.name : "",
+									"type": tenant.identification_type ? tenant.identification_type : tenantLandlord.identification_type ? tenantLandlord.identification_type : "",
+									"id_no": tenant.identification_number ? tenant.identification_number : tenantLandlord.identification_number ? tenantLandlord.identification_number : "",
+									"identity_front": {
+										"_id": tenant.identification_proof.front ? tenant.identification_proof.front._id : tenantLandlord.identification_proof.front ? tenantLandlord.identification_proof.front._id : "",
+										"url": tenant.identification_proof.front ? tenant.identification_proof.front.url : tenantLandlord.identification_proof.front ? tenantLandlord.identification_proof.front.url : ""
+									},
+									"identity_back": {
+										"_id": tenant.identification_proof.back ? tenant.identification_proof.back._id : tenantLandlord.identification_proof.back ? tenantLandlord.identification_proof.back._id : "",
+										"url": tenant.identification_proof.back ? tenant.identification_proof.back.url : tenantLandlord.identification_proof.back ? tenantLandlord.identification_proof.back.url : ""
 									}
 								}
-								if (landlord.identification_proof.front) {
-									landlordIdentityFront = {
-										"_id": landlord.identification_proof.front._id,
-										"url": landlord.identification_proof.front.url
-									}
-								}
-								if (tenant.identification_proof.back) {
-									tenantIdentityBack = {
-										"_id": tenant.identification_proof.back._id,
-										"url": tenant.identification_proof.back.url
-									}
-								}
-								if (landlord.identification_proof.back) {
-									landlordIdentityBack = {
-										"_id": landlord.identification_proof.back._id,
-										"url": landlord.identification_proof.back.url
-									}
-								}
-								let tenantData;
 
 								let data = {
-									"tenant": {
-										"name": tenant.name ? tenant.name : "",
-										"type": tenant.identification_type ? tenant.identification_type : "",
-										"id_no": tenant.identification_number ? tenant.identification_number : "",
-										"identity_front": tenantIdentityFront ? tenantIdentityFront : "",
-										"identity_back": tenantIdentityBack ? tenantIdentityBack : ""
-									},
+									"tenant": tenantData.name == "" ? null : tenantData,
 									"landlord": {
 										"name": landlord.name ? landlord.name : "",
 										"type": landlord.identification_type ? landlord.identification_type : "",
 										"id_no": landlord.identification_number ? landlord.identification_number : "",
-										"identity_front": landlordIdentityFront ? landlordIdentityFront : "",
-										"identity_back": landlordIdentityBack ? landlordIdentityBack : ""
+										"identity_front": {
+											"_id": landlord.identification_proof.front ? landlord.identification_proof.front._id : "",
+											"url": landlord.identification_proof.front ? landlord.identification_proof.front.url : ""
+										},
+										"identity_back": {
+											"_id": landlord.identification_proof.back ? landlord.identification_proof.back._id : "",
+											"url": landlord.identification_proof.back ? landlord.identification_proof.back.url : ""
+										}
 									}
 								}
 								resolve(data);
