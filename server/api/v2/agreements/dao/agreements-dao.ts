@@ -10,6 +10,7 @@ import Developments from '../../developments/dao/developments-dao';
 import Notifications from '../../notifications/dao/notifications-dao';
 import Properties from '../../properties/dao/properties-dao';
 import Chats from '../../chats/dao/chats-dao';
+import {reportDAO} from '../../report/dao/report-dao';
 import {mail} from '../../../../email/mail';
 import {socketIo} from '../../../../server';
 import {GlobalService} from '../../../../global/global.service';
@@ -2492,264 +2493,266 @@ agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Pro
 					let datas = [];
 					for (var i = 0; i < agreements.length; i++) {
 						let agreement = agreements[i];
-						let property = agreement.property;
-						let tenant = agreement.tenant;
-						let ta = agreement.tenancy_agreement.data;
-						let unread = tenantUnread;
-						let read = ta.tenant_seen;
-						let totalTa = totalAgreementTenant;
-						let appointment = "";
-						let asLandlord = false;
-						if (agreement.appointment) {
-							appointment = agreement.appointment;
-						}
-						if (agreement.landlord._id == IDUser) {
-							asLandlord = true;
-							unread = landlordUnread;
-							let read = ta.landlord_seen;
-							let totalTa = totalAgreementLandlord;
-						}
-						let unit = "";
-						let unit2 = "";
-						let blokNo = "";
-						let streetName = "";
-						let postalCode = "";
-						let coordinates = [];
-						let country = "";
-						let fullAddress = "";
-						let typeAddress = "";
-						let pictureLiving = [];
-						let pictureDining = [];
-						let pictureBed = [];
-						let pictureToilet = [];
-						let pictureKitchen = [];
-						let favorite = false;
-						let amenities = [];
-						let detailsSize = 0;
-						let detailsSizeSqm = 0;
-						let detailsBedroom = 0;
-						let detailsBathrom = 0;
-						let detailsPrice = 0;
-						let detailsPsqft = 0;
-						let detailsAvailable = "";
-						let detailsFurnishing = "";
-						let detailsDescription = "";
-						let detailsType = "";
-						let idProperty = "";
-						let propertyDevelopmentName = "";
-						let propertyOwnerId = "";
-						let propertyOwnerUsername = "";
-						let propertyOwnerPicture = "";
-						if (agreement.property) {
+						if (agreement.landlord != null && agreement.tenant != null && agreement.property != null){
 							let property = agreement.property;
-							if (property.owner.user){
-								propertyOwnerId = property.owner.user._id;
-								propertyOwnerUsername = property.owner.user.username;
-								if (property.owner.user.picture) {
-									propertyOwnerPicture = property.owner.user.picture.url;
-								}
-							}
-							idProperty = property._id;
-							propertyDevelopmentName = property.development.name;
-							unit = property.address.floor;
-							unit2 = property.address.unit;
-							blokNo = property.address.block_number;
-							streetName = property.address.street_name;
-							postalCode = property.address.postal_code;
-							coordinates = [Number(property.address.coordinates[0]) , Number(property.address.coordinates[1])];
-							country = property.address.country;
-							fullAddress = property.address.full_address;
-							typeAddress = property.address.type;
-							if (property.amenities) {
-								for (var k = 0; k < property.amenities.length; k++) {
-									let data = {
-										_id: property.amenities[k]._id,
-										name: property.amenities[k].name
-									}
-									amenities.push(data);
-								}
-							}
-							if (property.pictures.living){
-								for (var a = 0; a < property.pictures.living.length; a++) {
-									let data = property.pictures.living[a].url
-									pictureLiving.push(data);
-								}
-							}
-							if (property.pictures.dining){
-								for (var b = 0; b < property.pictures.dining.length; b++) {
-									let data = property.pictures.dining[b].url
-									pictureDining.push(data);
-								}
-							}
-							if (property.pictures.bed){
-								for (var c = 0; c < property.pictures.bed.length; c++) {
-									let data = property.pictures.bed[c].url
-									pictureBed.push(data);
-								}
-							}
-							if (property.pictures.kitchen){
-								for (var d = 0; d < property.pictures.kitchen.length; d++) {
-									let data = property.pictures.kitchen[d].url
-									pictureKitchen.push(data);
-								}
-							}
-							if (property.pictures.toilet){
-								for (var e = 0; e < property.pictures.toilet.length; e++) {
-									let data = property.pictures.toilet[e].url
-									pictureToilet.push(data);
-								}
-							}	
-							detailsSize = property.details.size_sqf;	
-							detailsSizeSqm = property.details.size_sqm;
-							detailsBedroom = property.details.bedroom;
-							detailsBathrom = property.details.bathroom;				
-							detailsPrice = property.details.price;
-							detailsPsqft = property.details.psqft;
-							detailsAvailable = property.details.available;
-							detailsFurnishing = property.details.furnishing;
-							detailsDescription = property.details.description;
-							detailsType = property.details.type;
-						}
-						let landlordName = "";
-						let landlordId = "";
-						let landlordIdNo = "";
-						let landlordUsername = "";
-						let landlordPicture = "";
-						if (agreement.landlord) {
-							let landlord = agreement.landlord;
-							landlordName = landlord.landlord.data.name;
-							landlordIdNo = landlord.landlord.data.identification_number;
-							landlordId = landlord._id;
-							landlordUsername = landlord.username;
-							if (landlord.picture) {
-								landlordPicture = landlord.picture.url;
-							}
-						}
-						let tenantName = "";
-						let tenantType = "";
-						let tenantIdNo = "";
-						let tenantIdentityFront = "";
-						let tenantidentityBack = "";
-						let tenantId = "";
-						let tenantUsername = "";
-						let tenantPicture = "";
-						if (agreement.tenant) {
 							let tenant = agreement.tenant;
-							tenantName = tenant.tenant.data.name;
-							tenantType = tenant.tenant.data.identification_type;
-							tenantIdNo = tenant.tenant.data.identification_number;
-							tenantId = tenant._id;
-							tenantIdentityFront = tenant.tenant.data.identification_proof.front;
-							if (tenant.tenant.data.identification_proof.back && tenant.tenant.data.identification_proof.back != null) {
-								tenantidentityBack = tenant.tenant.data.identification_proof.back;
-							}							
-							tenantUsername = tenant.username;
-							if (tenant.picture) {
-								tenantPicture = tenant.picture.url;
+							let ta = agreement.tenancy_agreement.data;
+							let unread = tenantUnread;
+							let read = ta.tenant_seen;
+							let totalTa = totalAgreementTenant;
+							let appointment = "";
+							let asLandlord = false;
+							if (agreement.appointment) {
+								appointment = agreement.appointment;
 							}
-						}
-						let stampCertificateStatus = false;
-						let stampCertificateUrl = "";
-						if (ta.stamp_certificate) {
-							stampCertificateStatus = true;
-							stampCertificateUrl = ta.stamp_certificate.url;
-						}
-						let send = false;
-						if (ta.status) {
-							send = true;
-						}
-						let paymentStatus = 'waiting';
-						if (ta.payment) {
-							if (ta.payment.status == 'accepted' || ta.payment.status == 'rejected') {
-								paymentStatus = ta.payment.status;
+							if (agreement.landlord._id == IDUser) {
+								asLandlord = true;
+								unread = landlordUnread;
+								let read = ta.landlord_seen;
+								let totalTa = totalAgreementLandlord;
 							}
-						}
-						let seenCount = 0;
-						if (ta.seen_count) {
-							seenCount = ta.seen_count;
-						}
-						let data = {							
-							"_id": agreement._id,
-							"appointment_id": appointment,
-							"as_landlord": asLandlord,
-							"property": {
-								"_id": idProperty,
-								"development": propertyDevelopmentName,
-								"user": {
-									"_id": propertyOwnerId,
-									"username": propertyOwnerUsername,
-									"pictures": propertyOwnerPicture
-								},
-								"address": {
-									"unit_no": unit,
-									"unit_no_2": unit2,
-									"block_no": blokNo,
-									"street_name": streetName,
-									"postal_code": postalCode,
-									"coordinates": coordinates,
-									"country": country,
-									"full_address": fullAddress,
-									"type": typeAddress
-								},
-								"pictures": {
-									"living": pictureLiving,
-									"dining": pictureDining,
-									"bed": pictureBed,
-									"toilet": pictureToilet,
-									"kitchen": pictureKitchen
-								},
-								"favourite": favorite,
-								"amenities": amenities,
-								"details": {
-									"size": detailsSize,
-									"size_sqm": detailsSizeSqm,
-									"bedroom": detailsBedroom,
-									"bathroom": detailsBathrom,
-									"price": detailsPrice,
-									"psqft": detailsPsqft,
-									"available": detailsAvailable,
-									"furnishing": detailsFurnishing,
-									"description": detailsDescription,
-									"type": detailsType
-								},
-								"seen": {
-									"by": readBy,
-									"counts": seenCount
+							let unit = "";
+							let unit2 = "";
+							let blokNo = "";
+							let streetName = "";
+							let postalCode = "";
+							let coordinates = [];
+							let country = "";
+							let fullAddress = "";
+							let typeAddress = "";
+							let pictureLiving = [];
+							let pictureDining = [];
+							let pictureBed = [];
+							let pictureToilet = [];
+							let pictureKitchen = [];
+							let favorite = false;
+							let amenities = [];
+							let detailsSize = 0;
+							let detailsSizeSqm = 0;
+							let detailsBedroom = 0;
+							let detailsBathrom = 0;
+							let detailsPrice = 0;
+							let detailsPsqft = 0;
+							let detailsAvailable = "";
+							let detailsFurnishing = "";
+							let detailsDescription = "";
+							let detailsType = "";
+							let idProperty = "";
+							let propertyDevelopmentName = "";
+							let propertyOwnerId = "";
+							let propertyOwnerUsername = "";
+							let propertyOwnerPicture = "";
+							if (agreement.property) {
+								let property = agreement.property;
+								if (property.owner.user){
+									propertyOwnerId = property.owner.user._id;
+									propertyOwnerUsername = property.owner.user.username;
+									if (property.owner.user.picture) {
+										propertyOwnerPicture = property.owner.user.picture.url;
+									}
 								}
-							},
-							"landlord": {
-								"full_name": landlordName,
-								"id_number": landlordIdNo,
-								"_id": landlordId,
-								"username": landlordUsername,
-								"profile_picture": landlordPicture
-							},
-							"tenant": {
-								"name": tenantName,
-								"type": tenantType,
-								"id_no": tenantIdNo,
-								"identity_front": tenantIdentityFront,
-								"identity_back": tenantidentityBack,
-								"_id": tenantId,
-								"username": tenantUsername,
-								"profile_picture": tenantPicture
-							},
-							"status": ta.status,
-							"stamp_certificate": {
-								"uploaded": stampCertificateStatus,
-								"url": stampCertificateUrl
-							},
-							"send": send,
-							"created_at": ta.created_at,
-							"payment_details": {
-								"status": "waiting"
-							},
-							"seen_by": readBy,
-							"read": read,
-							"unread": unread,
-							"total": totalTa
+								idProperty = property._id;
+								propertyDevelopmentName = property.development.name;
+								unit = property.address.floor;
+								unit2 = property.address.unit;
+								blokNo = property.address.block_number;
+								streetName = property.address.street_name;
+								postalCode = property.address.postal_code;
+								coordinates = [Number(property.address.coordinates[0]) , Number(property.address.coordinates[1])];
+								country = property.address.country;
+								fullAddress = property.address.full_address;
+								typeAddress = property.address.type;
+								if (property.amenities) {
+									for (var k = 0; k < property.amenities.length; k++) {
+										let data = {
+											_id: property.amenities[k]._id,
+											name: property.amenities[k].name
+										}
+										amenities.push(data);
+									}
+								}
+								if (property.pictures.living){
+									for (var a = 0; a < property.pictures.living.length; a++) {
+										let data = property.pictures.living[a].url
+										pictureLiving.push(data);
+									}
+								}
+								if (property.pictures.dining){
+									for (var b = 0; b < property.pictures.dining.length; b++) {
+										let data = property.pictures.dining[b].url
+										pictureDining.push(data);
+									}
+								}
+								if (property.pictures.bed){
+									for (var c = 0; c < property.pictures.bed.length; c++) {
+										let data = property.pictures.bed[c].url
+										pictureBed.push(data);
+									}
+								}
+								if (property.pictures.kitchen){
+									for (var d = 0; d < property.pictures.kitchen.length; d++) {
+										let data = property.pictures.kitchen[d].url
+										pictureKitchen.push(data);
+									}
+								}
+								if (property.pictures.toilet){
+									for (var e = 0; e < property.pictures.toilet.length; e++) {
+										let data = property.pictures.toilet[e].url
+										pictureToilet.push(data);
+									}
+								}	
+								detailsSize = property.details.size_sqf;	
+								detailsSizeSqm = property.details.size_sqm;
+								detailsBedroom = property.details.bedroom;
+								detailsBathrom = property.details.bathroom;				
+								detailsPrice = property.details.price;
+								detailsPsqft = property.details.psqft;
+								detailsAvailable = property.details.available;
+								detailsFurnishing = property.details.furnishing;
+								detailsDescription = property.details.description;
+								detailsType = property.details.type;
+							}
+							let landlordName = "";
+							let landlordId = "";
+							let landlordIdNo = "";
+							let landlordUsername = "";
+							let landlordPicture = "";
+							if (agreement.landlord) {
+								let landlord = agreement.landlord;
+								landlordName = landlord.landlord.data.name;
+								landlordIdNo = landlord.landlord.data.identification_number;
+								landlordId = landlord._id;
+								landlordUsername = landlord.username;
+								if (landlord.picture) {
+									landlordPicture = landlord.picture.url;
+								}
+							}
+							let tenantName = "";
+							let tenantType = "";
+							let tenantIdNo = "";
+							let tenantIdentityFront = "";
+							let tenantidentityBack = "";
+							let tenantId = "";
+							let tenantUsername = "";
+							let tenantPicture = "";
+							if (agreement.tenant) {
+								let tenant = agreement.tenant;
+								tenantName = tenant.tenant.data.name;
+								tenantType = tenant.tenant.data.identification_type;
+								tenantIdNo = tenant.tenant.data.identification_number;
+								tenantId = tenant._id;
+								tenantIdentityFront = tenant.tenant.data.identification_proof.front;
+								if (tenant.tenant.data.identification_proof.back && tenant.tenant.data.identification_proof.back != null) {
+									tenantidentityBack = tenant.tenant.data.identification_proof.back;
+								}							
+								tenantUsername = tenant.username;
+								if (tenant.picture) {
+									tenantPicture = tenant.picture.url;
+								}
+							}
+							let stampCertificateStatus = false;
+							let stampCertificateUrl = "";
+							if (ta.stamp_certificate) {
+								stampCertificateStatus = true;
+								stampCertificateUrl = ta.stamp_certificate.url;
+							}
+							let send = false;
+							if (ta.status) {
+								send = true;
+							}
+							let paymentStatus = 'waiting';
+							if (ta.payment) {
+								if (ta.payment.status == 'accepted' || ta.payment.status == 'rejected') {
+									paymentStatus = ta.payment.status;
+								}
+							}
+							let seenCount = 0;
+							if (ta.seen_count) {
+								seenCount = ta.seen_count;
+							}
+							let data = {							
+								"_id": agreement._id,
+								"appointment_id": appointment,
+								"as_landlord": asLandlord,
+								"property": {
+									"_id": idProperty,
+									"development": propertyDevelopmentName,
+									"user": {
+										"_id": propertyOwnerId,
+										"username": propertyOwnerUsername,
+										"pictures": propertyOwnerPicture
+									},
+									"address": {
+										"unit_no": unit,
+										"unit_no_2": unit2,
+										"block_no": blokNo,
+										"street_name": streetName,
+										"postal_code": postalCode,
+										"coordinates": coordinates,
+										"country": country,
+										"full_address": fullAddress,
+										"type": typeAddress
+									},
+									"pictures": {
+										"living": pictureLiving,
+										"dining": pictureDining,
+										"bed": pictureBed,
+										"toilet": pictureToilet,
+										"kitchen": pictureKitchen
+									},
+									"favourite": favorite,
+									"amenities": amenities,
+									"details": {
+										"size": detailsSize,
+										"size_sqm": detailsSizeSqm,
+										"bedroom": detailsBedroom,
+										"bathroom": detailsBathrom,
+										"price": detailsPrice,
+										"psqft": detailsPsqft,
+										"available": detailsAvailable,
+										"furnishing": detailsFurnishing,
+										"description": detailsDescription,
+										"type": detailsType
+									},
+									"seen": {
+										"by": readBy,
+										"counts": seenCount
+									}
+								},
+								"landlord": {
+									"full_name": landlordName,
+									"id_number": landlordIdNo,
+									"_id": landlordId,
+									"username": landlordUsername,
+									"profile_picture": landlordPicture
+								},
+								"tenant": {
+									"name": tenantName,
+									"type": tenantType,
+									"id_no": tenantIdNo,
+									"identity_front": tenantIdentityFront,
+									"identity_back": tenantidentityBack,
+									"_id": tenantId,
+									"username": tenantUsername,
+									"profile_picture": tenantPicture
+								},
+								"status": ta.status,
+								"stamp_certificate": {
+									"uploaded": stampCertificateStatus,
+									"url": stampCertificateUrl
+								},
+								"send": send,
+								"created_at": ta.created_at,
+								"payment_details": {
+									"status": "waiting"
+								},
+								"seen_by": readBy,
+								"read": read,
+								"unread": unread,
+								"total": totalTa
+							}
+							datas.push(data);
 						}
-						datas.push(data);
 					}
 					resolve(datas);
 				}
@@ -2882,47 +2885,49 @@ agreementsSchema.static('memberSectionTaById', (id:string, userId:string):Promis
 						statusPayment = agreement.tenancy_agreement.data.payment.status;
 						paymentProof = agreement.tenancy_agreement.data.payment.attachment.payment.url;
 					}
-					let data = {
-						"as_landlord": asLandlord,
-						"created_at": agreement.tenancy_agreement.data.created_at,
-						"status": agreement.tenancy_agreement.data.status,
-						"landlord_acceptance": {
-							"signed": tenantSignStatus,
-							"sign": tenantSign, // only if signed true
-							"sign_date": tenantSignDate // only if signed true
-						},
-						"tenant_acceptance": {
-							"signed": landlordSignStatus,
-							"sign": landlordSign, // only if signed true
-							"sign_date": landlordSignDate // only if signed true
-						},
-						"landlord_details": {
-							"name": landlordName,
-							"id_no": landlordIdNo,
-							"id_type": landlordIdType,
-							"identity_front": landlordIdFront,
-							"identity_back": landlordIdBack
-						},
-						"tenant_details": {
-							"name": tenantName,
-							"id_no": tenantIdNo,
-							"id_type": tenantIdType,
-							"identity_front": tenantIdFront,
-							"identity_back": tenantIdBack
-						},
-						"payment_details": {
-							"security_deposit": scd,
-							"second_payment_approved": paymentApproved,
-							"status" :  statusPayment,
-							"second_payment_proof": paymentProof
-						},
-						"stamp_certificate": {
-							"uploaded": stampCertificateStatus,
-							"url": stampCertificateUrl//defined only if uploaded true
-						},
-						"doc": ""
-					}
-					resolve(data);
+					reportDAO.reportTA(String(agreement._id)).then(report => {
+						let data = {
+							"as_landlord": asLandlord,
+							"created_at": agreement.tenancy_agreement.data.created_at,
+							"status": agreement.tenancy_agreement.data.status,
+							"landlord_acceptance": {
+								"signed": tenantSignStatus,
+								"sign": tenantSign, // only if signed true
+								"sign_date": tenantSignDate // only if signed true
+							},
+							"tenant_acceptance": {
+								"signed": landlordSignStatus,
+								"sign": landlordSign, // only if signed true
+								"sign_date": landlordSignDate // only if signed true
+							},
+							"landlord_details": {
+								"name": landlordName,
+								"id_no": landlordIdNo,
+								"id_type": landlordIdType,
+								"identity_front": landlordIdFront,
+								"identity_back": landlordIdBack
+							},
+							"tenant_details": {
+								"name": tenantName,
+								"id_no": tenantIdNo,
+								"id_type": tenantIdType,
+								"identity_front": tenantIdFront,
+								"identity_back": tenantIdBack
+							},
+							"payment_details": {
+								"security_deposit": scd,
+								"second_payment_approved": paymentApproved,
+								"status" :  statusPayment,
+								"second_payment_proof": paymentProof
+							},
+							"stamp_certificate": {
+								"uploaded": stampCertificateStatus,
+								"url": stampCertificateUrl//defined only if uploaded true
+							},
+							"doc": report
+						}
+						resolve(data);
+					});
 				}
 				else { reject({message: "Agreement not found"});}
 			})
@@ -4789,7 +4794,7 @@ agreementsSchema.static('getUserLOI', (userId: string):Promise<any> => {
 			model: 'Payments'
 		}])
 		.exec((err, agreements) => {
-			if (err) { reject({message: err.message}); }
+			if (err) { reject({message: err.message, code: 400}); }
 			else {
 				Properties.getAll('phone', userId, 'all').then(properties => {
 					let user_loi = [];
@@ -4843,7 +4848,7 @@ agreementsSchema.static('getUserLOI', (userId: string):Promise<any> => {
 											TA: TA,
 											created_at: loi.created_at,
 											payment_details: { 
-												status: loi.payment ? loi.payment.status : ''
+												status: loi.payment ? loi.payment.status == 'pending' ? 'waiting' : loi.payment.status : 'waiting'
 											},
 											seen_by: seen_by,
 											read: as_landlord == true ? loi.landlord_seen : loi.tenant_seen,
@@ -4859,6 +4864,111 @@ agreementsSchema.static('getUserLOI', (userId: string):Promise<any> => {
 				});
 			}
 		});
+	});
+});
+
+agreementsSchema.static('getUserLOIByLOIID', (userId: string, loiId: string):Promise<any> => {
+	return new Promise((resolve:Function, reject:Function) => {
+		Agreements.findById(loiId)
+		.populate([{
+			path: 'tenant',
+			model: 'Users',
+			populate: {
+				path: 'picture',
+				model: 'Attachments'
+			}
+		}, {
+			path: 'landlord',
+			model: 'Users',
+			populate: {
+				path: 'picture',
+				model: 'Attachments'
+			}
+		}, {
+			path: 'letter_of_intent.data.tenant.identification_proof.front',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.tenant.identification_proof.back',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.occupiers.identification_proof.front',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.occupiers.identification_proof.back',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.payment',
+			model: 'Payments',
+			populate: {
+				path: 'attachment.payment',
+				model: 'Attachments'
+			}
+		}]).exec((err, agreement) => {
+			if (err) { reject({message: err.message, code: 400}); }
+			else {
+				let loi = agreement.letter_of_intent.data;
+				let gfd;
+				let sd;
+				if (loi.payment && loi.payment.fee) {
+					for (var i = 0; i < loi.payment.fee.length; i++) {
+						loi.payment ? loi.payment.fee[i].code_name == 'gfd' ? gfd = loi.payment.fee[i].amount : '' : '';
+						loi.payment ? loi.payment.fee[i].code_name == 'sd' ? sd = loi.payment.fee[i].amount : '' : '';
+					}
+				}
+				let occupants = [];
+				for (var j = 0; j < loi.occupiers.length; j++) {
+					occupants.push({
+						name: loi.occupiers[j].name,
+						id_no: loi.occupiers[j].identification_number,
+						id_type: loi.occupiers[j].identification_type,
+						identity_front: loi.occupiers[j].identification_proof.front && loi.occupiers[j].identification_proof.front != undefined ? loi.occupiers[j].identification_proof.front.url : '',
+						identity_back: loi.occupiers[j].identification_proof.back && loi.occupiers[j].identification_proof.back != undefined ? loi.occupiers[j].identification_proof.back.url : ''
+					});
+				}
+				reportDAO.reportLOI(String(agreement._id)).then(report => {
+					resolve({
+						_id: agreement._id,
+						appointment_id: agreement.appointment,
+						as_landlord: String(userId) == String(agreement.landlord._id) ? true : false,
+						created_at: loi.created_at,
+						status: loi.status && loi.status != undefined ? loi.status : '',
+						landlord_acceptance: {
+							signed: loi.confirmation ? loi.confirmation.landlord ? true : false : false
+						},
+						tenant_acceptance: {
+							signed: loi.confirmation ? loi.confirmation.tenant ? true : false : false
+						},
+						landlord_details: {
+							name: loi.landlord.name,
+							id_no: loi.landlord.identification_number,
+							id_type: loi.landlord.identification_type,
+							identity_front: loi.landlord.identification_proof.front && loi.landlord.identification_proof.front != undefined ? loi.landlord.identification_proof.front.url : '',
+							identity_back: loi.landlord.identification_proof.back && loi.landlord.identification_proof.back != undefined ? loi.landlord.identification_proof.back.url : ''
+						},
+						tenant_details: {
+							name: loi.tenant.name,
+							id_no: loi.tenant.identification_number,
+							id_type: loi.tenant.identification_type,
+							identity_front: loi.tenant.identification_proof.front && loi.tenant.identification_proof.front != undefined ? loi.tenant.identification_proof.front.url : '',
+							identity_back: loi.tenant.identification_proof.back && loi.tenant.identification_proof.back != undefined ? loi.tenant.identification_proof.back.url : ''
+						},
+						occupants: occupants,
+						payment_details: {
+							gfd_amount: gfd,
+							sd_amount: sd,
+							status: loi.payment ? loi.payment.status == 'pending' ? 'waiting' : loi.payment.status : 'waiting',
+							payment_proof: loi.payment ? loi.payment.attachment.payment ? loi.payment.attachment.payment.url : '' : ''
+						},
+						staysmart_bank: {
+							account_name: "Staysmart Pte. Ltd.",
+							bank_name: "DBS",
+							account_number: "100-904130-7"
+						},
+						doc: report
+					});
+				})
+			}
+		})
 	});
 });
 
