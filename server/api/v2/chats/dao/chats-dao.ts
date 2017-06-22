@@ -374,7 +374,7 @@ chatsSchema.static('createRoom', (uid: string, data: Object, device: string):Pro
                                                                 .exec((err, users) => {
                                                                     if (err) { reject({message: err}); }
                                                                     else {
-                                                                        if (device == 'desktop') { resolve({result}); }
+                                                                        if (device == 'desktop') { resolve(result); }
                                                                         else {
                                                                             resolve({
                                                                                 message: 'success',
