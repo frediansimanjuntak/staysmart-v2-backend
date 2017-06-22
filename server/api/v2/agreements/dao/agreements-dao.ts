@@ -2567,7 +2567,7 @@ agreementsSchema.static('memberSectionTaById', (id:string, userId:string):Promis
 				let ta = agreement.tenancy_agreement.data;
 				let security_deposit;
 				if (ta.payment && ta.payment.fee) {
-					for (var i = 0; i < loi.payment.fee.length; i++) {
+					for (var i = 0; i < ta.payment.fee.length; i++) {
 						ta.payment ? ta.payment.fee[i].code_name == 'scd' ? security_deposit = ta.payment.fee[i].amount : '' : '';
 					}
 				}
