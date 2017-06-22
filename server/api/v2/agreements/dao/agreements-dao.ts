@@ -1572,6 +1572,7 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 							if (err) { reject({message: err.message}); }
 							else if (agreement) {
 								let tenant = agreement.tenant.tenant.data;
+								let tenantLandlord = agreement.tenant.landlord.data;
 								let landlord =  agreement.landlord.landlord.data;
 								let tenantIdentityFront;
 								let tenantIdentityBack;
@@ -1601,16 +1602,16 @@ agreementsSchema.static('GetLoiStep2', (id:string):Promise<any> => {
 										"url": landlord.identification_proof.back.url
 									}
 								}
-								let tenantData;
+								let tenantData = {
+									"name": tenant.name ? tenant.name : tenantLandlord.name ? tenantLandlord.name : "",
+									"type": tenant.identification_type ? tenant.identification_type : tenantLandlord.identification_type ? tenantLandlord.identification_type : "",
+									"id_no": tenant.identification_number ? tenant.identification_number : tenantLandlord.identification_number ? tenantLandlord.identification_number : "",
+									"identity_front": tenantIdentityFront ? tenantIdentityFront : "",
+									"identity_back": tenantIdentityBack ? tenantIdentityBack : ""
+								}
 
 								let data = {
-									"tenant": {
-										"name": tenant.name ? tenant.name : "",
-										"type": tenant.identification_type ? tenant.identification_type : "",
-										"id_no": tenant.identification_number ? tenant.identification_number : "",
-										"identity_front": tenantIdentityFront ? tenantIdentityFront : "",
-										"identity_back": tenantIdentityBack ? tenantIdentityBack : ""
-									},
+									"tenant": tenantData.name == "" ? null : tenantData,
 									"landlord": {
 										"name": landlord.name ? landlord.name : "",
 										"type": landlord.identification_type ? landlord.identification_type : "",
