@@ -2428,27 +2428,33 @@ agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Pro
 		}, {
 			path: 'letter_of_intent.data.payment',
 			model: 'Payments'
+		}, {
+			path: 'tenancy_agreement.data.payment',
+			model: 'Payments'
+		}, {
+			path: 'tenancy_agreement.data.stamp_certificate',
+			model: 'Attachments'
 		}])
 		.exec((err, agreements) => {
 			if (err) { reject({message: err.message, code: 400}); }
 			else {
 				Properties.getAll('phone', userId, 'all').then(properties => {
-					let user_loi = [];
+					let user_ta = [];
 					let unread = 0;
 					let total = 0;
 					for (var a = 0; a < agreements.length; a++) {
 						if (agreements[a].tenant != null && agreements[a].landlord != null && agreements[a].property != null) {
-							if (agreements[a].letter_of_intent.data && agreements[a].letter_of_intent.data.term_lease) {
-								let loi = agreements[a].letter_of_intent.data;
+							if (agreements[a].tenancy_agreement.data && agreements[a].letter_of_intent.data.term_lease) {
+								let ta = agreements[a].tenancy_agreement.data;
 								total += 1;
-								String(userId) == String(agreements[a].tenant._id) ? loi.tenant_seen == false ? unread += 1 : unread += 0 : unread += 0;
-								String(userId) == String(agreements[a].landlord._id) ? loi.landlord_seen == false ? unread += 1 : unread += 0 : unread += 0;
+								String(userId) == String(agreements[a].tenant._id) ? ta.tenant_seen == false ? unread += 1 : unread += 0 : unread += 0;
+								String(userId) == String(agreements[a].landlord._id) ? ta.landlord_seen == false ? unread += 1 : unread += 0 : unread += 0;
 							}
 						}
 					}
 					for (var a = 0; a < agreements.length; a++) {
 						if (agreements[a].tenant != null && agreements[a].landlord != null && agreements[a].property != null) {
-							if (agreements[a].letter_of_intent.data && agreements[a].letter_of_intent.data.term_lease) {
+							if (agreements[a].tenancy_agreement.data && agreements[a].letter_of_intent.data.term_lease) {
 								let loi = agreements[a].letter_of_intent.data;
 								let ta = agreements[a].tenancy_agreement.data;
 								let as_landlord = (String(userId) == String(agreements[a].tenant._id)) ? false : true;
@@ -2458,7 +2464,7 @@ agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Pro
 								loi.landlord_seen == true ? seen_by.push(agreements[a].landlord._id) : '';
 								for (var b = 0; b < properties.length; b++) {
 									if (String(properties[b]._id) == String(agreements[a].property)) {
-										user_loi.push({
+										user_ta.push({
 											_id: agreements[a]._id,
 											appointment_id: agreements[a].appointment ? agreements[a].appointment : '',
 											as_landlord: as_landlord,
@@ -2482,13 +2488,17 @@ agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Pro
 											},
 											status: ta.status && ta.status != undefined ? loi.status : '',
 											send: ta.status == 'draft' ? false : true,
+											stamp_certificate: {
+												uploaded: ta.stamp_certificate ? true : false,
+												url: ta.stamp_certificate ? ta.stamp_certificate.url : ''
+											},
 											TA: TA,
-											created_at: loi.created_at,
+											created_at: ta.created_at,
 											payment_details: { 
-												status: loi.payment ? loi.payment.status == 'pending' ? 'waiting' : loi.payment.status : 'waiting'
+												status: ta.payment ? ta.payment.status == 'pending' ? 'waiting' : ta.payment.status : 'waiting'
 											},
 											seen_by: seen_by,
-											read: as_landlord == true ? loi.landlord_seen : loi.tenant_seen,
+											read: as_landlord == true ? ta.landlord_seen : ta.tenant_seen,
 											unread: unread,
 											total: total
 										});
@@ -2497,7 +2507,7 @@ agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Pro
 							}
 						}
 					}
-					resolve(user_loi);
+					resolve(user_ta);
 				});
 			}
 		});
@@ -2506,175 +2516,107 @@ agreementsSchema.static('memberSectionOwnedTa', (userId:string, role:string):Pro
 
 agreementsSchema.static('memberSectionTaById', (id:string, userId:string):Promise<any> => {
 	return new Promise((resolve:Function, reject:Function) => {
-		let IdUser = userId.toString();
-		Agreements
-			.findById(id)
-			.populate("payment")
-			.populate ({
-				path: 'landlord',
-				populate: [{
-					path: 'landlord.data.identification_proof.front',
-					model: 'Attachments'
-				},{
-					path: 'landlord.data.identification_proof.back',
-					model: 'Attachments'
-				}]
-			})
-			.populate ({
-				path: 'tenant',
-				populate: [{
-					path: 'tenant.data.identification_proof.front',
-					model: 'Attachments'
-				},{
-					path: 'tenant.data.identification_proof.back',
-					model: 'Attachments'
-				}]
-			})
-			.populate ({
-				path: 'tenancy_agreement.data.payment',
-				populate: {
-					path: 'attachment.payment',
-					model: 'Attachments'
+		Agreements.findById(id)
+		.populate([{
+			path: 'tenant',
+			model: 'Users',
+			populate: {
+				path: 'picture',
+				model: 'Attachments'
+			}
+		}, {
+			path: 'landlord',
+			model: 'Users',
+			populate: {
+				path: 'picture',
+				model: 'Attachments'
+			}
+		}, {
+			path: 'letter_of_intent.data.tenant.identification_proof.front',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.tenant.identification_proof.back',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.occupiers.identification_proof.front',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.occupiers.identification_proof.back',
+			model: 'Attachments'
+		}, {
+			path: 'letter_of_intent.data.payment',
+			model: 'Payments',
+			populate: {
+				path: 'attachment.payment',
+				model: 'Attachments'
+			}
+		}, {
+			path: 'tenancy_agreement.data.payment',
+			model: 'Payments',
+			populate: {
+				path: 'attachment.payment',
+				model: 'Attachments'
+			}
+		}, {
+			path: 'tenancy_agreement.data.stamp_certificate',
+			model: 'Attachments'
+		}]).exec((err, agreement) => {
+			if (err) { reject({message: err.message, code: 400}); }
+			else {
+				let loi = agreement.letter_of_intent.data;
+				let ta = agreement.tenancy_agreement.data;
+				let security_deposit;
+				if (ta.payment && ta.payment.fee) {
+					for (var i = 0; i < loi.payment.fee.length; i++) {
+						ta.payment ? ta.payment.fee[i].code_name == 'scd' ? security_deposit = ta.payment.fee[i].amount : '' : '';
+					}
 				}
-			})
-			
-			.exec((err, agreement) => {
-				if (err) { reject({message: err.message}); }
-				else if (agreement) {
-					let ta = agreement.tenancy_agreement.data;
-					let asLandlord = false;
-					if (agreement.landlord._id == IdUser){
-						asLandlord = true;
-					}
-					let tenantSignStatus = false;
-					let tenantSign = "";
-					let tenantSignDate = "";
-					if (agreement.tenancy_agreement.data.confirmation.tenant) {
-						tenantSignStatus = true;
-						tenantSign = agreement.tenancy_agreement.data.confirmation.tenant.sign;
-						tenantSignDate = agreement.tenancy_agreement.data.confirmation.tenant.date;
-					}
-					let landlordSignStatus = false;
-					let landlordSign = "";
-					let landlordSignDate = "";
-					if (agreement.tenancy_agreement.data.confirmation.landlord) {
-						landlordSignStatus = true;
-						landlordSign = agreement.tenancy_agreement.data.confirmation.tenant.sign;
-						landlordSignDate = agreement.tenancy_agreement.data.confirmation.tenant.date;
-					}
-					let landlordName = "";
-					let landlordId = "";
-					let landlordIdNo = "";
-					let landlordIdType = "";
-					let landlordUsername = "";
-					let landlordIdFront = "";
-					let landlordIdBack = "";
-					if (agreement.landlord) {
-						let landlord = agreement.landlord;
-						landlordName = landlord.landlord.data.name;
-						landlordIdNo = landlord.landlord.data.identification_number;
-						landlordId = landlord._id;
-						landlordIdType = landlord.landlord.data.identification_type;
-						landlordUsername = landlord.username;
-						if (landlord.landlord.data.identification_proof.front) {
-							landlordIdFront = landlord.landlord.data.identification_proof.front.url;
-						}
-						if (landlord.landlord.data.identification_proof.back) {
-							landlordIdBack = landlord.landlord.data.identification_proof.back.url;
-						}
-					}
-					let tenantName = "";
-					let tenantId = "";
-					let tenantIdNo = "";
-					let tenantIdType = "";
-					let tenantUsername = "";
-					let tenantIdFront = "";
-					let tenantIdBack = "";
-					if (agreement.landlord) {
-						let tenant = agreement.tenant;
-						tenantName = tenant.tenant.data.name;
-						tenantIdNo = tenant.tenant.data.identification_number;
-						tenantId = tenant._id;
-						tenantIdType = tenant.tenant.data.identification_type;
-						tenantUsername = tenant.username;
-						if (tenant.tenant.data.identification_proof.front) {
-							tenantIdFront = tenant.tenant.data.identification_proof.front.url;
-						}
-						if (tenant.tenant.data.identification_proof.back) {
-							tenantIdBack = tenant.tenant.data.identification_proof.back.url;
-						}
-					}
-					let stampCertificateStatus = false;
-					let stampCertificateUrl = "";
-					if (ta.stamp_certificate) {
-						stampCertificateStatus = true;
-						stampCertificateUrl = ta.stamp_certificate.url;
-					}
-					let scd = 0;
-					let paymentApproved = false;
-					let statusPayment = "";
-					let paymentProof = "";
-
-					if (agreement.tenancy_agreement.data.payment.fee) {
-						let fees = agreement.tenancy_agreement.data.payment.fee;
-						for (var a = 0; a < fees.length; a++) {
-							let fee = fees[a];
-							if (fee.code_name == "scd") {
-								scd = fee.amount;
-							}
-							if (fee.received_amount > 0) {
-								paymentApproved = true;
-							}							
-						}
-						statusPayment = agreement.tenancy_agreement.data.payment.status;
-						paymentProof = agreement.tenancy_agreement.data.payment.attachment.payment.url;
-					}
-					reportDAO.reportTA(String(agreement._id)).then(report => {
-						let data = {
-							"as_landlord": asLandlord,
-							"created_at": agreement.tenancy_agreement.data.created_at,
-							"status": agreement.tenancy_agreement.data.status,
-							"landlord_acceptance": {
-								"signed": tenantSignStatus,
-								"sign": tenantSign, // only if signed true
-								"sign_date": tenantSignDate // only if signed true
-							},
-							"tenant_acceptance": {
-								"signed": landlordSignStatus,
-								"sign": landlordSign, // only if signed true
-								"sign_date": landlordSignDate // only if signed true
-							},
-							"landlord_details": {
-								"name": landlordName,
-								"id_no": landlordIdNo,
-								"id_type": landlordIdType,
-								"identity_front": landlordIdFront,
-								"identity_back": landlordIdBack
-							},
-							"tenant_details": {
-								"name": tenantName,
-								"id_no": tenantIdNo,
-								"id_type": tenantIdType,
-								"identity_front": tenantIdFront,
-								"identity_back": tenantIdBack
-							},
-							"payment_details": {
-								"security_deposit": scd,
-								"second_payment_approved": paymentApproved,
-								"status" :  statusPayment,
-								"second_payment_proof": paymentProof
-							},
-							"stamp_certificate": {
-								"uploaded": stampCertificateStatus,
-								"url": stampCertificateUrl//defined only if uploaded true
-							},
-							"doc": report
-						}
-						resolve(data);
+				reportDAO.reportTA(String(agreement._id)).then(report => {
+					resolve({
+						_id: agreement._id,
+						appointment_id: agreement.appointment,
+						as_landlord: String(userId) == String(agreement.landlord._id) ? true : false,
+						created_at: loi.created_at,
+						status: loi.status && loi.status != undefined ? loi.status : '',
+						landlord_acceptance: {
+							signed: ta.confirmation ? ta.confirmation.landlord ? true : false : false,
+							sign: ta.confirmation ? ta.confirmation.landlord.sign : "",
+							sign_date: ta.confirmation ? ta.confirmation.landlord.date : "",
+						},
+						tenant_acceptance: {
+							signed: ta.confirmation ? ta.confirmation.tenant ? true : false : false,
+							sign: ta.confirmation ? ta.confirmation.tenant.sign : "",
+							sign_date: ta.confirmation ? ta.confirmation.tenant.date : "",
+						},
+						landlord_details: {
+							name: loi.landlord.name,
+							id_no: loi.landlord.identification_number,
+							id_type: loi.landlord.identification_type,
+							identity_front: loi.landlord.identification_proof.front && loi.landlord.identification_proof.front != undefined ? loi.landlord.identification_proof.front.url : '',
+							identity_back: loi.landlord.identification_proof.back && loi.landlord.identification_proof.back != undefined ? loi.landlord.identification_proof.back.url : undefined
+						},
+						tenant_details: {
+							name: loi.tenant.name,
+							id_no: loi.tenant.identification_number,
+							id_type: loi.tenant.identification_type,
+							identity_front: loi.tenant.identification_proof.front && loi.tenant.identification_proof.front != undefined ? loi.tenant.identification_proof.front.url : '',
+							identity_back: loi.tenant.identification_proof.back && loi.tenant.identification_proof.back != undefined ? loi.tenant.identification_proof.back.url : undefined
+						},
+						payment_details: {
+							security_deposit: security_deposit,
+							second_payment_approved: ta.payment ? ta.payment.status == 'pending' ? false : ta.payment.status : true,
+							status: ta.payment ? ta.payment.status == 'pending' ? 'waiting' : ta.payment.status : 'waiting',
+							second_payment_proof: ta.payment ? ta.payment.attachment.payment ? ta.payment.attachment.payment.url : '' : ''
+						},
+						stamp_certificate: {
+							uploaded: ta.stamp_certificate ? true : false,
+							url: ta.stamp_certificate ? ta.stamp_certificate.url : ''
+						},						
+						doc: report
 					});
-				}
-				else { reject({message: "Agreement not found"});}
-			})
+				})
+			}
+		})
 	});
 });
 
