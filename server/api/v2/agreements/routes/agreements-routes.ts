@@ -115,6 +115,10 @@ export class AgreementsRoutes {
 		router
 			.route('/loi/status/admin_confirm/:id')
 			.post(auth.isAuthenticated(), AgreementsController.adminConfirmationLoi);
+		
+		router
+			.route('/loi/total_loi/today')
+			.get(auth.isAuthenticated(), AgreementsController.getTotalLOINeedApprove);
 
 		//TA
 		router
@@ -149,11 +153,19 @@ export class AgreementsRoutes {
 		router
 			.route('/ta/stamp_certificate/:id')
 			.post(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.stampCertificateTA);
+		
+		router
+			.route('/ta/total_ta/today')
+			.get(auth.isAuthenticated(), AgreementsController.getTotalTANeedApprove);
 
 		//list certificate
 		router
 			.route('/list_certificate')
 			.get(auth.isAuthenticated(), auth.hasRole('admin'), AgreementsController.getCertificateStampDuty);
+
+		router
+			.route('/list_certificate/total_certificate/today')
+			.get(auth.isAuthenticated(), AgreementsController.getTotalStampCertificateNotUploaded);
 
 		router
 			.route('/transfer/landlord/:id')

@@ -810,7 +810,7 @@ agreementsSchema.static('getTotalLOINeedApprove', ():Promise<any> => {
 				else if (agreements) {
 					let data = { total: agreements.length }
 					socketIo.socket(data, 'counterLOI');
-					resolve(agreements);
+					resolve(data);
 				}
 			})
 	});
@@ -1850,7 +1850,7 @@ agreementsSchema.static('getTotalTANeedApprove', ():Promise<any> => {
 				else if (agreements) {
 					let data = { total: agreements.length }
 					socketIo.socket(data, 'counterTA');
-					resolve(agreements);
+					resolve(data);
 				}
 			})
 	});
@@ -3979,7 +3979,7 @@ agreementsSchema.static('getTotalStampCertificateNotUploaded', ():Promise<any> =
 					}
 					let data = { total: count };
 					socketIo.socket(data, 'counterCertificate');
-					resolve(agreements);
+					resolve(data);
 				}
 			})
 	});

@@ -205,6 +205,13 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getTotalLOINeedApprove(req: express.Request, res: express.Response):void {
+		AgreementsDAO
+		['getTotalLOINeedApprove']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createLoiAppointment(req: express.Request, res: express.Response):void {
 		let _idAppointment = req.params.id;
 		let _userId = req["user"]._id;
@@ -372,6 +379,13 @@ export class AgreementsController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getTotalTANeedApprove(req: express.Request, res: express.Response):void {
+		AgreementsDAO
+		['getTotalTANeedApprove']()
+		.then(agreements => res.status(200).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createTA(req: express.Request, res: express.Response):void {
 		let _data = req.body;
 		let _id = req.params.id;
@@ -487,6 +501,13 @@ export class AgreementsController {
 		AgreementsDAO
 		['stampCertificateTA'](_id, _agreements)
 		.then(agreements => res.status(201).json(agreements))
+		.catch(error => res.status(400).json(error));
+	}
+
+	static getTotalStampCertificateNotUploaded(req: express.Request, res: express.Response):void {
+		AgreementsDAO
+		['getTotalStampCertificateNotUploaded']()
+		.then(agreements => res.status(200).json(agreements))
 		.catch(error => res.status(400).json(error));
 	}
 
