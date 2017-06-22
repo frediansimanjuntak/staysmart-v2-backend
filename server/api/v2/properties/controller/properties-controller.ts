@@ -122,6 +122,13 @@ export class PropertiesController {
 		.catch(error => res.status(400).json(error));
 	}
 
+	static getTotalListing(req: express.Request, res: express.Response):void {
+		PropertiesDAO
+		['getTotalListing']()
+		.then(properties => res.status(200).json(properties))
+		.catch(error => res.status(400).json(error));
+	}
+
 	static createProperties(req: express.Request, res: express.Response):void {
 		let _properties = req.body;
 		let _userRole = req["user"].role;
